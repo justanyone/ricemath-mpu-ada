@@ -27,6 +27,11 @@ package Math_Prime_Util.Config is
       Assume_RH : Boolean := False;
    end record;
 
+   --  Raised by Prime_Set_Config for an unknown key or an invalid
+   --  value (MPU croaks there). Checked at run time, so release builds
+   --  (preconditions off) still reject them and keep the settings.
+   Config_Error : exception;
+
    --  Key names that Prime_Set_Config accepts: verbose and the
    --  assume_rh names (assume_rh, rh, grh, erh, riemann hypothesis).
    --  Other MPU keys (xs, gmp, bigint, secure, ...) are not supported.
@@ -34,7 +39,7 @@ package Math_Prime_Util.Config is
    function Is_Known_Key (Key : String) return Boolean;
 
    --  Value that Prime_Set_Config accepts for Key. A verbose value is
-   --  digits (at most 9) or starts with t, y, f or n. Other values are
+   --  digits that fit in Natural or starts with t, y, f or n. Other values are
    --  truthy when they are not empty and not "0".
    function Is_Valid_Value (Key : String; Value : String) return Boolean;
 

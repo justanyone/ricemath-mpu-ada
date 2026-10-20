@@ -1,5 +1,6 @@
 with AUnit.Assertions;
 with Ada.Assertions;
+with Ada.Characters.Handling;
 with AUnit.Test_Cases;
 with Ada.Strings;
 with Ada.Strings.Unbounded;
@@ -232,7 +233,7 @@ package body Compat_Int is
    end Test_Mulsubmod;
 
    --  No int.tsv row names the config functions: their rows are in
-   --  config.tsv, which these tests do not replay. The tests check the
+   --  config.tsv, replayed by Test_Config_Replay. The tests check the
    --  values that Math::Prime::Util 0.75 gives on a 64-bit build.
    procedure Test_Prime_Get_Config (T : in out Test_Case'Class) is
       C : constant Math_Prime_Util.Config.Config_Record :=
@@ -242,6 +243,55 @@ package body Compat_Int is
       AUnit.Assertions.Assert (C.Verbose = 0, "verbose default");
       AUnit.Assertions.Assert (not C.Assume_RH, "assume_rh default");
    end Test_Prime_Get_Config;
+
+   --  True when Prime_Set_Config rejects the key or value: a
+   --  precondition failure in tests, Config_Error in release builds.
+   function Rejected (Key : String; Value : String) return Boolean is
+   begin
+      Math_Prime_Util.Config.Prime_Set_Config (Key, Value);
+      return False;
+   exception
+      when Math_Prime_Util.Config.Config_Error
+         | Ada.Assertions.Assertion_Error =>
+         return True;
+   end Rejected;
+
+   --  Replays config.tsv: key, value and the result (the setting or
+   --  ERROR). An ERROR row must be rejected and keep the settings.
+   procedure Test_Config_Replay (T : in out Test_Case'Class) is
+      use Math_Prime_Util.Config;
+      Rows : constant Case_Vectors.Vector := Load ("config");
+   begin
+      AUnit.Assertions.Assert (not Rows.Is_Empty, "config has no rows");
+      for C of Rows loop
+         declare
+            Key    : constant String := To_String (C.Args (1));
+            Value  : constant String := To_String (C.Args (2));
+            Result : constant String := To_String (C.Result);
+            Before : constant Config_Record := Prime_Get_Config;
+            Failed : constant Boolean := Rejected (Key, Value);
+            After  : constant Config_Record := Prime_Get_Config;
+         begin
+            if C.Error then
+               AUnit.Assertions.Assert
+                 (Failed and then After = Before, Key & " must be rejected");
+            else
+               AUnit.Assertions.Assert
+                 (not Failed, Key & " must be accepted");
+               if Ada.Characters.Handling.To_Lower (Key) = "verbose" then
+                  AUnit.Assertions.Assert
+                    (After.Verbose = Natural'Value (Result),
+                     Key & " = " & Result);
+               else
+                  AUnit.Assertions.Assert
+                    (After.Assume_RH = (Result = "1"), Key & " = " & Result);
+               end if;
+            end if;
+            Prime_Set_Config ("verbose", "0");
+            Prime_Set_Config ("assume_rh", "0");
+         end;
+      end loop;
+   end Test_Config_Replay;
 
    procedure Test_Prime_Set_Config (T : in out Test_Case'Class) is
       use Math_Prime_Util.Config;
@@ -259,6 +309,38 @@ package body Compat_Int is
       Prime_Set_Config ("riemann hypothesis", "0");
       AUnit.Assertions.Assert
         (not Prime_Get_Config.Assume_RH, "riemann hypothesis off");
+      --  Keys match as MPU does: no space or underscore removal.
+      AUnit.Assertions.Assert
+        (Rejected ("ver_bose", "2") and then Prime_Get_Config.Verbose = 0,
+         "ver_bose rejected");
+      AUnit.Assertions.Assert
+        (Rejected ("r h", "1") and then not Prime_Get_Config.Assume_RH,
+         "r h rejected");
+      Prime_Set_Config ("riemann" & ASCII.HT & "hypothesis", "1");
+      AUnit.Assertions.Assert
+        (Prime_Get_Config.Assume_RH, "riemann tab hypothesis on");
+      Prime_Set_Config ("assume_rh", "0");
+      --  Verbose digits: leading zeros and the Natural boundary.
+      Prime_Set_Config ("verbose", "1000000000");
+      AUnit.Assertions.Assert
+        (Prime_Get_Config.Verbose = 1_000_000_000, "verbose 10 digits");
+      Prime_Set_Config ("verbose", "0000000000");
+      AUnit.Assertions.Assert
+        (Prime_Get_Config.Verbose = 0, "verbose ten zeros");
+      Prime_Set_Config ("verbose", "00000000002");
+      AUnit.Assertions.Assert
+        (Prime_Get_Config.Verbose = 2, "verbose leading zeros");
+      Prime_Set_Config ("verbose", "2147483647");
+      AUnit.Assertions.Assert
+        (Prime_Get_Config.Verbose = Natural'Last, "verbose Natural'Last");
+      AUnit.Assertions.Assert
+        (Rejected ("verbose", "2147483648")
+         and then Prime_Get_Config.Verbose = Natural'Last,
+         "verbose above Natural'Last rejected");
+      Prime_Set_Config ("verbose", "0");
+      AUnit.Assertions.Assert
+        (Rejected ("no_such_key", "1") and then Prime_Get_Config.Verbose = 0,
+         "unknown key rejected");
    end Test_Prime_Set_Config;
 
    procedure Test_Uvsize (T : in out Test_Case'Class) is
@@ -343,6 +425,8 @@ package body Compat_Int is
         (T, Test_Prime_Get_Config'Access, "prime_get_config");
       Registration.Register_Routine
         (T, Test_Prime_Set_Config'Access, "prime_set_config");
+      Registration.Register_Routine
+        (T, Test_Config_Replay'Access, "config_replay");
       Registration.Register_Routine
         (T, Test_Uvsize'Access, "_uvsize");
       Registration.Register_Routine

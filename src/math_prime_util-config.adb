@@ -1,37 +1,62 @@
 with Ada.Characters.Handling;
-with Ada.Strings.Fixed;
 
 package body Math_Prime_Util.Config is
 
    type Key_Kind is (Key_Verbose, Key_Assume_RH, Key_Unknown);
 
-   --  Lower case, with spaces and underscores removed.
-   --  Used to match the key names of prime_set_config.
-   function Squash (S : String) return String is
-      Buf  : String (1 .. S'Length);
-      Last : Natural := 0;
+   function Lower (S : String) return String is
+      Buf : String (1 .. S'Length);
    begin
-      for C of S loop
-         if C /= ' ' and then C /= '_' then
-            Last := Last + 1;
-            Buf (Last) := Ada.Characters.Handling.To_Lower (C);
+      for I in S'Range loop
+         Buf (I - S'First + 1) := Ada.Characters.Handling.To_Lower (S (I));
+      end loop;
+      return Buf;
+   end Lower;
+
+   function Is_Space (C : Character) return Boolean is
+     (C in ' ' | ASCII.HT | ASCII.LF | ASCII.CR | ASCII.VT | ASCII.FF);
+
+   --  Port of the key test in prime_set_config (Util.pm):
+   --  /^(assume[_ ]?)?[ge]?rh$/ or /riemann\s*h/, on the lower case key.
+   function Is_RH_Name (L : String) return Boolean is
+      First : Natural := L'First;
+   begin
+      if L'Length >= 6 and then L (L'First .. L'First + 5) = "assume" then
+         First := L'First + 6;
+         if First <= L'Last and then L (First) in '_' | ' ' then
+            First := First + 1;
+         end if;
+      end if;
+      if L (First .. L'Last) = "rh" or else L (First .. L'Last) = "grh"
+        or else L (First .. L'Last) = "erh"
+      then
+         return True;
+      end if;
+      for I in L'First .. L'Last loop
+         if I + 6 <= L'Last and then L (I .. I + 6) = "riemann" then
+            declare
+               J : Natural := I + 7;
+            begin
+               while J <= L'Last and then Is_Space (L (J)) loop
+                  J := J + 1;
+               end loop;
+               if J <= L'Last and then L (J) = 'h' then
+                  return True;
+               end if;
+            end;
          end if;
       end loop;
-      return Buf (1 .. Last);
-   end Squash;
+      return False;
+   end Is_RH_Name;
 
-   --  Port of the key tests in prime_set_config (Util.pm):
-   --  /^(assume[_ ]?)?[ge]?rh$/ or /riemann\s*h/.
+   --  Port of the key tests in prime_set_config (Util.pm). The verbose
+   --  test is an exact match after lc, with no space or underscore removal.
    function Kind_Of (Key : String) return Key_Kind is
-      N : constant String := Squash (Key);
+      L : constant String := Lower (Key);
    begin
-      if N = "verbose" then
+      if L = "verbose" then
          return Key_Verbose;
-      elsif N = "rh" or else N = "grh" or else N = "erh"
-        or else N = "assumerh" or else N = "assumegrh"
-        or else N = "assumeerh"
-        or else Ada.Strings.Fixed.Index (N, "riemannh") /= 0
-      then
+      elsif Is_RH_Name (L) then
          return Key_Assume_RH;
       else
          return Key_Unknown;
@@ -40,6 +65,22 @@ package body Math_Prime_Util.Config is
 
    function Is_Digits (S : String) return Boolean is
      (for all C of S => C in '0' .. '9');
+
+   --  True when the digits S give a value that fits in Natural.
+   --  Leading zeros are allowed, so the digit count is not limited.
+   function Digits_Fit (S : String) return Boolean is
+      Acc : Natural := 0;
+      D   : Natural;
+   begin
+      for C of S loop
+         D := Character'Pos (C) - Character'Pos ('0');
+         if Acc > (Natural'Last - D) / 10 then
+            return False;
+         end if;
+         Acc := Acc * 10 + D;
+      end loop;
+      return True;
+   end Digits_Fit;
 
    --  Perl verbose values: digits, or a word starting with t, y, f, n.
    function Parse_Verbose (Value : String) return Natural is
@@ -82,7 +123,7 @@ package body Math_Prime_Util.Config is
      (case Kind_Of (Key) is
          when Key_Verbose =>
            Value /= "" and then
-           ((Is_Digits (Value) and then Value'Length <= 9)
+           ((Is_Digits (Value) and then Digits_Fit (Value))
             or else Value (Value'First) in
               't' | 'T' | 'y' | 'Y' | 'f' | 'F' | 'n' | 'N'),
          when Key_Assume_RH => True,
@@ -92,6 +133,12 @@ package body Math_Prime_Util.Config is
 
    procedure Prime_Set_Config (Key : String; Value : String) is
    begin
+      --  Checked at run time too: preconditions are off in release builds.
+      if not Is_Known_Key (Key) then
+         raise Config_Error with "Unknown or invalid configuration setting";
+      elsif not Is_Valid_Value (Key, Value) then
+         raise Config_Error with "Invalid setting for " & Key;
+      end if;
       case Kind_Of (Key) is
          when Key_Verbose =>
             Store.Set_Verbose (Parse_Verbose (Value));
