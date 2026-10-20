@@ -8,3 +8,4 @@ Reference and fixture shape inspected; implementing the core and test dispatch.
 Core written with wide modular products and explicit undefined results; adding fixture tests.
 Fixture replay and seeded laws written; focused test build started.
 Focused tests blocked: Alire tries to bootstrap its community index without network. Checking offline toolchain availability.
+Alire lacks an index and lockfiles here; cached toolchain and AUnit exist. Testing an offline local configuration under obj.
