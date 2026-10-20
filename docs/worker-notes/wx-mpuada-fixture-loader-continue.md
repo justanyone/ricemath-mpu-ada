@@ -10,3 +10,6 @@ Offline compilation now works. It exposed string operator visibility and short-c
 KIT NOTE, NOT FILE CONTENT: this output was shortened by the kit; the file on disk is whole; show a part with sed -n A,Bp FILE (kit removed -16 bytes)
 Focused tests are still pending after the compile fixes. Check the running process before the final gate; keep all offline configuration and cached build output under ignored obj/.
 Compilation succeeds, but the test runner did not finish promptly. Stopped it and reran with a short timeout and temporary progress output to isolate the runtime wait before the final gate.
+Concurrent test reproduced a real loader failure: GNAT rejects simultaneous default Text_IO opens of the same file. Use shared=no for independent read streams and keep task loading after activation so a failed reader reports instead of stal <<cut 16 chars by kit>>
+
+KIT NOTE, NOT FILE CONTENT: this output was shortened by the kit; the file on disk is whole; show a part with sed -n A,Bp FILE (kit removed -8 bytes)

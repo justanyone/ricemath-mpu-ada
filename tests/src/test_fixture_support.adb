@@ -107,11 +107,9 @@ package body Test_Fixture_Support is
 
       task body Reader is
       begin
-         Ada.Text_IO.Put_Line ("reader active");
          declare
             Cases : constant Case_Vectors.Vector := Load ("int");
          begin
-            Ada.Text_IO.Put_Line ("reader loaded");
             accept Get_Count (Count : out Natural) do
                Count := Natural (Cases.Length);
             end Get_Count;
@@ -122,7 +120,6 @@ package body Test_Fixture_Support is
       A, B : Natural;
    begin
       Assert (T.Name /= null, "test has a name");
-      Ada.Text_IO.Put_Line ("waiting for readers");
       First.Get_Count (A);
       Second.Get_Count (B);
       Assert (A = 14_560 and then B = A, "concurrent loads are independent");
