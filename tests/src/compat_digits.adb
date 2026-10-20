@@ -74,6 +74,15 @@ package body Compat_Digits is
             then
                Outside := True;
             end if;
+            if Func in "mulint" | "muladdint" | "mulsubint" |
+              "lshiftint" and then not C.Error
+            then
+               begin
+                  V := I128'Value (To_String (C.Result));
+               exception
+                  when Constraint_Error => Outside := True;
+               end;
+            end if;
             if Outside then
                goto Next_Row;
             end if;
@@ -161,15 +170,15 @@ package body Compat_Digits is
                O := Mulsubint (A (1), A (2), A (3));
             elsif Func = "lshiftint" then
                O := Lshiftint
-                 (A (1), (if C.Args.Length > 1 then Natural (A (2))
+                 (A (1), (if C.Args.Length > 1 then Integer (A (2))
                           else 1));
             elsif Func = "rshiftint" then
                O := Rshiftint
-                 (A (1), (if C.Args.Length > 1 then Natural (A (2))
+                 (A (1), (if C.Args.Length > 1 then Integer (A (2))
                           else 1));
             elsif Func = "rashiftint" then
                O := Rashiftint
-                 (A (1), (if C.Args.Length > 1 then Natural (A (2))
+                 (A (1), (if C.Args.Length > 1 then Integer (A (2))
                           else 1));
             elsif Func = "toint" then
                O := Toint (To_String (C.Args (1)));
@@ -205,16 +214,17 @@ package body Compat_Digits is
                  (Image (Reverse_Digits (U128 (abs A (1)), Base)));
             elsif Func = "is_palindrome" then
                Actual := To_Unbounded_String (Image (I128
-                 (Boolean'Pos (Is_Palindrome (U128 (abs A (1)), Base)))));
+                 (Boolean'Pos (Is_Palindrome (U128 (A (1)), Base)))));
             elsif Func = "is_harshad" then
                Actual := To_Unbounded_String (Image (I128
-                 (Boolean'Pos (Is_Harshad (U128 (abs A (1)), Base)))));
+                 (Boolean'Pos (A (1) >= 0 and then
+                    Is_Harshad (U128 (A (1)), Base)))));
             elsif Func = "digital_root" then
                Actual := To_Unbounded_String
-                 (Image (Digital_Root (U128 (abs A (1)), Base)));
+                 (Image (Digital_Root (U128 (A (1)), Base)));
             elsif Func = "mult_digital_root" then
                Actual := To_Unbounded_String
-                 (Image (Mult_Digital_Root (U128 (abs A (1)), Base)));
+                 (Image (Mult_Digital_Root (U128 (A (1)), Base)));
             elsif Func = "hammingweight" then
                Actual := To_Unbounded_String
                  (Image (I128 (Hammingweight (U128 (abs A (1))))));

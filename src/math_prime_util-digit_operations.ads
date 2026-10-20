@@ -33,7 +33,7 @@ package Math_Prime_Util.Digit_Operations with SPARK_Mode => On is
    --  Constraint_Error.
    function Fromdigits
      (Text : String; Base : U128 := 10) return U128
-     with Pre => Base in 2 .. 36,
+     with Pre => Base >= 2,
           Post => True;
 
    --  XS.xs: sumdigits. Sum the base digits.
@@ -196,19 +196,19 @@ package Math_Prime_Util.Digit_Operations with SPARK_Mode => On is
    --  strint.c: lshiftint (reference absent). Shift magnitude; undefined on
    --  overflow.
    function Lshiftint
-     (A : I128; Bits : Natural := 1) return Optional_I128
+     (A : I128; Bits : Integer := 1) return Optional_I128
      with Pre => True, Post => True;
 
    --  strint.c: rshiftint (reference absent). Shift magnitude; undefined on
    --  overflow.
    function Rshiftint
-     (A : I128; Bits : Natural := 1) return Optional_I128
+     (A : I128; Bits : Integer := 1) return Optional_I128
      with Pre => True, Post => True;
 
    --  strint.c: rashiftint (reference absent). Shift magnitude; undefined on
    --  overflow.
    function Rashiftint
-     (A : I128; Bits : Natural := 1) return Optional_I128
+     (A : I128; Bits : Integer := 1) return Optional_I128
      with Pre => True, Post => True;
 
    --  strint.c: toint (reference absent). Parse numeric text; truncate

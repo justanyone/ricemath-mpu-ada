@@ -48,7 +48,7 @@ package body Math_Prime_Util.Digit_Operations is
    function Fromdigits (Text : String; Base : U128 := 10) return U128 is
       N, D : U128 := 0;
    begin
-      if Base not in 2 .. 36 then
+      if Base < 2 then
          raise Constraint_Error with "invalid base";
       end if;
       for C of Text loop
@@ -362,7 +362,19 @@ package body Math_Prime_Util.Digit_Operations is
    end Cdivrem;
 
    function Divrem (A, B : I128) return Division_Result is
-     (Fdivrem (A, B));
+      D : Division_Result := Tdivrem (A, B);
+   begin
+      if D.Defined and then D.Remainder < 0 then
+         if B > 0 then
+            D.Quotient := D.Quotient - 1;
+            D.Remainder := D.Remainder + B;
+         else
+            D.Quotient := D.Quotient + 1;
+            D.Remainder := D.Remainder - B;
+         end if;
+      end if;
+      return D;
+   end Divrem;
 
    function Divint (A, B : I128) return Optional_I128 is
       D : constant Division_Result := Fdivrem (A, B);
@@ -386,10 +398,16 @@ package body Math_Prime_Util.Digit_Operations is
    end Cdivint;
 
    function Lshiftint
-     (A : I128; Bits : Natural := 1) return Optional_I128
+     (A : I128; Bits : Integer := 1) return Optional_I128
    is
       R : Optional_I128 := (True, A);
    begin
+      if Bits < 0 then
+         if Bits = Integer'First then
+            return (True, 0);
+         end if;
+         return Rshiftint (A, -Bits);
+      end if;
       if A = 0 then
          return R;
       end if;
@@ -404,22 +422,34 @@ package body Math_Prime_Util.Digit_Operations is
    end Lshiftint;
 
    function Rshiftint
-     (A : I128; Bits : Natural := 1) return Optional_I128
+     (A : I128; Bits : Integer := 1) return Optional_I128
    is
       R : I128 := A;
    begin
-      for I in 1 .. Natural'Min (Bits, 128) loop
+      if Bits < 0 then
+         if Bits = Integer'First then
+            return (if A = 0 then (True, 0) else (Defined => False));
+         end if;
+         return Lshiftint (A, -Bits);
+      end if;
+      for I in 1 .. Integer'Min (Bits, 128) loop
          R := R / 2;
       end loop;
       return (True, R);
    end Rshiftint;
 
    function Rashiftint
-     (A : I128; Bits : Natural := 1) return Optional_I128
+     (A : I128; Bits : Integer := 1) return Optional_I128
    is
       R : I128 := A;
    begin
-      for I in 1 .. Natural'Min (Bits, 128) loop
+      if Bits < 0 then
+         if Bits = Integer'First then
+            return (if A = 0 then (True, 0) else (Defined => False));
+         end if;
+         return Lshiftint (A, -Bits);
+      end if;
+      for I in 1 .. Integer'Min (Bits, 128) loop
          R := Fdivrem (R, 2).Quotient;
       end loop;
       return (True, R);
@@ -441,7 +471,7 @@ package body Math_Prime_Util.Digit_Operations is
       S : constant String := Clean
         (Ada.Strings.Fixed.Trim (Text, Ada.Strings.Both));
       L : constant String := Ada.Characters.Handling.To_Lower (S);
-      V : Long_Long_Float;
+
       Negative : Boolean := False;
       First : Integer := S'First;
    begin
@@ -470,8 +500,44 @@ package body Math_Prime_Util.Digit_Operations is
       if (for all C of S (First .. S'Last) => C in '0' .. '9') then
          return (True, I128'Value (S));
       end if;
-      V := Long_Long_Float'Value (S);
-      return (True, I128 (Long_Long_Float'Truncation (V)));
+      declare
+         Buffer : String (1 .. S'Length);
+         K : Natural := 0;
+         Point : Integer := -1;
+         Exponent : Integer := 0;
+         I : Integer := First;
+         Scale : Integer;
+         R : I128 := 0;
+      begin
+         while I <= S'Last loop
+            if S (I) in '0' .. '9' then
+               K := K + 1;
+               Buffer (K) := S (I);
+            elsif S (I) = '.' and Point = -1 then
+               Point := K;
+            elsif S (I) in 'e' | 'E' and K > 0 then
+               Exponent := Integer'Value (S (I + 1 .. S'Last));
+               exit;
+            else
+               return (Defined => False);
+            end if;
+            I := I + 1;
+         end loop;
+         if K = 0 then
+            return (Defined => False);
+         end if;
+         Scale := (if Point < 0 then K else Point) + Exponent;
+         if Scale > 39 then
+            return (Defined => False);
+         end if;
+         for J in 1 .. Scale loop
+            R := R * 10;
+            if J <= K then
+               R := R - (Character'Pos (Buffer (J)) - Character'Pos ('0'));
+            end if;
+         end loop;
+         return (True, (if Negative then R else -R));
+      end;
    exception
       when Constraint_Error =>
          return (Defined => False);
