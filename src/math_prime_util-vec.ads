@@ -1,5 +1,8 @@
 --  Signed integer vectors and sorted sets from MPU 0.75.
 package Math_Prime_Util.Vec with SPARK_Mode => On is
+   type I128 is range -(2 ** 127) .. 2 ** 127 - 1;
+   type Wide_Vector is array (Positive range <>) of I128;
+   type Unsigned_Vector is array (Positive range <>) of U64;
    type I64 is range -(2 ** 63) .. 2 ** 63 - 1;
    type Vector is array (Positive range <>) of I64;
 
@@ -147,5 +150,137 @@ package Math_Prime_Util.Vec with SPARK_Mode => On is
    function Is_Sumfree_Set (A : Vector) return Boolean
      with Pre => Is_Set (A),
           Post => (if A'Length = 0 then Is_Sumfree_Set'Result);
+
+   type Optional_Integer (Present : Boolean := False) is record
+      case Present is
+         when True => Value : I64;
+         when False => null;
+      end case;
+   end record;
+
+   --  XS.xs: vecsum. Widen unsigned sums to U128 rather than bigint.
+   function Vecsum (A : Unsigned_Vector) return U128
+     with Pre => True, Post => True;
+
+   --  XS.xs: vecsum. Signed sums use a checked 128-bit accumulator.
+   function Vecsum (A : Vector) return I128
+     with Pre => True, Post => (if A'Length = 0 then Vecsum'Result = 0);
+
+   --  XS.xs: vecprod. Raise Constraint_Error beyond signed 128 bits.
+   function Vecprod (A : Vector) return I128
+     with Pre => True, Post => (if A'Length = 0 then Vecprod'Result = 1);
+
+   --  XS.xs: vecprefixsum. Widen each running total to signed 128 bits.
+   function Vecprefixsum (A : Vector) return Wide_Vector
+     with Pre => True, Post => Vecprefixsum'Result'Length = A'Length;
+
+   --  XS.xs: vecmin/vecmax. Empty input returns an absent value.
+   function Vecmin (A : Vector) return Optional_Integer
+     with Pre => True, Post => Vecmin'Result.Present = (A'Length > 0);
+
+   --  XS.xs: vecmin/vecmax. Empty input returns an absent value.
+   function Vecmax (A : Vector) return Optional_Integer
+     with Pre => True, Post => Vecmax'Result.Present = (A'Length > 0);
+
+   --  XS.xs: vecreduce. Left fold; empty input returns absent.
+   function Vecreduce
+     (A : Vector; Op : not null access function (L, R : I64) return I64)
+      return Optional_Integer
+     with Pre => True, Post => Vecreduce'Result.Present = (A'Length > 0);
+
+   --  XS.xs: vecany. Short-circuit predicate evaluation in input order.
+   function Vecany
+     (A : Vector; Test : not null access function (V : I64) return Boolean)
+      return Boolean
+     with Pre => True, Post => True;
+
+   --  XS.xs: vecany. Short-circuit predicate evaluation in input order.
+   function Vecall
+     (A : Vector; Test : not null access function (V : I64) return Boolean)
+      return Boolean
+     with Pre => True, Post => True;
+
+   --  XS.xs: vecany. Short-circuit predicate evaluation in input order.
+   function Vecnone
+     (A : Vector; Test : not null access function (V : I64) return Boolean)
+      return Boolean
+     with Pre => True, Post => True;
+
+   --  XS.xs: vecany. Short-circuit predicate evaluation in input order.
+   function Vecnotall
+     (A : Vector; Test : not null access function (V : I64) return Boolean)
+      return Boolean
+     with Pre => True, Post => True;
+
+   --  XS.xs: vecfirst. First matching value, or absent.
+   function Vecfirst
+     (A : Vector; Test : not null access function (V : I64) return Boolean)
+      return Optional_Integer
+     with Pre => True, Post => (if A'Length = 0 then
+                                not Vecfirst'Result.Present);
+
+   --  XS.xs: vecfirstidx. Zero-based position, or -1 if absent.
+   function Vecfirstidx
+     (A : Vector; Test : not null access function (V : I64) return Boolean)
+      return I64
+     with Pre => True, Post => Vecfirstidx'Result >= -1;
+
+   --  XS.xs: vecextract. Set mask bits select zero-based positions.
+   --  Positions outside the vector are absent, as with Perl undef.
+   type Optional_Vector is array (Positive range <>) of Optional_Integer;
+   function Vecextract (A : Vector; Mask : U128) return Optional_Vector
+     with Pre => True, Post => Vecextract'Result'Length <= 128;
+
+   --  XS.xs: vecextract. Negative indices count from the end.
+   function Vecextract (A, Indices : Vector) return Optional_Vector
+     with Pre => True, Post => Vecextract'Result'Length = Indices'Length;
+
+   --  XS.xs: vecfreq. Sorted alternating values and occurrence counts.
+   function Vecfreq (A : Vector) return Vector
+     with Pre => A'Length <= Natural'Last / 2,
+          Post => Vecfreq'Result'Length mod 2 = 0;
+
+   --  XS.xs: vecslide. Apply scalar callback to adjacent pairs.
+   function Vecslide
+     (A : Vector; Op : not null access function (L, R : I64) return I64)
+      return Vector
+     with Pre => True,
+          Post => Vecslide'Result'Length = Natural'Max (A'Length, 1) - 1;
+
+   --  XS.xs: vecpairwise. Apply scalar callback through the shorter input.
+   function Vecpairwise
+     (A, B : Vector; Op : not null access function (L, R : I64) return I64)
+      return Vector
+     with Pre => True,
+          Post => Vecpairwise'Result'Length = Natural'Min
+                    (A'Length, B'Length);
+
+   --  XS.xs: vecwindow. Apply scalar callback to complete windows only.
+   function Vecwindow
+     (A : Vector; Step, Size : Positive;
+      Op : not null access function (Window : Vector) return I64)
+      return Vector
+     with Pre => True, Post => Vecwindow'Result'Length <= A'Length;
+
+   --  XS.xs: setbinop. Callback on each Cartesian pair; sorted unique result.
+   function Setbinop
+     (A, B : Vector; Op : not null access function (L, R : I64) return I64)
+      return Vector
+     with Pre => B'Length = 0 or else
+                    A'Length <= Natural'Last / B'Length,
+          Post => Is_Set (Setbinop'Result);
+
+   --  xs_set.c: type_of_sumset; XS.xs: sumset. Pair sums, sorted unique.
+   --  Raise Constraint_Error if a result is outside I64.
+   function Sumset (A, B : Vector) return Vector
+     with Pre => B'Length = 0 or else
+                    A'Length <= Natural'Last / B'Length,
+          Post => Is_Set (Sumset'Result);
+
+   --  XS.xs: sumset. One input means its sumset with itself.
+   function Sumset (A : Vector) return Vector
+     with Pre => A'Length = 0 or else
+                    A'Length <= Natural'Last / A'Length,
+          Post => Is_Set (Sumset'Result);
 
 end Math_Prime_Util.Vec;

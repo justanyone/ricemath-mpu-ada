@@ -1,5 +1,6 @@
 package body Math_Prime_Util.Vec is
-   type I128 is range -(2 ** 127) .. 2 ** 127 - 1;
+   use type U64;
+   use type U128;
 
    function Is_Set (A : Vector) return Boolean is
    begin
@@ -225,4 +226,285 @@ package body Math_Prime_Util.Vec is
       end loop;
       return True;
    end Is_Sumfree_Set;
+   function Vecsum (A : Unsigned_Vector) return U128 is
+      R : U128 := 0;
+   begin
+      for V of A loop
+         R := R + U128 (V);
+      end loop;
+      return R;
+   end Vecsum;
+
+   function Vecsum (A : Vector) return I128 is
+      R : I128 := 0;
+   begin
+      for V of A loop
+         R := R + I128 (V);
+      end loop;
+      return R;
+   end Vecsum;
+
+   function Vecprod (A : Vector) return I128 is
+      R : I128 := 1;
+   begin
+      --  A zero annihilates even a product whose intermediate value is large.
+      if (for some V of A => V = 0) then
+         return 0;
+      end if;
+      for V of A loop
+         R := R * I128 (V);
+      end loop;
+      return R;
+   end Vecprod;
+
+   function Vecprefixsum (A : Vector) return Wide_Vector is
+      R : Wide_Vector (1 .. A'Length);
+      Total : I128 := 0;
+   begin
+      for I in R'Range loop
+         Total := Total + I128 (A (A'First + I - 1));
+         R (I) := Total;
+      end loop;
+      return R;
+   end Vecprefixsum;
+
+   function Vecmin (A : Vector) return Optional_Integer is
+      R : Optional_Integer;
+   begin
+      for V of A loop
+         if not R.Present or else V < R.Value then
+            R := (Present => True, Value => V);
+         end if;
+      end loop;
+      return R;
+   end Vecmin;
+
+   function Vecmax (A : Vector) return Optional_Integer is
+      R : Optional_Integer;
+   begin
+      for V of A loop
+         if not R.Present or else V > R.Value then
+            R := (Present => True, Value => V);
+         end if;
+      end loop;
+      return R;
+   end Vecmax;
+
+   function Vecreduce
+     (A : Vector; Op : not null access function (L, R : I64) return I64)
+      return Optional_Integer
+   is
+      R : Optional_Integer;
+   begin
+      for V of A loop
+         if R.Present then
+            R.Value := Op (R.Value, V);
+         else
+            R := (Present => True, Value => V);
+         end if;
+      end loop;
+      return R;
+   end Vecreduce;
+
+   function Vecany
+     (A : Vector; Test : not null access function (V : I64) return Boolean)
+      return Boolean
+   is
+   begin
+      for V of A loop
+         if Test (V) then
+            return True;
+         end if;
+      end loop;
+      return False;
+   end Vecany;
+
+   function Vecall
+     (A : Vector; Test : not null access function (V : I64) return Boolean)
+      return Boolean
+   is
+   begin
+      for V of A loop
+         if not Test (V) then
+            return False;
+         end if;
+      end loop;
+      return True;
+   end Vecall;
+
+   function Vecnone
+     (A : Vector; Test : not null access function (V : I64) return Boolean)
+      return Boolean
+   is
+   begin
+      for V of A loop
+         if Test (V) then
+            return False;
+         end if;
+      end loop;
+      return True;
+   end Vecnone;
+
+   function Vecnotall
+     (A : Vector; Test : not null access function (V : I64) return Boolean)
+      return Boolean
+   is
+   begin
+      for V of A loop
+         if not Test (V) then
+            return True;
+         end if;
+      end loop;
+      return False;
+   end Vecnotall;
+
+   function Vecfirst
+     (A : Vector; Test : not null access function (V : I64) return Boolean)
+      return Optional_Integer
+   is
+   begin
+      for V of A loop
+         if Test (V) then
+            return (Present => True, Value => V);
+         end if;
+      end loop;
+      return (Present => False);
+   end Vecfirst;
+
+   function Vecfirstidx
+     (A : Vector; Test : not null access function (V : I64) return Boolean)
+      return I64
+   is
+   begin
+      for I in A'Range loop
+         if Test (A (I)) then
+            return I64 (I - A'First);
+         end if;
+      end loop;
+      return -1;
+   end Vecfirstidx;
+
+   function Vecextract (A, Indices : Vector) return Optional_Vector is
+      R : Optional_Vector (1 .. Indices'Length);
+      J : I128;
+   begin
+      for I in R'Range loop
+         J := I128 (Indices (Indices'First + I - 1));
+         if J < 0 then
+            J := J + I128 (A'Length);
+         end if;
+         if J >= 0 and then J < I128 (A'Length) then
+            R (I) := (True, A (A'First + Natural (J)));
+         end if;
+      end loop;
+      return R;
+   end Vecextract;
+
+   function Vecextract (A : Vector; Mask : U128) return Optional_Vector is
+      R : Optional_Vector (1 .. 128);
+      Bits : U128 := Mask;
+      N : Natural := 0;
+      I : Natural := 0;
+   begin
+      while Bits /= 0 loop
+         if Bits mod 2 = 1 then
+            N := N + 1;
+            if I < A'Length then
+               R (N) := (True, A (A'First + I));
+            end if;
+         end if;
+         Bits := Bits / 2;
+         I := I + 1;
+      end loop;
+      return R (1 .. N);
+   end Vecextract;
+
+   function Vecfreq (A : Vector) return Vector is
+      S : constant Vector := Vecsort (A);
+      R : Vector (1 .. A'Length * 2);
+      N : Natural := 0;
+   begin
+      for V of S loop
+         if N > 0 and then R (N - 1) = V then
+            R (N) := R (N) + 1;
+         else
+            R (N + 1) := V;
+            R (N + 2) := 1;
+            N := N + 2;
+         end if;
+      end loop;
+      return R (1 .. N);
+   end Vecfreq;
+
+   function Vecslide
+     (A : Vector; Op : not null access function (L, R : I64) return I64)
+      return Vector
+   is
+      R : Vector (1 .. Natural'Max (A'Length, 1) - 1);
+   begin
+      for I in R'Range loop
+         R (I) := Op (A (A'First + I - 1), A (A'First + I));
+      end loop;
+      return R;
+   end Vecslide;
+
+   function Vecpairwise
+     (A, B : Vector; Op : not null access function (L, R : I64) return I64)
+      return Vector
+   is
+      R : Vector (1 .. Natural'Min (A'Length, B'Length));
+   begin
+      for I in R'Range loop
+         R (I) := Op (A (A'First + I - 1), B (B'First + I - 1));
+      end loop;
+      return R;
+   end Vecpairwise;
+
+   function Vecwindow
+     (A : Vector; Step, Size : Positive;
+      Op : not null access function (Window : Vector) return I64)
+      return Vector
+   is
+      N : constant Natural :=
+        (if A'Length < Size then 0 else (A'Length - Size) / Step + 1);
+      R : Vector (1 .. N);
+      J : Natural;
+   begin
+      for I in R'Range loop
+         J := A'First + (I - 1) * Step;
+         R (I) := Op (A (J .. J + Size - 1));
+      end loop;
+      return R;
+   end Vecwindow;
+
+   function Setbinop
+     (A, B : Vector; Op : not null access function (L, R : I64) return I64)
+      return Vector
+   is
+      R : Vector (1 .. A'Length * B'Length);
+      N : Natural := 0;
+   begin
+      for V of A loop
+         for W of B loop
+            N := N + 1;
+            R (N) := Op (V, W);
+         end loop;
+      end loop;
+      return Toset (R);
+   end Setbinop;
+
+   function Sumset (A, B : Vector) return Vector is
+      R : Vector (1 .. A'Length * B'Length);
+      N : Natural := 0;
+   begin
+      for V of A loop
+         for W of B loop
+            N := N + 1;
+            R (N) := I64 (I128 (V) + I128 (W));
+         end loop;
+      end loop;
+      return Toset (R);
+   end Sumset;
+
+   function Sumset (A : Vector) return Vector is (Sumset (A, A));
 end Math_Prime_Util.Vec;
