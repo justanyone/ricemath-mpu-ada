@@ -12,3 +12,9 @@ Offline build works after selecting cached compiler versions in local Alire sett
 
 KIT NOTE, NOT FILE CONTENT: this output was shortened by the kit; the file on disk is whole; show a part with sed -n A,Bp FILE (kit removed -1 bytes)
 All 63 tests passed before extraction replay. Added opaque-token extraction replay; negative mask fixture requires checking its expected ERROR. Gate is running with local offline configuration.
+Final scope: added every missing named operation with scalar closure APIs, signed I128 arithmetic and U128 unsigned sum, optional extraction values, bitmap MEX and validation regressions. Full-width vector/set fixtures still exceed the sign <<cut 167 chars by kit>>
+
+KIT NOTE, NOT FILE CONTENT: this output was shortened by the kit; the file on disk is whole; show a part with sed -n A,Bp FILE (kit removed 142 bytes)
+Final validation: tools/gate.sh printed == gate: green; AUnit reported 64/64 successful, zero failures and zero errors. This used an ignored local Alire configuration and temporary cached-AUnit path pin; the original tests/alire.toml is res <<cut 187 chars by kit>>
+
+KIT NOTE, NOT FILE CONTENT: this output was shortened by the kit; the file on disk is whole; show a part with sed -n A,Bp FILE (kit removed 162 bytes)
