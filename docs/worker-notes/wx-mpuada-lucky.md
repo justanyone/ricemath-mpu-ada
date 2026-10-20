@@ -8,3 +8,4 @@ Focused compile found missing U64 operator visibility; fixed it and reran.
 Fixtures pass for nine functions. Count fixtures also require a two-bound overload.
 Ported linear interpolation and Ridder refinement from inverse_interpolate.c.
 All 134 tests passed after the count overload. Gate is running with full interpolation.
+Added the reference bitmask126 sieve with its prefilter table and count tree.

@@ -1,4 +1,5 @@
 with Ada.Numerics.Long_Elementary_Functions;
+with Interfaces;
 
 package body Math_Prime_Util.Families is
    use Ada.Numerics.Long_Elementary_Functions;
@@ -34,7 +35,7 @@ package body Math_Prime_Util.Families is
    end Small_Count;
 
    --  _small_lucky_sieve32: prefilter through 13, then compact deletions.
-   function Sieve (N : U64) return Vector is
+   function Small_Sieve (N : U64) return Vector is
       V : Vector;
       I : U64 := 1;
       C13 : Natural := 0;
@@ -96,7 +97,155 @@ package body Math_Prime_Util.Families is
       end if;
       V.Set_Length (Ada.Containers.Count_Type (Size));
       return V;
-   end Sieve;
+   end Small_Sieve;
+
+   --  _bitmask126_sieve and ds_bitmask126.h: 32 bits per 126 integers.
+   --  Count levels group 8 words, then 16 blocks, then groups of 8.
+   function Bitmask_Sieve (N : U64) return Vector is
+      use type Interfaces.Unsigned_32;
+      subtype Word is Interfaces.Unsigned_32;
+      package Word_Vectors is new Ada.Containers.Vectors
+        (Index_Type => Natural, Element_Type => Word);
+      Data : Word_Vectors.Vector;
+      Tree : array (Natural range 0 .. 14) of Vector;
+      Offset : constant array (Natural range 0 .. 31) of U64 :=
+        [1, 3, 7, 9, 13, 15, 21, 25, 31, 33, 37, 43, 45, 49, 51, 55,
+         63, 67, 69, 73, 75, 79, 85, 87, 93, 97, 99, 105, 109, 111,
+         115, 117];
+      Mask5 : constant array (Natural range 0 .. 25) of Word :=
+        [2334495963, 2261929142, 1169344621, 2204739155, 2727961910,
+         1639207725, 3513561243, 2430232978, 1754683725, 3630970059,
+         3025873062, 1278646881, 3658323539, 3055177010, 1830209833,
+         3406669457, 3054200212, 1837519692, 1531293898, 650340770,
+         757258597, 2606838995, 2530306226, 1169218145, 3408442969,
+         11572];
+      Counts : array (Small'Range) of Natural := [others => 0];
+      Words : constant Natural := Natural (N / 126 + (if N mod 126 /= 0 then 1 else 0));
+      Top : Natural := 2;
+      Size : U64 := 0;
+      I : U64 := 1;
+      M : Natural := 0;
+      Last : Natural := 5;
+      Level, Skip, Index : U64;
+      W, Bit, K, Width : Natural;
+      Keep : Boolean;
+      Result : Vector;
+
+      function Fanout (L : Natural) return Natural is
+        (if L = 2 then 16 else 8);
+
+      procedure Update (Wi : Natural; Adding : Boolean) is
+         J : Natural := Wi;
+         Value : U64;
+      begin
+         for L in 0 .. Top loop
+            Value := Tree (L).Element (J);
+            Tree (L).Replace_Element
+              (J, (if Adding then Value + 1 else Value - 1));
+            J := J / Fanout (L + 1);
+         end loop;
+         Size := (if Adding then Size + 1 else Size - 1);
+      end Update;
+
+      procedure Find (Rank : U64; Wi, Bi : out Natural) is
+         R : U64 := Rank;
+         J : Natural := 0;
+      begin
+         for L in reverse 0 .. Top loop
+            while R >= Tree (L).Element (J) loop
+               R := R - Tree (L).Element (J);
+               J := J + 1;
+            end loop;
+            if L > 0 then
+               J := J * Fanout (L);
+            end if;
+         end loop;
+         Wi := J;
+         Bi := 0;
+         loop
+            if (Data.Element (Wi) and Interfaces.Shift_Left (1, Bi)) /= 0
+            then
+               exit when R = 0;
+               R := R - 1;
+            end if;
+            Bi := Bi + 1;
+         end loop;
+      end Find;
+   begin
+      Data.Set_Length (Ada.Containers.Count_Type (Words), 0);
+      Tree (0).Set_Length (Ada.Containers.Count_Type (Words), 0);
+      Width := Words;
+      for L in 1 .. 14 loop
+         Width := (Width + Fanout (L) - 1) / Fanout (L);
+         Tree (L).Set_Length (Ada.Containers.Count_Type (Width), 0);
+         if L >= 2 and then (Width + 7) / 8 < 3 then
+            Top := L;
+            exit;
+         end if;
+      end loop;
+      while Small (Last) <
+        (if N <= 200_000_000 then 21 elsif N <= 2 ** 32 - 1 then 25 else 87)
+      loop
+         Last := Last + 1;
+      end loop;
+      while I <= N loop
+         if (Mask5 (M / 32) and
+             Interfaces.Shift_Left (1, M mod 32)) /= 0
+         then
+            Keep := True;
+            for L in 5 .. Last loop
+               Counts (L) := Counts (L) + 1;
+               if Counts (L) = Natural (Small (L)) then
+                  Counts (L) := 0;
+                  Keep := False;
+                  exit;
+               end if;
+            end loop;
+            if Keep then
+               W := Natural (I / 126);
+               K := Natural (I mod 126);
+               Bit := 0;
+               while Offset (Bit) /= U64 (K) loop
+                  Bit := Bit + 1;
+               end loop;
+               Data.Replace_Element
+                 (W, Data.Element (W) or Interfaces.Shift_Left (1, Bit));
+               Update (W, True);
+            end if;
+         end if;
+         exit when N - I < 2;
+         I := I + 2;
+         M := (M + 1) mod 819;
+      end loop;
+      Level := U64 (Last + 1);
+      while Level < Size loop
+         Find (Level, W, Bit);
+         Skip := U64 (W) * 126 + Offset (Bit) - 1;
+         exit when Skip >= Size;
+         Index := Skip;
+         while Index < Size loop
+            Find (Index, W, Bit);
+            Data.Replace_Element
+              (W, Data.Element (W) and not Interfaces.Shift_Left (1, Bit));
+            Update (W, False);
+            Index := Index + Skip;
+         end loop;
+         Level := Level + 1;
+      end loop;
+      Result.Reserve_Capacity (Ada.Containers.Count_Type (Size));
+      for J in Data.First_Index .. Data.Last_Index loop
+         for B in 0 .. 31 loop
+            if (Data.Element (J) and Interfaces.Shift_Left (1, B)) /= 0
+            then
+               Result.Append (U64 (J) * 126 + Offset (B));
+            end if;
+         end loop;
+      end loop;
+      return Result;
+   end Bitmask_Sieve;
+
+   function Sieve (N : U64) return Vector is
+     (if N <= 240_000 then Small_Sieve (N) else Bitmask_Sieve (N));
 
    function Lucky_Numbers (Low, High : U64) return Vector is
       V : Vector;
