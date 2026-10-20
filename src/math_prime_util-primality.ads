@@ -142,7 +142,8 @@ package Math_Prime_Util.Primality with SPARK_Mode => On is
    function Is_Frobenius_Underwood_Pseudoprime
      (N : U64) return Boolean
      with Pre => True,
-          Post => (if N < 2 then not Is_Frobenius_Underwood_Pseudoprime'Result);
+          Post => (if N < 2 then
+             not Is_Frobenius_Underwood_Pseudoprime'Result);
 
    --  util.c: is_catalan_pseudoprime.
    --  Native predicate; invalid parameters raise Constraint_Error.

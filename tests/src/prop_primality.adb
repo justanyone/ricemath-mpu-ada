@@ -58,6 +58,18 @@ package body Prop_Primality is
               (Is_Lucas_Pseudoprime (P) and
                Is_Strong_Lucas_Pseudoprime (P) and
                Is_Extra_Strong_Lucas_Pseudoprime (P), "prime Lucas law");
+            AUnit.Assertions.Assert
+              (Is_Perrin_Pseudoprime (P)
+               and Is_Perrin_Pseudoprime (P, 1)
+               and Is_Perrin_Pseudoprime (P, 2)
+               and Is_Perrin_Pseudoprime (P, 3), "prime Perrin law");
+            AUnit.Assertions.Assert
+              (Is_Frobenius_Pseudoprime (P)
+               and Is_Frobenius_Khashin_Pseudoprime (P)
+               and Is_Frobenius_Underwood_Pseudoprime (P),
+               "prime Frobenius laws");
+            AUnit.Assertions.Assert
+              (Is_Catalan_Pseudoprime (P), "prime Catalan law");
          end if;
       end loop;
    end Laws;

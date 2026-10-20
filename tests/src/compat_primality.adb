@@ -93,6 +93,9 @@ package body Compat_Primality is
          end if;
          return Boolean'Pos (Is_Perrin_Pseudoprime (N, Natural (A)));
       elsif F = "is_frobenius_pseudoprime" then
+         if Natural (C.Args.Length) = 2 then
+            raise Constraint_Error with "both P and Q are required";
+         end if;
          if Natural (C.Args.Length) = 3 then
             return Boolean'Pos (Is_Frobenius_Pseudoprime
               (N, Interfaces.Integer_64'Value (To_String (C.Args (2))),

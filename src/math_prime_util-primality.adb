@@ -34,6 +34,7 @@ package body Math_Prime_Util.Primality is
       903, 109, 12454, 1985, 8065, 17637, 1645, 1404, 6106, 3661,
       328, 6160, 1602, 6601, 1491, 8657);
 
+   function Jacobi (Input : Int.I128; Modulus : U64) return Integer;
    function Jacobi (Input : Int.I128; Modulus : U64) return Integer is
       A : U64 := U64 (abs Input);
       N : U64 := Modulus;
@@ -160,6 +161,7 @@ package body Math_Prime_Util.Primality is
         (X = N - 1 and R in 1 | 3 | 5);
    end Is_Euler_Plumb_Pseudoprime;
 
+   function Extra_Parameter (N, Increment : U64) return Lucas.I64;
    function Extra_Parameter (N, Increment : U64) return Lucas.I64 is
       P : U64 := 3;
       D, G : U64;
@@ -186,6 +188,7 @@ package body Math_Prime_Util.Primality is
       return Lucas.I64 (P mod N);
    end Extra_Parameter;
 
+   function Lucas_Test (N : U64; Strength : Natural) return Boolean;
    function Lucas_Test (N : U64; Strength : Natural) return Boolean is
       D : Lucas.I64 := 5;
       P : Lucas.I64 := 1;
