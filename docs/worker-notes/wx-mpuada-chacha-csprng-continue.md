@@ -1,0 +1,1 @@
+- Continue run: finish random family (compat/prop tests, signed/bigint fixture coverage, SPARK notes). Checking state first.
