@@ -1,12 +1,12 @@
 with Ada.IO_Exceptions;
 with Interfaces.C;
 with System;
+with Math_Prime_Util.Random_Core;
 
 package body Math_Prime_Util.Random is
    use Interfaces;
    use type Interfaces.C.long;
-   subtype U32 is Unsigned_32;
-   type Words is array (Natural range 0 .. 15) of U32;
+   use Math_Prime_Util.Random_Core;
 
    function Getrandom
      (Buffer : System.Address; Length : Interfaces.C.size_t;
@@ -15,10 +15,6 @@ package body Math_Prime_Util.Random is
 
    procedure Wipe (Buffer : System.Address; Length : Interfaces.C.size_t)
      with Import, Convention => C, External_Name => "explicit_bzero";
-
-   function Load (Data : String; Offset : Natural) return U32;
-   procedure Store (Data : in out String; Offset : Natural; V : U32);
-   procedure Quarter (A, B, C, D : in out U32);
 
    function Entropy_Bytes (Count : Natural) return String is
       Result : String (1 .. Count);
@@ -35,32 +31,6 @@ package body Math_Prime_Util.Random is
       end loop;
       return Result;
    end Entropy_Bytes;
-
-   function Load (Data : String; Offset : Natural) return U32 is
-      R : U32 := 0;
-   begin
-      for J in 0 .. 3 loop
-         R := R or Shift_Left
-           (U32 (Character'Pos (Data (Data'First + Offset + J))), 8 * J);
-      end loop;
-      return R;
-   end Load;
-
-   procedure Store (Data : in out String; Offset : Natural; V : U32) is
-   begin
-      for J in 0 .. 3 loop
-         Data (Data'First + Offset + J) :=
-           Character'Val (Shift_Right (V, 8 * J) and 255);
-      end loop;
-   end Store;
-
-   procedure Quarter (A, B, C, D : in out U32) is
-   begin
-      A := A + B; D := Rotate_Left (D xor A, 16);
-      C := C + D; B := Rotate_Left (B xor C, 12);
-      A := A + B; D := Rotate_Left (D xor A, 8);
-      C := C + D; B := Rotate_Left (B xor C, 7);
-   end Quarter;
 
    protected Generator is
       procedure Seed (Data : String);
@@ -79,36 +49,8 @@ package body Math_Prime_Util.Random is
    protected body Generator is
       procedure Seed (Data : String) is
          Key : String (1 .. 40) := [others => Character'Val (0)];
-         Rng : U32 := 0;
-         Inc : U32;
-         A, B, C, D, Ignore : U32;
-         function Next return U32;
-         function Next return U32 is
-            Old : constant U32 := Rng;
-            Word : U32;
-         begin
-            Rng := Rng * 747_796_405 + Inc;
-            Word := (Shift_Right (Old, Natural (Shift_Right (Old, 28)) + 4)
-                     xor Old) * 277_803_737;
-            return Shift_Right (Word, 22) xor Word;
-         end Next;
       begin
-         for I in 1 .. Natural'Min (Data'Length, 40) loop
-            Key (I) := Data (Data'First + I - 1);
-         end loop;
-         if Data'Length < 40 then
-            A := Load (Key, 0); B := Load (Key, 4);
-            C := Load (Key, 8); D := Load (Key, 12);
-            Inc := Shift_Left (B, 1) or 1;
-            Ignore := Next;
-            Rng := Rng + A; Ignore := Next;
-            Rng := Rng xor C; Ignore := Next;
-            Rng := Rng xor D; Ignore := Next;
-            for I in (Data'Length + 3) / 4 .. 9 loop
-               Ignore := Next;
-               Store (Key, 4 * I, Ignore);
-            end loop;
-         end if;
+         Expand_Seed (Data, Key);
          State (0 .. 3) :=
            [16#6170_7865#, 16#3320_646E#, 16#7962_2D32#, 16#6B20_6574#];
          for I in 0 .. 7 loop
@@ -119,30 +61,11 @@ package body Math_Prime_Util.Random is
          Position := 64;
          Buffer := [others => Character'Val (0)];
          Wipe (Key'Address, 40);
-         Wipe (Rng'Address, 4);
-         Wipe (Inc'Address, 4);
       end Seed;
 
       procedure Refill is
-         X : Words := State;
       begin
-         for Round in 1 .. 10 loop
-            Quarter (X (0), X (4), X (8), X (12));
-            Quarter (X (1), X (5), X (9), X (13));
-            Quarter (X (2), X (6), X (10), X (14));
-            Quarter (X (3), X (7), X (11), X (15));
-            Quarter (X (0), X (5), X (10), X (15));
-            Quarter (X (1), X (6), X (11), X (12));
-            Quarter (X (2), X (7), X (8), X (13));
-            Quarter (X (3), X (4), X (9), X (14));
-         end loop;
-         for I in X'Range loop
-            Store (Buffer, 4 * I, X (I) + State (I));
-         end loop;
-         State (12) := State (12) + 1;
-         if State (12) = 0 then
-            State (13) := State (13) + 1;
-         end if;
+         Block (State, Buffer);
          Position := 0;
       end Refill;
 

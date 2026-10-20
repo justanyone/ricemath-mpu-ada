@@ -10,3 +10,4 @@ Local index resolves AUnit offline, but Alire still cannot determine compiler ve
 Compiler executable works (GNAT 16.1.0); Alire requires toolchain release metadata in its isolated index. Adding cached metadata to the temporary obj index.
 Isolated offline toolchain selection succeeded; focused random test build is running with the new bigint replay assertions.
 Bigint overload exposed an ambiguous zero-bit property expression; qualified the native result explicitly and reran focused tests.
+Native properties now disambiguate overloaded results. Preparing a SPARK arithmetic core so OS I/O and secret wiping remain outside the proof boundary.
