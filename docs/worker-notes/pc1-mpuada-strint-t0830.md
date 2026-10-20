@@ -14,3 +14,5 @@ Offline Alire has no index and cannot resolve AUnit, although its release is cac
 Full bigint fixture replay wired before the existing native-tier replay; no bigint rows are skipped by the new pass.
 Bigint replay is written. Offline setup still cannot select cached toolchains; trying external compiler discovery and a local AUnit source copy.
 Using the installed toolchain cache with a worktree-local AUnit copy; generated build files stay under this worktree.
+Created local index metadata from installed tools; validating bigint compilation and fixtures next.
+Local index resolved the compiler and AUnit offline. About five minutes remain; prioritize compiling, fixture failures, and gate evidence.
