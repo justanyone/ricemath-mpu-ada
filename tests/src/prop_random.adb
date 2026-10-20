@@ -79,7 +79,7 @@ package body Prop_Random is
       AUnit.Assertions.Assert (Raised, "bits precondition");
       Srand (42);
       AUnit.Assertions.Assert
-        (Urandomm (0) = 0 and then Urandomm (1) = 0 and then
+        (Urandomm (1) = 0 and then
          Urandomb (0) = 0 and then Urandomr (9, 9) = 9 and then
          Random_Bytes (0)'Length = 0 and then Irand = 445_265_827,
          "seed 42: degenerate calls consume no bytes");

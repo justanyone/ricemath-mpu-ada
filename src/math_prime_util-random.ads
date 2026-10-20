@@ -51,10 +51,10 @@ package Math_Prime_Util.Random is
    function Urandomb (Bits : Natural) return U64
      with Pre => Bits <= 64,
           Post => (if Bits < 64 then Urandomb'Result < 2 ** Bits);
-   --  Return a uniform integer in [0, Modulus), or zero for Modulus <= 1.
+   --  Return a uniform integer in [0, Modulus), or zero for Modulus = 1.
    --  C: csprng.c, urandomm32 and urandomm64 (OpenBSD rejection method).
    function Urandomm (Modulus : U64) return U64
-     with Pre => True,
+     with Pre => Modulus > 0,
           Post => (if Modulus <= 1 then Urandomm'Result = 0
                    else Urandomm'Result < Modulus);
    --  Return a uniform integer in the inclusive interval Low .. High.

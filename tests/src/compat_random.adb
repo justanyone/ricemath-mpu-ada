@@ -1,4 +1,5 @@
 with AUnit.Assertions;
+with Ada.Assertions;
 with AUnit.Test_Cases;
 with Ada.Strings.Fixed;
 with Ada.Strings.Unbounded;
@@ -59,6 +60,7 @@ package body Compat_Random is
       Count : Natural := 0;
       Dummy : Unbounded_String;
       Value, Bound, Low, High : U64;
+      Raised : Boolean;
       Plain : constant String := Decode
         ("4e6f772049e280996d206e6f7420676f6e6e61206d616b652061206c6f74" &
          "206f66206578747261766167616e7420636c61696d7320666f7220746869" &
@@ -87,7 +89,16 @@ package body Compat_Random is
             if Selected then
                Csrand (Decode (To_String (C.Args (1))));
                Count := Count + 1;
-               if F = "urandomb" then
+               if C.Error and then F = "urandomm" then
+                  Raised := False;
+                  begin
+                     Value := Urandomm (0);
+                  exception
+                     when Constraint_Error | Ada.Assertions.Assertion_Error =>
+                        Raised := True;
+                  end;
+                  AUnit.Assertions.Assert (Raised, "zero modulus rejected");
+               elsif F = "urandomb" then
                   --  Bigint_Urandomb: the Perl bigint wrapper exceeds U64.
                   if Natural'Value (To_String (C.Args (2))) <= 64 then
                      Value := Urandomb

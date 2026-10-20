@@ -257,6 +257,9 @@ package body Math_Prime_Util.Random is
 
    function Urandomb (Bits : Natural) return U64 is
    begin
+      if Bits > 64 then
+         raise Constraint_Error with "urandomb exceeds 64 bits";
+      end if;
       if Bits = 0 then
          return 0;
       elsif Bits <= 32 then
@@ -269,12 +272,18 @@ package body Math_Prime_Util.Random is
    function Urandomm (Modulus : U64) return U64 is
       Value : U64;
    begin
+      if Modulus = 0 then
+         raise Constraint_Error with "urandomm requires positive modulus";
+      end if;
       Generator.Bounded (Modulus, Value);
       return Value;
    end Urandomm;
 
    function Urandomr (Low, High : U64) return U64 is
    begin
+      if Low > High then
+         raise Constraint_Error with "urandomr requires ordered bounds";
+      end if;
       if Low = 0 and then High = U64'Last then
          return Irand64;
       end if;
