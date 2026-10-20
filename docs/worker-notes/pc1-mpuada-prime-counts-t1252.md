@@ -9,3 +9,6 @@ Added six analytic APIs and both Chebyshev APIs plus individual fixture tests. R
 Focused test blocked before compilation: Alire has no configured offline community index and DNS is unavailable. Checking installed toolchain locations; no dependency or tooling files changed.
 About five minutes remain. Offline Alire configuration now works, but AUnit is unresolved without an index. Attempting to use the preinstalled AUnit project through GPR_PROJECT_PATH; no test result yet.
 Copied installed AUnit into ignored obj/ to keep all build writes in this worktree. Added count/nth inverse, bound and phi parity properties. Added native Chebyshev endpoint constants from real.c.
+First validation compiled and ran 138 tests: 136 passed. Found a copied commented-out nth-upper coefficient branch and double-rounded inverse-R at 1e14; correcting both before the final gate. The runner ignores the filter and executes the s <<cut 5 chars by kit>>
+
+KIT NOTE, NOT FILE CONTENT: this output was shortened by the kit; the file on disk is whole; show a part with sed -n A,Bp FILE (kit removed -18 bytes)
