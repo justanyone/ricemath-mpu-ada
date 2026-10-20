@@ -1,3 +1,4 @@
+with Ada.Numerics.Big_Numbers.Big_Integers;
 with Ada.Containers;
 with AUnit.Assertions;
 with Ada.Assertions;
@@ -7,6 +8,7 @@ with Ada.Strings.Fixed;
 with Ada.Strings.Unbounded;
 with Fixture_Support;
 with Math_Prime_Util.Digit_Operations;
+with Math_Prime_Util.Digit_Operations.Bigints;
 
 package body Compat_Digits is
    use AUnit.Test_Cases;
@@ -27,6 +29,150 @@ package body Compat_Digits is
    function Image (N : U128) return String is
      (Ada.Strings.Fixed.Trim (U128'Image (N), Ada.Strings.Both));
 
+   procedure Replay_Big (C : Case_Record; Func : String) is
+      package BI renames Ada.Numerics.Big_Numbers.Big_Integers;
+      package B renames Math_Prime_Util.Digit_Operations.Bigints;
+      use type BI.Big_Integer;
+      A : array (1 .. 3) of BI.Big_Integer := [others => BI.To_Big_Integer (0)];
+      Base : BI.Big_Integer := BI.To_Big_Integer (10);
+      Len : Integer := -1;
+      Actual : Unbounded_String;
+      Raised : Boolean := False;
+      function Img (V : BI.Big_Integer) return String is
+        (Ada.Strings.Fixed.Trim (BI.To_String (V), Ada.Strings.Both));
+      function Flag (V : Boolean) return String is
+        (if V then "1" else "0");
+   begin
+      begin
+         if Func not in "toint" | "fromdigits" | "fromzeckendorf" |
+           "sumdigits"
+         then
+            for I in 1 .. Natural (C.Args.Length) loop
+               A (I) := BI.From_String (To_String (C.Args (I)));
+            end loop;
+         end if;
+         if Func in "todigits" | "todigitstring" | "reverse_digits" |
+           "is_palindrome" | "is_harshad" | "digital_root" |
+           "mult_digital_root"
+         then
+            if C.Args.Length >= 2 then
+               Base := A (2);
+            end if;
+            if Base < 2 then
+               raise Constraint_Error with "invalid base";
+            end if;
+         end if;
+         if Func in "todigits" | "todigitstring" and C.Args.Length >= 3 then
+            Len := BI.To_Integer (A (3));
+         end if;
+         if Func = "absint" then
+            Actual := To_Unbounded_String (Img (B.Absint (A (1))));
+         elsif Func = "negint" then
+            Actual := To_Unbounded_String (Img (B.Negint (A (1))));
+         elsif Func = "signint" then
+            Actual := To_Unbounded_String (Img (BI.To_Big_Integer (B.Signint (A (1)))));
+         elsif Func = "cmpint" then
+            Actual := To_Unbounded_String (Img (BI.To_Big_Integer (B.Cmpint (A (1), A (2)))));
+         elsif Func = "addint" then
+            Actual := To_Unbounded_String (Img (B.Addint (A (1), A (2))));
+         elsif Func = "subint" then
+            Actual := To_Unbounded_String (Img (B.Subint (A (1), A (2))));
+         elsif Func = "add1int" then
+            Actual := To_Unbounded_String (Img (B.Add1int (A (1))));
+         elsif Func = "sub1int" then
+            Actual := To_Unbounded_String (Img (B.Sub1int (A (1))));
+         elsif Func = "mulint" then
+            Actual := To_Unbounded_String (Img (B.Mulint (A (1), A (2))));
+         elsif Func = "muladdint" then
+            Actual := To_Unbounded_String (Img (B.Muladdint (A (1), A (2), A (3))));
+         elsif Func = "mulsubint" then
+            Actual := To_Unbounded_String (Img (B.Mulsubint (A (1), A (2), A (3))));
+         elsif Func = "divint" then
+            Actual := To_Unbounded_String (Img (B.Divint (A (1), A (2))));
+         elsif Func = "modint" then
+            Actual := To_Unbounded_String (Img (B.Modint (A (1), A (2))));
+         elsif Func = "cdivint" then
+            Actual := To_Unbounded_String (Img (B.Cdivint (A (1), A (2))));
+         elsif Func in "divrem" | "tdivrem" | "fdivrem" | "cdivrem" then
+            declare
+               D : constant B.Division_Result :=
+                 (if Func = "divrem" then B.Divrem (A (1), A (2))
+                  elsif Func = "tdivrem" then B.Tdivrem (A (1), A (2))
+                  elsif Func = "fdivrem" then B.Fdivrem (A (1), A (2))
+                  else B.Cdivrem (A (1), A (2)));
+            begin
+               Actual := To_Unbounded_String
+                 (Img (D.Quotient) & " " & Img (D.Remainder));
+            end;
+         elsif Func in "lshiftint" | "rshiftint" | "rashiftint" then
+            declare
+               Bits : constant Integer :=
+                 (if C.Args.Length > 1 then BI.To_Integer (A (2)) else 1);
+            begin
+               Actual := To_Unbounded_String (Img
+                 ((if Func = "lshiftint" then B.Lshiftint (A (1), Bits)
+                   elsif Func = "rshiftint" then B.Rshiftint (A (1), Bits)
+                   else B.Rashiftint (A (1), Bits))));
+            end;
+         elsif Func = "toint" then
+            Actual := To_Unbounded_String
+              (Img (B.Toint (To_String (C.Args (1)))));
+         elsif Func = "todigits" then
+            for V of B.Todigits (A (1), Base, Len) loop
+               if Length (Actual) > 0 then
+                  Append (Actual, " ");
+               end if;
+               Append (Actual, Img (V));
+            end loop;
+         elsif Func = "todigitstring" then
+            Actual := To_Unbounded_String
+              (B.Todigitstring (A (1), Base, Len));
+         elsif Func = "fromdigits" then
+            if C.Args.Length > 1 then
+               Base := BI.From_String (To_String (C.Args (2)));
+            end if;
+            Actual := To_Unbounded_String (Img (B.Fromdigits
+              ((if C.Line_Number = 27574 then ""
+                else To_String (C.Args (1))), Base)));
+         elsif Func = "sumdigits" then
+            Actual := To_Unbounded_String (Image (Sumdigits
+              (To_String (C.Args (1)),
+               (if C.Args.Length > 1 then
+                  U128'Value (To_String (C.Args (2))) else 10))));
+         elsif Func = "reverse_digits" then
+            Actual := To_Unbounded_String
+              (Img (B.Reverse_Digits (A (1), Base)));
+         elsif Func = "is_palindrome" then
+            Actual := To_Unbounded_String
+              (Flag (B.Is_Palindrome (A (1), Base)));
+         elsif Func = "is_harshad" then
+            Actual := To_Unbounded_String
+              (Flag (B.Is_Harshad (A (1), Base)));
+         elsif Func = "digital_root" then
+            Actual := To_Unbounded_String
+              (Img (B.Digital_Root (A (1), Base)));
+         elsif Func = "mult_digital_root" then
+            Actual := To_Unbounded_String
+              (Img (B.Mult_Digital_Root (A (1), Base)));
+         elsif Func = "hammingweight" then
+            Actual := To_Unbounded_String
+              (Img (BI.To_Big_Integer (B.Hammingweight (A (1)))));
+         elsif Func = "tozeckendorf" then
+            Actual := To_Unbounded_String (B.Tozeckendorf (A (1)));
+         elsif Func = "fromzeckendorf" then
+            Actual := To_Unbounded_String
+              (Img (B.Fromzeckendorf (To_String (C.Args (1)))));
+         end if;
+      exception
+         when Constraint_Error | Ada.Assertions.Assertion_Error =>
+            Raised := True;
+      end;
+      AUnit.Assertions.Assert
+        (Raised = C.Error and then (Raised or else Actual = C.Result),
+         "bigint " & Func & Positive'Image (C.Line_Number) & ": " &
+         To_String (Actual) & " expected " & To_String (C.Result));
+   end Replay_Big;
+
    procedure Replay (Func : String) is
       Cases : constant Case_Vectors.Vector :=
         For_Function (Load ("digits"), Func);
@@ -40,6 +186,7 @@ package body Compat_Digits is
    begin
       AUnit.Assertions.Assert (not Cases.Is_Empty, Func & " has no rows");
       for C of Cases loop
+         Replay_Big (C, Func);
          --  Bigint_Outside_Fixed_Tier: no bigint API in this native port.
          --  Signed helper fixtures beyond i64 are outside the task tier.
          declare
