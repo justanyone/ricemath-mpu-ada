@@ -12,3 +12,4 @@ Bigint source and spec created; configuring an isolated offline Alire settings d
 Offline Alire has no index and cannot resolve AUnit, although its release is cached. Investigating local-only resolution.
 - 2026-10-20T13:35:21Z launcher: no commit for 60 s; 304 s elapsed. Files changed so far: docs/worker-notes/pc1-mpuada-strint-t0830.md, docs/worker-notes/strint-edit-script.txt, src/math_prime_util-digit_operations-bigints.adb, src/math_prime_util-digit_operations-bigints.ads.
 Full bigint fixture replay wired before the existing native-tier replay; no bigint rows are skipped by the new pass.
+Bigint replay is written. Offline setup still cannot select cached toolchains; trying external compiler discovery and a local AUnit source copy.
