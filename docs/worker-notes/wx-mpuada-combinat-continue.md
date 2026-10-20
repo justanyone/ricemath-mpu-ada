@@ -10,3 +10,4 @@ Both focused tests and gate stop at missing offline Alire index. Installed compi
 Workspace-local Alire settings avoid network, but tests cannot resolve AUnit and compiler without the preinstalled index. No tests reached compilation yet.
 Copied installed toolchain into ignored obj/ to keep all Alire writes within the worktree. Attempting gate with isolated offline settings.
 Local PATH enabled compilation. Fixed inherited Bell-row anonymous-array type error and new option equality visibility. Existing Int style diagnostics remain outside task paths.
+Built a temporary local AUnit index under ignored obj/ using installed files; no dependency or build scripts changed.
