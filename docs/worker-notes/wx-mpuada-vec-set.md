@@ -4,3 +4,5 @@ Add compatibility and property coverage, then run the focused test and gate.
 Keep the fixtures, generated status, dependencies, and build tools unchanged.
 The checkout has only Int; Vec is new. Fixtures include bigint and string cases.
 Start with exact signed set operations and stable vector helpers; no new crates.
+Added signed vectors, insertion sorting, set merge, relations, and predicates.
+Set relation direction follows xs_set_relation: subset tests B inside A.
