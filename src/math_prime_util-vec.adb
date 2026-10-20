@@ -124,8 +124,8 @@ package body Math_Prime_Util.Vec is
 
    function Merge (A, B : Vector; Op : Set_Operation) return Vector is
       R : Vector (1 .. A'Length + B'Length);
-      I : Natural := A'First;
-      J : Natural := B'First;
+      I : Natural := 0;
+      J : Natural := 0;
       N : Natural := 0;
       V : I64;
       Keep : Boolean;
@@ -133,21 +133,21 @@ package body Math_Prime_Util.Vec is
       if not Is_Set (A) or else not Is_Set (B) then
          raise Constraint_Error with "set inputs must be sorted and unique";
       end if;
-      while I <= A'Last or J <= B'Last loop
-         if I <= A'Last and then J <= B'Last and then A (I) = B (J)
+      while I < A'Length or J < B'Length loop
+         if I < A'Length and then J < B'Length and then A (A'First + I) = B (B'First + J)
          then
-            V := A (I);
+            V := A (A'First + I);
             I := I + 1;
             J := J + 1;
             Keep := Op in Union_Op | Intersect_Op;
-         elsif I <= A'Last and then
-           (J > B'Last or else A (I) < B (J))
+         elsif I < A'Length and then
+           (J >= B'Length or else A (A'First + I) < B (B'First + J))
          then
-            V := A (I);
+            V := A (A'First + I);
             I := I + 1;
             Keep := Op /= Intersect_Op;
          else
-            V := B (J);
+            V := B (B'First + J);
             J := J + 1;
             Keep := Op in Union_Op | Delta_Op;
          end if;
@@ -279,7 +279,7 @@ package body Math_Prime_Util.Vec is
       Total : I128 := 0;
    begin
       for I in R'Range loop
-         Total := Total + I128 (A (A'First + I - 1));
+         Total := Total + I128 (A (A'First + (I - 1)));
          R (I) := Total;
       end loop;
       return R;
@@ -460,7 +460,7 @@ package body Math_Prime_Util.Vec is
       J : I128;
    begin
       for I in R'Range loop
-         J := I128 (Indices (Indices'First + I - 1));
+         J := I128 (Indices (Indices'First + (I - 1)));
          if J < 0 then
             J := J + I128 (A'Length);
          end if;
@@ -514,7 +514,7 @@ package body Math_Prime_Util.Vec is
       R : Vector (1 .. Natural'Max (A'Length, 1) - 1);
    begin
       for I in R'Range loop
-         R (I) := Op (A (A'First + I - 1), A (A'First + I));
+         R (I) := Op (A (A'First + (I - 1)), A (A'First + I));
       end loop;
       return R;
    end Vecslide;
@@ -526,7 +526,7 @@ package body Math_Prime_Util.Vec is
       R : Vector (1 .. Natural'Min (A'Length, B'Length));
    begin
       for I in R'Range loop
-         R (I) := Op (A (A'First + I - 1), B (B'First + I - 1));
+         R (I) := Op (A (A'First + (I - 1)), B (B'First + (I - 1)));
       end loop;
       return R;
    end Vecpairwise;
@@ -543,7 +543,7 @@ package body Math_Prime_Util.Vec is
    begin
       for I in R'Range loop
          J := A'First + (I - 1) * Step;
-         R (I) := Op (A (J .. J + Size - 1));
+         R (I) := Op (A (J .. J + (Size - 1)));
       end loop;
       return R;
    end Vecwindow;
@@ -559,7 +559,7 @@ package body Math_Prime_Util.Vec is
       for I in 1 .. Natural'Min (A'Length, B'Length) loop
          declare
             Part : constant Vector :=
-              Op (A (A'First + I - 1), B (B'First + I - 1));
+              Op (A (A'First + (I - 1)), B (B'First + (I - 1)));
          begin
             for V of Part loop
                Result.Append (V);
@@ -587,7 +587,7 @@ package body Math_Prime_Util.Vec is
       for I in 1 .. N loop
          J := A'First + (I - 1) * Step;
          declare
-            Part : constant Vector := Op (A (J .. J + Size - 1));
+            Part : constant Vector := Op (A (J .. J + (Size - 1)));
          begin
             for V of Part loop
                Result.Append (V);
