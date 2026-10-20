@@ -8,3 +8,6 @@ Added arithmetic, scalar closures, extraction and sumsets plus initial tests. Fo
 Host has GNAT and AUnit cached, but this checkout lacks Alire resolution metadata. Investigating an isolated offline configuration without changing dependency manifests.
 Using a worktree-local Alire settings directory and an ignored copy of cached AUnit. A temporary existing-dependency pin enables offline builds; restore the manifest before finishing.
 About five minutes remain. Alire cannot select cached toolchains without index metadata. Stop repeating selection commands; preserve the implementation and validate what the available offline setup permits.
+Offline build works after selecting cached compiler versions in local Alire settings. First focused run found invalid MEX inputs, retained decimal spelling and an invalid-input property length failure. Added validation and corrected integer <<cut 23 chars by kit>>
+
+KIT NOTE, NOT FILE CONTENT: this output was shortened by the kit; the file on disk is whole; show a part with sed -n A,Bp FILE (kit removed -1 bytes)

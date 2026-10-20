@@ -509,6 +509,67 @@ package body Compat_Vec is
       Replay ("sumset");
    end Test_Sumset;
 
+   procedure Test_Vecextract (T : in out Test_Case'Class);
+
+   procedure Test_Vecextract (T : in out Test_Case'Class) is
+      Cases : constant Case_Vectors.Vector := Load ("vec");
+      use type Math_Prime_Util.U128;
+   begin
+      for C of Cases loop
+         if C.Func = "vecextract" or C.Func = "vecextract_idx" then
+            declare
+               Tokens : String_Vectors.Vector;
+               Indices : Vector (1 .. Natural (C.Args.Length));
+               N : Natural := 0;
+               Second : Boolean := False;
+               Mask : Math_Prime_Util.U128 := 0;
+               Actual : Unbounded_String;
+            begin
+               for Arg of C.Args loop
+                  if Arg = "|" then
+                     Second := True;
+                  elsif not Second then
+                     Tokens.Append (Arg);
+                  elsif C.Func = "vecextract" then
+                     Mask := Math_Prime_Util.U128'Value (To_String (Arg));
+                  else
+                     N := N + 1;
+                     Indices (N) := I64'Value (To_String (Arg));
+                  end if;
+               end loop;
+               declare
+                  Input : Vector (1 .. Natural (Tokens.Length));
+               begin
+                  --  Tokens are opaque payloads. Select their positions.
+                  for I in Input'Range loop
+                     Input (I) := I64 (I);
+                  end loop;
+                  declare
+                     R : constant Optional_Vector :=
+                       (if C.Func = "vecextract" then
+                          Vecextract (Input, Mask)
+                        else Vecextract (Input, Indices (1 .. N)));
+                  begin
+                     for V of R loop
+                        if Length (Actual) > 0 then
+                           Append (Actual, " ");
+                        end if;
+                        if V.Present then
+                           Append (Actual, Tokens (Positive (V.Value)));
+                        else
+                           Append (Actual, "undef");
+                        end if;
+                     end loop;
+                  end;
+               end;
+               AUnit.Assertions.Assert
+                 (Actual = C.Result, "extraction row" &
+                  Positive'Image (C.Line_Number));
+            end;
+         end if;
+      end loop;
+   end Test_Vecextract;
+
    overriding procedure Register_Tests (T : in out Vec_Case) is
    begin
       Registration.Register_Routine
@@ -582,6 +643,8 @@ package body Compat_Vec is
         (T, Test_Vecfreq'Access, "vecfreq");
       Registration.Register_Routine
         (T, Test_Sumset'Access, "sumset");
+      Registration.Register_Routine
+        (T, Test_Vecextract'Access, "vecextract");
    end Register_Tests;
 
    function Suite return AUnit.Test_Suites.Access_Test_Suite is
