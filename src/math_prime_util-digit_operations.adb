@@ -2,6 +2,7 @@ with Ada.Characters.Handling;
 with Ada.Strings.Fixed;
 
 package body Math_Prime_Util.Digit_Operations is
+   use type U64;
    function Todigits
      (N : U128; Base : U128 := 10; Length : Integer := -1)
       return Digit_Array

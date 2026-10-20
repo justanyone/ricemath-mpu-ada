@@ -45,7 +45,8 @@ package body Compat_Digits is
          A := [others => 0];
          begin
             if Func not in "toint" | "fromdigits" | "fromzeckendorf" |
-              "sumdigits" then
+              "sumdigits"
+            then
                for I in 1 .. Natural (C.Args.Length) loop
                   A (I) := I128'Value (To_String (C.Args (I)));
                end loop;

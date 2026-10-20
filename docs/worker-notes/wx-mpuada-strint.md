@@ -10,3 +10,4 @@ Focused test failed before compilation: Alire attempted to clone its missing com
 Offline workaround found cached AUnit and compiler files, but Alire still cannot select a compiler without its index. All temporary manifest pins were restored.
 About five minutes remain. Prioritize API corrections, fixture parsing, and a recorded final gate attempt. Offline toolchain selection remains blocked.
 Compilation reached Ada: Digits is reserved, so the legal child package is Digit_Operations. Local cached toolchain settings now enable offline builds.
+Resolved Ada type visibility and naming errors. Focused compatibility tests are now compiling; temporary offline pins remain outside the final manifest.
