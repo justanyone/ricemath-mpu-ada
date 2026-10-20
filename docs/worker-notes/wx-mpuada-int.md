@@ -17,3 +17,8 @@ About five minutes remain. Local build configured; correcting the root port gene
 First full replay: 22 tests pass; four failures expose K=0 API semantics, error-row handling, and base-two logarithms. Fixing these before the gate.
 Fixture failures reproduced and corrected: zero exponents, error rows, and base greater than the argument.
 All 26 tests pass, including every integer fixture row. Final gate follows the faithful root and perfect-power refinements.
+Final gate passed with == gate: green; all 26 AUnit tests passed.
+Every int fixture row is replayed, including undefined and error cases; no rows are skipped.
+Proof was not run: alr exec found no gnatprove. The source records this missing step.
+Offline runs used XDG_CONFIG_HOME=$PWD/obj/offline-config and a local index made from cached releases.
+Finished: integer core, source citations, compat tests, seeded laws, and suite registration are complete. No fixtures, tooling, dependencies, or status ticks were changed.
