@@ -299,6 +299,15 @@ package body Math_Prime_Util.Families is
       return Count;
    end Lucky_Count;
 
+   function Lucky_Count (Low, High : U64) return U64 is
+   begin
+      if Low > High then
+         return 0;
+      end if;
+      return Lucky_Count (High) -
+        (if Low = 0 then 0 else Lucky_Count (Low - 1));
+   end Lucky_Count;
+
    function Nth_Lucky (N : U64) return Int.Optional_U64 is
       K : U64;
    begin

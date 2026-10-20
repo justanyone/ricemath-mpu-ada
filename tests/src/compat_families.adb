@@ -59,7 +59,10 @@ package body Compat_Families is
          elsif Func = "is_lucky" then
             Got := To_Unbounded_String ((if Is_Lucky (N) then "1" else "0"));
          elsif Func = "lucky_count" then
-            Got := To_Unbounded_String (Image (Lucky_Count (N)));
+            Got := To_Unbounded_String
+              (Image ((if Natural (C.Args.Length) = 1 then Lucky_Count (N)
+                       else Lucky_Count
+                         (N, U64'Value (To_String (C.Args (2)))))));
          elsif Func = "lucky_count_approx" then
             Got := To_Unbounded_String (Image (Lucky_Count_Approx (N)));
          elsif Func = "lucky_count_lower" then

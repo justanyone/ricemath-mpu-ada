@@ -7,7 +7,7 @@ package Math_Prime_Util.Families is
    package Lucky_Vectors is new Ada.Containers.Vectors
      (Index_Type => Natural, Element_Type => U64);
 
-   --  lucky_numbers.c: lucky_sieve_range. Inclusive interval; reversed is empty.
+   --  lucky_numbers.c: lucky_sieve_range. Inclusive; reversed is empty.
    --  Storage_Error propagates when the sieve cannot fit in memory.
    function Lucky_Numbers (Low, High : U64) return Lucky_Vectors.Vector
      with Pre => True,
@@ -24,6 +24,10 @@ package Math_Prime_Util.Families is
    --  lucky_numbers.c: lucky_count. Count lucky numbers through N inclusive.
    function Lucky_Count (N : U64) return U64
      with Pre => True, Post => Lucky_Count'Result <= N;
+   --  lucky_numbers.c: lucky_count_range. Inclusive; reversed is empty.
+   function Lucky_Count (Low, High : U64) return U64
+     with Pre => True,
+          Post => (if Low > High then Lucky_Count'Result = 0);
    --  lucky_numbers.c: lucky_count_approx. Invert the nth estimate.
    function Lucky_Count_Approx (N : U64) return U64
      with Pre => True, Post => Lucky_Count_Approx'Result <= N;
