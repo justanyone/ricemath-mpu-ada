@@ -72,16 +72,10 @@ package body Compat_Combinat is
                end if;
                Fits := not C.Undef and then
                  Parse_U64 (To_String (C.Result), Expected);
-               --  Central binomial overflow is MPU's native Catalan bound.
-               if Func = "catalan_number" and A in 34 .. 36 then
-                  AUnit.Assertions.Assert
-                    (not R.Defined, "native Catalan intermediate");
-               else
-                  AUnit.Assertions.Assert
-                    (R.Defined = Fits and then
-                     (not Fits or else R.Value = Expected),
-                     Func & Positive'Image (C.Line_Number));
-               end if;
+               AUnit.Assertions.Assert
+                 (R.Defined = Fits and then
+                  (not Fits or else R.Value = Expected),
+                  Func & Positive'Image (C.Line_Number));
             end if;
          end if;
       end loop;

@@ -6,3 +6,5 @@ The checkout has only the integer core. Start with factorial and binomial ports 
 - 2026-10-20T12:36:52Z launcher: no commit for 60 s; 121 s elapsed. Files changed so far: docs/worker-notes/wx-mpuada-combinat.md.
 Added eight native routines with C citations and contracts. Added per-function fixture replay and deterministic algebraic tests. Signed and bigint input rows are named omissions.
 Focused tests stopped before compilation: Alire tried to fetch its community index, but this sandbox has no network. Checking the installed offline toolchain next.
+Review: Catalan now keeps the C central-binomial method with U128 intermediates, so native results 34 through 36 are not lost. Fixed the property boundary array type.
+No lockfiles are present. The test run cannot resolve AUnit offline. Preparing the final gate and recording partial scope.

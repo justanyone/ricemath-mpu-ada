@@ -83,17 +83,20 @@ package body Math_Prime_Util.Combinat with SPARK_Mode => On is
    end Binomial;
 
    function Catalan_Number (N : U64) return Optional_U64 is
-      R : Optional_U64;
+      use type U128;
+      R : U128 := 1;
+      M : U128 := 2 * U128 (N);
    begin
-      --  MPU uses the central binomial coefficient as an intermediate.
-      if N > U64'Last / 2 then
+      --  The central binomial method from util.c uses a wide intermediate
+      --  so Catalan numbers 34 through 36 can still fit the native result.
+      if N > 36 then
          return (Defined => False);
       end if;
-      R := Binomial (2 * N, N);
-      if R.Defined then
-         R.Value := R.Value / (N + 1);
-      end if;
-      return R;
+      for D in U128 range 1 .. U128 (N) loop
+         R := R * M / D;
+         M := M - 1;
+      end loop;
+      return (True, U64 (R / (U128 (N) + 1)));
    end Catalan_Number;
 
    function Bell_Number (N : U64) return Optional_U64 is

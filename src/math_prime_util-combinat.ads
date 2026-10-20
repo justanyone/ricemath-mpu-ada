@@ -35,8 +35,7 @@ package Math_Prime_Util.Combinat with SPARK_Mode => On is
    --  native overflow. Inputs are unsigned integers.
    function Catalan_Number (N : U64) return Optional_U64
      with Pre => True,
-          Post => (if N = 0 then
-                     Catalan_Number'Result.Defined);
+          Post => Catalan_Number'Result.Defined = (N <= 36);
 
    --  util.c: bell_number. Exact nonnegative result; undefined on
    --  native overflow. Inputs are unsigned integers.
