@@ -7,3 +7,6 @@ Ported binary Lucas doubling, modular alternate path, and fast Fibonacci.
 Added nine fixture tests and seeded recurrence, repeat-call, and identity laws.
 Focused tests stopped before compile: Alire tried an unavailable network index.
 Checking offline Alire configuration before retrying the prescribed scripts.
+Gate also stopped at development build because Alire has no community index.
+The remaining time is reserved for offline compilation and fixing diagnostics.
+Found cached GNAT, GPRbuild, and AUnit; checking local settings for offline use.
