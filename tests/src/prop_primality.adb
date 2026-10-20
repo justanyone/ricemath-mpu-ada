@@ -24,6 +24,7 @@ package body Prop_Primality is
       Seed : U64 := 20_261_020;
       N, A, D : U64;
       Prime : Boolean;
+      Saved : Prime_Result;
    begin
       for I in 1 .. 2_000 loop
          Seed := Seed * 6_364_136_223_846_793_005 + 1;
@@ -39,8 +40,9 @@ package body Prop_Primality is
          end loop;
          AUnit.Assertions.Assert
            ((Is_Prime (N) = 2) = Prime, "trial seed 20261020");
+         Saved := Is_Prime (N);
          AUnit.Assertions.Assert
-           (Is_Prime (N) = Is_Prime (N), "repeat seed 20261020");
+           (Saved = Is_Prime (N), "repeat seed 20261020");
          N := Seed or 1;
          if N > 3 then
             A := Seed / 4 + 2;
