@@ -27,8 +27,8 @@ package Math_Prime_Util.Real is
      with Pre => X >= 0.0 and then X <= F64'Last / 1024.0,
           Post => Inverse_Li_Nv'Result > 1.0;
    --  util.c: pidigits; XS.xs: Pi. Rounded significant decimal digits.
-   function Pi (Digits : Natural := 0) return String
-     with Pre => Digits <= 100_000, Post => Pi'Result'Length > 0;
+   function Pi (Digit_Count : Natural := 0) return String
+     with Pre => Digit_Count <= 100_000, Post => Pi'Result'Length > 0;
    --  Util.pm: bernreal. Bernoulli B_n with positive B_1.
    function Bernreal (N : Natural) return F64
      with Pre => N <= 258, Post => True;

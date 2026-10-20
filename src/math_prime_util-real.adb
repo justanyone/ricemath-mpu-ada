@@ -425,11 +425,11 @@ package body Math_Prime_Util.Real is
     k1 := 1.0 + (-3.16866642511229e11 + (3.420439800038598e10 +
          (-1.501433652432257e9 + (3.44887729947585e7 + (-4.453783741137856e5
         +
-         (3257.926478908996 + (-10.82545259305382 + (0.6898058947898353e-1.0
+         (3257.926478908996 + (-10.82545259305382 + (0.6898058947898353e-1
         +
-         0.4703653406071575e-4.0 * x) * x) * x) * x) * x) * x) * x) * x) *
+         0.4703653406071575e-4 * x) * x) * x) * x) * x) * x) * x) * x) *
         x;
-    w := 0.9898045358731312e-1.0 * Log(k1);
+    w := 0.9898045358731312e-1 * Log(k1);
 
   else
     k1 := 1.0 / (1.0 + Log(1.0 + x));
@@ -466,8 +466,8 @@ package body Math_Prime_Util.Real is
       end loop;
       return F64 (W);
    end Lambert_W;
-   function Pi (Digits : Natural := 0) return String is
-      Count : constant Positive := (if Digits = 0 then 15 else Digits);
+   function Pi (Digit_Count : Natural := 0) return String is
+      Count : constant Positive := (if Digit_Count = 0 then 15 else Digit_Count);
       C : Natural := 14 * ((Count + 1) / 4 + 2);
       type Work_Array is array (Natural range <>) of Long_Long_Integer;
       Work : Work_Array (0 .. C - 1) := [others => 2000];

@@ -9,3 +9,5 @@ Focused tests cannot build: Alire tries to clone its community index and the san
 - 2026-10-20T13:50:06Z launcher: no commit for 60 s; 303 s elapsed. Files changed so far: docs/worker-notes/wx-mpuada-real.md, obj_real_generate.py, tests/src/all_suites.adb, tests/src/compat_real.adb, tests/src/compat_real.ads, tests/src/prop_real.adb, tests/src/prop_real.ads.
 - 2026-10-20T13:51:36Z launcher: no commit for 60 s; 393 s elapsed. Files changed so far: docs/worker-notes/wx-mpuada-real.md, src/math_prime_util-real.ads, tests/src/all_suites.adb, tests/src/compat_real.adb, tests/src/compat_real.ads, tests/src/prop_real.adb, tests/src/prop_real.ads.
 Replaced the failed generator with direct Ada source and copied C tables. Alire can use the existing host settings without a network fetch.
+Copied Alire settings under obj to keep all generated state in the worktree. Next resolve compiler diagnostics and run real tests.
+Offline cache works. First compile found an Ada reserved identifier and numeric translation issues; correcting them.
