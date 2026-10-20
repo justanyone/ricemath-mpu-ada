@@ -375,4 +375,202 @@ package body Math_Prime_Util.Combinat with SPARK_Mode => On is
       end if;
       return (True, U64 (Wide));
    end Powersum;
+   function Is_Happy
+     (N : U64; Base : U64 := 10; Exp : U64 := 2) return U64 is
+      Cur : U64 := N;
+      Check : U64 := 0;
+      H : U64 := 1;
+   begin
+      while Cur > 1 and then Cur /= Check loop
+         if (H and (H - 1)) = 0 then
+            Check := Cur;
+         end if;
+         declare
+            T : U64 := Cur;
+            Sum : U128 := 0;
+         begin
+            while T /= 0 loop
+               declare
+                  R : constant U64 := T mod Base;
+                  Term : U128 := 1;
+               begin
+                  for J in 1 .. Exp loop
+                     Term := Term * U128 (R);
+                     exit when Term > U128 (U64'Last);
+                  end loop;
+                  Sum := Sum + Term;
+                  if Sum >= U128 (U64'Last) then
+                     return 0;
+                  end if;
+               end;
+               T := T / Base;
+            end loop;
+            Cur := U64 (Sum);
+         end;
+         H := H + 1;
+      end loop;
+      return (if Cur = 1 then H else 0);
+   end Is_Happy;
+
+   function Is_Polygonal (N, K : U64) return Boolean is
+      D, R, S : U64;
+   begin
+      if N <= 1 then
+         return True;
+      end if;
+      if K = 4 then
+         return Is_Square (N);
+      end if;
+      if K = 3 then
+         if N >= U64'Last / 8 then
+            return False;
+         end if;
+         D := N * 8;
+         R := 1;
+      else
+         if K > U64'Last / K or else N > U64'Last / (8 * K - 16) then
+            return False;
+         end if;
+         D := (8 * K - 16) * N;
+         R := (K - 4) * (K - 4);
+      end if;
+      if D + R <= D or else D > U64'Last - R then
+         return False;
+      end if;
+      D := D + R;
+      if not Is_Square (D) then
+         return False;
+      end if;
+      S := Sqrtint (D) + (K - 4);
+      return S mod (2 * K - 4) = 0;
+   end Is_Polygonal;
+
+   function Is_Pillai (N : U64) return U64 is
+      Fac : U64;
+      V : U64 := 8;
+   begin
+      if N < 23 or else N mod 7 = 0 or else N mod 2 = 0
+        or else N mod 3 = 0 or else N mod 5 = 0
+      then
+         return 0;
+      end if;
+      Fac := 5040 mod N;
+      while V < N - 1 and then Fac /= 0 loop
+         Fac := U64 ((U128 (Fac) * U128 (V)) mod U128 (N));
+         if Fac = N - 1 and then N mod V /= 1 then
+            return V;
+         end if;
+         V := V + 1;
+      end loop;
+      return 0;
+   end Is_Pillai;
+
+   function Stirling (N, K : U64; Kind : Stirling_Kind := 1)
+     return Optional_I128 is
+      Cap : constant U128 := 2 ** 100;
+      type Row is array (0 .. 130) of U128;
+      Cur, Prev : Row := (others => 0);
+      Mag : U128;
+   begin
+      if N = K then
+         return (True, 1);
+      elsif N = 0 or else K = 0 or else K > N then
+         return (True, 0);
+      elsif N > 130 then
+         return (Defined => False);
+      end if;
+      Prev (0) := 1;
+      for I in 1 .. Natural (N) loop
+         Cur := (others => 0);
+         for J in 1 .. I loop
+            declare
+               Mul : constant U128 :=
+                 (case Kind is
+                    when 1 => U128 (I - 1),
+                    when 2 => U128 (J),
+                    when 3 => U128 (I - 1 + J));
+               Val : U128;
+            begin
+               if Prev (J) /= 0 and then Mul > Cap / Prev (J) then
+                  Val := Cap;
+               else
+                  Val := Prev (J) * Mul;
+               end if;
+               Val := Val + Prev (J - 1);
+               Cur (J) := U128'Min (Val, Cap);
+            end;
+         end loop;
+         Prev := Cur;
+      end loop;
+      Mag := Prev (Natural (K));
+      if Mag > U128 (U64'Last) then
+         return (Defined => False);
+      end if;
+      if Kind = 1 and then (N - K) mod 2 = 1 then
+         return (True, -I128 (Mag));
+      end if;
+      return (True, I128 (Mag));
+   end Stirling;
+
+   function Partitions (N : U64) return Optional_U64 is
+      type Table is array (0 .. 1000) of U128;
+      P : Table := (others => 0);
+   begin
+      if N > 1000 then
+         return (Defined => False);
+      end if;
+      P (0) := 1;
+      for I in 1 .. Natural (N) loop
+         declare
+            Plus, Minus : U128 := 0;
+            K : Natural := 1;
+         begin
+            loop
+               declare
+                  G1 : constant Integer := K * (3 * K - 1) / 2;
+                  G2 : constant Integer := K * (3 * K + 1) / 2;
+               begin
+                  exit when G1 > I;
+                  if K mod 2 = 1 then
+                     Plus := Plus + P (I - G1);
+                     if G2 <= I then
+                        Plus := Plus + P (I - G2);
+                     end if;
+                  else
+                     Minus := Minus + P (I - G1);
+                     if G2 <= I then
+                        Minus := Minus + P (I - G2);
+                     end if;
+                  end if;
+               end;
+               K := K + 1;
+            end loop;
+            P (I) := Plus - Minus;
+         end;
+      end loop;
+      if P (Natural (N)) > U128 (U64'Last) then
+         return (Defined => False);
+      end if;
+      return (True, U64 (P (Natural (N))));
+   end Partitions;
+
+   function Partitionsq (N : U64) return Optional_U64 is
+      type Table is array (0 .. 1500) of U128;
+      Q : Table := (others => 0);
+   begin
+      if N > 1500 then
+         return (Defined => False);
+      end if;
+      Q (0) := 1;
+      for Part in 1 .. Natural (N) loop
+         for I in reverse Part .. Natural (N) loop
+            Q (I) := Q (I) + Q (I - Part);
+         end loop;
+      end loop;
+      if Q (Natural (N)) > U128 (U64'Last) then
+         return (Defined => False);
+      end if;
+      return (True, U64 (Q (Natural (N))));
+   end Partitionsq;
+
 end Math_Prime_Util.Combinat;

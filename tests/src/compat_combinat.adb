@@ -196,6 +196,95 @@ package body Compat_Combinat is
       Replay ("powersum");
    end Check_Powersum;
 
+   --  Replay for the functions with up to three arguments and a
+   --  defined-or-not scalar result; rows with bigint inputs are skipped.
+   procedure Replay_Multi (Func : String) is
+      Cases : constant Case_Vectors.Vector :=
+        For_Function (Load ("combinat"), Func);
+      Arg : array (1 .. 3) of U64 := (0, 0, 0);
+      Ok, Fits : Boolean;
+      Got, Expected : U64;
+      Opt : Optional_U64;
+      Signed_R : Optional_I128;
+      Signed_Expected : I128;
+   begin
+      AUnit.Assertions.Assert (not Cases.Is_Empty, "missing " & Func);
+      for C of Cases loop
+         Ok := True;
+         for I in 1 .. Natural (C.Args.Length) loop
+            Ok := Parse_U64 (To_String (C.Args (I)), Arg (I)) and Ok;
+         end loop;
+         if Ok then
+            Fits := not C.Undef and then
+              (Func = "partitions" or Func = "partitionsq"
+               or Func = "stirling"
+               or Parse_U64 (To_String (C.Result), Expected));
+            if Func = "is_happy" then
+               Got := (case C.Args.Length is
+                  when 1 => Is_Happy (Arg (1)),
+                  when 2 => Is_Happy (Arg (1), Arg (2)),
+                  when others => Is_Happy (Arg (1), Arg (2), Arg (3)));
+               Ok := Parse_U64 (To_String (C.Result), Expected)
+                 and then Got = Expected;
+            elsif Func = "is_polygonal" then
+               Ok := Parse_U64 (To_String (C.Result), Expected)
+                 and then Is_Polygonal (Arg (1), Arg (2))
+                   = (Expected = 1);
+            elsif Func = "is_pillai" then
+               Ok := Parse_U64 (To_String (C.Result), Expected)
+                 and then Is_Pillai (Arg (1)) = Expected;
+            elsif Func = "stirling" then
+               Signed_R := Stirling
+                 (Arg (1), Arg (2), Stirling_Kind (Arg (3)));
+               Fits := not C.Undef
+                 and then Parse_Signed
+                   (To_String (C.Result), Signed_Expected);
+               Ok := Signed_R.Defined = Fits and then
+                 (not Fits or else Signed_R.Value = Signed_Expected);
+            else
+               Opt := (if Func = "partitions" then Partitions (Arg (1))
+                       else Partitionsq (Arg (1)));
+               Fits := not C.Undef
+                 and then Parse_U64 (To_String (C.Result), Expected);
+               Ok := Opt.Defined = Fits and then
+                 (not Fits or else Opt.Value = Expected);
+            end if;
+            AUnit.Assertions.Assert
+              (Ok, Func & Positive'Image (C.Line_Number));
+         end if;
+      end loop;
+   end Replay_Multi;
+
+   procedure Check_Is_Happy (T : in out Test_Case'Class) is
+   begin
+      Replay_Multi ("is_happy");
+   end Check_Is_Happy;
+
+   procedure Check_Is_Polygonal (T : in out Test_Case'Class) is
+   begin
+      Replay_Multi ("is_polygonal");
+   end Check_Is_Polygonal;
+
+   procedure Check_Is_Pillai (T : in out Test_Case'Class) is
+   begin
+      Replay_Multi ("is_pillai");
+   end Check_Is_Pillai;
+
+   procedure Check_Stirling (T : in out Test_Case'Class) is
+   begin
+      Replay_Multi ("stirling");
+   end Check_Stirling;
+
+   procedure Check_Partitions (T : in out Test_Case'Class) is
+   begin
+      Replay_Multi ("partitions");
+   end Check_Partitions;
+
+   procedure Check_Partitionsq (T : in out Test_Case'Class) is
+   begin
+      Replay_Multi ("partitionsq");
+   end Check_Partitionsq;
+
    procedure Check_Harmfrac (T : in out Test_Case'Class) is
       Cases : constant Case_Vectors.Vector :=
         For_Function (Load ("combinat"), "harmfrac");
@@ -255,6 +344,12 @@ package body Compat_Combinat is
       Register_Routine (T, Check_Bell_Number'Access, "bell_number");
       Register_Routine (T, Check_Primorial'Access, "primorial");
       Register_Routine (T, Check_Pn_Primorial'Access, "pn_primorial");
+      Register_Routine (T, Check_Is_Happy'Access, "is_happy");
+      Register_Routine (T, Check_Is_Polygonal'Access, "is_polygonal");
+      Register_Routine (T, Check_Is_Pillai'Access, "is_pillai");
+      Register_Routine (T, Check_Stirling'Access, "stirling");
+      Register_Routine (T, Check_Partitions'Access, "partitions");
+      Register_Routine (T, Check_Partitionsq'Access, "partitionsq");
    end Register_Tests;
 
    function Suite return AUnit.Test_Suites.Access_Test_Suite is

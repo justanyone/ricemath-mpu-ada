@@ -111,4 +111,44 @@ package Math_Prime_Util.Combinat with SPARK_Mode => On is
      with Pre => True,
           Post => (if K = 0 then Powersum'Result = (True, N));
 
+   --  util.c: happy_height. Steps for N to reach 1 under the sum of the
+   --  Exp-th powers of its base-Base digits (1 for N = 1); 0 when N is
+   --  not happy or a sum overflows.
+   function Is_Happy
+     (N : U64; Base : U64 := 10; Exp : U64 := 2) return U64
+     with Pre => Base >= 2 and Base <= 2 ** 32 - 1 and Exp <= 2 ** 32 - 1,
+          Post => (if N = 1 then Is_Happy'Result = 1);
+
+   --  util.c: polygonal_root. True when N is a K-gonal number.
+   function Is_Polygonal (N, K : U64) return Boolean
+     with Pre => K >= 3,
+          Post => (if N <= 1 then Is_Polygonal'Result);
+
+   --  util.c: pillai_v. Smallest V with V! = -1 mod N and N mod V /= 1,
+   --  else 0.
+   function Is_Pillai (N : U64) return U64
+     with Pre => True,
+          Post => (if N < 23 then Is_Pillai'Result = 0);
+
+   --  Kind of Stirling number for Stirling.
+   subtype Stirling_Kind is Positive range 1 .. 3;
+
+   --  util.c: stirling1 (Kind 1, signed), stirling2 (Kind 2) and
+   --  stirling3 (Kind 3, Lah numbers). Undefined past a native U64.
+   function Stirling (N, K : U64; Kind : Stirling_Kind := 1)
+     return Optional_I128
+     with Pre => True,
+          Post => (if N = K then Stirling'Result = (True, 1));
+
+   --  util.c: partitions. Number of partitions of N; undefined past U64.
+   function Partitions (N : U64) return Optional_U64
+     with Pre => True,
+          Post => (if N <= 1 then Partitions'Result = (True, 1));
+
+   --  util.c: partitions into distinct parts (partitionsq); undefined
+   --  past U64.
+   function Partitionsq (N : U64) return Optional_U64
+     with Pre => True,
+          Post => (if N <= 1 then Partitionsq'Result = (True, 1));
+
 end Math_Prime_Util.Combinat;
