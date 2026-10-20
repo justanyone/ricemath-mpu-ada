@@ -17,3 +17,8 @@ The first compiled run reached all tests. Signed product fixtures exposed an ove
 About five minutes remain in the session budget. Validate the corrected head and keep remaining APIs explicit.
 Gate is green with all 40 tests passing under isolated offline settings. Thirteen public task functions are now present; fourteen are still absent.
 Added Harmfrac with the reference binary split and denominator cancellation for wide intermediates. Added exact rational fixture and difference-law tests.
+All 41 tests pass, including the new Harmfrac fixtures. Reduced the rational property range so cross-products fit U128 without modular wrap.
+NOTES: Remaining APIs: Stirling, Integer_Complexity, Bernfrac, Frobenius_Number, Is_Congruent_Number, Is_Polygonal, Is_Pillai, Is_Happy, Hclassno, Numtoperm, Permtonum, Partitions, Partitionsq.
+NOTES: Signed Binomial and negative-argument error fixtures still need coverage. Existing fixture files, tools, manifests, and STATUS.md were not edited.
+NOTES: Offline runs need ALIRE_SETTINGS_DIR under obj/combinat-alire and the installed compiler and gprbuild on PATH. The temporary local index and copied dependencies are ignored under obj/.
+Final review found one overlong exception-handler line; wrapped it to the 79-column convention.

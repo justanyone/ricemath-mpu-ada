@@ -72,7 +72,8 @@ package body Compat_Combinat is
                      begin
                         R := Multifactorial (A, B);
                      exception
-                        when Ada.Assertions.Assertion_Error | Constraint_Error =>
+                        when Ada.Assertions.Assertion_Error
+                           | Constraint_Error =>
                            Raised := True;
                      end;
                      AUnit.Assertions.Assert (Raised, "zero step");
