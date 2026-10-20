@@ -16,3 +16,5 @@ All modular fixtures pass. Exact fixtures expose wide intermediate overflow;
 Lucas(-1) also needs its signed extension. Fixing these before the final gate.
 Removed unused final Q powers; remaining failure needs independent U/V overflow.
 All modular, Fibonacci, and Lucas-number fixture groups now pass.
+Used unsigned wide final subtraction so U remains defined when V overflows.
+About five minutes remain; next checks are the fixture rerun and final gate.
