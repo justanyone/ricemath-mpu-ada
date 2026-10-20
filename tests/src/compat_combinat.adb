@@ -24,7 +24,7 @@ package body Compat_Combinat is
       A, B, Expected : U64 := 0;
       R : Optional_U64;
       Signed_R : Optional_I128;
-      Signed_A, Signed_Expected : I128;
+      Signed_A, Signed_Expected : I128 := 0;
       Signed_Input : Boolean;
       Fits, Inputs_Fit : Boolean;
    begin

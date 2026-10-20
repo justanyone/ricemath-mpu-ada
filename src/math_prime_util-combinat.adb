@@ -102,7 +102,8 @@ package body Math_Prime_Util.Combinat with SPARK_Mode => On is
    function Bell_Number (N : U64) return Optional_U64 is
       --  Wide scratch entries retain the final row's unused large values.
       use type U128;
-      Row, Next : array (Natural range 0 .. 26) of U128 := [others => 0];
+      type Bell_Row is array (Natural range 0 .. 26) of U128;
+      Row, Next : Bell_Row := [others => 0];
    begin
       if N <= 1 then
          return (True, 1);
@@ -223,6 +224,8 @@ package body Math_Prime_Util.Combinat with SPARK_Mode => On is
 
    --  util.c: stirling2 inclusion-exclusion formula. The caller bounds
    --  N to 18, so all signed wide intermediates fit.
+   function Stirling_Second (N, M : U64) return U64;
+
    function Stirling_Second (N, M : U64) return U64 is
       Sum : I128 := 0;
       Term : I128;

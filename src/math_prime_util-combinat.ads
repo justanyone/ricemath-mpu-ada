@@ -11,6 +11,7 @@ package Math_Prime_Util.Combinat with SPARK_Mode => On is
       end case;
    end record;
    subtype Optional_U64 is Math_Prime_Util.Int.Optional_U64;
+   use type Optional_U64;
 
    --  util.c: factorial. Exact nonnegative result; undefined on
    --  native overflow. Inputs are unsigned integers.
