@@ -13,3 +13,4 @@ Offline compiler selection now succeeds after adding installed toolchain metadat
 Compilation reproduced the reported GNAT vector reference finalizer link defect. Trying an explicit no-inline directive on the public vector reference operations.
 The no-inline directive was not legal on a nested instance. Replaced it with an explicit constant-reference lifetime in Sum_Primes to force finalizer emission without changing the API.
 An explicit reference lifetime did not fix GNAT linking. Moved the public vector instance to a library-level sibling unit and kept the existing Prime_Vectors API as a rename.
+The standalone generic still omitted its finalizer with optimization. Testing unit-local Optimize (Off) for the container only; arithmetic sieve code keeps normal optimization.
