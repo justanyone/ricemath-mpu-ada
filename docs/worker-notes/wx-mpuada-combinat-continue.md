@@ -12,3 +12,4 @@ Copied installed toolchain into ignored obj/ to keep all Alire writes within the
 Local PATH enabled compilation. Fixed inherited Bell-row anonymous-array type error and new option equality visibility. Existing Int style diagnostics remain outside task paths.
 Built a temporary local AUnit index under ignored obj/ using installed files; no dependency or build scripts changed.
 Local index now resolves AUnit and GNAT. Compiler has started; checking the new fixture and property units.
+The first compiled run reached all tests. Signed product fixtures exposed an overlarge-result parser failure; replaced conversion with checked magnitude parsing.
