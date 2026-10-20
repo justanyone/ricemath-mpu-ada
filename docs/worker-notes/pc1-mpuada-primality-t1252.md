@@ -7,3 +7,4 @@ Added Perrin signature doubling and three Frobenius variants; next complete depe
 All deterministic entry points now exist; first test build started. About five minutes remain for compiler fixes, fixture failures, and gate validation.
 Test script blocked: Alire attempted to clone its community index and network is unavailable. Checking preinstalled toolchain/configuration without modifying build tooling.
 Offline Alire setup found cached AUnit and compiler; local obj copy avoids writing outside worktree. Compiler selection still blocks builds; completing source review meanwhile.
+Offline toolchain selection could not find installed release metadata; no tests have executed. Reviewing contracts and native-only fixture limitations; random MR remains intentionally absent.
