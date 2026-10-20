@@ -16,3 +16,6 @@ Bigint replay is written. Offline setup still cannot select cached toolchains; t
 Using the installed toolchain cache with a worktree-local AUnit copy; generated build files stay under this worktree.
 Created local index metadata from installed tools; validating bigint compilation and fixtures next.
 Local index resolved the compiler and AUnit offline. About five minutes remain; prioritize compiling, fixture failures, and gate evidence.
+First compiled fixture run found six validation differences. Added explicit input checks and enabled validation profile for the tested library.
+Validation-profile build underway with worktree-local dependency archives; temporary test dependency pin has been removed.
+All bigint fixtures except fromdigits pass with checks on; its base contract was too restrictive for positional text in bases above 36.

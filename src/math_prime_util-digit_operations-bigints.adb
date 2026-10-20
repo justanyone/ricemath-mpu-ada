@@ -1,5 +1,4 @@
 with Ada.Characters.Handling;
-with Ada.Strings.Fixed;
 
 package body Math_Prime_Util.Digit_Operations.Bigints is
    function Absint (A : Big_Integer)
@@ -155,6 +154,9 @@ package body Math_Prime_Util.Digit_Operations.Bigints is
       Alphabet : constant String := "0123456789abcdefghijklmnopqrstuvwxyz";
       D : constant Digit_Array := Todigits (N, Base, Length);
    begin
+      if Base < 2 or Base > 36 then
+         raise Constraint_Error with "invalid string base";
+      end if;
       return Result : String (D'Range) do
          for I in D'Range loop
             Result (I) := Alphabet (To_Integer (D (I)) + 1);
@@ -208,13 +210,24 @@ package body Math_Prime_Util.Digit_Operations.Bigints is
 
    function Is_Palindrome
      (N : Big_Integer; Base : Big_Integer := 10) return Boolean is
-     (N >= 0 and then Reverse_Digits (N, Base) = N);
+   begin
+      if N < 0 then
+         raise Constraint_Error with "negative palindrome input";
+      end if;
+      return Reverse_Digits (N, Base) = N;
+   end Is_Palindrome;
    function Is_Harshad
      (N : Big_Integer; Base : Big_Integer := 10) return Boolean is
      (N > 0 and then N mod Sumdigits (N, Base) = 0);
    function Digital_Root
      (N : Big_Integer; Base : Big_Integer := 10) return Big_Integer is
-     (if N = 0 then To_Big_Integer (0) else 1 + (abs N - 1) mod (Base - 1));
+   begin
+      if N < 0 then
+         raise Constraint_Error with "negative digital root input";
+      end if;
+      return (if N = 0 then To_Big_Integer (0)
+              else 1 + (N - 1) mod (Base - 1));
+   end Digital_Root;
 
    function Mult_Digital_Root
      (N : Big_Integer; Base : Big_Integer := 10) return Big_Integer
@@ -222,6 +235,9 @@ package body Math_Prime_Util.Digit_Operations.Bigints is
       R : Big_Integer := abs N;
       V : Big_Integer;
    begin
+      if N < 0 then
+         raise Constraint_Error with "negative digit product input";
+      end if;
       while R >= Base loop
          V := R;
          R := To_Big_Integer (1);
@@ -251,6 +267,9 @@ package body Math_Prime_Util.Digit_Operations.Bigints is
       V : Big_Integer := N;
       Count : Natural := 0;
    begin
+      if N < 0 then
+         raise Constraint_Error with "negative Zeckendorf input";
+      end if;
       if N = 0 then
          return "0";
       end if;
@@ -308,6 +327,18 @@ package body Math_Prime_Util.Digit_Operations.Bigints is
       if Native.Defined then
          return From_String (I128'Image (Native.Value));
       end if;
-      return From_String (Text);
+      declare
+         First : Integer := Text'First;
+      begin
+         if Text'Length > 0 and then Text (First) in '+' | '-' then
+            First := First + 1;
+         end if;
+         if First > Text'Last or else
+           (for some C of Text (First .. Text'Last) => C not in '0' .. '9')
+         then
+            raise Constraint_Error with "invalid integer text";
+         end if;
+         return From_String (Text);
+      end;
    end Toint;
 end Math_Prime_Util.Digit_Operations.Bigints;
