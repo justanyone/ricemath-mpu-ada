@@ -7,3 +7,4 @@ Added list-returning vecpairwise/vecwindow overloads that concatenate callback r
 Focused tests blocked before compilation: missing lockfiles and Alire configuration trigger an unavailable network index clone. Host has cached GNAT, GPRbuild and AUnit; investigating a workspace-only offline configuration without changing  <<cut 21 chars by kit>>
 
 KIT NOTE, NOT FILE CONTENT: this output was shortened by the kit; the file on disk is whole; show a part with sed -n A,Bp FILE (kit removed -3 bytes)
+Configured a temporary index under ignored obj/ using cached AUnit sources and the host toolchain PATH; repository manifests remain unchanged. Retrying the prescribed test script with that offline configuration.
