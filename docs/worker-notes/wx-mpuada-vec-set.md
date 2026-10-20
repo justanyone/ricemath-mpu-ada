@@ -27,3 +27,6 @@ reference insertion kernel, not its complete production sort dispatch.
 Sidon and sumfree results use wide exhaustive checks; hashed/binary-search
 reference methods remain to be ported. No performance claim or SPARK proof.
 Gate did not reach green: test crate cannot resolve its external compiler.
+Final: implementation and two suites are on disk; launcher owns commits.
+Strict library compilation passed; runtime tests and gate remain unverified.
+No fixtures, status ticks, manifests, or repository build tools were changed.

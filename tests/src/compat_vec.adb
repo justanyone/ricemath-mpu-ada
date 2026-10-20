@@ -357,7 +357,8 @@ package body Compat_Vec is
       Registration.Register_Routine
         (T, Test_Set_Is_Proper_Superset'Access, "set_is_proper_superset");
       Registration.Register_Routine
-        (T, Test_Set_Is_Proper_Intersection'Access, "set_is_proper_intersection");
+        (T, Test_Set_Is_Proper_Intersection'Access,
+         "set_is_proper_intersection");
       Registration.Register_Routine
         (T, Test_Is_Sidon_Set'Access, "is_sidon_set");
       Registration.Register_Routine
