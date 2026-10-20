@@ -273,7 +273,7 @@ package body Math_Prime_Util.Sieve is
       if Width = 0 then
          return Result;
       end if;
-      High := Start + Width - 1;
+      High := Start + (Width - 1);
       if High < 2 then
          return Result;
       end if;

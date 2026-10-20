@@ -6,3 +6,4 @@ Read the current port and reference paths. Missing primality dependencies requir
 Added strict prime navigation, native boundary handling, partial sieve offsets, and cluster checks. Focused fixture tests now exercise all new public functions; large prefix sums remain pending.
 Focused test could not compile: Alire tried to create its community index and DNS is unavailable. Checking installed offline toolchain settings before the final gate.
 About five minutes remain. Native APIs and fixture dispatch are written. Offline validation is blocked by absent checkout Alire state; locating cached dependency setup.
+Gate also stops at Alire index initialization. Added boundary and round-trip tests. The full optimized C sum and cluster residue paths still need work.
