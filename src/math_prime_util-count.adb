@@ -84,4 +84,93 @@ package body Math_Prime_Util.Count is
    begin
       return Sum_Primes (0, High);
    end Sum_Primes;
+
+   type Count_Array is array (U64 range <>) of U64;
+
+   function Prime_Count (High : U64) return U64 is
+      R : constant U64 := Int.Sqrtint (High);
+      --  Small (V) = S (V) for V <= R; Large (I) = S (High / I).
+      Small : Count_Array (0 .. R) := (others => 0);
+      Large : Count_Array (0 .. R) := (others => 0);
+   begin
+      if High < 2 then
+         return 0;
+      end if;
+      for V in U64 range 1 .. R loop
+         Small (V) := V - 1;
+      end loop;
+      for I in U64 range 1 .. R loop
+         Large (I) := High / I - 1;
+      end loop;
+      for P in U64 range 2 .. R loop
+         if Small (P) > Small (P - 1) then
+            declare
+               Sp : constant U64 := Small (P - 1);
+               P2 : constant U64 := P * P;
+            begin
+               for I in U64 range 1 .. U64'Min (R, High / P2) loop
+                  declare
+                     D : constant U64 := I * P;
+                  begin
+                     if D <= R then
+                        Large (I) := Large (I) - (Large (D) - Sp);
+                     else
+                        Large (I) := Large (I) - (Small (High / D) - Sp);
+                     end if;
+                  end;
+               end loop;
+               for V in reverse P2 .. R loop
+                  Small (V) := Small (V) - (Small (V / P) - Sp);
+               end loop;
+            end;
+         end if;
+      end loop;
+      return Large (1);
+   end Prime_Count;
+
+   function Legendre_Phi (X : U64; A : Natural) return U64 is
+      type Prime_List is array (Positive range <>) of U64;
+
+      --  legendre_phi.c: _legendre_phi, phi (x, a) = phi (x, a - 1)
+      --  - phi (x / p_a, a - 1), with phi (x, 0) = x.
+      function Phi (Value : U64; K : Natural; Pr : Prime_List) return U64
+      is
+      begin
+         if K = 0 or Value = 0 then
+            return Value;
+         end if;
+         return Phi (Value, K - 1, Pr) - Phi (Value / Pr (K), K - 1, Pr);
+      end Phi;
+   begin
+      if A = 0 then
+         return X;
+      end if;
+      declare
+         Pr : Prime_List (1 .. A);
+         Cur : U64 := 1;
+      begin
+         for I in Pr'Range loop
+            Cur := Sieve.Next_Prime (Cur).Value;
+            Pr (I) := Cur;
+         end loop;
+         return Phi (X, A, Pr);
+      end;
+   end Legendre_Phi;
+
+   function Nth_Prime (N : U64) return U64 is
+      Lo : U64 := 2;
+      Hi : U64 := 20 * N;
+      Mid : U64;
+   begin
+      --  Invariant: Prime_Count (Hi) >= N, since p_N < 20 N here.
+      while Lo < Hi loop
+         Mid := Lo + (Hi - Lo) / 2;
+         if Prime_Count (Mid) >= N then
+            Hi := Mid;
+         else
+            Lo := Mid + 1;
+         end if;
+      end loop;
+      return Lo;
+   end Nth_Prime;
 end Math_Prime_Util.Count;
