@@ -1,3 +1,0 @@
-- Continue run: finish random family (compat/prop tests, signed/bigint fixture coverage, SPARK notes). Checking state first.
-- 13:24 gate green (random 50/50). Checking skip comments.
-- 13:24 Final: acceptance criteria met on head. Signed/bigint ranges and SPARK are not in the task text (skips named in compat_random.adb); left out, noted as remaining scope.
