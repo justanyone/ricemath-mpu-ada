@@ -41,15 +41,15 @@ package body Compat_Real is
             X := (if C.Args.Is_Empty then 0.0 else
                     Number (To_String (C.Args (1))));
             if Func = "ExponentialIntegral" then
-               Actual := Exponential_Integral (X);
+               Actual := Exponentialintegral (X);
             elsif Func = "LogarithmicIntegral" then
-               Actual := Logarithmic_Integral (X);
+               Actual := Logarithmicintegral (X);
             elsif Func = "RiemannZeta" then
-               Actual := Riemann_Zeta (X);
+               Actual := Riemannzeta (X);
             elsif Func = "RiemannR" then
-               Actual := Riemann_R (X);
+               Actual := Riemannr (X);
             elsif Func = "LambertW" then
-               Actual := Lambert_W (X);
+               Actual := Lambertw (X);
             elsif Func = "inverse_li" then
                Actual := Inverse_Li (X);
             elsif Func = "inverse_li_nv" then
@@ -106,31 +106,31 @@ package body Compat_Real is
            Func & " error row" & Positive'Image (C.Line_Number));
       end loop;
    end Replay;
-   procedure Test_Exponential_Integral (T : in out Test_Case'Class);
-   procedure Test_Exponential_Integral (T : in out Test_Case'Class) is
+   procedure Test_Exponentialintegral (T : in out Test_Case'Class);
+   procedure Test_Exponentialintegral (T : in out Test_Case'Class) is
    begin
       Replay ("ExponentialIntegral");
-   end Test_Exponential_Integral;
-   procedure Test_Logarithmic_Integral (T : in out Test_Case'Class);
-   procedure Test_Logarithmic_Integral (T : in out Test_Case'Class) is
+   end Test_Exponentialintegral;
+   procedure Test_Logarithmicintegral (T : in out Test_Case'Class);
+   procedure Test_Logarithmicintegral (T : in out Test_Case'Class) is
    begin
       Replay ("LogarithmicIntegral");
-   end Test_Logarithmic_Integral;
-   procedure Test_Riemann_Zeta (T : in out Test_Case'Class);
-   procedure Test_Riemann_Zeta (T : in out Test_Case'Class) is
+   end Test_Logarithmicintegral;
+   procedure Test_Riemannzeta (T : in out Test_Case'Class);
+   procedure Test_Riemannzeta (T : in out Test_Case'Class) is
    begin
       Replay ("RiemannZeta");
-   end Test_Riemann_Zeta;
-   procedure Test_Riemann_R (T : in out Test_Case'Class);
-   procedure Test_Riemann_R (T : in out Test_Case'Class) is
+   end Test_Riemannzeta;
+   procedure Test_Riemannr (T : in out Test_Case'Class);
+   procedure Test_Riemannr (T : in out Test_Case'Class) is
    begin
       Replay ("RiemannR");
-   end Test_Riemann_R;
-   procedure Test_Lambert_W (T : in out Test_Case'Class);
-   procedure Test_Lambert_W (T : in out Test_Case'Class) is
+   end Test_Riemannr;
+   procedure Test_Lambertw (T : in out Test_Case'Class);
+   procedure Test_Lambertw (T : in out Test_Case'Class) is
    begin
       Replay ("LambertW");
-   end Test_Lambert_W;
+   end Test_Lambertw;
    procedure Test_Inverse_Li (T : in out Test_Case'Class);
    procedure Test_Inverse_Li (T : in out Test_Case'Class) is
    begin
@@ -159,15 +159,15 @@ package body Compat_Real is
    overriding procedure Register_Tests (T : in out Real_Case) is
    begin
       Registration.Register_Routine
-        (T, Test_Exponential_Integral'Access, "ExponentialIntegral");
+        (T, Test_Exponentialintegral'Access, "ExponentialIntegral");
       Registration.Register_Routine
-        (T, Test_Logarithmic_Integral'Access, "LogarithmicIntegral");
+        (T, Test_Logarithmicintegral'Access, "LogarithmicIntegral");
       Registration.Register_Routine
-        (T, Test_Riemann_Zeta'Access, "RiemannZeta");
+        (T, Test_Riemannzeta'Access, "RiemannZeta");
       Registration.Register_Routine
-        (T, Test_Riemann_R'Access, "RiemannR");
+        (T, Test_Riemannr'Access, "RiemannR");
       Registration.Register_Routine
-        (T, Test_Lambert_W'Access, "LambertW");
+        (T, Test_Lambertw'Access, "LambertW");
       Registration.Register_Routine
         (T, Test_Inverse_Li'Access, "inverse_li");
       Registration.Register_Routine

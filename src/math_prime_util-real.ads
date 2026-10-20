@@ -1,21 +1,21 @@
 --  Real functions from Math::Prime::Util 0.75.
 package Math_Prime_Util.Real is
    subtype F64 is Long_Float;
-   --  real.c: Ei, _Ei. Exponential integral; zero returns -Inf (XS.xs).
-   function Exponential_Integral (X : F64) return F64
+   --  real.c: Ei, _Ei. Exponential integral; zero returns -Inf (Util.pm).
+   function Exponentialintegral (X : F64) return F64
      with Pre => True, Post => True;
    --  real.c: Li, _Li. Logarithmic integral; negative is invalid.
-   function Logarithmic_Integral (X : F64) return F64
+   function Logarithmicintegral (X : F64) return F64
      with Pre => X >= 0.0 or else X /= X, Post => True;
    --  real.c: ld_riemann_zeta. Returns zeta(X) minus one.
-   function Riemann_Zeta (X : F64) return F64
+   function Riemannzeta (X : F64) return F64
      with Pre => X >= 0.0 or else X /= X, Post => True;
    --  real.c: RiemannR. Prime counting estimate; X must be positive.
-   function Riemann_R
+   function Riemannr
      (X : F64; Epsilon : F64 := 1.0E-16) return F64
      with Pre => X > 0.0 or else X /= X, Post => True;
    --  real.c: lambertw. Principal real branch; X must be >= -1/e.
-   function Lambert_W (X : F64) return F64
+   function Lambertw (X : F64) return F64
      with Pre => X >= -0.36787944117145 or else X /= X,
           Post => True;
    --  real.c: inverse_li. Integral ceiling of the inverse li, or zero.

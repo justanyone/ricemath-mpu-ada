@@ -19,19 +19,29 @@ package body Prop_Real is
       X, W : F64;
       Seed : Math_Prime_Util.U64 := 20_261_020;
    begin
+      AUnit.Assertions.Assert
+        (abs (Riemannzeta (2.0) + 1.0 -
+          3.14159265358979323846 ** 2 / 6.0) < 1.0E-15,
+         "zeta two identity");
+      AUnit.Assertions.Assert (Riemannr (1.0) = 1.0, "R(1)");
       for I in 1 .. 100 loop
          Seed := Seed * 6_364_136_223_846_793_005 + 1;
          X := F64 (Seed mod 100 + 1) / 10.0;
-         W := Lambert_W (X);
+         W := Inverse_Li (F64 (I));
+         AUnit.Assertions.Assert
+           (Logarithmicintegral (W) >= F64 (I) and then
+            Logarithmicintegral (W - 1.0) < F64 (I),
+            "integer inverse ceiling");
+         W := Lambertw (X);
          AUnit.Assertions.Assert
            (abs (W * Exp (W) - X) < 1.0E-13 * X,
             "Lambert inverse seed 20261020");
          AUnit.Assertions.Assert
-           (abs (Logarithmic_Integral (Exp (X)) -
-              Exponential_Integral (X)) <
-                1.0E-12 * abs Exponential_Integral (X), "li/Ei identity");
+           (abs (Logarithmicintegral (Exp (X)) -
+              Exponentialintegral (X)) <
+                1.0E-12 * abs Exponentialintegral (X), "li/Ei identity");
          AUnit.Assertions.Assert
-           (abs (Logarithmic_Integral (Inverse_Li_Nv (X)) - X) <
+           (abs (Logarithmicintegral (Inverse_Li_Nv (X)) - X) <
               1.0E-12 * X, "inverse li round trip");
          AUnit.Assertions.Assert
            (abs (Harmreal (I) - Harmreal (I - 1) - 1.0 / F64 (I)) <
@@ -39,7 +49,7 @@ package body Prop_Real is
          AUnit.Assertions.Assert
            (Bernreal (2 * I + 1) = 0.0, "odd Bernoulli zero");
          AUnit.Assertions.Assert
-           (Riemann_R (X) = Riemann_R (X), "repeat call");
+           (Riemannr (X) = Riemannr (X), "repeat call");
       end loop;
    end Check_Laws;
    procedure Concurrent_Calls (T : in out Test_Case'Class);
@@ -50,8 +60,8 @@ package body Prop_Real is
       task body Worker is
       begin
          for I in 1 .. 100 loop
-            Values (Index) := Riemann_R (1000.0) +
-              Lambert_W (1000.0) + Harmreal (1000);
+            Values (Index) := Riemannr (1000.0) +
+              Lambertw (1000.0) + Harmreal (1000);
          end loop;
       end Worker;
    begin

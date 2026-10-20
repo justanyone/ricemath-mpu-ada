@@ -317,27 +317,27 @@ package body Math_Prime_Util.Real is
       end loop;
       return T;
    end Inverse;
-   function Exponential_Integral (X : F64) return F64 is
+   function Exponentialintegral (X : F64) return F64 is
    begin
       if X = 0.0 then
          return F64 (-Infinity);
       end if;
       return F64 (Ei (Wide (X)));
-   end Exponential_Integral;
-   function Logarithmic_Integral (X : F64) return F64 is
+   end Exponentialintegral;
+   function Logarithmicintegral (X : F64) return F64 is
    begin
       if X < 0.0 then
          raise Constraint_Error with "LogarithmicIntegral: negative input";
       end if;
       return F64 (Li (Wide (X)));
-   end Logarithmic_Integral;
-   function Riemann_Zeta (X : F64) return F64 is
+   end Logarithmicintegral;
+   function Riemannzeta (X : F64) return F64 is
    begin
       if X < 0.0 then
          raise Constraint_Error with "RiemannZeta: negative input";
       end if;
       return F64 (Zeta (Wide (X)));
-   end Riemann_Zeta;
+   end Riemannzeta;
    function Inverse_Li_Nv (X : F64) return F64 is
    begin
       if not (X >= 0.0 and then X <= F64'Last / 1024.0) then
@@ -381,7 +381,7 @@ package body Math_Prime_Util.Real is
       end loop;
       return M;
    end Moebius;
-   function Riemann_R
+   function Riemannr
      (X : F64; Epsilon : F64 := 1.0E-16) return F64
    is
       S : Accumulator;
@@ -419,7 +419,7 @@ package body Math_Prime_Util.Real is
          end loop;
       end if;
       return F64 (Value (S));
-   end Riemann_R;
+   end Riemannr;
    function Lambert_Approx (X : Wide) return Wide;
    function Lambert_Approx (X : Wide) return Wide is
       W, K1, K2, K3 : Wide;
@@ -479,7 +479,7 @@ package body Math_Prime_Util.Real is
       end if;
       return W;
    end Lambert_Approx;
-   function Lambert_W (X : F64) return F64 is
+   function Lambertw (X : F64) return F64 is
       W, W1, Zn, Qn, En, Wen : Wide;
    begin
       if X /= X or else Wide (X) = Infinity then
@@ -509,7 +509,7 @@ package body Math_Prime_Util.Real is
          exit when abs Wen <= 64.0 * Eps;
       end loop;
       return F64 (W);
-   end Lambert_W;
+   end Lambertw;
    function Pi (Digit_Count : Natural := 0) return String is
       Count : constant Positive := (if Digit_Count = 0 then 15 else Digit_Count);
       C : Natural := 14 * ((Count + 1) / 4 + 2);
