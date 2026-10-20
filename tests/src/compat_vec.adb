@@ -288,7 +288,8 @@ package body Compat_Vec is
       Replay ("set_is_proper_superset");
    end Test_Set_Is_Proper_Superset;
 
-   procedure Test_Set_Is_Proper_Intersection (T : in out Test_Case'Class) is
+   procedure Test_Set_Is_Proper_Intersection
+     (T : in out Test_Case'Class) is
    begin
       Replay ("set_is_proper_intersection");
    end Test_Set_Is_Proper_Intersection;

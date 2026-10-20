@@ -18,3 +18,6 @@ No manifest or tooling changes were made. Continue validation within obj.
 Offline Alire cannot select gnat_external despite working host binaries.
 Stop retrying that resolver; run a compiler check and the required gate.
 About five minutes remain: prioritize a correct partial port and clear limits.
+Vec now passes gcc -gnat2022 -gnata -gnaty -gnatwa -gnatwe compilation.
+Gate builds development and release, then fails tests compiler resolution.
+Existing Int style messages were observed and left outside task scope.

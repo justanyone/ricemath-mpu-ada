@@ -30,7 +30,7 @@ package body Math_Prime_Util.Vec is
 
    function Vecrsort (A : Vector) return Vector is
       S : constant Vector := Vecsort (A);
-      R : Vector (S'Range);
+      R : Vector (S'Range) := [others => 0];
    begin
       for I in R'Range loop
          R (I) := S (S'Last - I + 1);
@@ -43,7 +43,7 @@ package body Math_Prime_Util.Vec is
 
    function Toset (A : Vector) return Vector is
       S : constant Vector := Vecsort (A);
-      R : Vector (S'Range);
+      R : Vector (S'Range) := [others => 0];
       N : Natural := 0;
    begin
       for V of S loop
@@ -56,7 +56,7 @@ package body Math_Prime_Util.Vec is
    end Toset;
 
    function Vecuniq (A : Vector) return Vector is
-      R : Vector (1 .. A'Length);
+      R : Vector (1 .. A'Length) := [others => 0];
       N : Natural := 0;
    begin
       for V of A loop
@@ -69,7 +69,7 @@ package body Math_Prime_Util.Vec is
    end Vecuniq;
 
    function Vecsingleton (A : Vector) return Vector is
-      R : Vector (1 .. A'Length);
+      R : Vector (1 .. A'Length) := [others => 0];
       N, Count : Natural := 0;
    begin
       for V of A loop
@@ -87,6 +87,8 @@ package body Math_Prime_Util.Vec is
       return R (1 .. N);
    end Vecsingleton;
 
+   function Missing (A : Vector; Start : I64) return I64;
+
    function Missing (A : Vector; Start : I64) return I64 is
       M : I64 := Start;
    begin
@@ -102,6 +104,8 @@ package body Math_Prime_Util.Vec is
    function Vecequal (A, B : Vector) return Boolean is (A = B);
 
    type Set_Operation is (Union_Op, Intersect_Op, Minus_Op, Delta_Op);
+
+   function Merge (A, B : Vector; Op : Set_Operation) return Vector;
 
    function Merge (A, B : Vector; Op : Set_Operation) return Vector is
       R : Vector (1 .. A'Length + B'Length);
@@ -159,7 +163,7 @@ package body Math_Prime_Util.Vec is
      (Setdelta (A, B));
 
    function Setcontains (A, B : Vector) return Boolean is
-     (Setminus (B, A)'Length = 0);
+     (Setminus (A => B, B => A)'Length = 0);
 
    function Setcontainsany (A, B : Vector) return Boolean is
      (Setintersect (A, B)'Length > 0);
@@ -177,14 +181,14 @@ package body Math_Prime_Util.Vec is
      (A'Length > B'Length and then Setcontains (A, B));
 
    function Set_Is_Superset (A, B : Vector) return Boolean is
-     (Setcontains (B, A));
+     (Setcontains (A => B, B => A));
 
    function Set_Is_Proper_Superset (A, B : Vector) return Boolean is
-     (A'Length < B'Length and then Setcontains (B, A));
+     (A'Length < B'Length and then Setcontains (A => B, B => A));
 
    function Set_Is_Proper_Intersection (A, B : Vector) return Boolean is
      (Setcontainsany (A, B) and then
-      not Setcontains (A, B) and then not Setcontains (B, A));
+      not Setcontains (A, B) and then not Setcontains (A => B, B => A));
 
    function Is_Sidon_Set (A : Vector) return Boolean is
    begin
