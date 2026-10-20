@@ -203,8 +203,37 @@ package body Prop_Vec is
          "firstidx stops at first match");
    end Check_List_Laws;
 
+   procedure Check_Upper_Bounds (T : in out Test_Case'Class);
+
+   procedure Check_Upper_Bounds (T : in out Test_Case'Class) is
+      A : constant Vector (Positive'Last - 1 .. Positive'Last) := [1, 2];
+      Indices : constant Vector (Positive'Last .. Positive'Last) := [1];
+      function Identity (Window : Vector) return Vector is (Window);
+   begin
+      AUnit.Assertions.Assert
+        (Setunion (A, A) = Vector'[1, 2], "set at upper index bound");
+      AUnit.Assertions.Assert
+        (Vecprefixsum (A) = Wide_Vector'[1, 3],
+         "prefix sum at upper index bound");
+      AUnit.Assertions.Assert
+        (Vecextract (A, Indices) = Optional_Vector'[(True, 2)],
+         "extraction indices at upper index bound");
+      AUnit.Assertions.Assert
+        (Vecslide (A, Add'Access) = Vector'[3],
+         "slide at upper index bound");
+      AUnit.Assertions.Assert
+        (Vecpairwise (A, A, Add'Access) = Vector'[2, 4],
+         "pairwise at upper index bound");
+      AUnit.Assertions.Assert
+        (Vecwindow (A, 1, 2, Total'Access) = Vector'[3]
+         and then Vecwindow (A, 1, 2, Identity'Access) = A,
+         "window at upper index bound");
+   end Check_Upper_Bounds;
+
    overriding procedure Register_Tests (T : in out Vec_Case) is
    begin
+      Registration.Register_Routine
+        (T, Check_Upper_Bounds'Access, "upper index bounds");
       Registration.Register_Routine
         (T, Check_List_Laws'Access, "list laws and short circuit");
       Registration.Register_Routine (T, Check_Laws'Access, "set laws");
