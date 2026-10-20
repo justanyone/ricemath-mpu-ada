@@ -1,5 +1,6 @@
 with AUnit.Assertions;
 with AUnit.Test_Cases;
+with Math_Prime_Util.Config;
 with Math_Prime_Util.Int;
 
 package body Prop_Int is
@@ -69,10 +70,38 @@ package body Prop_Int is
          "signed minimum gcdext");
    end Check_Laws;
 
+   --  Laws of prime_set_config and prime_get_config: a set value is
+   --  read back, and the platform sizes agree with each other.
+   procedure Check_Config_Laws (T : in out Test_Case'Class) is
+      use Math_Prime_Util.Config;
+      Saved : constant Config_Record := Prime_Get_Config;
+   begin
+      for V in Natural range 0 .. 999 loop
+         Prime_Set_Config ("verbose", Natural'Image (V) (2 ..
+           Natural'Image (V)'Last));
+         AUnit.Assertions.Assert
+           (Prime_Get_Config.Verbose = V, "verbose round trip");
+      end loop;
+      for Flag in Boolean loop
+         Prime_Set_Config ("rh", (if Flag then "1" else "0"));
+         AUnit.Assertions.Assert
+           (Prime_Get_Config.Assume_RH = Flag, "assume_rh round trip");
+      end loop;
+      AUnit.Assertions.Assert
+        (Uvbits = Uvsize * 8, "uvbits is 8 times uvsize");
+      AUnit.Assertions.Assert
+        (Nvmantdigits < Nvmantbits, "digits are fewer than bits");
+      Prime_Set_Config ("verbose", Natural'Image (Saved.Verbose) (2 ..
+        Natural'Image (Saved.Verbose)'Last));
+      Prime_Set_Config ("rh", (if Saved.Assume_RH then "1" else "0"));
+   end Check_Config_Laws;
+
    overriding procedure Register_Tests (T : in out Int_Case) is
    begin
       Registration.Register_Routine
         (T, Check_Laws'Access, "integer laws seed 20261020");
+      Registration.Register_Routine
+        (T, Check_Config_Laws'Access, "config laws");
    end Register_Tests;
 
    function Suite return AUnit.Test_Suites.Access_Test_Suite is

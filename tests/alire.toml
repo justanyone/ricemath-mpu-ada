@@ -21,3 +21,6 @@ math_prime_util = { path = ".." }
 "*".compile_checks = "Warnings"
 "*".style_checks = "Yes"
 "*".ada_version = "Ada2022"
+
+[build-profiles]
+math_prime_util = "validation"
