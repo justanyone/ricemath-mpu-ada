@@ -1,17 +1,13 @@
 with Ada.Characters.Latin_1;
 with Ada.Directories;
-with Ada.Strings.Fixed;
-with Ada.Strings.Unbounded;
 with Ada.Text_IO;
 
 package body Fixture_Support is
-   use Ada.Strings.Unbounded;
-
    function Load (Family : String) return Case_Vectors.Vector is
       File : Ada.Text_IO.File_Type;
       Path : constant String := "../tests/fixtures/" & Family & ".tsv";
       Cases : Case_Vectors.Vector;
-      Number : Positive := 0;
+      Number : Natural := 0;
    begin
       if not Ada.Directories.Exists (Path) then
          raise Ada.Text_IO.Name_Error with Path;
