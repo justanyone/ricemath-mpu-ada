@@ -11,3 +11,5 @@ Added fixture replay per implemented function, with named bigint skips.
 Added seeded set laws, duplicate insert, shifted bounds, and invalid set checks.
 Focused test build started. Callback operations and arithmetic vectors remain.
 The current Sidon predicate uses exact wide comparisons; hash port is pending.
+Focused test stopped before compilation: Alire has no index in this sandbox.
+The cached compiler and AUnit exist; investigate offline resolution only.
