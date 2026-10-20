@@ -141,6 +141,11 @@ package body Math_Prime_Util.Count is
          if K = 0 or Value = 0 then
             return Value;
          end if;
+         if Value < Pr (K) then
+            return 1;
+         elsif K = 1 then
+            return Value - Value / 2;
+         end if;
          return Phi (Value, K - 1, Pr) - Phi (Value / Pr (K), K - 1, Pr);
       end Phi;
    begin

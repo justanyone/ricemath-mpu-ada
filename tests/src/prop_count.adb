@@ -21,6 +21,23 @@ package body Prop_Count is
       N : U64;
       Expected : U64;
    begin
+      for K in U64 range 1 .. 100 loop
+         N := Count.Nth_Prime (K);
+         AUnit.Assertions.Assert
+           (Count.Prime_Count (N) = K, "count nth inverse seed 20261020");
+         AUnit.Assertions.Assert
+           (Count.Prime_Count (N - 1) = K - 1,
+            "count prime increment seed 20261020");
+         AUnit.Assertions.Assert
+           (Count.Nth_Prime_Lower (K) <= N and then
+            N <= Count.Nth_Prime_Upper (K), "nth bounds seed 20261020");
+         AUnit.Assertions.Assert
+           (Count.Prime_Count_Lower (N) <= K and then
+            K <= Count.Prime_Count_Upper (N), "count bounds seed 20261020");
+         AUnit.Assertions.Assert
+           (Count.Legendre_Phi (N, 1) = N - N / 2,
+            "phi parity seed 20261020");
+      end loop;
       for I in 1 .. 100 loop
          Seed := Seed * 6_364_136_223_846_793_005 + 1;
          N := 2 + Seed mod 10_000;
