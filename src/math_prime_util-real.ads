@@ -1,9 +1,9 @@
 --  Real functions from Math::Prime::Util 0.75.
 package Math_Prime_Util.Real is
    subtype F64 is Long_Float;
-   --  real.c: Ei, _Ei. Exponential integral; zero is invalid.
+   --  real.c: Ei, _Ei. Exponential integral; zero returns -Inf (XS.xs).
    function Exponential_Integral (X : F64) return F64
-     with Pre => X /= 0.0, Post => True;
+     with Pre => True, Post => True;
    --  real.c: Li, _Li. Logarithmic integral; negative is invalid.
    function Logarithmic_Integral (X : F64) return F64
      with Pre => X >= 0.0 or else X /= X, Post => True;
