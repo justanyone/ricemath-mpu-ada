@@ -287,6 +287,72 @@ package body Compat_Combinat is
       Replay_Multi ("partitionsq");
    end Check_Partitionsq;
 
+   --  Native subset only: rows with a negative or bigint K, or more than
+   --  20 entries, are skipped.
+   procedure Check_Numtoperm (T : in out Test_Case'Class) is
+      Cases : constant Case_Vectors.Vector :=
+        For_Function (Load ("combinat"), "numtoperm");
+      N, K, V : U64;
+      Done : Boolean;
+   begin
+      AUnit.Assertions.Assert (not Cases.Is_Empty, "missing numtoperm");
+      for C of Cases loop
+         if Natural (C.Args.Length) = 2
+           and then Parse_U64 (To_String (C.Args (1)), N)
+           and then Parse_U64 (To_String (C.Args (2)), K)
+           and then N <= 20 and then not C.Error and then not C.Undef
+         then
+            declare
+               P : Perm_Array (0 .. Natural (N) - 1);
+               Text : Unbounded_String;
+            begin
+               Numtoperm (N, K, P, Done);
+               if Done then
+                  for I in P'Range loop
+                     Append (Text, (if I > 0 then " " else "")
+                       & Ada.Strings.Fixed.Trim
+                           (U64'Image (P (I)), Ada.Strings.Left));
+                  end loop;
+                  AUnit.Assertions.Assert
+                    (To_String (Text) = To_String (C.Result),
+                     "numtoperm" & Positive'Image (C.Line_Number));
+               end if;
+            end;
+         end if;
+      end loop;
+   end Check_Numtoperm;
+
+   procedure Check_Permtonum (T : in out Test_Case'Class) is
+      Cases : constant Case_Vectors.Vector :=
+        For_Function (Load ("combinat"), "permtonum");
+      V, Expected : U64;
+   begin
+      AUnit.Assertions.Assert (not Cases.Is_Empty, "missing permtonum");
+      for C of Cases loop
+         if not C.Error and then not C.Undef and then Natural (C.Args.Length) > 0
+           and then Natural (C.Args.Length) <= 20
+           and then Parse_U64 (To_String (C.Result), Expected)
+         then
+            declare
+               P : Perm_Array (0 .. Natural (C.Args.Length) - 1);
+               Ok : Boolean := True;
+               R : Optional_U64;
+            begin
+               for I in P'Range loop
+                  Ok := Parse_U64 (To_String (C.Args (I + 1)), V) and Ok;
+                  P (I) := V;
+               end loop;
+               if Ok then
+                  R := Permtonum (P);
+                  AUnit.Assertions.Assert
+                    (R.Defined and then R.Value = Expected,
+                     "permtonum" & Positive'Image (C.Line_Number));
+               end if;
+            end;
+         end if;
+      end loop;
+   end Check_Permtonum;
+
    procedure Check_Harmfrac (T : in out Test_Case'Class) is
       Cases : constant Case_Vectors.Vector :=
         For_Function (Load ("combinat"), "harmfrac");
@@ -352,6 +418,8 @@ package body Compat_Combinat is
       Register_Routine (T, Check_Stirling'Access, "stirling");
       Register_Routine (T, Check_Partitions'Access, "partitions");
       Register_Routine (T, Check_Partitionsq'Access, "partitionsq");
+      Register_Routine (T, Check_Numtoperm'Access, "numtoperm");
+      Register_Routine (T, Check_Permtonum'Access, "permtonum");
    end Register_Tests;
 
    function Suite return AUnit.Test_Suites.Access_Test_Suite is

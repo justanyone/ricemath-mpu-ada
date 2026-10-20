@@ -151,4 +151,20 @@ package Math_Prime_Util.Combinat with SPARK_Mode => On is
      with Pre => True,
           Post => (if N <= 1 then Partitionsq'Result = (True, 1));
 
+   type Perm_Array is array (Natural range <>) of U64;
+
+   --  util.c: numtoperm. The K-th (0-based, lexicographic) permutation of
+   --  0 .. N-1, for N <= 20; undefined when N > 20 or K >= N!.
+   procedure Numtoperm
+     (N, K : U64; Perm : out Perm_Array; Defined : out Boolean)
+     with Pre => N <= 20 and then Perm'Length = Natural (N);
+
+   --  util.c: permtonum. Lexicographic rank of a permutation of
+   --  0 .. P'Length-1; undefined when P is not a permutation or longer
+   --  than 20 entries.
+   function Permtonum (P : Perm_Array) return Optional_U64
+     with Pre => True,
+          Post => (if P'Length <= 1 and then P'Length = 0 then
+                     Permtonum'Result = (True, 0));
+
 end Math_Prime_Util.Combinat;

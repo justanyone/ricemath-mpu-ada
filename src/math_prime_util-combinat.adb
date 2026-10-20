@@ -573,4 +573,69 @@ package body Math_Prime_Util.Combinat with SPARK_Mode => On is
       return (True, U64 (Q (Natural (N))));
    end Partitionsq;
 
+   procedure Numtoperm
+     (N, K : U64; Perm : out Perm_Array; Defined : out Boolean)
+   is
+      Pool : Perm_Array (0 .. Natural (N)) := (others => 0);
+      Fact : U64 := 1;
+      Rest : U64 := K;
+      Count : Natural := Natural (N);
+      Idx : U64;
+   begin
+      Perm := (others => 0);
+      for I in 2 .. N loop
+         Fact := Fact * I;
+      end loop;
+      Defined := K < Fact;
+      if not Defined then
+         return;
+      end if;
+      for I in 0 .. Count - 1 loop
+         Pool (I) := U64 (I);
+      end loop;
+      for I in 0 .. Count - 1 loop
+         Fact := (if Count - I > 1 then Fact / U64 (Count - I) else 1);
+         Idx := Rest / Fact;
+         Rest := Rest mod Fact;
+         Perm (Perm'First + I) := Pool (Natural (Idx));
+         for J in Natural (Idx) .. Count - I - 2 loop
+            Pool (J) := Pool (J + 1);
+         end loop;
+      end loop;
+   end Numtoperm;
+
+   function Permtonum (P : Perm_Array) return Optional_U64 is
+      Len : constant Natural := P'Length;
+      Seen : array (0 .. 19) of Boolean := (others => False);
+      Rank : U64 := 0;
+      Fact : U64 := 1;
+      Smaller : U64;
+   begin
+      if Len > 20 then
+         return (Defined => False);
+      end if;
+      for I in P'Range loop
+         if P (I) >= U64 (Len) or else Seen (Natural (P (I))) then
+            return (Defined => False);
+         end if;
+         Seen (Natural (P (I))) := True;
+      end loop;
+      for I in 1 .. Len - 1 loop
+         Fact := Fact * U64 (I);
+      end loop;
+      for I in 0 .. Len - 1 loop
+         Smaller := 0;
+         for J in I + 1 .. Len - 1 loop
+            if P (P'First + J) < P (P'First + I) then
+               Smaller := Smaller + 1;
+            end if;
+         end loop;
+         Rank := Rank + Smaller * Fact;
+         if Len - 1 - I > 0 then
+            Fact := Fact / U64 (Len - 1 - I);
+         end if;
+      end loop;
+      return (True, Rank);
+   end Permtonum;
+
 end Math_Prime_Util.Combinat;
