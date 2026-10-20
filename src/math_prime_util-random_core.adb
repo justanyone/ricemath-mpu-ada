@@ -65,6 +65,7 @@ package body Math_Prime_Util.Random_Core with SPARK_Mode => On is
    procedure Block (State : in out Words; Buffer : out String) is
       X : Words := State;
    begin
+      Buffer := [others => Character'Val (0)];
       for Round in 1 .. 10 loop
          Quarter (X (0), X (4), X (8), X (12));
          Quarter (X (1), X (5), X (9), X (13));

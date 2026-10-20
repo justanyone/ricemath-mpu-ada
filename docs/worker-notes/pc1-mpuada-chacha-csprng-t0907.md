@@ -20,3 +20,5 @@ Five-minute checkpoint: native core extraction remains; restoring experimental b
 Restoration via git show was truncated by the command wrapper; switched to git cat-file and verified complete source endings before testing again.
 Reconstructed the compat test suffix from the inspected source after discovering read-command output truncation also affects subprocess capture. Retained all twelve registered function tests.
 Native tests and gate passed after restoration. Added 32/64-bit modulus and upper-interval boundary properties; preserved explicit wiping of the PCG seed temporaries across extraction.
+Boundary properties passed with all 50 tests. Initialized the block output before in-out stores to make definite initialization explicit for SPARK analysis; final gate next.
+Final: gate prints == gate: green; all 50 AUnit tests pass, including cipher vectors and new native boundary properties. Signed/bigint fixture coverage and full SPARK conversion/proof remain; do not mark READY.
