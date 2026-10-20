@@ -26,6 +26,7 @@ package body Compat_Primality is
       N : U64;
       A : U64 := 2;
       B : Boolean := True;
+      M : Mersenne_Result;
    begin
       --  Negative integer arguments are outside the native unsigned API.
       --  Their fixture result is composite, as in MPU's signed wrapper.
@@ -77,7 +78,8 @@ package body Compat_Primality is
       elsif F = "is_safe_prime" then
          return Boolean'Pos (Is_Safe_Prime (N));
       elsif F = "is_mersenne_prime" then
-         return Integer (Is_Mersenne_Prime (N));
+         M := Is_Mersenne_Prime (N);
+         return (if M.Defined then Boolean'Pos (M.Value) else -1);
       end if;
       raise Constraint_Error with "unknown function";
    end Evaluate;
@@ -101,7 +103,8 @@ package body Compat_Primality is
            (Raised = C.Error, F & " error row" & C.Line_Number'Image);
          if not Raised then
             AUnit.Assertions.Assert
-              (Value = Integer'Value (To_String (C.Result)),
+              (Value = (if C.Undef then -1
+                        else Integer'Value (To_String (C.Result))),
                F & " row" & C.Line_Number'Image & " got" & Value'Image);
          end if;
       end loop;

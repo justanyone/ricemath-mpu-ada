@@ -371,9 +371,10 @@ package body Math_Prime_Util.Primality is
    begin
       for P of Known loop
          if N = P then
-            return 1;
+            return (Defined => True, Value => True);
          end if;
       end loop;
-      return (if N < 81_307_409 then 0 else -1);
+      return (if N < 81_307_409 then (True, False)
+              else (Defined => False));
    end Is_Mersenne_Prime;
 end Math_Prime_Util.Primality;

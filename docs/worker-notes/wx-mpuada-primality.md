@@ -7,3 +7,5 @@ Implementing Fermat, Euler, Miller-Rabin, Lucas variants and BPSW first; advance
 - 2026-10-20T17:19:16Z launcher: no commit for 60 s; 122 s elapsed. Files changed so far: docs/worker-notes/wx-mpuada-primality.md.
 Added 13 predicates, portable Montgomery power, fixture replay and seeded laws. Run focused tests next.
 Focused tests stopped before compilation: Alire tried to clone its community index and DNS is unavailable. Checking offline toolchain configuration next.
+About five minutes remain. Alire uses an empty /tmp home and has no selected toolchain. Offline compilation is blocked.
+Added native boundary, precondition and concurrent-call tests. Unknown Mersenne results now use an optional Boolean.
