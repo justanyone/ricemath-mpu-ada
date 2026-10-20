@@ -7,7 +7,8 @@ package body Fixture_Support is
 
    function Load (Family : String) return Case_Vectors.Vector is
       File : Ada.Text_IO.File_Type;
-      Path : constant String := (if Ada.Directories.Exists ("tests/fixtures/" & Family & ".tsv")
+      Path : constant String :=
+        (if Ada.Directories.Exists ("tests/fixtures/" & Family & ".tsv")
          then "tests/fixtures/" else "fixtures/") & Family & ".tsv";
       Cases : Case_Vectors.Vector;
       Number : Natural := 0;
@@ -36,7 +37,9 @@ package body Fixture_Support is
                      end if;
                   end if;
                end loop;
-               if First = 0 or else Second = 0 or else First = Line'First then
+               if First = 0 or else Second = 0
+                 or else First = Line'First
+               then
                   raise Constraint_Error with "bad fixture row";
                end if;
                C.Func := To_Unbounded_String (Line (Line'First .. First - 1));
@@ -51,7 +54,8 @@ package body Fixture_Support is
                   for I in A'Range loop
                      if A (I) = ' ' then
                         if I > Start then
-                           C.Args.Append (To_Unbounded_String (A (Start .. I - 1)));
+                           C.Args.Append
+                             (To_Unbounded_String (A (Start .. I - 1)));
                         end if;
                         Start := I + 1;
                      end if;
