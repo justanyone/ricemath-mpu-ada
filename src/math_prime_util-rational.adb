@@ -16,6 +16,27 @@ package body Math_Prime_Util.Rational is
       if Den = 0 then
          raise Constraint_Error;
       end if;
+      if Num < 0 then
+         declare
+            Positive_Terms : constant Coefficients := Contfrac (-Num, Den);
+            L : constant Positive := Positive_Terms'Length;
+         begin
+            if L = 1 then
+               return [-Positive_Terms (1)];
+            elsif Positive_Terms (2) = 1 then
+               Terms (1) := -Positive_Terms (1) - 1;
+               Terms (2) := Positive_Terms (3) + 1;
+               Terms (3 .. L - 1) := Positive_Terms (4 .. L);
+               return Terms (1 .. L - 1);
+            else
+               Terms (1) := -Positive_Terms (1) - 1;
+               Terms (2) := 1;
+               Terms (3) := Positive_Terms (2) - 1;
+               Terms (4 .. L + 1) := Positive_Terms (3 .. L);
+               return Terms (1 .. L + 1);
+            end if;
+         end;
+      end if;
       while B > 0 loop
          Q := A / B;
          R := A rem B;

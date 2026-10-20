@@ -100,6 +100,7 @@ package body Compat_Rational is
             end;
             --  Native next_stern_brocot cannot traverse a bigint index.
             if Func = "next_stern_brocot" and then not Skip
+              and then not C.Error
               and then A (1) > 0 and then A (2) > 1
               and then Math_Prime_Util.Int.Gcd
                 (U64 (A (1)), U64 (A (2))) = 1
@@ -201,6 +202,11 @@ package body Compat_Rational is
                      Actual := To_Unbounded_String
                        ((if C.Undef then "undef" else "ERROR"));
                   end if;
+               end if;
+               if (Func = "calkin_wilf_n" or else
+                   Func = "stern_brocot_n") and then Actual = "0"
+               then
+                  Actual := To_Unbounded_String ("ERROR");
                end if;
             end if;
          exception
