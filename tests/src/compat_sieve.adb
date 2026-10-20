@@ -27,6 +27,8 @@ package body Compat_Sieve is
    function Image (N : U64) return String is
      (Ada.Strings.Fixed.Trim (U64'Image (N), Ada.Strings.Both));
 
+   --  Skipped fixture families: is_prime (1050 rows) and
+   --  primes_count_in_range (1 row) belong to other units.
    procedure Replay (Func : String) is
       Low, High, Depth : U64;
       Valid : Boolean;
