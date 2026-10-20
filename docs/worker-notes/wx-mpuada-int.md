@@ -13,3 +13,4 @@ Offline index moved outside the Alire settings tree; retrying the focused build 
 Five-minute checkpoint: implementation and tests exist; resolving local build project paths before compilation.
 Local dependency resolution works; compiler selection still needs cached toolchain metadata.
 Cached toolchains selected through the local index. Waiting for compiler diagnostics.
+About five minutes remain. Local build configured; correcting the root port generator, then rerunning fixture replay and gate.
