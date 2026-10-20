@@ -32,7 +32,6 @@ package body Test_Fixture_Support is
       Found_Undef : Boolean := False;
       Found_Error : Boolean := False;
    begin
-      Ada.Text_IO.Put_Line ("starting fixture test");
       Assert (T.Name /= null, "test has a name");
       Assert (Cases.Length = 14_560, "int case count");
       Assert (Roots.Length = 152, "sqrtint case count");
@@ -81,7 +80,6 @@ package body Test_Fixture_Support is
                  "reject U128: " & Text);
       end Reject_U128;
    begin
-      Ada.Text_IO.Put_Line ("starting fixture test");
       Assert (T.Name /= null, "test has a name");
       Assert (Parse_U64 ("0", Small) and then Small = 0, "U64 zero");
       Assert (Parse_U64 ("00012", Small) and then Small = 12, "zeros");
@@ -108,17 +106,21 @@ package body Test_Fixture_Support is
       end Reader;
 
       task body Reader is
-         Cases : constant Case_Vectors.Vector := Load ("int");
       begin
-         accept Get_Count (Count : out Natural) do
-            Count := Natural (Cases.Length);
-         end Get_Count;
+         Ada.Text_IO.Put_Line ("reader active");
+         declare
+            Cases : constant Case_Vectors.Vector := Load ("int");
+         begin
+            Ada.Text_IO.Put_Line ("reader loaded");
+            accept Get_Count (Count : out Natural) do
+               Count := Natural (Cases.Length);
+            end Get_Count;
+         end;
       end Reader;
 
       First, Second : Reader;
       A, B : Natural;
    begin
-      Ada.Text_IO.Put_Line ("starting fixture test");
       Assert (T.Name /= null, "test has a name");
       Ada.Text_IO.Put_Line ("waiting for readers");
       First.Get_Count (A);
