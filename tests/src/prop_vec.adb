@@ -18,6 +18,63 @@ package body Prop_Vec is
       return AUnit.Format ("Prop_Vec seed 20261020");
    end Name;
 
+   function Add (L, R : I64) return I64 is (L + R);
+   function Positive_Value (V : I64) return Boolean is (V > 0);
+   function Total (A : Vector) return I64 is (I64 (Vecsum (A)));
+
+   procedure Check_Callbacks (T : in out Test_Case'Class);
+
+   procedure Check_Callbacks (T : in out Test_Case'Class) is
+      A : constant Vector (7 .. 10) := [-1, 2, 3, 4];
+      Empty : constant Vector := [];
+      use type U128;
+   begin
+      AUnit.Assertions.Assert
+        (Vecreduce (A, Add'Access) = Optional_Integer'(True, 8)
+         and then not Vecreduce (Empty, Add'Access).Present,
+         "left fold and empty fold");
+      AUnit.Assertions.Assert
+        (Vecany (A, Positive_Value'Access)
+         and then not Vecall (A, Positive_Value'Access)
+         and then not Vecnone (A, Positive_Value'Access)
+         and then Vecnotall (A, Positive_Value'Access), "quantifiers");
+      AUnit.Assertions.Assert
+        (not Vecany (Empty, Positive_Value'Access)
+         and then Vecall (Empty, Positive_Value'Access)
+         and then Vecnone (Empty, Positive_Value'Access)
+         and then not Vecnotall (Empty, Positive_Value'Access),
+         "empty quantifiers");
+      AUnit.Assertions.Assert
+        (Vecfirst (A, Positive_Value'Access) =
+           Optional_Integer'(True, 2)
+         and then Vecfirstidx (A, Positive_Value'Access) = 1
+         and then Vecfirstidx (Empty, Positive_Value'Access) = -1,
+         "first positions use zero origin");
+      AUnit.Assertions.Assert
+        (Vecslide (A, Add'Access) = Vector'[1, 5, 7]
+         and then Vecpairwise (A, Vector'[5, 6], Add'Access) =
+           Vector'[4, 8], "adjacent and pairwise callbacks");
+      AUnit.Assertions.Assert
+        (Vecwindow (A, 2, 2, Total'Access) = Vector'[1, 7]
+         and then Vecwindow (A, 1, 5, Total'Access)'Length = 0,
+         "complete stepped windows");
+      AUnit.Assertions.Assert
+        (Setbinop (Vector'[1, 2], Vector'[2, 3], Add'Access) =
+           Vector'[3, 4, 5], "Cartesian set callback deduplicates");
+      AUnit.Assertions.Assert
+        (Vecextract (A, U128'(5)) =
+           Optional_Vector'[(True, -1), (True, 3)]
+         and then Vecextract (A, Vector'[-1, 8]) =
+           Optional_Vector'[(True, 4), (Present => False)],
+         "mask and signed index extraction");
+      AUnit.Assertions.Assert
+        (Vecsum (Unsigned_Vector'[U64'Last, 1]) = 2 ** 64,
+         "unsigned sum widens on overflow");
+      AUnit.Assertions.Assert
+        (Vecprod (Vector'[I64'Last, I64'Last, I64'Last, 0]) = 0,
+         "zero annihilates a large product");
+   end Check_Callbacks;
+
    procedure Check_Laws (T : in out Test_Case'Class);
 
    procedure Check_Laws (T : in out Test_Case'Class) is
@@ -79,6 +136,8 @@ package body Prop_Vec is
    overriding procedure Register_Tests (T : in out Vec_Case) is
    begin
       Registration.Register_Routine (T, Check_Laws'Access, "set laws");
+      Registration.Register_Routine
+        (T, Check_Callbacks'Access, "callback and arithmetic boundaries");
    end Register_Tests;
 
    function Suite return AUnit.Test_Suites.Access_Test_Suite is

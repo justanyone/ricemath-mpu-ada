@@ -36,6 +36,9 @@ package body Compat_Vec is
       return To_String (R);
    end Image;
 
+   function Wide_Image (V : I128) return String is
+     (Ada.Strings.Fixed.Trim (I128'Image (V), Ada.Strings.Both));
+
    procedure Replay (Func : String);
 
    procedure Replay (Func : String) is
@@ -72,6 +75,35 @@ package body Compat_Vec is
                end if;
             end loop;
             --  Native_I64_Only: bigint rows require the future bigint tier.
+            if Native and then Func = "sumset" then
+               --  Sumset_I64_Result: wider results need a wider set type.
+               declare
+                  Text : constant String := To_String (C.Result);
+                  First : Positive := Text'First;
+               begin
+                  for I in Text'Range loop
+                     if Text (I) = ' ' or I = Text'Last then
+                        begin
+                           V := I64'Value (Text (First ..
+                             (if Text (I) = ' ' then I - 1 else I)));
+                        exception
+                           when Constraint_Error => Native := False;
+                        end;
+                        First := I + 1;
+                     end if;
+                  end loop;
+               end;
+            elsif Native and then Func = "vecprod" then
+               --  Product_I128_Result: bigint results exceed the native API.
+               declare
+                  Product : I128;
+               begin
+                  Product := I128'Value (To_String (C.Result));
+                  Native := Product in I128'Range;
+               exception
+                  when Constraint_Error => Native := False;
+               end;
+            end if;
             if Native then
                declare
                   X : constant Vector := A (1 .. NA);
@@ -79,7 +111,37 @@ package body Compat_Vec is
                   SX : constant Vector := Toset (X);
                   SY : constant Vector := Toset (Y);
                begin
-                  if Func = "vecsort" then
+                  if Func = "vecsum" or Func = "vecprod" then
+                     Actual := To_Unbounded_String (Wide_Image
+                       ((if Func = "vecsum" then Vecsum (X)
+                         else Vecprod (X))));
+                  elsif Func = "vecprefixsum" then
+                     for W of Vecprefixsum (X) loop
+                        if Length (Actual) > 0 then
+                           Append (Actual, " ");
+                        end if;
+                        Append (Actual, Wide_Image (W));
+                     end loop;
+                  elsif Func = "vecmin" or Func = "vecmax" then
+                     declare
+                        R : constant Optional_Integer :=
+                          (if Func = "vecmin" then Vecmin (X)
+                           else Vecmax (X));
+                     begin
+                        Actual := To_Unbounded_String
+                          ((if R.Present then Wide_Image (I128 (R.Value))
+                            else "undef"));
+                     end;
+                  elsif Func = "vecfreq" then
+                     Actual := To_Unbounded_String (Image (Vecfreq (X)));
+                  elsif Func = "sumset" then
+                     declare
+                        R : constant Vector :=
+                          (if Second then Sumset (X, Y) else Sumset (X));
+                     begin
+                        Actual := To_Unbounded_String (Image (R));
+                     end;
+                  elsif Func = "vecsort" then
                      Actual := To_Unbounded_String
                        (Image (Vecsort (X)));
                   elsif Func = "vecrsort" then
@@ -365,6 +427,55 @@ package body Compat_Vec is
       Replay ("is_sumfree_set");
    end Test_Is_Sumfree_Set;
 
+   procedure Test_Vecsum (T : in out Test_Case'Class);
+
+   procedure Test_Vecsum (T : in out Test_Case'Class) is
+   begin
+      Replay ("vecsum");
+   end Test_Vecsum;
+
+   procedure Test_Vecprod (T : in out Test_Case'Class);
+
+   procedure Test_Vecprod (T : in out Test_Case'Class) is
+   begin
+      Replay ("vecprod");
+   end Test_Vecprod;
+
+   procedure Test_Vecprefixsum (T : in out Test_Case'Class);
+
+   procedure Test_Vecprefixsum (T : in out Test_Case'Class) is
+   begin
+      Replay ("vecprefixsum");
+   end Test_Vecprefixsum;
+
+   procedure Test_Vecmin (T : in out Test_Case'Class);
+
+   procedure Test_Vecmin (T : in out Test_Case'Class) is
+   begin
+      Replay ("vecmin");
+   end Test_Vecmin;
+
+   procedure Test_Vecmax (T : in out Test_Case'Class);
+
+   procedure Test_Vecmax (T : in out Test_Case'Class) is
+   begin
+      Replay ("vecmax");
+   end Test_Vecmax;
+
+   procedure Test_Vecfreq (T : in out Test_Case'Class);
+
+   procedure Test_Vecfreq (T : in out Test_Case'Class) is
+   begin
+      Replay ("vecfreq");
+   end Test_Vecfreq;
+
+   procedure Test_Sumset (T : in out Test_Case'Class);
+
+   procedure Test_Sumset (T : in out Test_Case'Class) is
+   begin
+      Replay ("sumset");
+   end Test_Sumset;
+
    overriding procedure Register_Tests (T : in out Vec_Case) is
    begin
       Registration.Register_Routine
@@ -424,6 +535,20 @@ package body Compat_Vec is
         (T, Test_Is_Sidon_Set'Access, "is_sidon_set");
       Registration.Register_Routine
         (T, Test_Is_Sumfree_Set'Access, "is_sumfree_set");
+      Registration.Register_Routine
+        (T, Test_Vecsum'Access, "vecsum");
+      Registration.Register_Routine
+        (T, Test_Vecprod'Access, "vecprod");
+      Registration.Register_Routine
+        (T, Test_Vecprefixsum'Access, "vecprefixsum");
+      Registration.Register_Routine
+        (T, Test_Vecmin'Access, "vecmin");
+      Registration.Register_Routine
+        (T, Test_Vecmax'Access, "vecmax");
+      Registration.Register_Routine
+        (T, Test_Vecfreq'Access, "vecfreq");
+      Registration.Register_Routine
+        (T, Test_Sumset'Access, "sumset");
    end Register_Tests;
 
    function Suite return AUnit.Test_Suites.Access_Test_Suite is
