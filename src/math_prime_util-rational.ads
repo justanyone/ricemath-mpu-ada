@@ -4,6 +4,7 @@ with Math_Prime_Util.Int;
 package Math_Prime_Util.Rational with SPARK_Mode => On is
    use type U64;
    subtype I128 is Math_Prime_Util.Int.I128;
+   use type I128;
    type Coefficients is array (Positive range <>) of I128;
    type Fraction is record
       Num : I128 := 0;
@@ -35,13 +36,15 @@ package Math_Prime_Util.Rational with SPARK_Mode => On is
           Post => (if Bestrational'Result.Defined then
                      Bestrational'Result.Den in 1 .. Bound);
 
-   --  rational.c: next_calkin_wilf. Reduced positive input; overflow undefined.
+   --  rational.c: next_calkin_wilf. Reduced positive input.
+   --  Native overflow returns undefined.
    function Next_Calkin_Wilf (Num, Den : U64) return Fraction
      with Pre => True,
           Post => (if Next_Calkin_Wilf'Result.Defined then
                      Next_Calkin_Wilf'Result.Den > 0);
 
-   --  rational.c: next_stern_brocot. Reduced positive input; overflow undefined.
+   --  rational.c: next_stern_brocot. Reduced positive input.
+   --  Native overflow returns undefined.
    function Next_Stern_Brocot (Num, Den : U64) return Fraction
      with Pre => True,
           Post => (if Next_Stern_Brocot'Result.Defined then
@@ -49,13 +52,13 @@ package Math_Prime_Util.Rational with SPARK_Mode => On is
 
    --  rational.c: calkin_wilf_n. Zero denotes native index overflow.
    function Calkin_Wilf_N (Num, Den : U64) return U64
-     with Pre => Num > 0 and Den > 0
+     with Pre => Num > 0 and then Den > 0
        and then Math_Prime_Util.Int.Gcd (Num, Den) = 1,
           Post => (if Num = Den then Calkin_Wilf_N'Result = 1);
 
    --  rational.c: stern_brocot_n. Zero denotes native index overflow.
    function Stern_Brocot_N (Num, Den : U64) return U64
-     with Pre => Num > 0 and Den > 0
+     with Pre => Num > 0 and then Den > 0
        and then Math_Prime_Util.Int.Gcd (Num, Den) = 1,
           Post => (if Num = Den then Stern_Brocot_N'Result = 1);
 

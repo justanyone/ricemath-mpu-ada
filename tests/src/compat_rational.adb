@@ -52,7 +52,7 @@ package body Compat_Rational is
                   Slash : constant Natural :=
                     Ada.Strings.Fixed.Index (S, "/");
                begin
-                  if Func = "bestrational" and I = 1 then
+                  if Func = "bestrational" and then I = 1 then
                      X := Long_Long_Float'Value (S);
                   elsif Slash > 0 then
                      A (I) := I128'Value (S (S'First .. Slash - 1));
@@ -66,13 +66,13 @@ package body Compat_Rational is
                end;
             end loop;
             --  Bigint-extension rows exceed rational.c's native UV API.
-            --  They belong to the later bigint tier; do not narrow or wrap.
+            --  They belong to the later bigint tier; do not narrow or else wrap.
             declare
                S : constant String := To_String (C.Result);
                Start : Positive := S'First;
             begin
                for I in S'Range loop
-                  if S (I) = ' ' or I = S'Last then
+                  if S (I) = ' ' or else I = S'Last then
                      declare
                         Last : constant Natural :=
                           (if S (I) = ' ' then I - 1 else I);
@@ -92,7 +92,16 @@ package body Compat_Rational is
                end loop;
             end;
             if not Skip then
-               if Func = "contfrac" or Func = "convergents" then
+               if Func /= "from_contfrac" and then Func /= "contfrac"
+                 and then Func /= "convergents" and then Func /= "bestrational"
+               then
+                  for I in 1 .. Count loop
+                     if A (I) < 0 then
+                        raise Constraint_Error;
+                     end if;
+                  end loop;
+               end if;
+               if Func = "contfrac" or else Func = "convergents" then
                   declare
                      Terms : constant Coefficients :=
                        Contfrac (A (1), U64 (A (2)));
@@ -126,7 +135,7 @@ package body Compat_Rational is
                         for V of Values loop
                            Append (Actual, V);
                         end loop;
-                     elsif A (2) < 0 or A (2) >= I128 (Values'Length) then
+                     elsif A (2) < 0 or else A (2) >= I128 (Values'Length) then
                         Actual := To_Unbounded_String ("undef");
                      else
                         Append (Actual, Values (Positive (A (2) + 1)));

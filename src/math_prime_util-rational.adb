@@ -131,7 +131,7 @@ package body Math_Prime_Util.Rational is
    function Next_Calkin_Wilf (Num, Den : U64) return Fraction is
       R, NR, DR : U64;
    begin
-      if Num = 0 or Den = 0 or else Gcd (Num, Den) /= 1 then
+      if Num = 0 or else Den = 0 or else Gcd (Num, Den) /= 1 then
          return Undefined;
       end if;
       if Num < Den then
@@ -225,7 +225,7 @@ package body Math_Prime_Util.Rational is
    function Next_Stern_Brocot (Num, Den : U64) return Fraction is
       Index : U64;
    begin
-      if Num = 0 or Den = 0 or else Gcd (Num, Den) /= 1 then
+      if Num = 0 or else Den = 0 or else Gcd (Num, Den) /= 1 then
          return Undefined;
       end if;
       if Den = 1 then
