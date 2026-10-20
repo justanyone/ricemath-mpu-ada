@@ -11,3 +11,5 @@ Focused tests blocked: Alire tries to bootstrap its community index without netw
 Alire lacks an index and lockfiles here; cached toolchain and AUnit exist. Testing an offline local configuration under obj.
 Offline index moved outside the Alire settings tree; retrying the focused build with cached GNAT on PATH.
 Five-minute checkpoint: implementation and tests exist; resolving local build project paths before compilation.
+Local dependency resolution works; compiler selection still needs cached toolchain metadata.
+Cached toolchains selected through the local index. Waiting for compiler diagnostics.

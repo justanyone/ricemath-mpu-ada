@@ -1,6 +1,7 @@
 with Ada.Numerics.Long_Elementary_Functions;
 
 package body Math_Prime_Util.Int with SPARK_Mode => On is
+   --  Proof skipped: gnatprove is not installed in the Alire environment.
    function Gcd (A, B : U64) return U64 is
       X : U64 := A;
       Y : U64 := B;
