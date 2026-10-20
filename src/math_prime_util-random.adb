@@ -49,8 +49,9 @@ package body Math_Prime_Util.Random is
    protected body Generator is
       procedure Seed (Data : String) is
          Key : String (1 .. 40) := [others => Character'Val (0)];
+         Rng, Inc : U32;
       begin
-         Expand_Seed (Data, Key);
+         Expand_Seed (Data, Key, Rng, Inc);
          State (0 .. 3) :=
            [16#6170_7865#, 16#3320_646E#, 16#7962_2D32#, 16#6B20_6574#];
          for I in 0 .. 7 loop
@@ -61,6 +62,8 @@ package body Math_Prime_Util.Random is
          Position := 64;
          Buffer := [others => Character'Val (0)];
          Wipe (Key'Address, 40);
+         Wipe (Rng'Address, 4);
+         Wipe (Inc'Address, 4);
       end Seed;
 
       procedure Refill is

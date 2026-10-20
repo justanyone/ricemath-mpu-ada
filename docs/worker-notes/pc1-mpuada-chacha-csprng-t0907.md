@@ -19,3 +19,4 @@ Rejected speculative bigint overloads after failing exact fixtures; restored ori
 Five-minute checkpoint: native core extraction remains; restoring experimental bigint changes against the pre-session revision because launcher snapshots advance HEAD during work.
 Restoration via git show was truncated by the command wrapper; switched to git cat-file and verified complete source endings before testing again.
 Reconstructed the compat test suffix from the inspected source after discovering read-command output truncation also affects subprocess capture. Retained all twelve registered function tests.
+Native tests and gate passed after restoration. Added 32/64-bit modulus and upper-interval boundary properties; preserved explicit wiping of the PCG seed temporaries across extraction.

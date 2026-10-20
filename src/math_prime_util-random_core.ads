@@ -16,7 +16,9 @@ private package Math_Prime_Util.Random_Core with SPARK_Mode => On is
    procedure Quarter (A, B, C, D : in out U32)
      with Pre => True, Post => True;
    --  PCG expansion of short seeds. C: chacha.c, chacha_seed.
-   procedure Expand_Seed (Data : String; Key : out String)
+   --  Return temporary PCG words so the I/O layer can erase them.
+   procedure Expand_Seed
+     (Data : String; Key : out String; Rng, Inc : out U32)
      with Pre => Key'First = 1 and then Key'Length = 40,
           Post => True;
    --  Twenty rounds and counter advance. C: chacha.c, chacha_rand_bytes.

@@ -26,9 +26,9 @@ package body Math_Prime_Util.Random_Core with SPARK_Mode => On is
       C := C + D; B := Rotate_Left (B xor C, 7);
    end Quarter;
 
-   procedure Expand_Seed (Data : String; Key : out String) is
-      Rng : U32 := 0;
-      Inc : U32 := 0;
+   procedure Expand_Seed
+     (Data : String; Key : out String; Rng, Inc : out U32)
+   is
       A, B, C, D, Ignore : U32;
       procedure Next (Value : out U32);
       procedure Next (Value : out U32) is
@@ -41,6 +41,8 @@ package body Math_Prime_Util.Random_Core with SPARK_Mode => On is
          Value := Shift_Right (Word, 22) xor Word;
       end Next;
    begin
+      Rng := 0;
+      Inc := 0;
       Key := [others => Character'Val (0)];
       for I in 1 .. Natural'Min (Data'Length, 40) loop
          Key (I) := Data (Data'First + (I - 1));

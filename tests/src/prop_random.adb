@@ -9,6 +9,7 @@ package body Prop_Random is
    use Math_Prime_Util;
    use Math_Prime_Util.Random;
    use type U64;
+   type U64_Array is array (Positive range <>) of U64;
    use type Interfaces.Unsigned_32;
    type Random_Case is new Test_Case with null record;
    overriding function Name (T : Random_Case) return AUnit.Message_String;
@@ -68,6 +69,18 @@ package body Prop_Random is
             AUnit.Assertions.Assert
               (Bits = 64 or else Value < 2 ** Bits, "seed 42: bit bound");
          end;
+      end loop;
+      for Bound of U64_Array'
+        ([1, 2, 2 ** 32 - 1, 2 ** 32, 2 ** 32 + 1,
+          2 ** 63 - 1, 2 ** 63, 2 ** 63 + 1, U64'Last])
+      loop
+         for I in 1 .. 32 loop
+            AUnit.Assertions.Assert
+              (Urandomm (Bound) < Bound, "seed 42: boundary modulus");
+            AUnit.Assertions.Assert
+              (Urandomr (U64'Last - Bound, U64'Last) >= U64'Last - Bound,
+               "seed 42: upper interval boundary");
+         end loop;
       end loop;
       for I in 1 .. 1000 loop
          AUnit.Assertions.Assert
