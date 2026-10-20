@@ -121,6 +121,7 @@ package body Compat_Random is
                        (Rand, Expected (Prefix'Length + 1 .. Expected'Last));
                   end;
                elsif F = "blake_drand_after_irand" then
+                  Dummy := To_Unbounded_String (Random_Bytes (7));
                   Value := U64 (Irand);
                   Check_Real (Drand, Expected);
                elsif C.Undef and then F = "urandomr" then

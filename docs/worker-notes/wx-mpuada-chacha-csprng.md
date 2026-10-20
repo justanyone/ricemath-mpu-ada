@@ -22,3 +22,5 @@ Review confirms seeded native streams and cipher fixture vectors match MPU.
 Remaining scope: bigint/signed wrappers and additional mixed/tag fixture rows.
 All 50 tests pass after native validation fixes, with zero assertions failed.
 Added mixed/tag and post-irand real fixtures plus reversed-range rejection.
+Mixed/tag checks pass. Blake drand follows seven bytes and one irand.
+Fixed that fixture setup; the full gate is now running.
