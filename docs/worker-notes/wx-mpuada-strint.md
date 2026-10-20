@@ -16,3 +16,10 @@ Corrected negative operands in fixture dispatch, numeric validation in release b
 Second run: 48 of 61 tests pass. Remaining failures isolate Euclidean divrem, omitted unsigned-width bounds, negative input semantics, and exact decimal parsing.
 Fixed Euclidean divrem, signed shift counts, large input bases, and exact decimal truncation without floating-point rounding. Final validation is next.
 Final gate is running with cached AUnit and toolchain settings. Named fixture exclusions cover values outside the declared native signed/unsigned tiers.
+Final validation: tools/gate.sh printed == gate: green; 61 tests passed.
+The existing runner ignores filter arguments, so tools/test.sh Compat_Digits also ran the aggregate suite.
+Offline validation used cached toolchains and an AUnit copy under obj/; temporary pins were restored. No dependency or build-tool change remains.
+NOTES: Ada reserves digits; the public child package is Math_Prime_Util.Digit_Operations.
+NOTES: reference/mpu/strint.c and strint.h are absent. Signed helpers follow fixture semantics; their source-faithful translation cannot be verified here.
+NOTES: Bigint_Outside_Fixed_Tier excludes fixture inputs or results outside the declared fixed-width API. Signed shift/fused cases outside the signed i64 task tier are excluded. Full bigint replay remains unfinished.
+Finished with all implemented tests green. No status checklist, fixture, or build-tool file was changed. The launcher handles commits.
