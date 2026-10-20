@@ -11,3 +11,6 @@ Configured a temporary index under ignored obj/ using cached AUnit sources and t
 Offline focused run passed all 75 tests. Added checked I128 arithmetic overloads and a dedicated replay path for sum/product/prefix/min/max so full unsigned 64-bit fixture inputs are no longer skipped as non-I64; arbitrary precision product <<cut 26 chars by kit>>
 
 KIT NOTE, NOT FILE CONTENT: this output was shortened by the kit; the file on disk is whole; show a part with sed -n A,Bp FILE (kit removed 2 bytes)
+Full-width arithmetic replay passed. Added property checks for list concatenation on non-one-based arrays, identity-window reconstruction, large steps, and short-circuit callback counts. Original scalar overload fixture replay is retained a <<cut 35 chars by kit>>
+
+KIT NOTE, NOT FILE CONTENT: this output was shortened by the kit; the file on disk is whole; show a part with sed -n A,Bp FILE (kit removed 11 bytes)
