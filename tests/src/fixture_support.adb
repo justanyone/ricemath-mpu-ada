@@ -42,7 +42,8 @@ package body Fixture_Support is
                then
                   raise Constraint_Error with "bad fixture row";
                end if;
-               C.Func := To_Unbounded_String (Line (Line'First .. First - 1));
+               C.Func :=
+                 To_Unbounded_String (Line (Line'First .. First - 1));
                C.Result := To_Unbounded_String (Line (Second + 1 .. Line'Last));
                C.Line_Number := Number;
                C.Undef := C.Result = "undef";
