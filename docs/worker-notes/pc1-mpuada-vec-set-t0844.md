@@ -14,3 +14,7 @@ KIT NOTE, NOT FILE CONTENT: this output was shortened by the kit; the file on di
 Full-width arithmetic replay passed. Added property checks for list concatenation on non-one-based arrays, identity-window reconstruction, large steps, and short-circuit callback counts. Original scalar overload fixture replay is retained a <<cut 35 chars by kit>>
 
 KIT NOTE, NOT FILE CONTENT: this output was shortened by the kit; the file on disk is whole; show a part with sed -n A,Bp FILE (kit removed 11 bytes)
+Final validation: tools/gate.sh printed == gate: green; all 76 tests passed, including the eleven individual callback tests and list/short-circuit laws. git diff --check passed. Gate used the workspace-only cached index and installed toolch <<cut 62 chars by kit>>
+NOTES: PARTIAL, not READY. Full-width arithmetic fixtures now replay through checked I128 overloads, but I64-only vector/set replay still skips out-of-range inputs, and products beyond I128 remain excluded. Existing non-reference algorithm  <<cut 177 chars by kit>>
+
+KIT NOTE, NOT FILE CONTENT: this output was shortened by the kit; the file on disk is whole; show a part with sed -n A,Bp FILE (kit removed 190 bytes)
