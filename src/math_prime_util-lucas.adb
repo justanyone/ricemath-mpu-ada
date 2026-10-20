@@ -176,11 +176,15 @@ package body Math_Prime_Util.Lucas is
       Qh := Ql * I128 (Q);
       Uh := Uh * Vl - Ql;
       Vl := Vh * Vl - I128 (P) * Ql;
-      Ql := Ql * Qh;
+      if S > 0 then
+         Ql := Ql * Qh;
+      end if;
       for J in 1 .. S loop
          Uh := Uh * Vl;
          Vl := Vl * Vl - 2 * Ql;
-         Ql := Ql * Ql;
+         if J < S then
+            Ql := Ql * Ql;
+         end if;
       end loop;
       return (Native (Uh), Native (Vl));
    exception
@@ -239,7 +243,7 @@ package body Math_Prime_Util.Lucas is
       V : I128;
    begin
       if Magnitude <= 1 then
-         return (True, I128 (2 - Magnitude));
+         return (True, (if K = -1 then -1 else I128 (2 - Magnitude)));
       elsif Magnitude > 93 then
          return (Defined => False);
       end if;
