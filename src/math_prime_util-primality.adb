@@ -368,7 +368,7 @@ package body Math_Prime_Util.Primality is
          216091, 756839, 859433, 1257787, 1398269, 2976221,
          3021377, 6972593, 13466917, 20996011, 24036583, 25964951,
          30402457, 32582657, 37156667, 42643801, 43112609, 57885161,
-         74207281, 77232917, 82589933, 136279841 );
+         74207281, 77232917, 82589933, 136279841);
    begin
       for P of Known loop
          if N = P then
@@ -427,7 +427,11 @@ package body Math_Prime_Util.Primality is
       elsif Restricted = 1 then
          return True;
       end if;
-      J := Jacobi (-23, N);
+      V := N;
+      while V mod 2 = 0 loop
+         V := V / 2;
+      end loop;
+      J := Jacobi (-23, V);
       if J = -1 then
          B := S (2);
          B2 := Mul (B, B, N);

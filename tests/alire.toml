@@ -24,6 +24,3 @@ math_prime_util = { path = ".." }
 
 [build-profiles]
 math_prime_util = "validation"
-
-[[pins]]
-aunit = { path = "../obj/aunit" }
