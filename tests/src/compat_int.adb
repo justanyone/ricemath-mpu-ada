@@ -1,6 +1,7 @@
 with AUnit.Assertions;
 with AUnit.Test_Cases;
 with Ada.Strings;
+with Ada.Strings.Unbounded;
 with Ada.Strings.Fixed;
 with Fixture_Support;
 with Math_Prime_Util.Int;
@@ -8,6 +9,7 @@ with Math_Prime_Util.Int;
 package body Compat_Int is
    use AUnit.Test_Cases;
    use Fixture_Support;
+   use Ada.Strings.Unbounded;
    use Math_Prime_Util;
    use Math_Prime_Util.Int;
    use type U64;
@@ -23,7 +25,7 @@ package body Compat_Int is
    procedure Replay (Func : String) is
       Cases : constant Case_Vectors.Vector :=
         For_Function (Load ("int"), Func);
-      A : array (1 .. 4) of U64 := (others => 0);
+      A : array (1 .. 4) of U64 := [others => 0];
       V : U64;
       O : Optional_U64;
    begin
