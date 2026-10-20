@@ -1,0 +1,1 @@
+- Plan: add Math_Prime_Util.Config (prime_get_config/set, platform consts), tests compat_int/prop_int, register in all_suites. Notes appended as I go.
