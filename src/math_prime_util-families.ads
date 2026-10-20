@@ -3,15 +3,16 @@ with Math_Prime_Util.Int;
 
 --  Lucky-number sieves and estimates from MPU 0.75.
 package Math_Prime_Util.Families is
+   use type U64;
    package Lucky_Vectors is new Ada.Containers.Vectors
      (Index_Type => Natural, Element_Type => U64);
 
-   --  lucky_numbers.c: lucky_sieve_range. Inclusive interval; empty if reversed.
+   --  lucky_numbers.c: lucky_sieve_range. Inclusive interval; reversed is empty.
    --  Storage_Error propagates when the sieve cannot fit in memory.
    function Lucky_Numbers (Low, High : U64) return Lucky_Vectors.Vector
      with Pre => True,
           Post => (for all V of Lucky_Numbers'Result =>
-                     V >= Low and V <= High and V mod 2 = 1);
+                     V >= Low and then V <= High and then V mod 2 = 1);
    --  lucky_numbers.c: lucky_sieve64. Lucky numbers through High inclusive.
    function Lucky_Numbers (High : U64) return Lucky_Vectors.Vector
      with Pre => True,

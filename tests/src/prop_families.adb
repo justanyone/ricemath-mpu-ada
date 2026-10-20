@@ -5,6 +5,7 @@ with Math_Prime_Util.Families;
 package body Prop_Families is
    use AUnit.Test_Cases;
    use Math_Prime_Util;
+   use type U64;
    use Math_Prime_Util.Families;
    use type Lucky_Vectors.Vector;
    type Families_Case is new Test_Case with null record;
@@ -27,10 +28,10 @@ package body Prop_Families is
          N := 1 + Seed mod 2_000;
          V := Nth_Lucky (N).Value;
          AUnit.Assertions.Assert
-           (Is_Lucky (V) and Lucky_Count (V) = N,
+           (Is_Lucky (V) and then Lucky_Count (V) = N,
             "count/nth inverse seed 20261020");
          AUnit.Assertions.Assert
-           (Lucky_Count_Lower (V) <= N and N <= Lucky_Count_Upper (V),
+           (Lucky_Count_Lower (V) <= N and then N <= Lucky_Count_Upper (V),
             "count bounds seed 20261020");
          AUnit.Assertions.Assert
            (Nth_Lucky_Lower (N).Value <= V and
@@ -42,10 +43,10 @@ package body Prop_Families is
            (Left = Lucky_Numbers (2 * N), "range partition");
       end loop;
       AUnit.Assertions.Assert
-        (Lucky_Numbers (9, 1).Is_Empty and Lucky_Count (0) = 0,
-         "reversed and zero ranges");
+        (Lucky_Numbers (9, 1).Is_Empty and then Lucky_Count (0) = 0,
+         "reversed and then zero ranges");
       AUnit.Assertions.Assert
-        (not Is_Lucky (U64'Last) and not Is_Lucky (2 ** 63),
+        (not Is_Lucky (U64'Last) and then not Is_Lucky (2 ** 63),
          "native boundary prefilters");
       AUnit.Assertions.Assert
         (Nth_Lucky_Approx (U64'Last).Value =

@@ -12,6 +12,7 @@ package body Compat_Families is
    use Ada.Strings.Unbounded;
    use Fixture_Support;
    use Math_Prime_Util;
+   use type U64;
    use Math_Prime_Util.Families;
    type Families_Case is new Test_Case with null record;
    overriding function Name (T : Families_Case)
