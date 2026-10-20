@@ -2,6 +2,8 @@ with Ada.Numerics.Generic_Elementary_Functions;
 with Interfaces.C;
 with System;
 package body Math_Prime_Util.Real is
+   --  MPU defines IEEE nonfinite results. Retain them at the API boundary.
+   pragma Validity_Checks (Off);
    subtype Wide is Long_Long_Float;
    package EF is new Ada.Numerics.Generic_Elementary_Functions (Wide);
    use EF;
@@ -309,16 +311,39 @@ package body Math_Prime_Util.Real is
       return T;
    end Inverse;
    function Exponential_Integral (X : F64) return F64 is
-     (F64 (Ei (Wide (X))));
+   begin
+      if X = 0.0 then
+         raise Constraint_Error with "ExponentialIntegral: zero input";
+      end if;
+      return F64 (Ei (Wide (X)));
+   end Exponential_Integral;
    function Logarithmic_Integral (X : F64) return F64 is
-     (F64 (Li (Wide (X))));
+   begin
+      if X < 0.0 then
+         raise Constraint_Error with "LogarithmicIntegral: negative input";
+      end if;
+      return F64 (Li (Wide (X)));
+   end Logarithmic_Integral;
    function Riemann_Zeta (X : F64) return F64 is
-     (F64 (Zeta (Wide (X))));
+   begin
+      if X < 0.0 then
+         raise Constraint_Error with "RiemannZeta: negative input";
+      end if;
+      return F64 (Zeta (Wide (X)));
+   end Riemann_Zeta;
    function Inverse_Li_Nv (X : F64) return F64 is
-     (F64 (Inverse (Wide (X))));
+   begin
+      if not (X >= 0.0 and then X <= F64'Last / 1024.0) then
+         raise Constraint_Error with "inverse_li_nv: invalid input";
+      end if;
+      return F64 (Inverse (Wide (X)));
+   end Inverse_Li_Nv;
    function Inverse_Li (X : F64) return F64 is
       R : Wide;
    begin
+      if not (X >= 0.0 and then X <= F64'Last / 1024.0) then
+         raise Constraint_Error with "inverse_li: invalid input";
+      end if;
       if X <= 2.0 then
          return (if X = 0.0 then 0.0 else X + 1.0);
       end if;
@@ -359,6 +384,9 @@ package body Math_Prime_Util.Real is
    begin
       if X /= X or else Wide (X) = Infinity then
          return X;
+      end if;
+      if X <= 0.0 then
+         raise Constraint_Error with "RiemannR: invalid input";
       end if;
       L := Log (Wide (X));
       if X > 1.0E19 then
@@ -445,10 +473,15 @@ package body Math_Prime_Util.Real is
    begin
       if X /= X or else Wide (X) = Infinity then
          return X;
+      elsif X < -0.36787944117145 then
+         raise Constraint_Error with "LambertW: invalid input";
       elsif X <= -0.367879441171442321595523770161460867 then
          return -1.0;
       elsif X = 0.0 then
          return 0.0;
+      end if;
+      if X < -0.36787944117145 then
+         raise Constraint_Error with "LambertW: invalid input";
       end if;
       W := Lambert_Approx (Wide (X));
       if X < -0.36768 then

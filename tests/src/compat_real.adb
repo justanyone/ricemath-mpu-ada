@@ -1,3 +1,5 @@
+with Ada.Exceptions;
+with Ada.Numerics;
 with AUnit.Assertions;
 with Ada.Assertions;
 with AUnit.Test_Cases;
@@ -7,6 +9,8 @@ with System;
 with Fixture_Support;
 with Math_Prime_Util.Real;
 package body Compat_Real is
+   --  MPU accepts IEEE infinities and NaNs as real arguments.
+   pragma Validity_Checks (Off);
    use AUnit.Test_Cases;
    use Fixture_Support;
    use Ada.Strings.Unbounded;
@@ -89,9 +93,12 @@ package body Compat_Real is
                   " got " & F64'Image (Actual));
             end if;
          exception
-            when Constraint_Error | Ada.Assertions.Assertion_Error =>
+            when E : Constraint_Error | Ada.Assertions.Assertion_Error |
+              Ada.Numerics.Argument_Error =>
                if not C.Error then
-                  raise;
+                  AUnit.Assertions.Assert (False,
+                    Func & " row" & Positive'Image (C.Line_Number) &
+                    Ada.Exceptions.Exception_Message (E));
                end if;
                Raised := True;
          end;

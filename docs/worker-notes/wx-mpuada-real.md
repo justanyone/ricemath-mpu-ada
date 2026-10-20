@@ -12,3 +12,4 @@ Replaced the failed generator with direct Ada source and copied C tables. Alire 
 Copied Alire settings under obj to keep all generated state in the worktree. Next resolve compiler diagnostics and run real tests.
 Offline cache works. First compile found an Ada reserved identifier and numeric translation issues; correcting them.
 About five minutes remain. Offline dependencies are staged under obj. The focused build is running after syntax corrections.
+Gate prints green even when AUnit reports failures. Added explicit input checks for release calls and contextual fixture diagnostics. Nonfinite IEEE inputs need validity checks disabled locally.
