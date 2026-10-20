@@ -10,3 +10,4 @@ Checking offline Alire configuration before retrying the prescribed scripts.
 Gate also stopped at development build because Alire has no community index.
 The remaining time is reserved for offline compilation and fixing diagnostics.
 Found cached GNAT, GPRbuild, and AUnit; checking local settings for offline use.
+Created disposable settings and a local cache index under obj; compile started.
