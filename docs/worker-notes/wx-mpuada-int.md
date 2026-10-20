@@ -16,3 +16,4 @@ Cached toolchains selected through the local index. Waiting for compiler diagnos
 About five minutes remain. Local build configured; correcting the root port generator, then rerunning fixture replay and gate.
 First full replay: 22 tests pass; four failures expose K=0 API semantics, error-row handling, and base-two logarithms. Fixing these before the gate.
 Fixture failures reproduced and corrected: zero exponents, error rows, and base greater than the argument.
+All 26 tests pass, including every integer fixture row. Final gate follows the faithful root and perfect-power refinements.
