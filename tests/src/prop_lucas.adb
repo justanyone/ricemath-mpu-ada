@@ -19,6 +19,7 @@ package body Prop_Lucas is
       return AUnit.Format ("Prop_Lucas seed 20261020");
    end Name;
 
+   procedure Check_Laws (T : in out Test_Case'Class);
    procedure Check_Laws (T : in out Test_Case'Class) is
       Seed : U64 := 20_261_020;
       N, K : U64;
@@ -65,10 +66,40 @@ package body Prop_Lucas is
          not Lucas_Number (I64'First).Defined, "minimum signed index");
    end Check_Laws;
 
+   procedure Check_Concurrent (T : in out Test_Case'Class);
+   procedure Check_Concurrent (T : in out Test_Case'Class) is
+      task type Worker is
+         entry Done (Passed : out Boolean);
+      end Worker;
+      task body Worker is
+         Good : Boolean := True;
+         R : Residue_Pair;
+      begin
+         for K in U64 range 0 .. 90 loop
+            R := Lucasuvmod (1, -1, K, U64'Last);
+            Good := Good and then
+              I128 (R.U) = Fibonacci (I64 (K)).Value and then
+              I128 (R.V) = Lucas_Number (I64 (K)).Value;
+         end loop;
+         accept Done (Passed : out Boolean) do
+            Passed := Good;
+         end Done;
+      end Worker;
+      Workers : array (1 .. 4) of Worker;
+      Passed : Boolean;
+   begin
+      for W of Workers loop
+         W.Done (Passed);
+         AUnit.Assertions.Assert (Passed, "concurrent independent calls");
+      end loop;
+   end Check_Concurrent;
+
    overriding procedure Register_Tests (T : in out Lucas_Case) is
    begin
       Registration.Register_Routine
         (T, Check_Laws'Access, "Lucas laws seed 20261020");
+      Registration.Register_Routine
+        (T, Check_Concurrent'Access, "concurrent Lucas calls");
    end Register_Tests;
 
    function Suite return AUnit.Test_Suites.Access_Test_Suite is

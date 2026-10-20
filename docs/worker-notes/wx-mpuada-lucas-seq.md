@@ -18,3 +18,10 @@ Removed unused final Q powers; remaining failure needs independent U/V overflow.
 All modular, Fibonacci, and Lucas-number fixture groups now pass.
 Used unsigned wide final subtraction so U remains defined when V overflows.
 About five minutes remain; next checks are the fixture rerun and final gate.
+All 22,140 fixture rows and seeded laws pass; runner ignores its filter argument.
+Added four concurrent callers to verify independence; running the final gate.
+Final gate: green. All 37 tests pass, including 22,140 Lucas fixture rows.
+Development and release builds pass. No fixture rows were skipped.
+STATUS.md was left unchanged for generated updates after merge.
+Offline settings, cached AUnit copy, and logs remain only in ignored obj/.
+Finished: all nine functions, compatibility tests, and property tests are done.

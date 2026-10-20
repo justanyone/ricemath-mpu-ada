@@ -23,6 +23,7 @@ package body Compat_Lucas is
    function Image (V : Optional_Integer) return String is
      (if V.Defined then Image (V.Value) else "undef");
 
+   function Evaluate (C : Case_Record; Func : String) return String;
    function Evaluate (C : Case_Record; Func : String) return String is
       function Signed (I : Positive) return I64 is
         (I64'Value (To_String (C.Args (I))));
@@ -61,6 +62,7 @@ package body Compat_Lucas is
       end if;
    end Evaluate;
 
+   procedure Replay (Func : String);
    procedure Replay (Func : String) is
       Cases : constant Case_Vectors.Vector :=
         For_Function (Load ("lucas"), Func);
@@ -105,46 +107,55 @@ package body Compat_Lucas is
       return AUnit.Format ("Compat_Lucas");
    end Name;
 
+   procedure Test_Lucasu (T : in out Test_Case'Class);
    procedure Test_Lucasu (T : in out Test_Case'Class) is
    begin
       Replay ("lucasu");
    end Test_Lucasu;
 
+   procedure Test_Lucasv (T : in out Test_Case'Class);
    procedure Test_Lucasv (T : in out Test_Case'Class) is
    begin
       Replay ("lucasv");
    end Test_Lucasv;
 
+   procedure Test_Lucasuv (T : in out Test_Case'Class);
    procedure Test_Lucasuv (T : in out Test_Case'Class) is
    begin
       Replay ("lucasuv");
    end Test_Lucasuv;
 
+   procedure Test_Lucasumod (T : in out Test_Case'Class);
    procedure Test_Lucasumod (T : in out Test_Case'Class) is
    begin
       Replay ("lucasumod");
    end Test_Lucasumod;
 
+   procedure Test_Lucasvmod (T : in out Test_Case'Class);
    procedure Test_Lucasvmod (T : in out Test_Case'Class) is
    begin
       Replay ("lucasvmod");
    end Test_Lucasvmod;
 
+   procedure Test_Lucasuvmod (T : in out Test_Case'Class);
    procedure Test_Lucasuvmod (T : in out Test_Case'Class) is
    begin
       Replay ("lucasuvmod");
    end Test_Lucasuvmod;
 
+   procedure Test_Lucas_Sequence (T : in out Test_Case'Class);
    procedure Test_Lucas_Sequence (T : in out Test_Case'Class) is
    begin
       Replay ("lucas_sequence");
    end Test_Lucas_Sequence;
 
+   procedure Test_Fibonacci (T : in out Test_Case'Class);
    procedure Test_Fibonacci (T : in out Test_Case'Class) is
    begin
       Replay ("fibonacci");
    end Test_Fibonacci;
 
+   procedure Test_Lucas_Number (T : in out Test_Case'Class);
    procedure Test_Lucas_Number (T : in out Test_Case'Class) is
    begin
       Replay ("lucas_number");
