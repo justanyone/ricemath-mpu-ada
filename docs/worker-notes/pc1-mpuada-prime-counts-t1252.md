@@ -8,3 +8,4 @@ The C source uses existing real.c Li/RiemannR routines for estimates; Ada Real i
 Added six analytic APIs and both Chebyshev APIs plus individual fixture tests. Running focused validation; LMO, large tables and proof remain.
 Focused test blocked before compilation: Alire has no configured offline community index and DNS is unavailable. Checking installed toolchain locations; no dependency or tooling files changed.
 About five minutes remain. Offline Alire configuration now works, but AUnit is unresolved without an index. Attempting to use the preinstalled AUnit project through GPR_PROJECT_PATH; no test result yet.
+Copied installed AUnit into ignored obj/ to keep all build writes in this worktree. Added count/nth inverse, bound and phi parity properties. Added native Chebyshev endpoint constants from real.c.

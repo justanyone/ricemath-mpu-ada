@@ -254,7 +254,9 @@ package body Compat_Count is
               (Parse_U64 (To_String (C.Result), Expected), "result");
             AUnit.Assertions.Assert
               (Pc.Nth_Prime_Approx (N) = Expected,
-               "nth_prime_approx row" & Positive'Image (C.Line_Number));
+               "nth_prime_approx row" & Positive'Image (C.Line_Number) &
+               " actual" & U64'Image (Pc.Nth_Prime_Approx (N)) &
+               " expected" & U64'Image (Expected));
          end if;
       end loop;
    end Check_Nth_Prime_Approx;
@@ -269,7 +271,7 @@ package body Compat_Count is
          AUnit.Assertions.Assert
            (Parse_U64 (To_String (C.Args (1)), N), "argument");
          --  Extended precision and large Chebyshev table replay pending.
-         if not C.Undef and then N <= 100_000_000 then
+         if not C.Undef and then N <= Pc.Prime_Count_Limit then
             Expected := Long_Float'Value (To_String (C.Result));
             AUnit.Assertions.Assert
               (abs (Pc.Chebyshev_Theta (N) - Expected) <=
@@ -289,7 +291,7 @@ package body Compat_Count is
          AUnit.Assertions.Assert
            (Parse_U64 (To_String (C.Args (1)), N), "argument");
          --  Extended precision and large Chebyshev table replay pending.
-         if not C.Undef and then N <= 100_000_000 then
+         if not C.Undef and then N <= Pc.Prime_Count_Limit then
             Expected := Long_Float'Value (To_String (C.Result));
             AUnit.Assertions.Assert
               (abs (Pc.Chebyshev_Psi (N) - Expected) <=

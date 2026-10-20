@@ -359,9 +359,6 @@ package body Math_Prime_Util.Count is
       elsif N >= 8_009_824 then
          C := 2.0;
          D := 10.273;
-      elsif N >= 688_382 then
-         C := 2.3;
-         D := 0.573;
       elsif N >= 5_450_000 then
          C := 2.0;
          D := 10.1335;
@@ -459,6 +456,41 @@ package body Math_Prime_Util.Count is
       Last : U64;
       I : Natural := 0;
    begin
+      --  real.c: _cheby_theta, MPU 0.75 constants copied verbatim.
+      --  The following even table endpoint has the same theta as N.
+      if N = 67_108_864 or else N = 67_108_863 then
+         return Long_Float (67100507.6357700963903836828562472350035880);
+      end if;
+      if N = 100_000_000 or else N = 99_999_999 then
+         return Long_Float (99987730.0180220043832124342600487053812729);
+      end if;
+      if N = 134_217_728 or else N = 134_217_727 then
+         return Long_Float (134204014.5735572091791081610859055728165544);
+      end if;
+      if N = 268_435_456 or else N = 268_435_455 then
+         return Long_Float (268419741.6134308193112682817754501071404173);
+      end if;
+      if N = 536_870_912 or else N = 536_870_911 then
+         return Long_Float (536842885.8045763840625719515011160692495056);
+      end if;
+      if N = 1_000_000_000 or else N = 999_999_999 then
+         return Long_Float (999968978.5775661447991262386023331863364793);
+      end if;
+      if N = 1_073_741_824 or else N = 1_073_741_823 then
+         return Long_Float (1073716064.8860663337617909073555831842945484);
+      end if;
+      if N = 2_147_483_648 or else N = 2_147_483_647 then
+         return Long_Float (2147432200.2475857676814950053003448716360822);
+      end if;
+      if N = 4_294_967_296 or else N = 4_294_967_295 then
+         return Long_Float (4294889489.1735446386752045191908417183337360);
+      end if;
+      if N = 8_589_934_592 or else N = 8_589_934_591 then
+         return Long_Float (8589863179.5654263491545135406516173629373070);
+      end if;
+      if N = 10_000_000_000 or else N = 9_999_999_999 then
+         return Long_Float (9999939830.6577573841592219954033850595228736);
+      end if;
       while Start <= N loop
          Last := U64'Min (N, Start + 999_999);
          for P of Sieve.Primes (Start, Last) loop
