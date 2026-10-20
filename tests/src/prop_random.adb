@@ -32,6 +32,7 @@ package body Prop_Random is
       Part_4 := Random_Bytes (1024);
       AUnit.Assertions.Assert
         (Part_1 & Part_2 & Part_3 & Part_4 = Whole, 
+         
          "seed 42: partition invariance");
       Srand (42);
       declare

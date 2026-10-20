@@ -19,7 +19,7 @@ private package Math_Prime_Util.Random_Core with SPARK_Mode => On is
    procedure Expand_Seed (Data : String; Key : out String)
      with Pre => Key'First = 1 and then Key'Length = 40,
           Post => True;
-   --  Twenty rounds and counter advance. C: chacha.c, chacha20_block.
+   --  Twenty rounds and counter advance. C: chacha.c, chacha_core.
    procedure Block (State : in out Words; Buffer : out String)
      with Pre => Buffer'First = 1 and then Buffer'Length = 64,
           Post => True;
