@@ -11,3 +11,5 @@ Ported the C sort dispatch: quicksort below 400, insertion cutoff 16, median-of-
 The first gate passed. Additional sort work is now under test; no dependencies or build scripts changed. Remaining review targets are hash-based uniqueness/Sidon checks and proof coverage.
 Sort regression caught checked conversion of negative I64 to U64. Replaced it with U64 Mod and retained the C Storage_Error fallback to quicksort.
 About five minutes remain. The sort boundary cases now pass: 78 tests green. Final work checks C fast paths, contracts, and gate output; exact hash-based uniqueness/Sidon translation still needs review.
+Added C single-varying-byte radix reconstruction and checkable ordering contracts. Named bigint fixture exclusions remain unchanged. No source dependency was added.
+Extended sort properties to one varying byte at both signed extremes and at byte six. This covers the direct histogram reconstruction path.

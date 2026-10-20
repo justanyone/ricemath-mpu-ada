@@ -9,17 +9,25 @@ package Math_Prime_Util.Vec with SPARK_Mode => On is
    --  True when A is strictly increasing; empty sets are valid.
    function Is_Set (A : Vector) return Boolean
      with Pre => True,
-          Post => (if A'Length < 2 then Is_Set'Result);
+          Post => Is_Set'Result =
+            (for all I in A'Range =>
+               (if I > A'First then A (I - 1) < A (I)));
 
    --  sort.c: sort_iv_array, _qs_iv, _radixsort. Ascending copy.
    function Vecsort (A : Vector) return Vector
      with Pre => True,
-          Post => Vecsort'Result'Length = A'Length;
+          Post => Vecsort'Result'Length = A'Length and then
+            (for all I in Vecsort'Result'Range =>
+               (if I > Vecsort'Result'First then
+                  Vecsort'Result (I - 1) <= Vecsort'Result (I)));
 
    --  sort.c: sort_iv_array, _qs_iv, _radixsort. Descending copy.
    function Vecrsort (A : Vector) return Vector
      with Pre => True,
-          Post => Vecrsort'Result'Length = A'Length;
+          Post => Vecrsort'Result'Length = A'Length and then
+            (for all I in Vecrsort'Result'Range =>
+               (if I > Vecrsort'Result'First then
+                  Vecrsort'Result (I - 1) >= Vecrsort'Result (I)));
 
    --  sort.c: sort_iv_array, _qs_iv, _radixsort. Integer sort; no errors.
    function Vecsorti (A : Vector) return Vector
@@ -160,7 +168,8 @@ package Math_Prime_Util.Vec with SPARK_Mode => On is
 
    --  XS.xs: vecsum. Widen unsigned sums to U128 rather than bigint.
    function Vecsum (A : Unsigned_Vector) return U128
-     with Pre => True, Post => True;
+     with Pre => True,
+          Post => Vecsum'Result <= U128 (A'Length) * U128 (U64'Last);
 
    --  XS.xs: vecsum. Signed sums use a checked 128-bit accumulator.
    function Vecsum (A : Vector) return I128

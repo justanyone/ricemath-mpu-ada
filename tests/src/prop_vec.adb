@@ -212,7 +212,7 @@ package body Prop_Vec is
    begin
       for Size of Sizes'[0, 1, 7, 16, 17, 40, 41, 399, 400, 513]
       loop
-         for Pattern in 1 .. 5 loop
+         for Pattern in 1 .. 8 loop
             for I in 1 .. Size loop
                Seed := Seed * 6_364_136_223_846_793_005 + 1;
                A (I) := (case Pattern is
@@ -221,7 +221,11 @@ package body Prop_Vec is
                   when 3 => I64 (Seed mod 7) - 3,
                   when 4 => (if I mod 2 = 0 then I64'First
                              else I64'Last),
-                  when others => I64 (Seed mod 2 ** 63));
+                  when 5 => I64 (Seed mod 2 ** 63),
+                  when 6 => I64'First + I64 (Seed mod 256),
+                  when 7 => I64'Last - I64 (Seed mod 256),
+                  when others => I64'First +
+                    I64 (Seed mod 256) * 2 ** 48);
             end loop;
             declare
                Sorted : constant Vector := Vecsort (A (1 .. Size));

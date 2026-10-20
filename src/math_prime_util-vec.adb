@@ -208,6 +208,33 @@ package body Math_Prime_Util.Vec is
                Shifts (Passes) := Byte * 8;
             end if;
          end loop;
+         --  _radixsort reconstructs directly for one varying byte when
+         --  its full-width sign extension can be retained in the base.
+         if Passes = 1 and then Signshift = 56 then
+            declare
+               Shift : constant Natural := Shifts (1);
+               Base : constant U64 := First and not (255 * 2 ** Shift);
+               N : Natural := 0;
+               Value : U64;
+            begin
+               Count := [others => 0];
+               for V of R loop
+                  Digit := Natural ((U64'Mod (V) / 2 ** Shift) mod 256);
+                  Count (Digit) := Count (Digit) + 1;
+               end loop;
+               for K in 0 .. 255 loop
+                  Key := (if Shift = Signshift then (K + 128) mod 256
+                          else K);
+                  Value := Base or (U64 (Key) * 2 ** Shift);
+                  for I in 1 .. Count (Key) loop
+                     N := N + 1;
+                     R (N) := (if Value <= U64 (I64'Last) then I64 (Value)
+                               else I64 (I128 (Value) - 2 ** 64));
+                  end loop;
+               end loop;
+               return;
+            end;
+         end if;
          for Pass in 1 .. Passes loop
             Count := [others => 0];
             for V of R loop
