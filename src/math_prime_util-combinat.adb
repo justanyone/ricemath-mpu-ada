@@ -222,7 +222,7 @@ package body Math_Prime_Util.Combinat with SPARK_Mode => On is
    end Consecutive_Integer_Lcm;
 
    --  util.c: stirling2 inclusion-exclusion formula. The caller bounds
-   --  N to 17, so all signed wide intermediates fit.
+   --  N to 18, so all signed wide intermediates fit.
    function Stirling_Second (N, M : U64) return U64 is
       Sum : I128 := 0;
       Term : I128;
@@ -246,7 +246,7 @@ package body Math_Prime_Util.Combinat with SPARK_Mode => On is
       use type U128;
       Sum : U128 := 1;
    begin
-      if N > 17 then
+      if N > 18 then
          return (Defined => False);
       end if;
       for K in U64 range 2 .. N loop

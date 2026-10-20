@@ -23,17 +23,27 @@ package body Compat_Combinat is
         For_Function (Load ("combinat"), Func);
       A, B, Expected : U64 := 0;
       R : Optional_U64;
+      Signed_R : Optional_I128;
+      Signed_A, Signed_Expected : I128;
+      Signed_Input : Boolean;
       Fits, Inputs_Fit : Boolean;
    begin
       AUnit.Assertions.Assert (not Cases.Is_Empty, "missing " & Func);
       for C of Cases loop
+         Signed_Input := Func = "falling_factorial"
+           or Func = "rising_factorial";
          Inputs_Fit := Parse_U64 (To_String (C.Args (1)), A);
          B := 0;
          if Natural (C.Args.Length) > 1 then
             Inputs_Fit :=
               Parse_U64 (To_String (C.Args (2)), B) and Inputs_Fit;
          end if;
-         --  Signed and bigint inputs are outside this native unsigned API.
+         if Signed_Input then
+            Signed_A := I128'Value (To_String (C.Args (1)));
+            Inputs_Fit := Signed_A in
+              -I128 (U64'Last) .. I128 (U64'Last);
+         end if;
+         --  Bigint inputs are outside this native API.
          --  Their fixture rows remain for the later signed/bigint port.
          if Inputs_Fit then
             if C.Error then
@@ -53,6 +63,21 @@ package body Compat_Combinat is
                   AUnit.Assertions.Assert (False, "unexpected error row");
                end if;
             else
+               if Signed_Input then
+                  Signed_R := (if Func = "falling_factorial" then
+                    Falling_Factorial (Signed_A, B)
+                    else Rising_Factorial (Signed_A, B));
+                  Fits := not C.Undef;
+                  if Fits then
+                     Signed_Expected := I128'Value (To_String (C.Result));
+                     Fits := Signed_Expected in
+                       -I128 (U64'Last) .. I128 (U64'Last);
+                  end if;
+                  AUnit.Assertions.Assert
+                    (Signed_R.Defined = Fits and then
+                     (not Fits or else Signed_R.Value = Signed_Expected),
+                     Func & Positive'Image (C.Line_Number));
+               else
                if Func = "factorial" then
                   R := Factorial (A);
                elsif Func = "subfactorial" then
@@ -67,6 +92,12 @@ package body Compat_Combinat is
                   R := Bell_Number (A);
                elsif Func = "primorial" then
                   R := Primorial (A);
+               elsif Func = "fubini" then
+                  R := Fubini (A);
+               elsif Func = "powersum" then
+                  R := Powersum (A, B);
+               elsif Func = "consecutive_integer_lcm" then
+                  R := Consecutive_Integer_Lcm (A);
                elsif Func = "pn_primorial" then
                   R := Pn_Primorial (A);
                end if;
@@ -76,6 +107,7 @@ package body Compat_Combinat is
                  (R.Defined = Fits and then
                   (not Fits or else R.Value = Expected),
                   Func & Positive'Image (C.Line_Number));
+               end if;
             end if;
          end if;
       end loop;
@@ -121,6 +153,31 @@ package body Compat_Combinat is
       Replay ("pn_primorial");
    end Check_Pn_Primorial;
 
+   procedure Check_Falling_Factorial (T : in out Test_Case'Class) is
+   begin
+      Replay ("falling_factorial");
+   end Check_Falling_Factorial;
+
+   procedure Check_Rising_Factorial (T : in out Test_Case'Class) is
+   begin
+      Replay ("rising_factorial");
+   end Check_Rising_Factorial;
+
+   procedure Check_Consecutive_Integer_Lcm (T : in out Test_Case'Class) is
+   begin
+      Replay ("consecutive_integer_lcm");
+   end Check_Consecutive_Integer_Lcm;
+
+   procedure Check_Fubini (T : in out Test_Case'Class) is
+   begin
+      Replay ("fubini");
+   end Check_Fubini;
+
+   procedure Check_Powersum (T : in out Test_Case'Class) is
+   begin
+      Replay ("powersum");
+   end Check_Powersum;
+
    overriding function Name
      (T : Combinat_Case) return AUnit.Message_String is
    begin
@@ -130,6 +187,16 @@ package body Compat_Combinat is
    overriding procedure Register_Tests (T : in out Combinat_Case) is
       use AUnit.Test_Cases.Registration;
    begin
+      Register_Routine
+        (T, Check_Falling_Factorial'Access, "falling_factorial");
+      Register_Routine
+        (T, Check_Rising_Factorial'Access, "rising_factorial");
+      Register_Routine
+        (T, Check_Consecutive_Integer_Lcm'Access, "consecutive_integer_lcm");
+      Register_Routine
+        (T, Check_Fubini'Access, "fubini");
+      Register_Routine
+        (T, Check_Powersum'Access, "powersum");
       Register_Routine (T, Check_Factorial'Access, "factorial");
       Register_Routine (T, Check_Subfactorial'Access, "subfactorial");
       Register_Routine (T, Check_Multifactorial'Access, "multifactorial");

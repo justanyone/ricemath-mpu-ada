@@ -36,6 +36,34 @@ package body Prop_Combinat is
               and Multifactorial (N, 1).Value = Factorial (N).Value,
             "factorial seed 20261020");
       end loop;
+      for N in U64 range 1 .. 20 loop
+         for K in U64 range 0 .. N loop
+            AUnit.Assertions.Assert
+              (Falling_Factorial (I128 (N), K).Value
+                 = I128 (Factorial (N).Value / Factorial (N - K).Value),
+               "falling factorial quotient");
+            AUnit.Assertions.Assert
+              (Rising_Factorial (-I128 (N), K).Value
+                 = (if K mod 2 = 0 then 1 else -1)
+                   * Falling_Factorial (I128 (N), K).Value,
+               "signed factorial duality");
+         end loop;
+         for K in U64 range 1 .. 5 loop
+            AUnit.Assertions.Assert
+              (Powersum (N, K).Value - Powersum (N - 1, K).Value
+                 = N ** Natural (K), "power sum difference");
+         end loop;
+         AUnit.Assertions.Assert
+           (Consecutive_Integer_Lcm (N).Value mod N = 0,
+            "LCM divisibility");
+      end loop;
+      AUnit.Assertions.Assert
+        (Rising_Factorial (I128 (U64'Last), 1).Value
+           = I128 (U64'Last)
+           and not Rising_Factorial (I128 (U64'Last), 2).Defined
+           and Falling_Factorial (0, U64'Last).Value = 0
+           and Rising_Factorial (0, U64'Last).Value = 0,
+         "factorial boundaries and overflow");
       for N of Edges
       loop
          AUnit.Assertions.Assert
