@@ -3,7 +3,14 @@ p=Path('src/math_prime_util-digit_operations-bigints')
 entries=[]
 def api(name,args,ret,comment,pre='True',post='True'):
  entries.append(f'   --  {comment}\n   function {name}\n     ({args}) return {ret}\n     with Pre => {pre}, Post => {post};\n')
-for n,arity,source in [('Absint',1,'strint_abs'),('Negint',1,'strint_neg'),('Signint',1,'strint_cmp'),('Cmpint',2,'strint_cmp'),('Addint',2,'strint_add_s'),('Subint',2,'strint_add_s'),('Add1int',1,'strint_add_s'),('Sub1int',1,'strint_add_s' <<cut 309 chars by kit>>
+unary = ['Absint', 'Negint', 'Signint', 'Add1int', 'Sub1int']
+ternary = ['Muladdint', 'Mulsubint']
+names = unary + ternary + ['Cmpint', 'Addint', 'Subint', 'Mulint',
+ 'Divint', 'Modint', 'Cdivint', 'Divrem', 'Tdivrem', 'Fdivrem', 'Cdivrem']
+for n in names:
+ arity = 1 if n in unary else 3 if n in ternary else 2
+ source = 'strint_' + n.lower()
+
  api(n,', '.join('ABC'[:arity])+ ' : Big_Integer','Integer' if n in ['Signint','Cmpint'] else 'Division_Result' if n.endswith('rem') else 'Big_Integer',f'strops.c: {source}; exact signed arithmetic.', 'B /= 0' if 'div' in n.lower() or 'mod' <<cut 47 chars by kit>>
 for n in ['Lshiftint','Rshiftint','Rashiftint']:
  api(n,'A : Big_Integer; Bits : Integer := 1','Big_Integer',f'strops.c: strint_{n.lower()}; signed power-of-two shift.')
@@ -297,20 +304,13 @@ body+='''   function Tdivrem (A, B : Big_Integer) return Division_Result is
    end Fromzeckendorf;
 
    function Toint (Text : String) return Big_Integer is
-      Buffer : String (1 .. Text'Length);
-      K : Natural := 0;
+      Native : constant Optional_I128 := Digit_Operations.Toint (Text);
    begin
-      for C of Text loop
-         if C /= '_' and C /= ' ' then
-            K := K + 1;
-            Buffer (K) := C;
-         end if;
-      end loop;
-      declare
-         S : constant String := Ada.Characters.Handling.To_Lower
-           (Buffer (1 .. K));
-         First : Positive := 1;
-         Negative : Boolean := False;
-         R : Big_Integer := To_Big_Integer (0);
-       
-KIT NOTE, NOT FILE CONTENT: this output was shortened by the kit; the file on disk is whole; show a part with sed -n A,Bp FILE (kit removed 2291 bytes)
+      if Native.Defined then
+         return From_String (I128'Image (Native.Value));
+      end if;
+      return From_String (Text);
+   end Toint;
+end Math_Prime_Util.Digit_Operations.Bigints;
+'''
+p.with_suffix('.adb').write_text(body)

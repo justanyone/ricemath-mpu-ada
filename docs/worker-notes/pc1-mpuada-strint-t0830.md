@@ -8,3 +8,4 @@ Adding a standard-library bigint child API to replay previously skipped rows.
 - 2026-10-20T13:32:50Z launcher: no commit for 60 s; 152 s elapsed. Files changed so far: docs/worker-notes/pc1-mpuada-strint-t0830.md.
 Implemented bigint child operations using Ada standard Big_Integers; wiring full fixture replay next.
 Bigint generator hit a quoting error before creating sources; correcting it before validation.
+Bigint source and spec created; configuring an isolated offline Alire settings directory under obj/.
