@@ -40,6 +40,7 @@ package body Compat_Rational is
       F : Fraction;
       Skip : Boolean;
       X : Long_Long_Float;
+      Parsed : U64;
    begin
       for C of Cases loop
          Actual := Null_Unbounded_String;
@@ -58,7 +59,11 @@ package body Compat_Rational is
                      A (I) := I128'Value (S (S'First .. Slash - 1));
                      A (I + 1) := I128'Value (S (Slash + 1 .. S'Last));
                   else
-                     A (I) := I128'Value (S);
+                     if S'Length > 20 and then S (S'First) /= '-' then
+                        Skip := True;
+                     else
+                        A (I) := I128'Value (S);
+                     end if;
                   end if;
                   if abs A (I) > I128 (U64'Last) then
                      Skip := True;
@@ -80,8 +85,9 @@ package body Compat_Rational is
                         if Last >= Start and then
                           S (Start) in '-' | '0' .. '9'
                         then
-                           if abs I128'Value (S (Start .. Last)) >
-                             I128 (U64'Last)
+                           if not Parse_U64
+                             (S ((if S (Start) = '-' then Start + 1
+                                  else Start) .. Last), Parsed)
                            then
                               Skip := True;
                            end if;
@@ -101,7 +107,9 @@ package body Compat_Rational is
                      end if;
                   end loop;
                end if;
-               if Func = "contfrac" or else Func = "convergents" then
+               if Func = "convergents" and then Count = 0 then
+                  Actual := Null_Unbounded_String;
+               elsif Func = "contfrac" or else Func = "convergents" then
                   declare
                      Terms : constant Coefficients :=
                        Contfrac (A (1), U64 (A (2)));
