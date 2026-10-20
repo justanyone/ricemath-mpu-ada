@@ -1,3 +1,5 @@
+with Ada.Containers.Vectors;
+
 package body Math_Prime_Util.Vec is
    use type U64;
    use type U128;
@@ -490,6 +492,59 @@ package body Math_Prime_Util.Vec is
          R (I) := Op (A (J .. J + Size - 1));
       end loop;
       return R;
+   end Vecwindow;
+
+   function Vecpairwise
+     (A, B : Vector;
+      Op : not null access function (L, R : I64) return Vector)
+      return Vector
+   is
+      package Lists is new Ada.Containers.Vectors (Positive, I64);
+      Result : Lists.Vector;
+   begin
+      for I in 1 .. Natural'Min (A'Length, B'Length) loop
+         declare
+            Part : constant Vector :=
+              Op (A (A'First + I - 1), B (B'First + I - 1));
+         begin
+            for V of Part loop
+               Result.Append (V);
+            end loop;
+         end;
+      end loop;
+      return R : Vector (1 .. Natural (Result.Length)) do
+         for I in R'Range loop
+            R (I) := Result (I);
+         end loop;
+      end return;
+   end Vecpairwise;
+
+   function Vecwindow
+     (A : Vector; Step, Size : Positive;
+      Op : not null access function (Window : Vector) return Vector)
+      return Vector
+   is
+      package Lists is new Ada.Containers.Vectors (Positive, I64);
+      Result : Lists.Vector;
+      N : constant Natural :=
+        (if A'Length < Size then 0 else (A'Length - Size) / Step + 1);
+      J : Natural;
+   begin
+      for I in 1 .. N loop
+         J := A'First + (I - 1) * Step;
+         declare
+            Part : constant Vector := Op (A (J .. J + Size - 1));
+         begin
+            for V of Part loop
+               Result.Append (V);
+            end loop;
+         end;
+      end loop;
+      return R : Vector (1 .. Natural (Result.Length)) do
+         for I in R'Range loop
+            R (I) := Result (I);
+         end loop;
+      end return;
    end Vecwindow;
 
    function Setbinop

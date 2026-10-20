@@ -262,6 +262,27 @@ package Math_Prime_Util.Vec with SPARK_Mode => On is
       return Vector
      with Pre => True, Post => Vecwindow'Result'Length <= A'Length;
 
+   --  XS.xs: vecpairwise (G_ARRAY). Concatenate each callback list in
+   --  pair order; empty callback lists contribute no elements.
+   --  Constraint_Error if the accumulated result exceeds Natural'Last.
+   function Vecpairwise
+     (A, B : Vector;
+      Op : not null access function (L, R : I64) return Vector)
+      return Vector
+     with SPARK_Mode => Off, Pre => True,
+          Post => (if A'Length = 0 or B'Length = 0 then
+                     Vecpairwise'Result'Length = 0);
+
+   --  XS.xs: vecwindow (G_ARRAY). Concatenate complete window results
+   --  in input order; invoke the closure once per window.
+   --  Constraint_Error if the accumulated result exceeds Natural'Last.
+   function Vecwindow
+     (A : Vector; Step, Size : Positive;
+      Op : not null access function (Window : Vector) return Vector)
+      return Vector
+     with SPARK_Mode => Off, Pre => True,
+          Post => (if A'Length < Size then Vecwindow'Result'Length = 0);
+
    --  XS.xs: setbinop. Callback on each Cartesian pair; sorted unique result.
    function Setbinop
      (A, B : Vector; Op : not null access function (L, R : I64) return I64)
