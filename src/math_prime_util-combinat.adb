@@ -30,6 +30,9 @@ package body Math_Prime_Util.Combinat with SPARK_Mode => On is
       I : U64 := N;
       R : U64 := 1;
    begin
+      if K = 0 then
+         raise Constraint_Error with "multifactorial step must be positive";
+      end if;
       while I > 0 loop
          if R > U64'Last / I then
             return (Defined => False);
