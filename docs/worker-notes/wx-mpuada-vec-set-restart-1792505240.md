@@ -6,3 +6,4 @@ Existing API and suites cover the requested names. Focused Vec build is running;
 Baseline: all 76 tests pass. The runner ignores filter arguments. Added an upper-index-bound regression to check Ada array bounds before changing the implementation.
 Regression reproduced Constraint_Error in Merge at Positive last. Use zero-based merge offsets and subtract before adding array bounds in vector callbacks and extraction.
 Aligned set relations with the C intersection-count merge and sum-free checks with pair sums plus binary search. These changes remove temporary relation vectors and repeated linear membership scans.
+Gate is green with 77 tests, including the previously failing regression. Reviewing remaining C sort dispatch: existing sort uses insertion for all lengths; added independent boundary cases before porting its dispatch.

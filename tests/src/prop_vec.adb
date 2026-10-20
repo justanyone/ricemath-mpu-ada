@@ -203,6 +203,49 @@ package body Prop_Vec is
          "firstidx stops at first match");
    end Check_List_Laws;
 
+   procedure Check_Sort_Bounds (T : in out Test_Case'Class);
+
+   procedure Check_Sort_Bounds (T : in out Test_Case'Class) is
+      type Sizes is array (Positive range <>) of Natural;
+      A : Vector (1 .. 513);
+      Seed : U64 := 20_261_020;
+   begin
+      for Size of Sizes'[0, 1, 7, 16, 17, 40, 41, 399, 400, 513]
+      loop
+         for Pattern in 1 .. 5 loop
+            for I in 1 .. Size loop
+               Seed := Seed * 6_364_136_223_846_793_005 + 1;
+               A (I) := (case Pattern is
+                  when 1 => I64 (I),
+                  when 2 => -I64 (I),
+                  when 3 => I64 (Seed mod 7) - 3,
+                  when 4 => (if I mod 2 = 0 then I64'First
+                             else I64'Last),
+                  when others => I64 (Seed mod 2 ** 63));
+            end loop;
+            declare
+               Sorted : constant Vector := Vecsort (A (1 .. Size));
+               Expected : Vector (1 .. Size) := A (1 .. Size);
+               J : Natural;
+               V : I64;
+            begin
+               --  Independent insertion oracle checks the dispatch bounds.
+               for I in 2 .. Size loop
+                  V := Expected (I);
+                  J := I;
+                  while J > 1 and then Expected (J - 1) > V loop
+                     Expected (J) := Expected (J - 1);
+                     J := J - 1;
+                  end loop;
+                  Expected (J) := V;
+               end loop;
+               AUnit.Assertions.Assert
+                 (Sorted = Expected, "sort dispatch seed 20261020");
+            end;
+         end loop;
+      end loop;
+   end Check_Sort_Bounds;
+
    procedure Check_Upper_Bounds (T : in out Test_Case'Class);
 
    procedure Check_Upper_Bounds (T : in out Test_Case'Class) is
@@ -232,6 +275,8 @@ package body Prop_Vec is
 
    overriding procedure Register_Tests (T : in out Vec_Case) is
    begin
+      Registration.Register_Routine
+        (T, Check_Sort_Bounds'Access, "sort dispatch boundaries");
       Registration.Register_Routine
         (T, Check_Upper_Bounds'Access, "upper index bounds");
       Registration.Register_Routine

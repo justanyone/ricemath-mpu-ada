@@ -663,7 +663,8 @@ package body Compat_Vec is
       AUnit.Assertions.Assert
         (Vecreduce (Vector'[10, 3, 2], Subtract'Access) =
            Optional_Integer'(True, 5)
-         and then not Vecreduce (Vector'[], Add'Access).Present, "Vecreduce closure semantics");
+         and then not Vecreduce (Vector'[], Add'Access).Present,
+         "Vecreduce closure semantics");
    end Test_Vecreduce;
 
    procedure Test_Vecany (T : in out Test_Case'Class);
@@ -672,7 +673,8 @@ package body Compat_Vec is
    begin
       AUnit.Assertions.Assert
         (Vecany (Vector'[-1, 2], Positive_Value'Access)
-         and then not Vecany (Vector'[], Positive_Value'Access), "Vecany closure semantics");
+         and then not Vecany (Vector'[], Positive_Value'Access),
+         "Vecany closure semantics");
    end Test_Vecany;
 
    procedure Test_Vecall (T : in out Test_Case'Class);
@@ -682,7 +684,8 @@ package body Compat_Vec is
       AUnit.Assertions.Assert
         (Vecall (Vector'[1, 2], Positive_Value'Access)
          and then not Vecall (Vector'[1, -2], Positive_Value'Access)
-         and then Vecall (Vector'[], Positive_Value'Access), "Vecall closure semantics");
+         and then Vecall (Vector'[], Positive_Value'Access),
+         "Vecall closure semantics");
    end Test_Vecall;
 
    procedure Test_Vecnone (T : in out Test_Case'Class);
@@ -692,7 +695,8 @@ package body Compat_Vec is
       AUnit.Assertions.Assert
         (Vecnone (Vector'[-1, -2], Positive_Value'Access)
          and then not Vecnone (Vector'[-1, 2], Positive_Value'Access)
-         and then Vecnone (Vector'[], Positive_Value'Access), "Vecnone closure semantics");
+         and then Vecnone (Vector'[], Positive_Value'Access),
+         "Vecnone closure semantics");
    end Test_Vecnone;
 
    procedure Test_Vecnotall (T : in out Test_Case'Class);
@@ -701,7 +705,8 @@ package body Compat_Vec is
    begin
       AUnit.Assertions.Assert
         (Vecnotall (Vector'[1, -2], Positive_Value'Access)
-         and then not Vecnotall (Vector'[], Positive_Value'Access), "Vecnotall closure semantics");
+         and then not Vecnotall (Vector'[], Positive_Value'Access),
+         "Vecnotall closure semantics");
    end Test_Vecnotall;
 
    procedure Test_Vecfirst (T : in out Test_Case'Class);
@@ -711,7 +716,8 @@ package body Compat_Vec is
       AUnit.Assertions.Assert
         (Vecfirst (Vector'[-1, 2, 3], Positive_Value'Access) =
            Optional_Integer'(True, 2)
-         and then not Vecfirst (Vector'[-1], Positive_Value'Access).Present, "Vecfirst closure semantics");
+         and then not Vecfirst (Vector'[-1], Positive_Value'Access).Present,
+         "Vecfirst closure semantics");
    end Test_Vecfirst;
 
    procedure Test_Vecfirstidx (T : in out Test_Case'Class);
@@ -720,7 +726,8 @@ package body Compat_Vec is
    begin
       AUnit.Assertions.Assert
         (Vecfirstidx (Vector'[-1, 2, 3], Positive_Value'Access) = 1
-         and then Vecfirstidx (Vector'[], Positive_Value'Access) = -1, "Vecfirstidx closure semantics");
+         and then Vecfirstidx (Vector'[], Positive_Value'Access) = -1,
+         "Vecfirstidx closure semantics");
    end Test_Vecfirstidx;
 
    procedure Test_Vecslide (T : in out Test_Case'Class);
@@ -729,7 +736,8 @@ package body Compat_Vec is
    begin
       AUnit.Assertions.Assert
         (Vecslide (Vector'[10, 3, 2], Subtract'Access) = Vector'[7, 1]
-         and then Vecslide (Vector'[1], Add'Access)'Length = 0, "Vecslide closure semantics");
+         and then Vecslide (Vector'[1], Add'Access)'Length = 0,
+         "Vecslide closure semantics");
    end Test_Vecslide;
 
    procedure Test_Vecpairwise (T : in out Test_Case'Class);
@@ -742,7 +750,8 @@ package body Compat_Vec is
          and then Vecpairwise
            (Vector'[1, 2], Vector'[3, 4], Add'Access) = Vector'[4, 6]
          and then Vecpairwise
-           (Vector'[1], Vector'[2], Drop_Pair'Access)'Length = 0, "Vecpairwise closure semantics");
+           (Vector'[1], Vector'[2], Drop_Pair'Access)'Length = 0,
+         "Vecpairwise closure semantics");
    end Test_Vecpairwise;
 
    procedure Test_Vecwindow (T : in out Test_Case'Class);
@@ -757,7 +766,8 @@ package body Compat_Vec is
          and then Vecwindow
            (Vector'[1], 1, 2, Copy'Access)'Length = 0
          and then Vecwindow
-           (Vector'[1, 2], 1, 2, Drop_Window'Access)'Length = 0, "Vecwindow closure semantics");
+           (Vector'[1, 2], 1, 2, Drop_Window'Access)'Length = 0,
+         "Vecwindow closure semantics");
    end Test_Vecwindow;
 
    procedure Test_Setbinop (T : in out Test_Case'Class);
@@ -767,7 +777,8 @@ package body Compat_Vec is
       AUnit.Assertions.Assert
         (Setbinop (Vector'[1, 2], Vector'[2, 3], Add'Access) =
            Vector'[3, 4, 5]
-         and then Setbinop (Vector'[], Vector'[2], Add'Access)'Length = 0, "Setbinop closure semantics");
+         and then Setbinop (Vector'[], Vector'[2], Add'Access)'Length = 0,
+         "Setbinop closure semantics");
    end Test_Setbinop;
 
    overriding procedure Register_Tests (T : in out Vec_Case) is

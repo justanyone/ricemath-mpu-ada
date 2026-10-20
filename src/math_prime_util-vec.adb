@@ -134,7 +134,8 @@ package body Math_Prime_Util.Vec is
          raise Constraint_Error with "set inputs must be sorted and unique";
       end if;
       while I < A'Length or J < B'Length loop
-         if I < A'Length and then J < B'Length and then A (A'First + I) = B (B'First + J)
+         if I < A'Length and then J < B'Length and then
+           A (A'First + I) = B (B'First + J)
          then
             V := A (A'First + I);
             I := I + 1;
@@ -492,7 +493,8 @@ package body Math_Prime_Util.Vec is
    end Vecfirstidx;
 
    function Vecextract (A, Indices : Vector) return Optional_Vector is
-      R : Optional_Vector (1 .. Indices'Length);
+      R : Optional_Vector (1 .. Indices'Length) :=
+        [others => (Present => False)];
       J : I128;
    begin
       for I in R'Range loop
@@ -508,7 +510,7 @@ package body Math_Prime_Util.Vec is
    end Vecextract;
 
    function Vecextract (A : Vector; Mask : U128) return Optional_Vector is
-      R : Optional_Vector (1 .. 128);
+      R : Optional_Vector (1 .. 128) := [others => (Present => False)];
       Bits : U128 := Mask;
       N : Natural := 0;
       I : Natural := 0;
