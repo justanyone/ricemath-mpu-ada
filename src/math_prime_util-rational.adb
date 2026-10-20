@@ -13,6 +13,9 @@ package body Math_Prime_Util.Rational is
       Terms : Coefficients (1 .. 128);
       Last : Natural := 0;
    begin
+      if Den = 0 then
+         raise Constraint_Error;
+      end if;
       while B > 0 loop
          Q := A / B;
          R := A rem B;
@@ -157,6 +160,9 @@ package body Math_Prime_Util.Rational is
       Shift : Natural := 0;
       Bit : Boolean := True;
    begin
+      if Num = 0 or else Den = 0 or else Gcd (Num, Den) /= 1 then
+         raise Constraint_Error;
+      end if;
       CF (CF'Last) := CF (CF'Last) - 1;
       for A of CF loop
          if A >= I128 (64 - Shift) then
@@ -192,6 +198,9 @@ package body Math_Prime_Util.Rational is
       Q : U64 := 1;
       Mask : U64 := 1;
    begin
+      if N = 0 then
+         raise Constraint_Error;
+      end if;
       while Mask <= N / 2 loop
          Mask := Mask * 2;
       end loop;
@@ -211,6 +220,9 @@ package body Math_Prime_Util.Rational is
       P : U64 := 1;
       Q : U64 := 1;
    begin
+      if N = 0 then
+         raise Constraint_Error;
+      end if;
       while M > 1 loop
          if M mod 2 = 1 then
             P := P + Q;
@@ -294,6 +306,9 @@ package body Math_Prime_Util.Rational is
    begin
       if N = 0 or Den = 0 or Num = 0 then
          return 0;
+      end if;
+      if Num > Den then
+         return Farey_Rank (N, 1, 1) + 1;
       end if;
       for I in 2 .. N loop
          Count (I) := (U64 (I) * Num - 1) / Den;

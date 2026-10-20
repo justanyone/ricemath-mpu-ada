@@ -9,3 +9,5 @@ Focused test blocked before compilation: Alire tries to clone its community inde
 Offline toolchain and AUnit cache exist, but checkout lockfiles are absent. Testing an isolated Alire settings directory under obj without changing dependencies.
 About five minutes remain: local index now resolves cached AUnit offline; compiler detection still blocks test compilation. Fixing toolchain selection next.
 Offline build reached Ada compilation. Corrected contract visibility and logical operator syntax; fixture checks are next.
+Fixture replay found explicit invalid-input checks needed even without contract code generation. Added them and documented native C versus Perl bigint/fallback rows.
+Focused run passes 37 of 41 test groups. Remaining mismatches are negative continued-fraction convention and oversized index error handling; correcting those before final gate.
