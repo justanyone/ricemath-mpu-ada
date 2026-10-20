@@ -59,10 +59,12 @@ package body Compat_Random is
       Count : Natural := 0;
       Dummy : Unbounded_String;
       Value, Bound, Low, High : U64;
-      Plain : constant String :=
-        "Now I’m not gonna make a lot of extravagant claims for this " &
-        "little machine. Sure, it’ll change your whole life for the " &
-        "better, but that’s all.";
+      Plain : constant String := Decode
+        ("4e6f772049e280996d206e6f7420676f6e6e61206d616b652061206c6f74" &
+         "206f66206578747261766167616e7420636c61696d7320666f7220746869" &
+         "73206c6974746c65206d616368696e652e20537572652c206974e280996c" &
+         "6c206368616e676520796f75722077686f6c65206c69666520666f722074" &
+         "6865206265747465722c206275742074686174e280997320616c6c2e");
    begin
       for C of Cases loop
          declare
@@ -70,16 +72,16 @@ package body Compat_Random is
             Expected : constant String := To_String (C.Result);
             Selected : constant Boolean :=
               (if Family = "random_bytes" then
-                 F = "random_bytes" or F = "random_bytes_seq" or
-                 F = "random_bytes_len_tail" or
-                 F = "srand15_random_bytes4" or
-                 F = "blake_random_bytes7" or
+                 F = "random_bytes" or else F = "random_bytes_seq" or else
+                 F = "random_bytes_len_tail" or else
+                 F = "srand15_random_bytes4" or else
+                 F = "blake_random_bytes7" or else
                  Ada.Strings.Fixed.Index (F, "cipher_") = 1
                elsif Family = "irand" then
-                 F = "irand" or F = "irand_seq" or
-                 F = "blake_irand" or F = "blake_irand_after7" or
+                 F = "irand" or else F = "irand_seq" or else
+                 F = "blake_irand" or else F = "blake_irand_after7" or else
                  F = "srand42_irand"
-               else F = Family or F = Family & "_seq" or
+               else F = Family or else F = Family & "_seq" or else
                  F = Family & "_after_bytes");
          begin
             if Selected then
@@ -93,7 +95,7 @@ package body Compat_Random is
                      AUnit.Assertions.Assert
                        (Image (Value) = Expected, F & Expected);
                   end if;
-               elsif F = "urandomm" or F = "urandomm_seq" then
+               elsif F = "urandomm" or else F = "urandomm_seq" then
                   --  Bigint_Urandomm: bounds above U64 need the bigint tier.
                   if Parse_U64 (To_String (C.Args (2)), Bound) then
                      if F = "urandomm" then
@@ -123,7 +125,7 @@ package body Compat_Random is
                      AUnit.Assertions.Assert
                        (Image (Urandomr (Low, High)) = Expected, F & Expected);
                   end if;
-               elsif F = "drand" or F = "rand" then
+               elsif F = "drand" or else F = "rand" then
                   Check_Real
                     ((if F = "rand" then Rand else Drand
                       ((if Natural (C.Args.Length) = 1 then 1.0 else
@@ -176,7 +178,7 @@ package body Compat_Random is
                   else
                      AUnit.Assertions.Assert
                        (Encode (Random_Bytes
-                         (Natural'Value (To_String (C.Args (2)))))) =
+                         (Natural'Value (To_String (C.Args (2))))) =
                         Expected, F & " row" & C.Line_Number'Image);
                   end if;
                else

@@ -1,6 +1,7 @@
 with AUnit.Assertions;
 with AUnit.Test_Cases;
 with Ada.Assertions;
+with Interfaces;
 with Math_Prime_Util.Random;
 
 package body Prop_Random is
@@ -8,6 +9,7 @@ package body Prop_Random is
    use Math_Prime_Util;
    use Math_Prime_Util.Random;
    use type U64;
+   use type Interfaces.Unsigned_32;
    type Random_Case is new Test_Case with null record;
    overriding function Name (T : Random_Case) return AUnit.Message_String;
    overriding procedure Register_Tests (T : in out Random_Case);

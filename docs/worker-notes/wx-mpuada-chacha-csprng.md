@@ -13,3 +13,5 @@ Focused test has not created tests/obj; checking the stalled Alire setup.
 Added a two-task atomic-draw property and no-consumption edge checks.
 First focused build found missing U64 operator visibility; fixed the spec.
 The gate raced toolchain setup and could not find Ada; rerun after setup.
+Fixed compile errors in test operator visibility and UTF-8 cipher plaintext.
+The tests now spell cipher bytes as hex to avoid source encoding ambiguity.
