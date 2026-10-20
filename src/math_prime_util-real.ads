@@ -28,10 +28,10 @@ package Math_Prime_Util.Real is
           Post => Inverse_Li_Nv'Result > 1.0;
    --  util.c: pidigits; XS.xs: Pi. Rounded significant decimal digits.
    function Pi (Digit_Count : Natural := 0) return String
-     with Pre => Digit_Count <= 100_000, Post => Pi'Result'Length > 0;
+     with Pre => Digit_Count <= 306_783_370, Post => Pi'Result'Length > 0;
    --  Util.pm: bernreal. Bernoulli B_n with positive B_1.
    function Bernreal (N : Natural) return F64
-     with Pre => N <= 258, Post => True;
+     with Pre => True, Post => True;
    --  PP.pm: harmreal. Harmonic sum of reciprocals from 1 through N.
    function Harmreal (N : Natural) return F64
      with Pre => True, Post => Harmreal'Result >= 0.0;

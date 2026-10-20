@@ -16,3 +16,4 @@ Gate prints green even when AUnit reports failures. Added explicit input checks 
 All but Ei(0) now pass. The XS wrapper defines Ei(0) as -Inf although real.c rejects it; adapted the public endpoint to match the fixture.
 All 48 tests pass, including all requested real fixture rows. Added seeded properties and independent concurrent calls; final gate follows.
 Gate passes with 49 tests and no failures. Aligned public names with the generated status mapping. Added zeta and integer inverse identities before the last check.
+Final verification ran development and release builds and the AUnit suite offline. The runner ignores the real filter, so focused invocations also ran the existing suites. No fixtures, status ticks, dependencies, or build scripts were changed.

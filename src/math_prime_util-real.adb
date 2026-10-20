@@ -428,9 +428,9 @@ package body Math_Prime_Util.Real is
 
 
          K2 := 2.0 * (1.0 + 2.7182818284590452353603 * X);
-      if K2 <= 0.0 then
-         return -1.0 + Eps;
-      end if;
+         if K2 <= 0.0 then
+            return -1.0 + Eps;
+         end if;
          K1 := Sqrt (K2);
          W := -1.0 + (1.0 + (-1.0 / 3.0 + (11.0 / 72.0 + (-43.0 / 540.0 +
         (769.0 / 17280.0 + (-221.0 / 8505.0 + (680863.0 / 43545600.0 +
@@ -452,7 +452,7 @@ package body Math_Prime_Util.Real is
          (X + 0.36787944117144) * (0.050248489761611 + (0.11138904851051 +
         0.040744556245195 * X) * X) / (1.0 + (2.7090878606183 +
            (1.5510922597820 + 0.095477712183841 * X) * X) * X);
-         W := -(K2-1.0) / K2;
+         W := -(K2 - 1.0) / K2;
 
       elsif X < 40.0 then
          K1 := 1.0 + (5.950065500550155 + (13.96586471370701 +
@@ -473,8 +473,8 @@ package body Math_Prime_Util.Real is
          K1 := 1.0 / (1.0 + Log (1.0 + X));
          K2 := 1.0 / K1;
          K3 := Log (K2);
-         W := K2-1.0-K3+(1.0+K3+(-1.0 / 2.0+(1.0 / 2.0) * K3 * K3 +
-        (-1.0 / 6.0+(-1.0+(-1.0 / 2.0+(1.0 / 3.0) * K3) * K3) * K3) * K1) *
+         W := K2 - 1.0 - K3 + (1.0 + K3 + (-1.0 / 2.0 + (1.0 / 2.0) * K3 * K3 +
+        (-1.0 / 6.0 + (-1.0 + (-1.0 / 2.0 + (1.0 / 3.0) * K3) * K3) * K3) * K1) *
            K1) * K1;
       end if;
       return W;
@@ -511,7 +511,8 @@ package body Math_Prime_Util.Real is
       return F64 (W);
    end Lambertw;
    function Pi (Digit_Count : Natural := 0) return String is
-      Count : constant Positive := (if Digit_Count = 0 then 15 else Digit_Count);
+      Count : constant Positive :=
+        (if Digit_Count = 0 then 15 else Digit_Count);
       C : Natural := 14 * ((Count + 1) / 4 + 2);
       type Work_Array is array (Natural range <>) of Long_Long_Integer;
       Work : Work_Array (0 .. C - 1) := [others => 2000];
@@ -520,6 +521,9 @@ package body Math_Prime_Util.Real is
       I : Natural := 1;
       B : Natural;
    begin
+      if Digit_Count > 306_783_370 then
+         raise Constraint_Error with "Pi: too many digits";
+      end if;
       if Count = 1 then
          return "3";
       end if;
@@ -571,6 +575,9 @@ package body Math_Prime_Util.Real is
          return 0.5;
       elsif N mod 2 = 1 then
          return 0.0;
+      end if;
+      if N > 258 then
+         return F64 ((if N mod 4 = 0 then -Infinity else Infinity));
       end if;
       for I in 1 .. N loop
          R := R * Wide (I) / Two_Pi;
