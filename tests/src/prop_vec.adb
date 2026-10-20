@@ -140,8 +140,73 @@ package body Prop_Vec is
          "wide signed sums");
    end Check_Laws;
 
+   procedure Check_List_Laws (T : in out Test_Case'Class);
+
+   procedure Check_List_Laws (T : in out Test_Case'Class) is
+      Calls : Natural := 0;
+      function Pair (L, R : I64) return Vector is
+      begin
+         Calls := Calls + 1;
+         return [L, R];
+      end Pair;
+      function Identity (A : Vector) return Vector is
+      begin
+         Calls := Calls + 1;
+         return A;
+      end Identity;
+      function Probe (V : I64) return Boolean is
+      begin
+         Calls := Calls + 1;
+         return V > 0;
+      end Probe;
+      A : constant Vector (7 .. 10) := [-1, 2, 3, 4];
+      B : constant Vector (3 .. 4) := [5, 6];
+   begin
+      AUnit.Assertions.Assert
+        (Vecpairwise (A, B, Pair'Access) = Vector'[-1, 5, 2, 6]
+         and then Calls = 2, "list pair order and one call per pair");
+      Calls := 0;
+      AUnit.Assertions.Assert
+        (Vecwindow (A, 2, 2, Identity'Access) = A and then Calls = 2,
+         "disjoint identity windows reconstruct input");
+      Calls := 0;
+      AUnit.Assertions.Assert
+        (Vecwindow (A, 1, 1, Identity'Access) = A and then Calls = 4,
+         "singleton identity windows reconstruct input");
+      Calls := 0;
+      AUnit.Assertions.Assert
+        (Vecwindow (A, Positive'Last, 2, Identity'Access) =
+           Vector'[-1, 2] and then Calls = 1, "large window step");
+      Calls := 0;
+      AUnit.Assertions.Assert
+        (Vecany (A, Probe'Access) and then Calls = 2,
+         "any stops on first true");
+      Calls := 0;
+      AUnit.Assertions.Assert
+        (not Vecall (A, Probe'Access) and then Calls = 1,
+         "all stops on first false");
+      Calls := 0;
+      AUnit.Assertions.Assert
+        (not Vecnone (A, Probe'Access) and then Calls = 2,
+         "none stops on first true");
+      Calls := 0;
+      AUnit.Assertions.Assert
+        (Vecnotall (A, Probe'Access) and then Calls = 1,
+         "notall stops on first false");
+      Calls := 0;
+      AUnit.Assertions.Assert
+        (Vecfirst (A, Probe'Access) = Optional_Integer'(True, 2)
+         and then Calls = 2, "first stops at first match");
+      Calls := 0;
+      AUnit.Assertions.Assert
+        (Vecfirstidx (A, Probe'Access) = 1 and then Calls = 2,
+         "firstidx stops at first match");
+   end Check_List_Laws;
+
    overriding procedure Register_Tests (T : in out Vec_Case) is
    begin
+      Registration.Register_Routine
+        (T, Check_List_Laws'Access, "list laws and short circuit");
       Registration.Register_Routine (T, Check_Laws'Access, "set laws");
       Registration.Register_Routine
         (T, Check_Callbacks'Access, "callback and arithmetic boundaries");

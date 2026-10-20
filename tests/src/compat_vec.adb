@@ -262,6 +262,71 @@ package body Compat_Vec is
       AUnit.Assertions.Assert (Checked > 0, Func & " no native rows");
    end Replay;
 
+   procedure Replay_Wide (Func : String) is
+      Cases : constant Case_Vectors.Vector :=
+        For_Function (Load ("vec"), Func);
+      Checked : Natural := 0;
+   begin
+      for C of Cases loop
+         declare
+            A : Wide_Vector (1 .. Natural (C.Args.Length));
+            N : Natural := 0;
+            Supported : Boolean := True;
+            Actual : Unbounded_String;
+            Expected : Unbounded_String := C.Result;
+         begin
+            --  Beyond_I128: arbitrary precision values/products await the
+            --  bigint tier; full unsigned 64-bit inputs are replayed here.
+            begin
+               for Arg of C.Args loop
+                  N := N + 1;
+                  A (N) := I128'Value (To_String (Arg));
+               end loop;
+               if Func = "vecprod" or Func = "vecsum" then
+                  Expected := To_Unbounded_String
+                    (Wide_Image (I128'Value (To_String (C.Result))));
+               elsif (Func = "vecmin" or Func = "vecmax")
+                 and then C.Result /= "undef"
+               then
+                  Expected := To_Unbounded_String
+                    (Wide_Image (I128'Value (To_String (C.Result))));
+               end if;
+            exception
+               when Constraint_Error => Supported := False;
+            end;
+            if Supported then
+               if Func = "vecsum" then
+                  Actual := To_Unbounded_String (Wide_Image (Vecsum (A)));
+               elsif Func = "vecprod" then
+                  Actual := To_Unbounded_String (Wide_Image (Vecprod (A)));
+               elsif Func = "vecprefixsum" then
+                  for V of Vecprefixsum (A) loop
+                     if Length (Actual) > 0 then
+                        Append (Actual, " ");
+                     end if;
+                     Append (Actual, Wide_Image (V));
+                  end loop;
+               else
+                  declare
+                     R : constant Optional_Wide_Integer :=
+                       (if Func = "vecmin" then Vecmin (A)
+                        else Vecmax (A));
+                  begin
+                     Actual := To_Unbounded_String
+                       (if R.Present then Wide_Image (R.Value) else "undef");
+                  end;
+               end if;
+               AUnit.Assertions.Assert
+                 (Actual = Expected, Func & Positive'Image (C.Line_Number)
+                  & ": " & To_String (Actual) & " /= " &
+                  To_String (Expected));
+               Checked := Checked + 1;
+            end if;
+         end;
+      end loop;
+      AUnit.Assertions.Assert (Checked > 0, Func & " no wide rows");
+   end Replay_Wide;
+
    procedure Test_Vecsort (T : in out Test_Case'Class);
 
    procedure Test_Vecsort (T : in out Test_Case'Class) is
@@ -465,6 +530,7 @@ package body Compat_Vec is
    procedure Test_Vecsum (T : in out Test_Case'Class) is
    begin
       Replay ("vecsum");
+      Replay_Wide ("vecsum");
    end Test_Vecsum;
 
    procedure Test_Vecprod (T : in out Test_Case'Class);
@@ -472,6 +538,7 @@ package body Compat_Vec is
    procedure Test_Vecprod (T : in out Test_Case'Class) is
    begin
       Replay ("vecprod");
+      Replay_Wide ("vecprod");
    end Test_Vecprod;
 
    procedure Test_Vecprefixsum (T : in out Test_Case'Class);
@@ -479,6 +546,7 @@ package body Compat_Vec is
    procedure Test_Vecprefixsum (T : in out Test_Case'Class) is
    begin
       Replay ("vecprefixsum");
+      Replay_Wide ("vecprefixsum");
    end Test_Vecprefixsum;
 
    procedure Test_Vecmin (T : in out Test_Case'Class);
@@ -486,6 +554,7 @@ package body Compat_Vec is
    procedure Test_Vecmin (T : in out Test_Case'Class) is
    begin
       Replay ("vecmin");
+      Replay_Wide ("vecmin");
    end Test_Vecmin;
 
    procedure Test_Vecmax (T : in out Test_Case'Class);
@@ -493,6 +562,7 @@ package body Compat_Vec is
    procedure Test_Vecmax (T : in out Test_Case'Class) is
    begin
       Replay ("vecmax");
+      Replay_Wide ("vecmax");
    end Test_Vecmax;
 
    procedure Test_Vecfreq (T : in out Test_Case'Class);
