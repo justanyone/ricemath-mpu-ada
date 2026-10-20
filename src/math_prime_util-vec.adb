@@ -307,6 +307,60 @@ package body Math_Prime_Util.Vec is
       return R;
    end Vecmax;
 
+   function Vecsum (A : Wide_Vector) return I128 is
+      R : I128 := 0;
+   begin
+      for V of A loop
+         R := R + V;
+      end loop;
+      return R;
+   end Vecsum;
+
+   function Vecprod (A : Wide_Vector) return I128 is
+      R : I128 := 1;
+   begin
+      if (for some V of A => V = 0) then
+         return 0;
+      end if;
+      for V of A loop
+         R := R * V;
+      end loop;
+      return R;
+   end Vecprod;
+
+   function Vecprefixsum (A : Wide_Vector) return Wide_Vector is
+      R : Wide_Vector (A'Range);
+      Total : I128 := 0;
+   begin
+      for I in A'Range loop
+         Total := Total + A (I);
+         R (I) := Total;
+      end loop;
+      return R;
+   end Vecprefixsum;
+
+   function Vecmin (A : Wide_Vector) return Optional_Wide_Integer is
+      R : Optional_Wide_Integer;
+   begin
+      for V of A loop
+         if not R.Present or else V < R.Value then
+            R := (True, V);
+         end if;
+      end loop;
+      return R;
+   end Vecmin;
+
+   function Vecmax (A : Wide_Vector) return Optional_Wide_Integer is
+      R : Optional_Wide_Integer;
+   begin
+      for V of A loop
+         if not R.Present or else V > R.Value then
+            R := (True, V);
+         end if;
+      end loop;
+      return R;
+   end Vecmax;
+
    function Vecreduce
      (A : Vector; Op : not null access function (L, R : I64) return I64)
       return Optional_Integer

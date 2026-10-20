@@ -182,6 +182,36 @@ package Math_Prime_Util.Vec with SPARK_Mode => On is
    function Vecmax (A : Vector) return Optional_Integer
      with Pre => True, Post => Vecmax'Result.Present = (A'Length > 0);
 
+   type Optional_Wide_Integer (Present : Boolean := False) is record
+      case Present is
+         when True => Value : I128;
+         when False => null;
+      end case;
+   end record;
+
+   --  XS.xs: vecsum. Full-width inputs, checked signed 128-bit result.
+   --  Raise Constraint_Error if an intermediate sum exceeds I128.
+   function Vecsum (A : Wide_Vector) return I128
+     with Pre => True, Post => (if A'Length = 0 then Vecsum'Result = 0);
+
+   --  XS.xs: vecprod. Full-width inputs; zero annihilates the product.
+   --  Raise Constraint_Error if a nonzero intermediate exceeds I128.
+   function Vecprod (A : Wide_Vector) return I128
+     with Pre => True, Post => (if A'Length = 0 then Vecprod'Result = 1);
+
+   --  XS.xs: vecprefixsum. Full-width running sums, in input order.
+   --  Raise Constraint_Error if an intermediate sum exceeds I128.
+   function Vecprefixsum (A : Wide_Vector) return Wide_Vector
+     with Pre => True, Post => Vecprefixsum'Result'Length = A'Length;
+
+   --  XS.xs: vecmin. Full-width minimum; absent for empty input.
+   function Vecmin (A : Wide_Vector) return Optional_Wide_Integer
+     with Pre => True, Post => Vecmin'Result.Present = (A'Length > 0);
+
+   --  XS.xs: vecmax. Full-width maximum; absent for empty input.
+   function Vecmax (A : Wide_Vector) return Optional_Wide_Integer
+     with Pre => True, Post => Vecmax'Result.Present = (A'Length > 0);
+
    --  XS.xs: vecreduce. Left fold; empty input returns absent.
    function Vecreduce
      (A : Vector; Op : not null access function (L, R : I64) return I64)
