@@ -12,6 +12,9 @@ package body Math_Prime_Util.Digit_Operations is
       Count : Natural := 0;
       Size : Natural;
    begin
+      if Base < 2 or Length not in -1 .. 128 then
+         raise Constraint_Error with "invalid base or length";
+      end if;
       while V > 0 loop
          Count := Count + 1;
          Buffer (Count) := V mod Base;
@@ -32,6 +35,9 @@ package body Math_Prime_Util.Digit_Operations is
       Alphabet : constant String := "0123456789abcdefghijklmnopqrstuvwxyz";
       D : constant Digit_Array := Todigits (N, Base, Length);
    begin
+      if Base not in 2 .. 36 then
+         raise Constraint_Error with "invalid string base";
+      end if;
       return Result : String (D'Range) do
          for I in D'Range loop
             Result (I) := Alphabet (Natural (D (I)) + 1);
@@ -42,6 +48,9 @@ package body Math_Prime_Util.Digit_Operations is
    function Fromdigits (Text : String; Base : U128 := 10) return U128 is
       N, D : U128 := 0;
    begin
+      if Base not in 2 .. 36 then
+         raise Constraint_Error with "invalid base";
+      end if;
       for C of Text loop
          if C in '0' .. '9' then
             D := Character'Pos (C) - Character'Pos ('0');
@@ -83,6 +92,9 @@ package body Math_Prime_Util.Digit_Operations is
          B := (if Text (First + 1) = 'x' then 16 else 2);
          First := First + 2;
       end if;
+      if Base not in 2 .. 36 then
+         raise Constraint_Error with "invalid base";
+      end if;
       for C of Text (First .. Text'Last) loop
          if C in '0' .. '9' then
             D := Character'Pos (C) - Character'Pos ('0');
@@ -104,6 +116,9 @@ package body Math_Prime_Util.Digit_Operations is
       V : U128 := N;
       R, D : U128 := 0;
    begin
+      if Base < 2 then
+         raise Constraint_Error with "invalid base";
+      end if;
       while V /= 0 loop
          D := V mod Base;
          if R > (U128'Last - D) / Base then
@@ -127,10 +142,20 @@ package body Math_Prime_Util.Digit_Operations is
    end Is_Palindrome;
 
    function Is_Harshad (N : U128; Base : U128 := 10) return Boolean is
-     (N /= 0 and then N mod Sumdigits (N, Base) = 0);
+   begin
+      if Base < 2 then
+         raise Constraint_Error with "invalid base";
+      end if;
+      return N /= 0 and then N mod Sumdigits (N, Base) = 0;
+   end Is_Harshad;
 
    function Digital_Root (N : U128; Base : U128 := 10) return U128 is
-     (if N = 0 then 0 else 1 + (N - 1) mod (Base - 1));
+   begin
+      if Base < 2 then
+         raise Constraint_Error with "invalid base";
+      end if;
+      return (if N = 0 then 0 else 1 + (N - 1) mod (Base - 1));
+   end Digital_Root;
 
    function Mult_Digital_Root
      (N : U128; Base : U128 := 10) return U128
@@ -138,6 +163,9 @@ package body Math_Prime_Util.Digit_Operations is
       R : U128 := N;
       V : U128;
    begin
+      if Base < 2 then
+         raise Constraint_Error with "invalid base";
+      end if;
       while R >= Base loop
          V := R;
          R := 1;
@@ -398,13 +426,26 @@ package body Math_Prime_Util.Digit_Operations is
    end Rashiftint;
 
    function Toint (Text : String) return Optional_I128 is
-      S : constant String := Ada.Strings.Fixed.Trim (Text, Ada.Strings.Both);
+      function Clean (Input : String) return String is
+         Buffer : String (1 .. Input'Length);
+         K : Natural := 0;
+      begin
+         for C of Input loop
+            if C /= '_' then
+               K := K + 1;
+               Buffer (K) := C;
+            end if;
+         end loop;
+         return Buffer (1 .. K);
+      end Clean;
+      S : constant String := Clean
+        (Ada.Strings.Fixed.Trim (Text, Ada.Strings.Both));
       L : constant String := Ada.Characters.Handling.To_Lower (S);
       V : Long_Long_Float;
       Negative : Boolean := False;
       First : Integer := S'First;
    begin
-      if S'Length = 0 then
+      if S'Length = 0 or else S = "(empty)" then
          return (True, 0);
       end if;
       if S (First) in '+' | '-' then
