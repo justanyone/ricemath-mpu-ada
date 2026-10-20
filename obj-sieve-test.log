@@ -1,2 +1,0 @@
-fatal: unable to access 'https://github.com/alire-project/alire-index/': Could not resolve host: github.com
-ERROR: Could not add community index: Command ["git", "clone", "--recursive", "-q", "https://github.com/alire-project/alire-index", "/tmp/.config/alire/indexes/community/repo"] exited with code 128

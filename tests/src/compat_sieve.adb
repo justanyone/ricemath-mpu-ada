@@ -5,6 +5,7 @@ with Ada.Strings.Fixed;
 with Ada.Strings.Unbounded;
 with Fixture_Support;
 with Math_Prime_Util.Sieve;
+with Math_Prime_Util.Int;
 
 package body Compat_Sieve is
    use AUnit.Test_Cases;

@@ -11,6 +11,8 @@ package body Math_Prime_Util.Sieve is
    Masks : constant array (U64 range 0 .. 29) of Byte :=
      [0, 1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 4, 0, 8, 0,
       0, 0, 16, 0, 32, 0, 0, 0, 64, 0, 0, 0, 0, 0, 128];
+   Small_Primes : constant array (Positive range 1 .. 3) of U64 :=
+     [2, 3, 5];
    Segment_Bytes : constant U64 := 32 * 1024 - 16;
 
    function Clear (Bits : Byte_Vectors.Vector; N : U64) return Boolean is
@@ -116,7 +118,7 @@ package body Math_Prime_Util.Sieve is
       if Low > High or High < 2 then
          return Result;
       end if;
-      for Small of Prime_Vectors.Vector'([2, 3, 5]) loop
+      for Small of Small_Primes loop
          if Small >= Low and Small <= High then
             Result.Append (Small);
          end if;

@@ -19,7 +19,7 @@ package Math_Prime_Util.Sieve is
      with Pre => True,
           Post => (for all P of Primes'Result => P >= 2 and P <= High);
 
-   --  Cache.c: get_prime_cache, _erase_and_fill_prime_cache.
+   --  cache.c: get_prime_cache, _erase_and_fill_prime_cache.
    --  Retain sieving data through N; repeated requests do not shrink it.
    --  Storage_Error may propagate if the requested cache cannot fit.
    procedure Prime_Precalc (N : U64)
@@ -29,7 +29,8 @@ package Math_Prime_Util.Sieve is
    procedure Prime_Memfree
      with Pre => True, Post => True;
 
-   --  prime_counts.c: sum_primes. Inclusive sum, undefined on U64 overflow.
+   --  Sum sieve.c: range_prime_sieve results over inclusive bounds.
+   --  Undefined on U64 overflow. MPU sum_primes optimizations are pending.
    function Sum_Primes (Low, High : U64) return Int.Optional_U64
      with Pre => True,
           Post => (if Low > High then Sum_Primes'Result.Defined

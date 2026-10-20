@@ -10,3 +10,6 @@ Added fixture replay for primes and sums below 1e10; larger rows are named gaps.
 Added partition, independent trial division, segment count, and task tests.
 Focused test stopped before compilation: Alire tried to clone its index offline.
 Checking local toolchain configuration; no dependency or tooling changes.
+About five minutes remain. Tests have not compiled due to missing offline Alire index.
+Next/prev prime, sieve_range, and sieve_prime_cluster remain unwritten.
+The wheel marking is scalar; MPU prefill and carried wheel state remain pending.

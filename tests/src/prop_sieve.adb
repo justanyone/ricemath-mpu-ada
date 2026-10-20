@@ -1,6 +1,8 @@
 with AUnit.Assertions;
+with Ada.Assertions;
 with AUnit.Test_Cases;
 with Math_Prime_Util.Sieve;
+with Math_Prime_Util.Int;
 
 package body Prop_Sieve is
    use AUnit.Test_Cases;
@@ -72,6 +74,10 @@ package body Prop_Sieve is
                Results.Fail;
             end if;
          end loop;
+      exception
+         when Constraint_Error | Storage_Error |
+           Ada.Assertions.Assertion_Error =>
+            Results.Fail;
       end Worker;
    begin
       declare
