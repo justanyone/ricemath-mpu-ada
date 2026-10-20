@@ -53,9 +53,36 @@ package body Prop_Families is
            18_446_744_073_709_551_517, "estimate saturation");
    end Laws;
 
+   procedure Concurrent_Calls (T : in out Test_Case'Class) is
+      task type Worker is
+         entry Check (Success : out Boolean);
+      end Worker;
+      task body Worker is
+         Valid : Boolean := True;
+      begin
+         for I in 1 .. 3 loop
+            Valid := Valid and then Lucky_Count (5_964_377) = 376_288
+              and then Nth_Lucky (123_456).Value = 1795453
+              and then Is_Lucky (1795453);
+         end loop;
+         accept Check (Success : out Boolean) do
+            Success := Valid;
+         end Check;
+      end Worker;
+      Workers : array (1 .. 4) of Worker;
+      Valid : Boolean;
+   begin
+      for W of Workers loop
+         W.Check (Valid);
+         AUnit.Assertions.Assert (Valid, "independent repeated sieves");
+      end loop;
+   end Concurrent_Calls;
+
    overriding procedure Register_Tests (T : in out Families_Case) is
    begin
       Registration.Register_Routine (T, Laws'Access, "lucky laws");
+      Registration.Register_Routine
+        (T, Concurrent_Calls'Access, "concurrent repeated sieves");
    end Register_Tests;
 
    function Suite return AUnit.Test_Suites.Access_Test_Suite is

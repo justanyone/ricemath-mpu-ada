@@ -7,23 +7,25 @@ package body Math_Prime_Util.Families is
    subtype F64 is Long_Float;
    Max_Lucky : constant U64 := 18_446_744_073_709_551_517;
    Small : constant array (Natural range 0 .. 47) of U64 :=
-     (1, 3, 7, 9, 13, 15, 21, 25, 31, 33, 37, 43, 49, 51, 63, 67,
+     [1, 3, 7, 9, 13, 15, 21, 25, 31, 33, 37, 43, 49, 51, 63, 67,
       69, 73, 75, 79, 87, 93, 99, 105, 111, 115, 127, 129, 133, 135,
       141, 151, 159, 163, 169, 171, 189, 193, 195, 201, 205, 211,
-      219, 223, 231, 235, 237, 241);
+      219, 223, 231, 235, 237, 241];
    Mask : constant array (Natural range 0 .. 64) of Boolean :=
-     (True, True, False, True, True, False, True, True, False,
+     [True, True, False, True, True, False, True, True, False,
       True, True, False, True, True, False, True, True, False,
       False, False, False, True, True, False, True, True, False,
       False, False, False, True, True, False, True, True, False,
       True, True, False, False, False, False, True, True, False,
       True, True, False, True, True, False, True, True, False,
       True, True, False, False, False, False, False, False, False,
-      True, True);
+      True, True];
 
+   function Trunc (X : F64) return U64;
    function Trunc (X : F64) return U64 is
      (U64 (F64'Floor (X)));
 
+   function Small_Count (N : U64) return U64;
    function Small_Count (N : U64) return U64 is
       C : U64 := 0;
    begin
@@ -35,6 +37,7 @@ package body Math_Prime_Util.Families is
    end Small_Count;
 
    --  _small_lucky_sieve32: prefilter through 13, then compact deletions.
+   function Small_Sieve (N : U64) return Vector;
    function Small_Sieve (N : U64) return Vector is
       V : Vector;
       I : U64 := 1;
@@ -101,6 +104,7 @@ package body Math_Prime_Util.Families is
 
    --  _bitmask126_sieve and ds_bitmask126.h: 32 bits per 126 integers.
    --  Count levels group 8 words, then 16 blocks, then groups of 8.
+   function Bitmask_Sieve (N : U64) return Vector;
    function Bitmask_Sieve (N : U64) return Vector is
       use type Interfaces.Unsigned_32;
       subtype Word is Interfaces.Unsigned_32;
@@ -120,7 +124,8 @@ package body Math_Prime_Util.Families is
          757258597, 2606838995, 2530306226, 1169218145, 3408442969,
          11572];
       Counts : array (Small'Range) of Natural := [others => 0];
-      Words : constant Natural := Natural (N / 126 + (if N mod 126 /= 0 then 1 else 0));
+      Words : constant Natural :=
+        Natural (N / 126 + (if N mod 126 /= 0 then 1 else 0));
       Top : Natural := 2;
       Size : U64 := 0;
       I : U64 := 1;
@@ -131,9 +136,11 @@ package body Math_Prime_Util.Families is
       Keep : Boolean;
       Result : Vector;
 
+      function Fanout (L : Natural) return Natural;
       function Fanout (L : Natural) return Natural is
         (if L = 2 then 16 else 8);
 
+      procedure Update (Wi : Natural; Adding : Boolean);
       procedure Update (Wi : Natural; Adding : Boolean) is
          J : Natural := Wi;
          Value : U64;
@@ -147,6 +154,7 @@ package body Math_Prime_Util.Families is
          Size := (if Adding then Size + 1 else Size - 1);
       end Update;
 
+      procedure Find (Rank : U64; Wi, Bi : out Natural);
       procedure Find (Rank : U64; Wi, Bi : out Natural) is
          R : U64 := Rank;
          J : Natural := 0;
@@ -244,6 +252,7 @@ package body Math_Prime_Util.Families is
       return Result;
    end Bitmask_Sieve;
 
+   function Sieve (N : U64) return Vector;
    function Sieve (N : U64) return Vector is
      (if N <= 240_000 then Small_Sieve (N) else Bitmask_Sieve (N));
 
@@ -335,6 +344,7 @@ package body Math_Prime_Util.Families is
       return (True, Trunc (Corr * F64 (Nth_Lucky_Approx (N).Value)));
    end Nth_Lucky_Lower;
 
+   function Simple_Approx (N : U64) return U64;
    function Simple_Approx (N : U64) return U64 is
       X : constant F64 := F64 (N);
       L : constant F64 := Log (X);
@@ -356,6 +366,7 @@ package body Math_Prime_Util.Families is
       return Trunc (C * X / L);
    end Simple_Approx;
 
+   function Simple_Upper (N : U64) return U64;
    function Simple_Upper (N : U64) return U64 is
       X : constant F64 := F64 (N);
       L : constant F64 := Log (X);
@@ -369,6 +380,7 @@ package body Math_Prime_Util.Families is
       return Trunc (X / (1.065 * L - A - 3.1 / L - 2.85 / (L * L)));
    end Simple_Upper;
 
+   function Simple_Lower (N : U64) return U64;
    function Simple_Lower (N : U64) return U64 is
    begin
       if N <= 9_000 then
@@ -378,6 +390,7 @@ package body Math_Prime_Util.Families is
    end Simple_Lower;
 
    type Estimate_Kind is (Approx, Lower, Upper);
+   function Estimate (N : U64; Kind : Estimate_Kind) return U64;
    function Estimate (N : U64; Kind : Estimate_Kind) return U64 is
      (case Kind is
          when Approx => Nth_Lucky_Approx (N).Value,
@@ -385,12 +398,14 @@ package body Math_Prime_Util.Families is
          when Upper => Nth_Lucky_Upper (N).Value);
 
    --  inverse_interpolate.c: inverse_interpolate, zero threshold.
+   function Invert (Low, High, N : U64; Kind : Estimate_Kind) return U64;
    function Invert (Low, High, N : U64; Kind : Estimate_Kind) return U64 is
       Lo : U64 := Low;
       Hi : U64 := High;
       Mid, Rlo, Rhi, Rmid : U64;
       Iteration : Natural := 0;
 
+      function Linear return U64;
       function Linear return U64 is
          Move : U64;
          D : F64;
@@ -547,23 +562,38 @@ package body Math_Prime_Util.Families is
    end Lucky_Count_Upper;
 
    function Lucky_Count (N : U64) return U64 is
-      Count : U64 := N / 2 + N mod 2;
-      V : constant Vector := Sieve (1 + Lucky_Count_Upper (N));
-   begin
-      for J in 1 .. V.Last_Index loop
-         exit when V.Element (J) > Count;
-         Count := Count - Count / V.Element (J);
-      end loop;
-      return Count;
-   end Lucky_Count;
+     (Lucky_Count (0, N));
 
    function Lucky_Count (Low, High : U64) return U64 is
+      Hi : U64 := High;
+      Lo : U64 := Low;
+      Hi_Count, Lo_Count : U64;
    begin
-      if Low > High then
+      if Hi < Lo then
          return 0;
+      elsif Hi < 48 then
+         return Small_Count (Hi) -
+           (if Lo = 0 then 0 else Small_Count (Lo - 1));
       end if;
-      return Lucky_Count (High) -
-        (if Low = 0 then 0 else Lucky_Count (Low - 1));
+      Lo := Lo - Lo mod 2;
+      if Hi = U64'Last then
+         Hi := Hi - 1;
+      end if;
+      Hi := Hi + Hi mod 2;
+      Hi_Count := Hi / 2;
+      Lo_Count := Lo / 2;
+      declare
+         V : constant Vector := Sieve (1 + Lucky_Count_Upper (Hi));
+      begin
+         for J in 1 .. V.Last_Index loop
+            if V.Element (J) <= Lo then
+               Lo_Count := Lo_Count - Lo_Count / V.Element (J);
+            end if;
+            exit when V.Element (J) > Hi_Count;
+            Hi_Count := Hi_Count - Hi_Count / V.Element (J);
+         end loop;
+      end;
+      return Hi_Count - Lo_Count;
    end Lucky_Count;
 
    function Nth_Lucky (N : U64) return Int.Optional_U64 is
