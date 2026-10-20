@@ -144,4 +144,166 @@ package body Math_Prime_Util.Combinat with SPARK_Mode => On is
       end if;
       return (True, Primorials (Prime_Map (Natural (N))));
    end Primorial;
+   function Falling_Factorial (N : I128; M : U64) return Optional_I128 is
+      R : U64 := 1;
+      A : U64;
+   begin
+      if M = 0 then
+         return (True, 1);
+      elsif N < 0 then
+         declare
+            V : constant Optional_I128 := Rising_Factorial (-N, M);
+         begin
+            if not V.Defined then
+               return V;
+            end if;
+            return (True, (if M mod 2 = 0 then V.Value else -V.Value));
+         end;
+      elsif M > U64 (N) then
+         return (True, 0);
+      end if;
+      A := U64 (N);
+      for I in U64 range 1 .. M loop
+         if R > U64'Last / A then
+            return (Defined => False);
+         end if;
+         R := R * A;
+         A := A - 1;
+      end loop;
+      return (True, I128 (R));
+   end Falling_Factorial;
+
+   function Rising_Factorial (N : I128; M : U64) return Optional_I128 is
+      V : Optional_I128;
+   begin
+      if M = 0 then
+         return (True, 1);
+      elsif N < 0 then
+         V := Falling_Factorial (-N, M);
+         if not V.Defined then
+            return V;
+         end if;
+         return (True, (if M mod 2 = 0 then V.Value else -V.Value));
+      elsif N = 0 then
+         return (True, 0);
+      elsif M - 1 > U64'Last - U64 (N) then
+         return (Defined => False);
+      end if;
+      return Falling_Factorial (N + I128 (M) - 1, M);
+   end Rising_Factorial;
+
+   function Consecutive_Integer_Lcm (N : U64) return Optional_U64 is
+      R : U64 := 1;
+      P, Power : U64;
+      Prime : Boolean;
+   begin
+      if N > 46 then
+         return (Defined => False);
+      end if;
+      for I in U64 range 2 .. N loop
+         Prime := True;
+         P := 2;
+         while P <= I / P loop
+            if I mod P = 0 then
+               Prime := False;
+               exit;
+            end if;
+            P := P + 1;
+         end loop;
+         if Prime then
+            Power := I;
+            while Power <= N / I loop
+               Power := Power * I;
+            end loop;
+            R := R * Power;
+         end if;
+      end loop;
+      return (True, R);
+   end Consecutive_Integer_Lcm;
+
+   --  util.c: stirling2 inclusion-exclusion formula. The caller bounds
+   --  N to 17, so all signed wide intermediates fit.
+   function Stirling_Second (N, M : U64) return U64 is
+      Sum : I128 := 0;
+      Term : I128;
+   begin
+      if N = M then
+         return 1;
+      elsif M = 0 or M > N then
+         return 0;
+      end if;
+      for J in U64 range 1 .. M loop
+         Term := I128 (Binomial (M, J).Value);
+         for K in U64 range 1 .. N loop
+            Term := Term * I128 (J);
+         end loop;
+         Sum := Sum + (if (M - J) mod 2 = 0 then Term else -Term);
+      end loop;
+      return U64 (Sum / I128 (Factorial (M).Value));
+   end Stirling_Second;
+
+   function Fubini (N : U64) return Optional_U64 is
+      use type U128;
+      Sum : U128 := 1;
+   begin
+      if N > 17 then
+         return (Defined => False);
+      end if;
+      for K in U64 range 2 .. N loop
+         Sum := Sum + U128 (Factorial (K).Value)
+           * U128 (Stirling_Second (N, K));
+      end loop;
+      if Sum > U128 (U64'Last) then
+         return (Defined => False);
+      end if;
+      return (True, U64 (Sum));
+   end Fubini;
+
+   function Powersum (N, K : U64) return Optional_U64 is
+      use type U128;
+      Sum : U64 := 0;
+      Term : U64;
+      Wide : U128;
+   begin
+      if N <= 1 or K = 0 then
+         return (True, N);
+      elsif K >= 64 then
+         return (Defined => False);
+      elsif K = 1 then
+         Wide := U128 (N) * (U128 (N) + 1) / 2;
+      elsif K = 2 then
+         --  util.c triangular-number formula; first bound N so the
+         --  wide intermediate cannot wrap.
+         if N > 4_000_000 then
+            return (Defined => False);
+         end if;
+         Wide := U128 (N) * (U128 (N) + 1) * (2 * U128 (N) + 1) / 6;
+      elsif K = 3 then
+         if N > 100_000 then
+            return (Defined => False);
+         end if;
+         Wide := U128 (N) * (U128 (N) + 1) / 2;
+         Wide := Wide * Wide;
+      else
+         --  util.c direct summation path with checked powers and sum.
+         for I in U64 range 1 .. N loop
+            Term := 1;
+            for J in U64 range 1 .. K loop
+               if Term > U64'Last / I then
+                  return (Defined => False);
+               end if;
+               Term := Term * I;
+            end loop;
+            if Sum > U64'Last - Term then
+               return (Defined => False);
+            end if;
+            Sum := Sum + Term;
+         end loop;
+         return (True, Sum);
+      end if;
+      if Wide > U128 (U64'Last) then
+         return (Defined => False);
+      end if;
+      return (True, U64 (Wide));
+   end Powersum;
 end Math_Prime_Util.Combinat;
