@@ -172,12 +172,12 @@ package body Math_Prime_Util.Families is
          end loop;
       end Find;
    begin
-      Data.Set_Length (Ada.Containers.Count_Type (Words), 0);
-      Tree (0).Set_Length (Ada.Containers.Count_Type (Words), 0);
+      Data.Append (0, Ada.Containers.Count_Type (Words));
+      Tree (0).Append (0, Ada.Containers.Count_Type (Words));
       Width := Words;
       for L in 1 .. 14 loop
          Width := (Width + Fanout (L) - 1) / Fanout (L);
-         Tree (L).Set_Length (Ada.Containers.Count_Type (Width), 0);
+         Tree (L).Append (0, Ada.Containers.Count_Type (Width));
          if L >= 2 and then (Width + 7) / 8 < 3 then
             Top := L;
             exit;

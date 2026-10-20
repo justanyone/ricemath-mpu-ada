@@ -9,3 +9,4 @@ Fixtures pass for nine functions. Count fixtures also require a two-bound overlo
 Ported linear interpolation and Ridder refinement from inverse_interpolate.c.
 All 134 tests passed after the count overload. Gate is running with full interpolation.
 Added the reference bitmask126 sieve with its prefilter table and count tree.
+Bitmask build exposed a vector API mismatch. Replaced Set_Length fills with Append.
