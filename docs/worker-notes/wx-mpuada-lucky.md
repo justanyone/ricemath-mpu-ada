@@ -12,3 +12,6 @@ Added the reference bitmask126 sieve with its prefilter table and count tree.
 Bitmask build exposed a vector API mismatch. Replaced Set_Length fills with Append.
 Added concurrent repeated-call checks and changed range counts to one reference sieve.
 Both sieve paths pass fixtures. Final gate includes concurrent independent calls.
+Aligned is_lucky with the static 48-entry pretest and final upper-bound sieve.
+Final review: no shared mutable state, no new dependency, fixtures remain unchanged.
+Gate passed 135 tests. Rechecking the final static-pretest alignment before handoff.

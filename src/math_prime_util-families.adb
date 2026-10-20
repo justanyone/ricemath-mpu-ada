@@ -615,18 +615,31 @@ package body Math_Prime_Util.Families is
 
    function Is_Lucky (N : U64) return Boolean is
       Pos : U64 := N / 2 + 1;
-      Start : Natural := 1;
+      Start : Natural := 48;
       Limit : U64 := 600;
       Factor : U64 := 6;
+      Max_Limit : U64;
    begin
       if N mod 2 = 0 or else N mod 6 = 5
         or else not Mask (Natural (N mod 63)) or else N > Max_Lucky
       then
          return False;
+      elsif N < 45 then
+         return True;
       end if;
+      for J in 1 .. Small'Last loop
+         if Pos < Small (J) then
+            return True;
+         elsif Pos mod Small (J) = 0 then
+            return False;
+         end if;
+         Pos := Pos - Pos / Small (J);
+      end loop;
+      Max_Limit := 1 + Lucky_Count_Upper (N);
       loop
          declare
-            V : constant Vector := Sieve (Limit);
+            V : constant Vector := Sieve
+              ((if Limit < Max_Limit / 3 then Limit else Max_Limit));
          begin
             for J in Start .. V.Last_Index loop
                if Pos < V.Element (J) then
@@ -638,6 +651,9 @@ package body Math_Prime_Util.Families is
             end loop;
             Start := Natural (V.Length);
          end;
+         if Limit >= Max_Limit / 3 then
+            return True;
+         end if;
          Limit := Limit * Factor;
          Factor := Factor + 1;
       end loop;
