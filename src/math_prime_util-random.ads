@@ -3,6 +3,7 @@ with Interfaces;
 --  MPU 0.75 random stream. Strings contain raw bytes, not text.
 --  Calls share one protected stream. Reseeding replaces that stream.
 package Math_Prime_Util.Random is
+   use type U64;
    --  Seed with bytes; short seeds use PCG expansion. Extra bytes are ignored.
    --  C: csprng.c, csprng_seed; chacha.c, chacha_seed.
    procedure Csrand (Seed : String)

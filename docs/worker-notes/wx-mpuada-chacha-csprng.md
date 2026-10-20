@@ -9,3 +9,7 @@ Adjusted drand scaling; native-limit fixture skips will be named explicitly.
 Added per-function compat cases and deterministic partition/bounds properties.
 Starting focused tests; bigint and signed wrappers remain outside this API.
 Focused build is running. Review now targets atomic calls and invalid inputs.
+Focused test has not created tests/obj; checking the stalled Alire setup.
+Added a two-task atomic-draw property and no-consumption edge checks.
+First focused build found missing U64 operator visibility; fixed the spec.
+The gate raced toolchain setup and could not find Ada; rerun after setup.

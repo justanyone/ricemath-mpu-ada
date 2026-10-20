@@ -63,15 +63,16 @@ package body Math_Prime_Util.Random is
       procedure Real_Value (Value : out Long_Float);
       procedure Bounded (Modulus : U64; Value : out U64);
    private
-      State : Words := (others => 0);
-      Buffer : String (1 .. 64) := (others => Character'Val (0));
+      State : Words := [others => 0];
+      Buffer : String (1 .. 64) := [others => Character'Val (0)];
       Position : Natural range 0 .. 64 := 64;
       procedure Refill;
    end Generator;
 
    protected body Generator is
       procedure Seed (Data : String) is
-         Key : String (1 .. 40) := (others => Character'Val (0));
+         Key : String (1 .. 40) := [others => Character'Val (0)]
+           with Volatile;
          Rng : U32 := 0;
          Inc : U32;
          A, B, C, D, Ignore : U32;
@@ -102,15 +103,15 @@ package body Math_Prime_Util.Random is
             end loop;
          end if;
          State (0 .. 3) :=
-           (16#6170_7865#, 16#3320_646E#, 16#7962_2D32#, 16#6B20_6574#);
+           [16#6170_7865#, 16#3320_646E#, 16#7962_2D32#, 16#6B20_6574#];
          for I in 0 .. 7 loop
             State (I + 4) := Load (Key, 4 * I);
          end loop;
          State (12) := 0; State (13) := 0;
          State (14) := Load (Key, 32); State (15) := Load (Key, 36);
          Position := 64;
-         Buffer := (others => Character'Val (0));
-         Key := (others => Character'Val (0));
+         Buffer := [others => Character'Val (0)];
+         Key := [others => Character'Val (0)];
       end Seed;
 
       procedure Refill is
