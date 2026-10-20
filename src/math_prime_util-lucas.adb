@@ -12,6 +12,7 @@ package body Math_Prime_Util.Lucas is
    function Mul (A, B, N : U64) return U64 is
      (U64 (U128 (A) * U128 (B) mod U128 (N)));
 
+   function Top_Bit (K : U64) return Natural;
    function Top_Bit (K : U64) return Natural is
       V : U64 := K;
       B : Natural := 0;
@@ -24,6 +25,7 @@ package body Math_Prime_Util.Lucas is
    end Top_Bit;
 
    --  lucas_seq.c: alt_lucas_seq, the general branch for all moduli.
+   function Alternate (P, Q, K, N : U64) return Residue_Pair;
    function Alternate (P, Q, K, N : U64) return Residue_Pair is
       Uh : U64 := 1;
       Vl : U64 := 2 mod N;
@@ -193,6 +195,7 @@ package body Math_Prime_Util.Lucas is
      (Lucasuv (P, Q, K).V);
 
    --  lucas_seq.c: _calc_fib, retaining its k < 93 bound.
+   procedure Calc_Fib (K : U64; A, B : out U64);
    procedure Calc_Fib (K : U64; A, B : out U64) is
       C, D : U64;
    begin

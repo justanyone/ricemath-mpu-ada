@@ -6,6 +6,7 @@ package Math_Prime_Util.Lucas with SPARK_Mode => On is
    use type U64;
    use type Int.I128;
    subtype I64 is Interfaces.Integer_64;
+   use type I64;
    subtype I128 is Int.I128;
    type Optional_Integer (Defined : Boolean := False) is record
       case Defined is

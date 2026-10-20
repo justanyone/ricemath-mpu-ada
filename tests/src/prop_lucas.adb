@@ -8,7 +8,7 @@ package body Prop_Lucas is
    use Math_Prime_Util;
    use Math_Prime_Util.Lucas;
    use type U64;
-   use type U128;
+   use type I64;
    use type I128;
    type Lucas_Case is new Test_Case with null record;
    overriding function Name (T : Lucas_Case) return AUnit.Message_String;
