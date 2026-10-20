@@ -2,7 +2,6 @@ with Ada.Containers.Vectors;
 
 package body Math_Prime_Util.Vec is
    use type U64;
-   use type U128;
 
    function Is_Set (A : Vector) return Boolean is
    begin
@@ -775,7 +774,7 @@ package body Math_Prime_Util.Vec is
 
    function Vecfreq (A : Vector) return Vector is
       S : constant Vector := Vecsort (A);
-      R : Vector (1 .. A'Length * 2);
+      R : Vector (1 .. A'Length * 2) := [others => 0];
       N : Natural := 0;
    begin
       for V of S loop
