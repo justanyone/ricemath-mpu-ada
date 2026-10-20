@@ -3,3 +3,4 @@ Implement missing deterministic algorithms directly from MPU 0.75 and extend tes
 Leave random Miller–Rabin deferred pending the random module; do not edit STATUS.
 Run focused primality tests and the repository gate; record blockers honestly.
 Inspected existing predicates and fixture harness; translating missing Perrin/Frobenius algorithms from the C reference.
+Added Perrin signature doubling and three Frobenius variants; next complete dependent Catalan/Chen/delicate predicates and compile.
