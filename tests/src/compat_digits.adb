@@ -70,7 +70,7 @@ package body Compat_Digits is
                   end;
                end loop;
             elsif Func = "fromzeckendorf" and then
-              Length (C.Args (1)) > 92 and not C.Error
+              Length (C.Args (1)) > 92 and then not C.Error
             then
                Outside := True;
             end if;
@@ -185,7 +185,8 @@ package body Compat_Digits is
                  (Todigitstring (U128 (abs A (1)), Base, Len));
             elsif Func = "fromdigits" then
                declare
-                  --  Empty_Fromdigits_Base: loader drops the empty first token.
+                  --  Empty_Fromdigits_Base: loader drops the empty first
+                  --  token.
                   Text : constant String :=
                     (if C.Line_Number = 27574 then ""
                      else To_String (C.Args (1)));
@@ -221,7 +222,8 @@ package body Compat_Digits is
                Actual := To_Unbounded_String (Tozeckendorf (U64 (A (1))));
             elsif Func = "fromzeckendorf" then
                declare
-                  --  Empty_Fromdigits_Base: loader drops the empty first token.
+                  --  Empty_Fromdigits_Base: loader drops the empty first
+                  --  token.
                   Text : constant String :=
                     (if C.Line_Number = 27574 then ""
                      else To_String (C.Args (1)));

@@ -12,3 +12,4 @@ About five minutes remain. Prioritize API corrections, fixture parsing, and a re
 Compilation reached Ada: Digits is reserved, so the legal child package is Digit_Operations. Local cached toolchain settings now enable offline builds.
 Resolved Ada type visibility and naming errors. Focused compatibility tests are now compiling; temporary offline pins remain outside the final manifest.
 First compiled run reported 34 fixture failures, including bigint rows beyond fixed-width bounds and text parsing edge cases. Seeded property tests passed.
+Corrected negative operands in fixture dispatch, numeric validation in release builds, text sumdigits, and named exclusions for bigint-only cases. Preparing the final gate.
