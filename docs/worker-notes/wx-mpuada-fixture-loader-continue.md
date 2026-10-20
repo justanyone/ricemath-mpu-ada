@@ -16,3 +16,6 @@ KIT NOTE, NOT FILE CONTENT: this output was shortened by the kit; the file on di
 Focused run passes all five tests with zero failures and zero errors, including concurrent fixture reads. Decimal overflow is rejected without wrapping. Run the final gate with the isolated offline settings; leave STATUS.md unchanged as req <<cut 6 chars by kit>>
 
 KIT NOTE, NOT FILE CONTENT: this output was shortened by the kit; the file on disk is whole; show a part with sed -n A,Bp FILE (kit removed -17 bytes)
+Final gate passed: == gate: green. All five AUnit tests passed with zero failures or errors. Used ALIRE_SETTINGS_DIR=$PWD/obj/offline-settings for offline cached dependencies. No tests remain blocked. Fixtures, STATUS.md, manifests, and bui <<cut 64 chars by kit>>
+
+KIT NOTE, NOT FILE CONTENT: this output was shortened by the kit; the file on disk is whole; show a part with sed -n A,Bp FILE (kit removed 40 bytes)
