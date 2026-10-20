@@ -11,3 +11,4 @@ Focused tests cannot build: Alire tries to clone its community index and the san
 Replaced the failed generator with direct Ada source and copied C tables. Alire can use the existing host settings without a network fetch.
 Copied Alire settings under obj to keep all generated state in the worktree. Next resolve compiler diagnostics and run real tests.
 Offline cache works. First compile found an Ada reserved identifier and numeric translation issues; correcting them.
+About five minutes remain. Offline dependencies are staged under obj. The focused build is running after syntax corrections.
