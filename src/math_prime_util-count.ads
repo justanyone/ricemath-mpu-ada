@@ -52,4 +52,52 @@ package Math_Prime_Util.Count with SPARK_Mode => On is
      with Pre => N >= 1 and then N <= Nth_Prime_Limit,
           Post => Nth_Prime'Result >= 2
                   and then Prime_Count (Nth_Prime'Result) = N;
+   --  prime_counts.c: prime_count_lower. Native integer estimate or bound.
+   --  Nth-prime indices must fit the native prime range.
+   function Prime_Count_Lower (High : U64) return U64
+     with Pre => True,
+          Post => Prime_Count_Lower'Result <= U64'Last;
+
+   --  prime_counts.c: prime_count_upper. Native integer estimate or bound.
+   --  Nth-prime indices must fit the native prime range.
+   function Prime_Count_Upper (High : U64) return U64
+     with Pre => True,
+          Post => Prime_Count_Upper'Result <= U64'Last;
+
+   --  prime_counts.c: prime_count_approx. Native integer estimate or bound.
+   --  Nth-prime indices must fit the native prime range.
+   function Prime_Count_Approx (High : U64) return U64
+     with Pre => True,
+          Post => Prime_Count_Approx'Result <= U64'Last;
+
+   --  prime_counts.c: nth_prime_lower. Native integer estimate or bound.
+   --  Nth-prime indices must fit the native prime range.
+   function Nth_Prime_Lower (N : U64) return U64
+     with Pre => N >= 1 and then N <= 425_656_284_035_217_743,
+          Post => Nth_Prime_Lower'Result <= U64'Last;
+
+   --  prime_counts.c: nth_prime_upper. Native integer estimate or bound.
+   --  Nth-prime indices must fit the native prime range.
+   function Nth_Prime_Upper (N : U64) return U64
+     with Pre => N >= 1 and then N <= 425_656_284_035_217_743,
+          Post => Nth_Prime_Upper'Result <= U64'Last;
+
+   --  prime_counts.c: nth_prime_approx. Native integer estimate or bound.
+   --  Nth-prime indices must fit the native prime range.
+   function Nth_Prime_Approx (N : U64) return U64
+     with Pre => N >= 1 and then N <= 425_656_284_035_217_743,
+          Post => Nth_Prime_Approx'Result <= U64'Last;
+
+   --  real.c: chebyshev_theta. Sum of natural logs, in real units.
+   --  Storage_Error may propagate from the segmented sieve.
+   function Chebyshev_Theta (N : U64) return Long_Float
+     with Pre => N <= Prime_Count_Limit,
+          Post => Chebyshev_Theta'Result >= 0.0;
+
+   --  real.c: chebyshev_psi. Sum of natural logs, in real units.
+   --  Storage_Error may propagate from the segmented sieve.
+   function Chebyshev_Psi (N : U64) return Long_Float
+     with Pre => N <= Prime_Count_Limit,
+          Post => Chebyshev_Psi'Result >= 0.0;
+
 end Math_Prime_Util.Count;
