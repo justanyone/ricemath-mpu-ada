@@ -236,7 +236,10 @@ package body Math_Prime_Util.Random is
    begin
       Generator.Real_Value (Value);
       Value := Value * Limit;
-      if Value >= Limit then
+      if Limit > 0.0 and then Value >= Limit then
+         return Long_Float'Adjacent (Limit, 0.0);
+      end if;
+      if Limit < 0.0 and then Value <= Limit then
          return Long_Float'Adjacent (Limit, 0.0);
       end if;
       return Value;

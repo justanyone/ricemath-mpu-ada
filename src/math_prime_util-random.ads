@@ -25,11 +25,15 @@ package Math_Prime_Util.Random is
    --  C: chacha.c, chacha_irand64.
    function Irand64 return U64
      with Pre => True, Post => True;
-   --  Return a real in [0, Limit). Limit must be positive and finite.
+   --  Return a unit real multiplied by the finite Limit.
    --  C: csprng.c, drand64, and XS.xs, rand.
    function Drand (Limit : Long_Float := 1.0) return Long_Float
-     with Pre => Limit > 0.0 and then Limit <= Long_Float'Last,
-          Post => Drand'Result >= 0.0 and then Drand'Result < Limit;
+     with Pre => abs Limit <= Long_Float'Last,
+          Post => (if Limit > 0.0 then
+                     Drand'Result >= 0.0 and then Drand'Result < Limit
+                   elsif Limit < 0.0 then
+                     Drand'Result <= 0.0 and then Drand'Result > Limit
+                   else Drand'Result = 0.0);
    --  Return a real in [0, 1). C: csprng.c, drand64.
    function Rand return Long_Float
      with Pre => True,
