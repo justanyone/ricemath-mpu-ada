@@ -60,7 +60,9 @@ package body Compat_Rational is
                      A (I) := I128'Value (S (S'First .. Slash - 1));
                      A (I + 1) := I128'Value (S (Slash + 1 .. S'Last));
                   else
-                     if S'Length > 20 and then S (S'First) /= '-' then
+                     if S'Length > 20
+                       and then S (S'First) /= '-'
+                     then
                         Skip := True;
                      else
                         A (I) := I128'Value (S);

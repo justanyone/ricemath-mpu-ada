@@ -11,3 +11,5 @@ About five minutes remain: local index now resolves cached AUnit offline; compil
 Offline build reached Ada compilation. Corrected contract visibility and logical operator syntax; fixture checks are next.
 Fixture replay found explicit invalid-input checks needed even without contract code generation. Added them and documented native C versus Perl bigint/fallback rows.
 Focused run passes 37 of 41 test groups. Remaining mismatches are negative continued-fraction convention and oversized index error handling; correcting those before final gate.
+Final gate runs with isolated offline Alire settings under obj. Bigint inputs and C next_farey fallback cases remain named skips; no dependencies or tooling were changed.
+Final validation: gate printed == gate: green; all 41 AUnit groups passed with zero failures. Remaining: bigint fixture extensions, Perl next_farey fallback outside F_N, wider Farey bounds, and formal SPARK proof. STATUS.md was not edited.
