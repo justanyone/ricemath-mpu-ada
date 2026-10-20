@@ -47,7 +47,7 @@ package Math_Prime_Util.Config is
    --  Ada port states those checks as preconditions.
    procedure Prime_Set_Config (Key : String; Value : String)
      with Pre => Is_Known_Key (Key) and then Is_Valid_Value (Key, Value),
-          Post => Prime_Get_Config'Result.Maxbits = Max_Bits;
+          Post => Prime_Get_Config.Maxbits = Max_Bits;
 
    --  Platform constants (XS.xs newCONSTSUB block).
    function Uvsize return Positive

@@ -1,3 +1,5 @@
 - Plan: add Math_Prime_Util.Config (prime_get_config/set, platform consts), tests compat_int/prop_int, register in all_suites. Notes appended as I go.
 - Wrote spec src/math_prime_util-config.ads (turn 5). No Errors package exists: bad keys are Pre violations. Next: body, then tests in compat_int/prop_int.
 - Body + compat_int tests written (turn 8). Next: prop_int laws, run tools/test.sh Config, gate.
+- Focused tests pass (46/46, turn 11). Running gate. Not done: no int.tsv rows for config funcs; prime_set_config secure/gmp/xs keys unsupported.
+- Gate green (turn 12). Done; uncommitted for launcher. Remaining: no fixture rows for config functions; no failing-without-fix tests added; set_config keys xs/gmp/bigint/secure not ported.
