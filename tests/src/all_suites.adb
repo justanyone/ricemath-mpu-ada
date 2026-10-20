@@ -4,6 +4,8 @@ with Compat_Int;
 with Prop_Int;
 with Compat_Sieve;
 with Prop_Sieve;
+with Compat_Rational;
+with Prop_Rational;
 with Compat_Lucas;
 with Prop_Lucas;
 
@@ -17,6 +19,8 @@ package body All_Suites is
       Result.Add_Test (Prop_Int.Suite);
       Result.Add_Test (Compat_Sieve.Suite);
       Result.Add_Test (Prop_Sieve.Suite);
+      Result.Add_Test (Compat_Rational.Suite);
+      Result.Add_Test (Prop_Rational.Suite);
       Result.Add_Test (Compat_Lucas.Suite);
       Result.Add_Test (Prop_Lucas.Suite);
       return Result;
