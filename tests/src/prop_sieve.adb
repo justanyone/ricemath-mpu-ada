@@ -71,7 +71,8 @@ package body Prop_Sieve is
       AUnit.Assertions.Assert (V.Is_Empty, "zero width at maximum");
       V := Sieve_Range (45, 10, 7);
       AUnit.Assertions.Assert
-        (V = Prime_Vectors.To_Vector (4, 1) & U64'(8),
+        (Natural (V.Length) = 2 and then V.First_Element = 4
+         and then V.Last_Element = 8,
          "partial sieve retains offsets");
       begin
          V := Sieve_Range (U64'Last, 2, 0);

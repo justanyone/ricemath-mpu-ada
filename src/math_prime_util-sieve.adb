@@ -344,12 +344,24 @@ package body Math_Prime_Util.Sieve is
    function Sum_Primes (Low, High : U64) return Int.Optional_U64 is
       Sum : U64 := 0;
    begin
-      for P of Primes (Low, High) loop
-         if P > U64'Last - Sum then
-            return (Defined => False);
-         end if;
-         Sum := Sum + P;
-      end loop;
+      declare
+         Values : constant Prime_Vectors.Vector := Primes (Low, High);
+      begin
+         for I in Values.First_Index .. Values.Last_Index loop
+            --  Name the reference type so GNAT emits its finalizer for
+            --  clients of this library's public container instance.
+            declare
+               Ref : constant Prime_Vectors.Constant_Reference_Type :=
+                 Values.Constant_Reference (I);
+               P : constant U64 := Ref.Element.all;
+            begin
+               if P > U64'Last - Sum then
+                  return (Defined => False);
+               end if;
+               Sum := Sum + P;
+            end;
+         end loop;
+      end;
       return (Defined => True, Value => Sum);
    end Sum_Primes;
 end Math_Prime_Util.Sieve;

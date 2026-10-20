@@ -11,3 +11,4 @@ Built a worktree-local offline Alire index from the installed AUnit release. Ret
 The offline dependency resolves, but Alire cannot select a compiler from the minimal index. Checking installed toolchain metadata rather than repeating that failure.
 Offline compiler selection now succeeds after adding installed toolchain metadata to the local index. The focused test script is compiling the port.
 Compilation reproduced the reported GNAT vector reference finalizer link defect. Trying an explicit no-inline directive on the public vector reference operations.
+The no-inline directive was not legal on a nested instance. Replaced it with an explicit constant-reference lifetime in Sum_Primes to force finalizer emission without changing the API.
