@@ -22,3 +22,4 @@ NOTES: Remaining APIs: Stirling, Integer_Complexity, Bernfrac, Frobenius_Number,
 NOTES: Signed Binomial and negative-argument error fixtures still need coverage. Existing fixture files, tools, manifests, and STATUS.md were not edited.
 NOTES: Offline runs need ALIRE_SETTINGS_DIR under obj/combinat-alire and the installed compiler and gprbuild on PATH. The temporary local index and copied dependencies are ignored under obj/.
 Final review found one overlong exception-handler line; wrapped it to the 79-column convention.
+Stopping with a tested partial port. Final gate printed == gate: green with 41 successful tests; no task is marked READY and the launcher handles commits.
