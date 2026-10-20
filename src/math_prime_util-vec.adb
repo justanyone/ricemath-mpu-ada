@@ -91,15 +91,24 @@ package body Math_Prime_Util.Vec is
    function Missing (A : Vector; Start : I64) return I64;
 
    function Missing (A : Vector; Start : I64) return I64 is
-      M : I64 := Start;
+      Seen : array (1 .. A'Length) of Boolean := [others => False];
+      Offset : I128;
    begin
-      if (for some V of A => V < Start) then
-         raise Constraint_Error with "invalid MEX input";
-      end if;
-      while (for some V of A => V = M) loop
-         M := M + 1;
+      for V of A loop
+         if V < Start then
+            raise Constraint_Error with "invalid MEX input";
+         end if;
+         Offset := I128 (V) - I128 (Start);
+         if Offset < I128 (A'Length) then
+            Seen (Natural (Offset) + 1) := True;
+         end if;
       end loop;
-      return M;
+      for I in Seen'Range loop
+         if not Seen (I) then
+            return Start + I64 (I - 1);
+         end if;
+      end loop;
+      return Start + I64 (A'Length);
    end Missing;
 
    function Vecmex (A : Vector) return I64 is (Missing (A, 0));

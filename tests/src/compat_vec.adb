@@ -565,6 +565,11 @@ package body Compat_Vec is
                AUnit.Assertions.Assert
                  (Actual = C.Result, "extraction row" &
                   Positive'Image (C.Line_Number));
+            exception
+               when Constraint_Error =>
+                  AUnit.Assertions.Assert
+                    (C.Result = "ERROR", "invalid extraction mask row" &
+                     Positive'Image (C.Line_Number));
             end;
          end if;
       end loop;

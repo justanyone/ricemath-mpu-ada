@@ -11,3 +11,4 @@ About five minutes remain. Alire cannot select cached toolchains without index m
 Offline build works after selecting cached compiler versions in local Alire settings. First focused run found invalid MEX inputs, retained decimal spelling and an invalid-input property length failure. Added validation and corrected integer <<cut 23 chars by kit>>
 
 KIT NOTE, NOT FILE CONTENT: this output was shortened by the kit; the file on disk is whole; show a part with sed -n A,Bp FILE (kit removed -1 bytes)
+All 63 tests passed before extraction replay. Added opaque-token extraction replay; negative mask fixture requires checking its expected ERROR. Gate is running with local offline configuration.
