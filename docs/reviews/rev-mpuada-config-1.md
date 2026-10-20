@@ -14,4 +14,4 @@ The stopped run is incomplete against the acceptance criteria: fixture replay an
 
 Compared the supplied complete diff with reference/mpu/lib/Math/Prime/Util.pm:277–333 and the committed config fixture. Parsing loops are bounded by input length; protected setters perform one assignment each. No duplicate effect or unbounded loop was identified.
 
-Validation is pending below. The checkout is the base, so local build/test results cannot validate the candidate implementation.
+Validation: `nice -n 10 tools/test.sh prime_set_config` and `nice -n 10 tools/gate.sh` both exited 1 before compilation because Alire tried to initialize its community index and github.com could not resolve. No tests executed; the gate did not print `== gate: green`. No retries or network workaround were attempted. The checkout is the base, so even successful local checks would not validate the candidate implementation.
