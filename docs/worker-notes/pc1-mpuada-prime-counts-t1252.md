@@ -12,3 +12,6 @@ Copied installed AUnit into ignored obj/ to keep all build writes in this worktr
 First validation compiled and ran 138 tests: 136 passed. Found a copied commented-out nth-upper coefficient branch and double-rounded inverse-R at 1e14; correcting both before the final gate. The runner ignores the filter and executes the s <<cut 5 chars by kit>>
 
 KIT NOTE, NOT FILE CONTENT: this output was shortened by the kit; the file on disk is whole; show a part with sed -n A,Bp FILE (kit removed -18 bytes)
+Validation: tools/gate.sh printed == gate: green; development/release builds and all 138 tests passed using local offline Alire settings and obj/aunit.
+NOTES: Full LMO/Lehmer/cache and prime_count_tables.h port, unrestricted count/nth/phi fixture coverage, extended-range analytic replay, SPARK proof and prime_count(10^k), k<=13 benchmarks remain. No C benchmark numbers were measured; no performance claim is made.
+Stopped with tested API additions and explicit fixture skips; task remains PARTIAL and is not READY. No git writes or pushes were performed.
