@@ -8,3 +8,6 @@ Added the prefix algorithm, range dispatch, exact sum fixture replay, and seeded
 Focused tests could not build: Alire tried to fetch its missing community index while offline. Checking whether the installed toolchain can be used without an index.
 Native sum results now return Optional_U64, including the fixture overflow threshold. The U128 prefix arithmetic remains exact.
 Offline retry disabled automatic index creation. Alire then reported missing gnat, gprbuild, and AUnit. Gate also cannot build in this sandbox configuration; no tests executed.
+Added overflow, last-prime, repeated-call, and concurrent-call checks. All 1244 sum fixture rows are selected, with no skipped sum rows.
+Remaining: prime_count, nth_prime, all bounds and approximations, legendre_phi, theta, psi, LMO/cache/table ports, SPARK proof, and benchmarks.
+Final: partial sum slice only. Focused tests and gate were blocked before compilation. No green gate or performance claim. Launcher owns commits.

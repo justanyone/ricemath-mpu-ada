@@ -39,13 +39,13 @@ package body Compat_Count is
             Actual := Count.Sum_Primes (Low, High);
          end if;
          AUnit.Assertions.Assert
-           (Actual.Defined = not C.Undef, "sum overflow status");
+           (Actual.Defined /= C.Undef, "sum overflow status");
          if not C.Undef then
             AUnit.Assertions.Assert
-           (Parse_U64 (To_String (C.Result), Expected), "sum result");
-         AUnit.Assertions.Assert
-           (Actual.Value = Expected, "sum_primes row" &
-            Positive'Image (C.Line_Number));
+              (Parse_U64 (To_String (C.Result), Expected), "sum result");
+            AUnit.Assertions.Assert
+              (Actual.Value = Expected, "sum_primes row" &
+               Positive'Image (C.Line_Number));
          end if;
       end loop;
    end Check_Sums;

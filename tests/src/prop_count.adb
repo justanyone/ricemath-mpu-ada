@@ -47,8 +47,50 @@ package body Prop_Count is
          "empty prefixes");
    end Laws;
 
+   procedure Boundaries (T : in out Test_Case'Class) is
+      Last_Prime : constant U64 := 18_446_744_073_709_551_557;
+   begin
+      AUnit.Assertions.Assert
+        (not Count.Sum_Primes (29_505_444_491).Defined,
+         "first prefix sum overflow");
+      AUnit.Assertions.Assert
+        (not Count.Sum_Primes (U64'Last).Defined, "maximum prefix");
+      AUnit.Assertions.Assert
+        (Count.Sum_Primes (Last_Prime, U64'Last).Value = Last_Prime,
+         "last native prime");
+      for K in 1 .. 2 loop
+         AUnit.Assertions.Assert
+           (Count.Sum_Primes (100_000).Value = 454_396_537,
+            "repeated calls use independent scratch storage");
+      end loop;
+   end Boundaries;
+
+   procedure Concurrent_Calls (T : in out Test_Case'Class) is
+      type Results is array (Positive range 1 .. 2) of U64;
+      Values : Results := (others => 0);
+      task type Worker (Index : Positive);
+      task body Worker is
+      begin
+         Values (Index) := Count.Sum_Primes (100_000).Value;
+      end Worker;
+   begin
+      declare
+         First : Worker (1);
+         Second : Worker (2);
+      begin
+         null;
+      end;
+      AUnit.Assertions.Assert
+        (Values (1) = 454_396_537 and Values (2) = Values (1),
+         "concurrent sums use independent scratch storage");
+   end Concurrent_Calls;
+
    overriding procedure Register_Tests (T : in out Count_Case) is
    begin
+      Registration.Register_Routine
+        (T, Boundaries'Access, "sum boundaries and repeated calls");
+      Registration.Register_Routine
+        (T, Concurrent_Calls'Access, "concurrent sums");
       Registration.Register_Routine (T, Laws'Access, "sum laws");
    end Register_Tests;
 
