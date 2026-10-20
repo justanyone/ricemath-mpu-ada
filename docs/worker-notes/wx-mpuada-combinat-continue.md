@@ -15,3 +15,4 @@ Local index now resolves AUnit and GNAT. Compiler has started; checking the new 
 The first compiled run reached all tests. Signed product fixtures exposed an overlarge-result parser failure; replaced conversion with checked magnitude parsing.
 39 of 40 tests passed. The zero-step multifactorial regression revealed dependency contracts can be disabled; added an explicit Constraint_Error check for this invalid argument.
 About five minutes remain in the session budget. Validate the corrected head and keep remaining APIs explicit.
+Gate is green with all 40 tests passing under isolated offline settings. Thirteen public task functions are now present; fourteen are still absent.
