@@ -11,6 +11,7 @@ package body Compat_Count is
    use Ada.Strings.Unbounded;
    use Math_Prime_Util;
    use type U64;
+   package Pc renames Math_Prime_Util.Count;
    type Count_Case is new Test_Case with null record;
    overriding function Name (T : Count_Case) return AUnit.Message_String;
    overriding procedure Register_Tests (T : in out Count_Case);
@@ -32,11 +33,11 @@ package body Compat_Count is
          AUnit.Assertions.Assert
            (Parse_U64 (To_String (C.Args (1)), Low), "sum first argument");
          if C.Args.Last_Index = 1 then
-            Actual := Count.Sum_Primes (Low);
+            Actual := Pc.Sum_Primes (Low);
          else
             AUnit.Assertions.Assert
               (Parse_U64 (To_String (C.Args (2)), High), "sum upper bound");
-            Actual := Count.Sum_Primes (Low, High);
+            Actual := Pc.Sum_Primes (Low, High);
          end if;
          AUnit.Assertions.Assert
            (Actual.Defined /= C.Undef, "sum overflow status");
@@ -64,12 +65,12 @@ package body Compat_Count is
       for C of Cases loop
          AUnit.Assertions.Assert
            (Parse_U64 (To_String (C.Args (1)), N), "prime_count argument");
-         if not C.Undef and then N <= Count.Prime_Count_Limit then
+         if not C.Undef and then N <= Pc.Prime_Count_Limit then
             AUnit.Assertions.Assert
               (Parse_U64 (To_String (C.Result), Expected),
                "prime_count result");
             AUnit.Assertions.Assert
-              (Count.Prime_Count (N) = Expected, "prime_count row" &
+              (Pc.Prime_Count (N) = Expected, "prime_count row" &
                Positive'Image (C.Line_Number));
          end if;
       end loop;
@@ -86,13 +87,13 @@ package body Compat_Count is
          AUnit.Assertions.Assert
            (Parse_U64 (To_String (C.Args (1)), N), "nth_prime argument");
          if not C.Undef and then N >= 1 and then
-           N <= Count.Nth_Prime_Limit
+           N <= Pc.Nth_Prime_Limit
          then
             AUnit.Assertions.Assert
               (Parse_U64 (To_String (C.Result), Expected),
                "nth_prime result");
             AUnit.Assertions.Assert
-              (Count.Nth_Prime (N) = Expected, "nth_prime row" &
+              (Pc.Nth_Prime (N) = Expected, "nth_prime row" &
                Positive'Image (C.Line_Number));
          end if;
       end loop;
@@ -112,15 +113,15 @@ package body Compat_Count is
            (Parse_U64 (To_String (C.Args (1)), X), "phi first argument");
          AUnit.Assertions.Assert
            (Parse_U64 (To_String (C.Args (2)), Index), "phi index");
-         if not C.Undef and then X <= Count.Prime_Count_Limit and then
-           Index <= U64 (Count.Legendre_Index_Limit)
+         if not C.Undef and then X <= Pc.Prime_Count_Limit and then
+           Index <= U64 (Pc.Legendre_Index_Limit)
          then
             A := Natural (Index);
             AUnit.Assertions.Assert
               (Parse_U64 (To_String (C.Result), Expected),
                "legendre_phi result");
             AUnit.Assertions.Assert
-              (Count.Legendre_Phi (X, A) = Expected, "legendre_phi row" &
+              (Pc.Legendre_Phi (X, A) = Expected, "legendre_phi row" &
                Positive'Image (C.Line_Number));
          end if;
       end loop;
