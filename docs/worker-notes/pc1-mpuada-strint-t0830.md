@@ -20,3 +20,5 @@ First compiled fixture run found six validation differences. Added explicit inpu
 Validation-profile build underway with worktree-local dependency archives; temporary test dependency pin has been removed.
 All bigint fixtures except fromdigits pass with checks on; its base contract was too restrictive for positional text in bases above 36.
 All 61 tests passed, including every bigint digits fixture. Added seeded unbounded arithmetic, division, conversion, and parity laws before final gate.
+Added one fixture test per parity/divisibility predicate using their existing combinat rows; final gate needs rerun for this additional coverage.
+Gate passed before the final predicate fixtures were added. Waiting for the updated 65-test gate; retaining generated status unchanged.

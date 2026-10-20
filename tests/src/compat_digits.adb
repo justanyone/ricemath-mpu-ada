@@ -159,6 +159,16 @@ package body Compat_Digits is
          elsif Func = "mult_digital_root" then
             Actual := To_Unbounded_String
               (Img (B.Mult_Digital_Root (A (1), Base)));
+         elsif Func = "is_odd" then
+            Actual := To_Unbounded_String (Flag (B.Is_Odd (A (1))));
+         elsif Func = "is_even" then
+            Actual := To_Unbounded_String (Flag (B.Is_Even (A (1))));
+         elsif Func = "is_divisible" then
+            Actual := To_Unbounded_String
+              (Flag (B.Is_Divisible (A (1), A (2))));
+         elsif Func = "is_congruent" then
+            Actual := To_Unbounded_String
+              (Flag (B.Is_Congruent (A (1), A (2), A (3))));
          elsif Func = "hammingweight" then
             Actual := To_Unbounded_String
               (Img (BI.To_Big_Integer (B.Hammingweight (A (1)))));
@@ -192,8 +202,8 @@ package body Compat_Digits is
       AUnit.Assertions.Assert (not Cases.Is_Empty, Func & " has no rows");
       for C of Cases loop
          Replay_Big (C, Func);
-         --  Bigint_Outside_Fixed_Tier: no bigint API in this native port.
-         --  Signed helper fixtures beyond i64 are outside the task tier.
+         --  Native_Outside_Fixed_Tier: unbounded replay already ran.
+         --  The second pass checks the original fixed-width API.
          declare
             Outside : Boolean := False;
             V : I128;
@@ -427,6 +437,38 @@ package body Compat_Digits is
       return AUnit.Format ("Compat_Digits");
    end Name;
 
+   procedure Test_Is_Odd (T : in out Test_Case'Class) is
+   begin
+      --  MPU stores these integer predicate rows in the combinat family.
+      for C of For_Function (Load ("combinat"), "is_odd") loop
+         Replay_Big (C, "is_odd");
+      end loop;
+   end Test_Is_Odd;
+
+   procedure Test_Is_Even (T : in out Test_Case'Class) is
+   begin
+      --  MPU stores these integer predicate rows in the combinat family.
+      for C of For_Function (Load ("combinat"), "is_even") loop
+         Replay_Big (C, "is_even");
+      end loop;
+   end Test_Is_Even;
+
+   procedure Test_Is_Divisible (T : in out Test_Case'Class) is
+   begin
+      --  MPU stores these integer predicate rows in the combinat family.
+      for C of For_Function (Load ("combinat"), "is_divisible") loop
+         Replay_Big (C, "is_divisible");
+      end loop;
+   end Test_Is_Divisible;
+
+   procedure Test_Is_Congruent (T : in out Test_Case'Class) is
+   begin
+      --  MPU stores these integer predicate rows in the combinat family.
+      for C of For_Function (Load ("combinat"), "is_congruent") loop
+         Replay_Big (C, "is_congruent");
+      end loop;
+   end Test_Is_Congruent;
+
    procedure Test_Absint (T : in out Test_Case'Class) is
    begin
       Replay ("absint");
@@ -599,6 +641,14 @@ package body Compat_Digits is
 
    overriding procedure Register_Tests (T : in out Digits_Case) is
    begin
+      Registration.Register_Routine
+        (T, Test_Is_Odd'Access, "is_odd");
+      Registration.Register_Routine
+        (T, Test_Is_Even'Access, "is_even");
+      Registration.Register_Routine
+        (T, Test_Is_Divisible'Access, "is_divisible");
+      Registration.Register_Routine
+        (T, Test_Is_Congruent'Access, "is_congruent");
       Registration.Register_Routine
         (T, Test_Absint'Access, "absint");
       Registration.Register_Routine

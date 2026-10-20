@@ -173,7 +173,7 @@ package Math_Prime_Util.Digit_Operations.Bigints with SPARK_Mode => Off is
    --  XS.xs: is_palindrome; base digit operation.
    function Is_Palindrome
      (N : Big_Integer; Base : Big_Integer := 10) return Boolean
-     with Pre => Base >= 2, Post => True;
+     with Pre => N >= 0 and Base >= 2, Post => True;
 
    --  XS.xs: is_harshad; base digit operation.
    function Is_Harshad
@@ -183,12 +183,12 @@ package Math_Prime_Util.Digit_Operations.Bigints with SPARK_Mode => Off is
    --  XS.xs: digital_root; base digit operation.
    function Digital_Root
      (N : Big_Integer; Base : Big_Integer := 10) return Big_Integer
-     with Pre => Base >= 2, Post => True;
+     with Pre => N >= 0 and Base >= 2, Post => True;
 
    --  XS.xs: mult_digital_root; base digit operation.
    function Mult_Digital_Root
      (N : Big_Integer; Base : Big_Integer := 10) return Big_Integer
-     with Pre => Base >= 2, Post => True;
+     with Pre => N >= 0 and Base >= 2, Post => True;
 
    --  util.h: popcnt; count bits of the magnitude.
    function Hammingweight
