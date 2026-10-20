@@ -1,1 +1,2 @@
 - Plan: add Math_Prime_Util.Config (prime_get_config/set, platform consts), tests compat_int/prop_int, register in all_suites. Notes appended as I go.
+- Wrote spec src/math_prime_util-config.ads (turn 5). No Errors package exists: bad keys are Pre violations. Next: body, then tests in compat_int/prop_int.
