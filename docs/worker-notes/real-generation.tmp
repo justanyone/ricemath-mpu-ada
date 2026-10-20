@@ -1,0 +1,366 @@
+from pathlib import Path
+import re,textwrap
+c=Path('reference/mpu/real.c').read_text()
+def arr(name,pat):
+ s=re.search(pat,c,re.S).group(1)
+ s=re.sub(r'/\*.*?\*/','',s,flags=re.S)
+ s=re.sub(r'LNVCONST\((.*?)\)',r'\1',s)
+ vals=[v.strip().rstrip('L') for v in s.split(',') if v.strip()]
+ return '   '+name+' : constant Vector :=\n     ('+',\n      '.join(vals)+');\n'
+spec='''--  Real functions from Math::Prime::Util 0.75.
+package Math_Prime_Util.Real is
+   subtype F64 is Long_Float;
+'''
+funcs=[('Exponential_Integral','X : F64','F64','X /= 0.0','True','real.c: Ei, _Ei. Real exponential integral; zero is invalid.'),('Logarithmic_Integral','X : F64','F64','X >= 0.0','True','real.c: Li, _Li. Real logarithmic integral; negative <<cut 1156 chars by kit>>
+for name,args,ret,pre,post,doc in funcs:
+ spec+='   --  '+doc+'\n   function '+name+' ('+args+') return '+ret+'\n     with Pre => '+pre+',\n          Post => '+post+';\n\n'
+spec+='end Math_Prime_Util.Real;\n';Path('src/math_prime_util-real.ads').write_text(spec)
+b='''with Ada.Numerics.Generic_Elementary_Functions;
+package body Math_Prime_Util.Real is
+   subtype Wide is Long_Long_Float;
+   package EF is new Ada.Numerics.Generic_Elementary_Functions (Wide);
+   use EF;
+   Eps : constant Wide := Wide'Model_Epsilon;
+   Euler : constant Wide := 0.577215664901532860606512090082402431;
+   type Vector is array (Natural range <>) of Wide;
+   type Accumulator is record
+      Sum : Wide := 0.0;
+      Correction : Wide := 0.0;
+   end record;
+   procedure Add (S : in out Accumulator; V : Wide) is
+      T : constant Wide := S.Sum + V;
+   begin
+      if abs S.Sum >= abs V then
+         S.Correction := S.Correction + ((S.Sum - T) + V);
+      else
+         S.Correction := S.Correction + ((V - T) + S.Sum);
+      end if;
+      S.Sum := T;
+   end Add;
+   function Value (S : Accumulator) return Wide is
+     (S.Sum + S.Correction);
+'''
+for name,pat in [('C6p',r'C6p\[7\] = \{(.*?)\};'),('C6q',r'C6q\[7\] = \{(.*?)\};'),('P2',r'P2\[10\] = \{(.*?)\};'),('Q2',r'Q2\[9\] = \{(.*?)\};'),('Zeta_Table',r'riemann_zeta_table\[\] = \{(.*?)\};'),('C8p',r'C8p\[9\] = \{(.*?)\};'),('C8q', <<cut 97 chars by kit>>
+b+='''   function Polynomial (C : Vector; X : Wide) return Wide is
+      R : Wide := C (C'Last);
+   begin
+      for I in reverse C'First .. C'Last - 1 loop
+         R := C (I) + X * R;
+      end loop;
+      return R;
+   end Polynomial;
+
+   function Ei (X : Wide) return Wide is
+      S : Accumulator;
+      L0 : Wide := 1.0;
+      L1 : Wide := 1.0 - X;
+      Q, R, Term : Wide;
+      Fact : Wide := X;
+      Frac : Wide := 0.0;
+   begin
+      if X /= X then
+         return X;
+      elsif X <= -12000.0 then
+         return 0.0;
+      elsif X >= 12000.0 then
+         return X;
+      elsif X < 0.0 then
+         if X >= -1.0 then
+            return Log (-X) - Polynomial (C6p, -X) /
+              Polynomial (C6q, -X);
+         end if;
+         Add (S, 1.0 / L1);
+         for K in 1 .. 499 loop
+            Q := (L1 * (-X + Wide (2 * K + 1)) -
+                    L0 * Wide (K)) / Wide (K + 1);
+            R := 1.0 / (Wide (K + 1) * Q * L1);
+            Add (S, R);
+            L0 := L1;
+            L1 := Q;
+            exit when abs R < 0.1 * Eps;
+         end loop;
+         return -Value (S) * Exp (X);
+      elsif X < -2.0 * Log (Eps) then
+         for N in 2 .. 400 loop
+            Fact := Fact * X / Wide (N);
+            Term := Fact / Wide (N);
+            Add (S, Term);
+            exit when abs Term < Eps * abs Value (S);
+         end loop;
+         Add (S, Euler);
+         Add (S, Log (abs X));
+         Add (S, X);
+         return Value (S);
+      end if;
+      for N in 0 .. 8 loop
+         Frac := Q2 (N) / (P2 (N) + X + Frac);
+      end loop;
+      Frac := Frac + P2 (9);
+      if X < 700.0 then
+         return Exp (X) * (1.0 / X + Frac / X / X);
+      end if;
+      return Exp (X - Log (X)) * (1.0 + Frac / X);
+   end Ei;
+
+   function Li (X : Wide) return Wide is
+      S : Wide := 0.0;
+      Old, P : Wide := -1.0;
+      Fact, Power : Wide := 1.0;
+      Inner : Accumulator;
+      K : Natural := 0;
+      L : Wide;
+   begin
+      if X = 0.0 then
+         return 0.0;
+      elsif X = 2.0 then
+         return 1.0451637801174927848445888891946131365;
+      elsif X < 1.0 or else X > 1.0E16 then
+         return Ei (Log (X));
+      end if;
+      L := Log (X);
+      for N in 1 .. 199 loop
+         Fact := Fact * Wide (N);
+         P := P * (-L);
+         while K <= (N - 1) / 2 loop
+            Add (Inner, 1.0 / Wide (2 * K + 1));
+            K := K + 1;
+         end loop;
+         Old := S;
+         S := S + P / (Fact * Power) * Value (Inner);
+         Power := Power * 2.0;
+         exit when abs (S - Old) <= Eps;
+      end loop;
+      return Euler + Log (L) + Sqrt (X) * S;
+   end Li;
+
+   function Zeta (X : Wide) return Wide is
+      B, S, T : Wide := 0.0;
+      Product : Wide := 1.0;
+      Num, Den : Wide;
+   begin
+      if X /= X then
+         return X;
+      elsif X >= 2.0 and then X < Wide (Zeta_Table'Length + 2)
+        and then X = Wide'Floor (X)
+      then
+         return Zeta_Table (Natural (X) - 2);
+      elsif X >= 0.5 and then X <= 5.0 then
+         Num := Polynomial (C8p, X);
+         Den := Polynomial (C8q, X);
+         return (Num - (X - 1.0) * Den) / ((X - 1.0) * Den);
+      elsif X > 17000.0 then
+         return 0.0;
+      end if;
+      for I in 2 .. 10 loop
+         B := Wide (I) ** (-X);
+         S := S + B;
+         if abs B < abs (Eps * S) then
+            return S;
+         end if;
+      end loop;
+      S := S + B * 10.0 / (X - 1.0) - 0.5 * B;
+      for I in A'Range loop
+         Product := Product * (X + Wide (2 * I));
+         B := B / 10.0;
+         T := Product * B / A (I);
+         S := S + T;
+         exit when abs T < abs (Eps * S);
+         Product := Product * (X + Wide (2 * I + 1));
+         B := B / 10.0;
+      end loop;
+      return S;
+   end Zeta;
+
+   function Inverse (X : Wide) return Wide is
+      T, Term, Dn, L : Wide;
+      Old : Wide := 0.0;
+   begin
+      if X < 2.719 then
+         T := (if X >= 1.668 then 3.0 else 2.0);
+      else
+         L := Log (X);
+         T := X * (L + Log (L));
+      end if;
+      for I in 0 .. 3 loop
+         Dn := Li (T) - X;
+         Term := Dn * Log (T) / (1.0 + Dn / (2.0 * T));
+         exit when I > 0 and then abs Term >= abs Old;
+         Old := Term;
+         T := T - Term;
+      end loop;
+      return T;
+   end Inverse;
+
+   function Exponential_Integral (X : F64) return F64 is
+     (F64 (Ei (Wide (X))));
+   function Logarithmic_Integral (X : F64) return F64 is
+     (F64 (Li (Wide (X))));
+   function Riemann_Zeta (X : F64) return F64 is
+     (F64 (Zeta (Wide (X))));
+   function Inverse_Li_Nv (X : F64) return F64 is
+     (F64 (Inverse (Wide (X))));
+   function Inverse_Li (X : F64) return F64 is
+   begin
+      if X <= 2.0 then
+         return (if X = 0.0 then 0.0 else X + 1.0);
+      end if;
+      return F64 (Wide'Ceiling (Inverse (Wide (X))));
+   end Inverse_Li;
+
+   function Moebius (N : Positive) return Integer is
+      V : Positive := N;
+      M : Integer := 1;
+   begin
+      for P in 2 .. N loop
+         if V mod P = 0 then
+            V := V / P;
+            M := -M;
+            if V mod P = 0 then
+               return 0;
+            end if;
+         end if;
+      end loop;
+      return M;
+   end Moebius;
+
+   function Riemann_R
+     (X : F64; Epsilon : F64 := 1.0E-16) return F64
+   is
+      S : Accumulator;
+      Term, Old : Wide;
+      Part : Wide := 1.0;
+      L : constant Wide := Log (Wide (X));
+      Tol : constant Wide := Wide'Max (Eps, Wide (Epsilon));
+   begin
+      if X > F64'Last then
+         return X;
+      elsif X > 1.0E19 then
+         Add (S, Li (Wide (X)));
+         for K in 2 .. 100 loop
+            if Moebius (K) /= 0 then
+               Term := Wide (Moebius (K)) / Wide (K) *
+                 Li (Wide (X) ** (1.0 / Wide (K)));
+               Old := Value (S);
+               Add (S, Term);
+               exit when abs (Value (S) - Old) <= Tol;
+            end if;
+         end loop;
+      else
+         Add (S, 1.0);
+         for K in 1 .. 10_000 loop
+            Part := Part * L / Wide (K);
+            Term := Part / (Wide (K) * (1.0 + Zeta (Wide (K + 1))));
+            Old := Value (S);
+            Add (S, Term);
+            exit when abs (Value (S) - Old) <= Tol;
+         end loop;
+      end if;
+      return F64 (Value (S));
+   end Riemann_R;
+'''
+# Convert the approximation directly, retaining its polynomial coefficients.
+s=c[c.index('static long double _lambertw_approx'):c.index('NV lambertw')]
+s=s[s.index('  if (x <'):s.rindex('  return w;')]
+s=re.sub(r'/\*.*?\*/','',s,flags=re.S)
+s=re.sub(r'(?<=\d)L\b','',s).replace('LDBL_EPSILON','Eps')
+s=s.replace('sqrtl','Sqrt').replace('logl','Log')
+s=s.replace('if (k2 <= 0) return -1.0 + 1*Eps;', 'if K2 <= 0.0 then return -1.0 + Eps; end if;')
+s=re.sub(r'\} else if \((.*?)\) \{',r'elsif \1 then',s)
+s=re.sub(r'if \((.*?)\) \{',r'if \1 then',s)
+s=s.replace('} else {','else').replace('}', 'end if;').replace('&&','and then')
+s=re.sub(r'\b(w|k1|k2|k3) =',r'\1 :=',s)
+# All bare numeric literals in floating expressions must be real.
+s=re.sub(r'(?<![\w.])(\d+)(?![\w.])',r'\1.0',s)
+s=s.replace('end if;', 'end if;')
+b+='   function Lambert_Approx (X : Wide) return Wide is\n      W, K1, K2, K3 : Wide;\n   begin\n'+s+'      return W;\n   end Lambert_Approx;\n'
+b+='''   function Lambert_W (X : F64) return F64 is
+      W, W1, Zn, Qn, En, Wen : Wide;
+   begin
+      if X /= X or else X > F64'Last then
+         return X;
+      elsif X <= -0.367879441171442321595523770161460867 then
+         return -1.0;
+      elsif X = 0.0 then
+         return 0.0;
+      end if;
+      W := Lambert_Approx (Wide (X));
+      if X < -0.36768 then
+         return F64 (W);
+      end if;
+      for I in 0 .. 5 loop
+         exit when W = 0.0;
+         W1 := 1.0 + W;
+         Zn := Log (Wide (X) / W) - W;
+         Qn := 2.0 * W1 * (W1 + (2.0 / 3.0) * Zn);
+         En := (Zn / W1) * (Qn - Zn) / (Qn - 2.0 * Zn);
+         Wen := W * En;
+         W := W + Wen;
+         exit when abs Wen <= 64.0 * Eps;
+      end loop;
+      return F64 (W);
+   end Lambert_W;
+
+   function Pi (Digits : Natural := 0) return String is
+      Count : constant Positive := (if Digits = 0 then 15 else Digits);
+      C : Natural := 14 * ((Count + 1) / 4 + 2);
+      type Work_Array is array (Natural range <>) of Long_Long_Integer;
+      A : Work_Array (0 .. C - 1) := [others => 2000];
+      Out_Text : String (1 .. Count + 5) := [others => '0'];
+      D, E, G, Chunk : Long_Long_Integer := 0;
+      I : Natural := 1;
+      B : Natural;
+   begin
+      if Count = 1 then
+         return "3";
+      end if;
+      while I <= Count + 1 loop
+         C := C - 14;
+         B := C;
+         D := D mod 10_000;
+         E := D;
+         while B > 1 loop
+            B := B - 1;
+            G := Long_Long_Integer (2 * B - 1);
+            D := D * Long_Long_Integer (B) + 10_000 * A (B);
+            A (B) := D mod G;
+            D := D / G;
+         end loop;
+         Chunk := E + D / 10_000;
+         if Chunk > 9999 then
+            Chunk := Chunk - 10_000;
+            B := I - 1;
+            while Out_Text (B) = '9' loop
+               Out_Text (B) := '0';
+               B := B - 1;
+            end loop;
+            Out_Text (B) := Character'Succ (Out_Text (B));
+         end if;
+         for J in reverse I .. I + 3 loop
+            Out_Text (J) := Character'Val (48 + Chunk mod 10);
+            Chunk := Chunk / 10;
+         end loop;
+         I := I + 4;
+      end loop;
+      if Out_Text (Count + 1) >= '5' then
+         B := Count;
+         while Out_Text (B) = '9' loop
+            Out_Text (B) := '0';
+            B := B - 1;
+         end loop;
+         Out_Text (B) := Character'Succ (Out_Text (B));
+      end if;
+      return Out_Text (1 .. 1) & "." & Out_Text (2 .. Count);
+   end Pi;
+
+   function Bernreal (N : Natural) return F64 is
+      R : Wide := 2.0;
+      Two_Pi : constant Wide := 6.283185307179586476925286766559;
+   begin
+      if N = 0 then
+         return 1.0;
+      elsif N = 1 then
+         return 0.5;
+      elsif N mod 2 = 1 then
+         return 0.0;
+    
+KIT NOTE, NOT FILE CONTENT: this output was shortened by the kit; the file on disk is whole; show a part with sed -n A,Bp FILE (kit removed 2195 bytes)
