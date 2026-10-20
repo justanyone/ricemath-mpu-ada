@@ -30,3 +30,6 @@ Gate did not reach green: test crate cannot resolve its external compiler.
 Final: implementation and two suites are on disk; launcher owns commits.
 Strict library compilation passed; runtime tests and gate remain unverified.
 No fixtures, status ticks, manifests, or repository build tools were changed.
+Both test bodies passed compile-only checks using cached AUnit headers.
+Added local helper declarations to resolve the new test GNAT style messages.
+Runtime assertions have not run; fixture results are not claimed as passing.

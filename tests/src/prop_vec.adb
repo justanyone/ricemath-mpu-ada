@@ -18,6 +18,8 @@ package body Prop_Vec is
       return AUnit.Format ("Prop_Vec seed 20261020");
    end Name;
 
+   procedure Check_Laws (T : in out Test_Case'Class);
+
    procedure Check_Laws (T : in out Test_Case'Class) is
       Seed : U64 := 20_261_020;
       A, B : Vector (1 .. 12);

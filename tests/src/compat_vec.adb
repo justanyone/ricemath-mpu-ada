@@ -21,6 +21,8 @@ package body Compat_Vec is
       return AUnit.Format ("Compat_Vec");
    end Name;
 
+   function Image (A : Vector) return String;
+
    function Image (A : Vector) return String is
       R : Unbounded_String;
    begin
@@ -33,6 +35,8 @@ package body Compat_Vec is
       end loop;
       return To_String (R);
    end Image;
+
+   procedure Replay (Func : String);
 
    procedure Replay (Func : String) is
       Cases : constant Case_Vectors.Vector :=
@@ -163,125 +167,175 @@ package body Compat_Vec is
       AUnit.Assertions.Assert (Checked > 0, Func & " no native rows");
    end Replay;
 
+   procedure Test_Vecsort (T : in out Test_Case'Class);
+
    procedure Test_Vecsort (T : in out Test_Case'Class) is
    begin
       Replay ("vecsort");
    end Test_Vecsort;
+
+   procedure Test_Vecrsort (T : in out Test_Case'Class);
 
    procedure Test_Vecrsort (T : in out Test_Case'Class) is
    begin
       Replay ("vecrsort");
    end Test_Vecrsort;
 
+   procedure Test_Vecsorti (T : in out Test_Case'Class);
+
    procedure Test_Vecsorti (T : in out Test_Case'Class) is
    begin
       Replay ("vecsorti");
    end Test_Vecsorti;
+
+   procedure Test_Vecrsorti (T : in out Test_Case'Class);
 
    procedure Test_Vecrsorti (T : in out Test_Case'Class) is
    begin
       Replay ("vecrsorti");
    end Test_Vecrsorti;
 
+   procedure Test_Toset (T : in out Test_Case'Class);
+
    procedure Test_Toset (T : in out Test_Case'Class) is
    begin
       Replay ("toset");
    end Test_Toset;
+
+   procedure Test_Vecuniq (T : in out Test_Case'Class);
 
    procedure Test_Vecuniq (T : in out Test_Case'Class) is
    begin
       Replay ("vecuniq");
    end Test_Vecuniq;
 
+   procedure Test_Vecsingleton (T : in out Test_Case'Class);
+
    procedure Test_Vecsingleton (T : in out Test_Case'Class) is
    begin
       Replay ("vecsingleton");
    end Test_Vecsingleton;
+
+   procedure Test_Vecmex (T : in out Test_Case'Class);
 
    procedure Test_Vecmex (T : in out Test_Case'Class) is
    begin
       Replay ("vecmex");
    end Test_Vecmex;
 
+   procedure Test_Vecpmex (T : in out Test_Case'Class);
+
    procedure Test_Vecpmex (T : in out Test_Case'Class) is
    begin
       Replay ("vecpmex");
    end Test_Vecpmex;
+
+   procedure Test_Vecequal (T : in out Test_Case'Class);
 
    procedure Test_Vecequal (T : in out Test_Case'Class) is
    begin
       Replay ("vecequal");
    end Test_Vecequal;
 
+   procedure Test_Setunion (T : in out Test_Case'Class);
+
    procedure Test_Setunion (T : in out Test_Case'Class) is
    begin
       Replay ("setunion");
    end Test_Setunion;
+
+   procedure Test_Setintersect (T : in out Test_Case'Class);
 
    procedure Test_Setintersect (T : in out Test_Case'Class) is
    begin
       Replay ("setintersect");
    end Test_Setintersect;
 
+   procedure Test_Setminus (T : in out Test_Case'Class);
+
    procedure Test_Setminus (T : in out Test_Case'Class) is
    begin
       Replay ("setminus");
    end Test_Setminus;
+
+   procedure Test_Setdelta (T : in out Test_Case'Class);
 
    procedure Test_Setdelta (T : in out Test_Case'Class) is
    begin
       Replay ("setdelta");
    end Test_Setdelta;
 
+   procedure Test_Setinsert (T : in out Test_Case'Class);
+
    procedure Test_Setinsert (T : in out Test_Case'Class) is
    begin
       Replay ("setinsert");
    end Test_Setinsert;
+
+   procedure Test_Setremove (T : in out Test_Case'Class);
 
    procedure Test_Setremove (T : in out Test_Case'Class) is
    begin
       Replay ("setremove");
    end Test_Setremove;
 
+   procedure Test_Setinvert (T : in out Test_Case'Class);
+
    procedure Test_Setinvert (T : in out Test_Case'Class) is
    begin
       Replay ("setinvert");
    end Test_Setinvert;
+
+   procedure Test_Setcontains (T : in out Test_Case'Class);
 
    procedure Test_Setcontains (T : in out Test_Case'Class) is
    begin
       Replay ("setcontains");
    end Test_Setcontains;
 
+   procedure Test_Setcontainsany (T : in out Test_Case'Class);
+
    procedure Test_Setcontainsany (T : in out Test_Case'Class) is
    begin
       Replay ("setcontainsany");
    end Test_Setcontainsany;
+
+   procedure Test_Set_Is_Disjoint (T : in out Test_Case'Class);
 
    procedure Test_Set_Is_Disjoint (T : in out Test_Case'Class) is
    begin
       Replay ("set_is_disjoint");
    end Test_Set_Is_Disjoint;
 
+   procedure Test_Set_Is_Equal (T : in out Test_Case'Class);
+
    procedure Test_Set_Is_Equal (T : in out Test_Case'Class) is
    begin
       Replay ("set_is_equal");
    end Test_Set_Is_Equal;
+
+   procedure Test_Set_Is_Subset (T : in out Test_Case'Class);
 
    procedure Test_Set_Is_Subset (T : in out Test_Case'Class) is
    begin
       Replay ("set_is_subset");
    end Test_Set_Is_Subset;
 
+   procedure Test_Set_Is_Proper_Subset (T : in out Test_Case'Class);
+
    procedure Test_Set_Is_Proper_Subset (T : in out Test_Case'Class) is
    begin
       Replay ("set_is_proper_subset");
    end Test_Set_Is_Proper_Subset;
 
+   procedure Test_Set_Is_Superset (T : in out Test_Case'Class);
+
    procedure Test_Set_Is_Superset (T : in out Test_Case'Class) is
    begin
       Replay ("set_is_superset");
    end Test_Set_Is_Superset;
+
+   procedure Test_Set_Is_Proper_Superset (T : in out Test_Case'Class);
 
    procedure Test_Set_Is_Proper_Superset (T : in out Test_Case'Class) is
    begin
@@ -289,15 +343,22 @@ package body Compat_Vec is
    end Test_Set_Is_Proper_Superset;
 
    procedure Test_Set_Is_Proper_Intersection
+     (T : in out Test_Case'Class);
+
+   procedure Test_Set_Is_Proper_Intersection
      (T : in out Test_Case'Class) is
    begin
       Replay ("set_is_proper_intersection");
    end Test_Set_Is_Proper_Intersection;
 
+   procedure Test_Is_Sidon_Set (T : in out Test_Case'Class);
+
    procedure Test_Is_Sidon_Set (T : in out Test_Case'Class) is
    begin
       Replay ("is_sidon_set");
    end Test_Is_Sidon_Set;
+
+   procedure Test_Is_Sumfree_Set (T : in out Test_Case'Class);
 
    procedure Test_Is_Sumfree_Set (T : in out Test_Case'Class) is
    begin
