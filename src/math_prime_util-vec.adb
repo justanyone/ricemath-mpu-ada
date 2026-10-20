@@ -16,18 +16,231 @@ package body Math_Prime_Util.Vec is
 
    function Vecsort (A : Vector) return Vector is
       R : Vector (1 .. A'Length) := A;
-      J : Positive;
-      V : I64;
-   begin
-      for I in 2 .. R'Last loop
-         V := R (I);
-         J := I;
-         while J > 1 and then R (J - 1) > V loop
-            R (J) := R (J - 1);
+      procedure Insertion (Lo, Hi : Positive);
+      procedure Heap (Lo, Hi : Positive);
+      function Median (X, Y, Z : I64) return I64;
+      function Partition (Lo, Hi : Positive) return Positive;
+      procedure Quick (Lo, Hi : Positive; Bad : Natural);
+      procedure Radix;
+
+      procedure Insertion (Lo, Hi : Positive) is
+         J : Positive;
+         V : I64;
+      begin
+         for I in Lo + 1 .. Hi loop
+            V := R (I);
+            J := I;
+            while J > Lo and then R (J - 1) > V loop
+               R (J) := R (J - 1);
+               J := J - 1;
+            end loop;
+            R (J) := V;
+         end loop;
+      end Insertion;
+
+      --  sort.c: _heapsort, signed branch; zero-based heap offsets.
+      procedure Heap (Lo, Hi : Positive) is
+         Last : Natural := Hi - Lo;
+         Root : Natural := (Last + 1) / 2;
+         B, C : Natural;
+         V : I64;
+      begin
+         loop
+            if Root > 0 then
+               Root := Root - 1;
+               V := R (Lo + Root);
+            elsif Last > 0 then
+               V := R (Lo + Last);
+               R (Lo + Last) := R (Lo);
+               Last := Last - 1;
+            else
+               return;
+            end if;
+            B := Root;
+            while Last > 0 and then B <= (Last - 1) / 2 loop
+               C := 2 * B + 1;
+               if C < Last and then R (Lo + C + 1) >= R (Lo + C) then
+                  C := C + 1;
+               end if;
+               exit when V >= R (Lo + C);
+               R (Lo + B) := R (Lo + C);
+               B := C;
+            end loop;
+            R (Lo + B) := V;
+         end loop;
+      end Heap;
+
+      function Median (X, Y, Z : I64) return I64 is
+      begin
+         if X > Y then
+            return (if Y > Z then Y else I64'Min (X, Z));
+         else
+            return (if X > Z then X else I64'Min (Y, Z));
+         end if;
+      end Median;
+
+      --  sort.c: _partition_iv, including Fluxsort's median of nine.
+      function Partition (Lo, Hi : Positive) return Positive is
+         Len : constant Positive := Hi - Lo + 1;
+         I : Positive := Lo;
+         J : Positive := Hi;
+         Pivot, Temp : I64;
+         Sample : Vector (1 .. 9);
+         Step : constant Natural := (Len - 1) / 8;
+         procedure Middle (Base : Positive);
+
+         procedure Middle (Base : Positive) is
+            X, Y : I64;
+         begin
+            X := I64'Min (Sample (Base), Sample (Base + 1));
+            Y := I64'Max (Sample (Base), Sample (Base + 1));
+            Sample (Base) := X;
+            Sample (Base + 1) := Y;
+            X := I64'Min (Sample (Base + 2), Sample (Base + 3));
+            Y := I64'Max (Sample (Base + 2), Sample (Base + 3));
+            Sample (Base + 2) := I64'Max (Sample (Base), X);
+            Sample (Base + 1) := I64'Min (Sample (Base + 1), Y);
+         end Middle;
+      begin
+         if Len <= 7 then
+            Pivot := R (Lo + Len / 2);
+         elsif Len <= 40 then
+            Pivot := Median (R (Lo), R (Lo + (Hi - Lo) / 2), R (Hi));
+         else
+            for K in Sample'Range loop
+               Sample (K) := R (Lo + (K - 1) * Step);
+            end loop;
+            Middle (1);
+            Middle (5);
+            Sample (1) := Sample (6);
+            Sample (4) := Sample (9);
+            Middle (1);
+            Pivot := Median (Sample (7), Sample (2), Sample (3));
+         end if;
+         loop
+            while R (I) < Pivot loop
+               I := I + 1;
+            end loop;
+            while R (J) > Pivot loop
+               J := J - 1;
+            end loop;
+            if I >= J then
+               return J;
+            end if;
+            Temp := R (I);
+            R (I) := R (J);
+            R (J) := Temp;
+            I := I + 1;
             J := J - 1;
          end loop;
-         R (J) := V;
-      end loop;
+      end Partition;
+
+      --  sort.c: _qs_iv. Sixteen-element insertion cutoff and the
+      --  log2(length) budget for partitions smaller than length / 8.
+      procedure Quick (Lo, Hi : Positive; Bad : Natural) is
+         Len : constant Positive := Hi - Lo + 1;
+         Remaining : Natural := Bad;
+         P : Positive;
+      begin
+         if Len <= 16 then
+            Insertion (Lo, Hi);
+            return;
+         end if;
+         P := Partition (Lo, Hi);
+         if P - Lo + 1 < Len / 8 or else Hi - P < Len / 8 then
+            if Remaining <= 1 then
+               Heap (Lo, Hi);
+               return;
+            end if;
+            Remaining := Remaining - 1;
+         end if;
+         Quick (Lo, P, Remaining);
+         Quick (P + 1, Hi, Remaining);
+      end Quick;
+
+      --  sort.c: _radixsort, signed 64-bit path. Skip constant bytes and
+      --  redundant sign bytes. Keep each stable counting pass in order.
+      procedure Radix is
+         type Counts is array (Natural range 0 .. 255) of Natural;
+         Count, Position : Counts := [others => 0];
+         Shifts : array (1 .. 8) of Natural;
+         Passes : Natural := 0;
+         Signshift : Natural := 0;
+         Vary, Width : U64 := 0;
+         First : constant U64 := U64 (R (1));
+         D : U64;
+         Ascending, Descending : Boolean := True;
+         Buffer : Vector (R'Range);
+         Digit, Key, Total : Natural;
+      begin
+         for I in R'Range loop
+            D := U64 (R (I));
+            Vary := Vary or (D xor First);
+            Width := Width or (D xor (0 - D / 2 ** 63));
+            Count (Natural (D mod 256)) :=
+              Count (Natural (D mod 256)) + 1;
+            if I > 1 then
+               Ascending := Ascending and then R (I - 1) <= R (I);
+               Descending := Descending and then R (I - 1) >= R (I);
+            end if;
+         end loop;
+         if Ascending then
+            return;
+         elsif Descending then
+            for I in 1 .. R'Length / 2 loop
+               declare
+                  V : constant I64 := R (I);
+                  J : constant Positive := R'Last - I + 1;
+               begin
+                  R (I) := R (J);
+                  R (J) := V;
+               end;
+            end loop;
+            return;
+         end if;
+         while Signshift < 56 and then Width / 2 ** (Signshift + 7) /= 0
+         loop
+            Signshift := Signshift + 8;
+         end loop;
+         for Byte in 0 .. Signshift / 8 loop
+            if (Vary / 2 ** (Byte * 8)) mod 256 /= 0 then
+               Passes := Passes + 1;
+               Shifts (Passes) := Byte * 8;
+            end if;
+         end loop;
+         for Pass in 1 .. Passes loop
+            Count := [others => 0];
+            for V of R loop
+               Digit := Natural ((U64 (V) / 2 ** Shifts (Pass)) mod 256);
+               Count (Digit) := Count (Digit) + 1;
+            end loop;
+            Total := 0;
+            for K in 0 .. 255 loop
+               Key := (if Shifts (Pass) = Signshift then
+                          (K + 128) mod 256 else K);
+               Position (Key) := Total;
+               Total := Total + Count (Key);
+            end loop;
+            for V of R loop
+               Digit := Natural ((U64 (V) / 2 ** Shifts (Pass)) mod 256);
+               Buffer (Position (Digit) + 1) := V;
+               Position (Digit) := Position (Digit) + 1;
+            end loop;
+            R := Buffer;
+         end loop;
+      end Radix;
+      Bits : Natural := 0;
+      Len : Natural := A'Length;
+   begin
+      if Len >= 400 then
+         Radix;
+      elsif Len > 1 then
+         while Len > 1 loop
+            Bits := Bits + 1;
+            Len := Len / 2;
+         end loop;
+         Quick (1, R'Last, Bits);
+      end if;
       return R;
    end Vecsort;
 

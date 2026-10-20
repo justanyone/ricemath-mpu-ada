@@ -11,22 +11,22 @@ package Math_Prime_Util.Vec with SPARK_Mode => On is
      with Pre => True,
           Post => (if A'Length < 2 then Is_Set'Result);
 
-   --  sort.c: insertionsort_iv. Ascending copy; no errors.
+   --  sort.c: sort_iv_array, _qs_iv, _radixsort. Ascending copy.
    function Vecsort (A : Vector) return Vector
      with Pre => True,
           Post => Vecsort'Result'Length = A'Length;
 
-   --  sort.c: insertionsort_iv. Descending copy; no errors.
+   --  sort.c: sort_iv_array, _qs_iv, _radixsort. Descending copy.
    function Vecrsort (A : Vector) return Vector
      with Pre => True,
           Post => Vecrsort'Result'Length = A'Length;
 
-   --  sort.c: insertionsort_iv. Integer sort; no errors.
+   --  sort.c: sort_iv_array, _qs_iv, _radixsort. Integer sort; no errors.
    function Vecsorti (A : Vector) return Vector
      with Pre => True,
           Post => Vecsorti'Result'Length = A'Length;
 
-   --  sort.c: insertionsort_iv. Integer sort; no errors.
+   --  sort.c: sort_iv_array, _qs_iv, _radixsort. Integer sort; no errors.
    function Vecrsorti (A : Vector) return Vector
      with Pre => True,
           Post => Vecrsorti'Result'Length = A'Length;
