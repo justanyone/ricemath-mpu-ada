@@ -18,3 +18,5 @@ The tests now spell cipher bytes as hex to avoid source encoding ambiguity.
 Native fixtures passed except zero modulus, which XS rejects; fixed validation.
 Test runner returns zero on assertions; inspect the printed test totals.
 Library contracts can be off in dependency builds; added explicit range checks.
+Review confirms seeded native streams and cipher fixture vectors match MPU.
+Remaining scope: bigint/signed wrappers and additional mixed/tag fixture rows.
