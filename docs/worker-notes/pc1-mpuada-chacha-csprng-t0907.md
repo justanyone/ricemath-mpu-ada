@@ -17,3 +17,4 @@ Fixture bigint values do not come from the native stream bytes. PP fallback uses
 - 2026-10-20T14:13:42Z launcher: no commit for 60 s; 367 s elapsed. Files changed so far: docs/worker-notes/pc1-mpuada-chacha-csprng-t0907.md, src/math_prime_util-random.adb, src/math_prime_util-random.ads, src/math_prime_util-random_core.adb, src/math_prime_util-random_core.ads, tests/src/compat_random.adb, tests/src/prop_random.adb.
 Rejected speculative bigint overloads after failing exact fixtures; restored original named skips. Kept the tested SPARK arithmetic-core extraction. gnatprove is unavailable on this host.
 Five-minute checkpoint: native core extraction remains; restoring experimental bigint changes against the pre-session revision because launcher snapshots advance HEAD during work.
+Restoration via git show was truncated by the command wrapper; switched to git cat-file and verified complete source endings before testing again.
