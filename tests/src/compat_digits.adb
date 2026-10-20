@@ -52,8 +52,9 @@ package body Compat_Digits is
                for Arg of C.Args loop
                   begin
                      V := I128'Value (To_String (Arg));
-                     if Func in "lshiftint" | "rshiftint" | "rashiftint"
-                       and then V not in -(2 ** 63) .. 2 ** 64 - 1
+                     if Func in "lshiftint" | "rshiftint" | "rashiftint" |
+                       "muladdint" | "mulsubint"
+                       and then V not in -(2 ** 63) .. 2 ** 63 - 1
                      then
                         Outside := True;
                      end if;
@@ -75,7 +76,8 @@ package body Compat_Digits is
                Outside := True;
             end if;
             if Func in "mulint" | "muladdint" | "mulsubint" |
-              "lshiftint" and then not C.Error
+              "lshiftint" | "rshiftint" | "rashiftint"
+              and then not C.Error
             then
                begin
                   V := I128'Value (To_String (C.Result));
@@ -216,6 +218,9 @@ package body Compat_Digits is
                Actual := To_Unbounded_String (Image (I128
                  (Boolean'Pos (Is_Palindrome (U128 (A (1)), Base)))));
             elsif Func = "is_harshad" then
+               if Base < 2 then
+                  raise Constraint_Error with "invalid Harshad base";
+               end if;
                Actual := To_Unbounded_String (Image (I128
                  (Boolean'Pos (A (1) >= 0 and then
                     Is_Harshad (U128 (A (1)), Base)))));

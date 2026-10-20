@@ -15,3 +15,4 @@ First compiled run reported 34 fixture failures, including bigint rows beyond fi
 Corrected negative operands in fixture dispatch, numeric validation in release builds, text sumdigits, and named exclusions for bigint-only cases. Preparing the final gate.
 Second run: 48 of 61 tests pass. Remaining failures isolate Euclidean divrem, omitted unsigned-width bounds, negative input semantics, and exact decimal parsing.
 Fixed Euclidean divrem, signed shift counts, large input bases, and exact decimal truncation without floating-point rounding. Final validation is next.
+Final gate is running with cached AUnit and toolchain settings. Named fixture exclusions cover values outside the declared native signed/unsigned tiers.
