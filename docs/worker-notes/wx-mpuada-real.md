@@ -17,3 +17,5 @@ All but Ei(0) now pass. The XS wrapper defines Ei(0) as -Inf although real.c rej
 All 48 tests pass, including all requested real fixture rows. Added seeded properties and independent concurrent calls; final gate follows.
 Gate passes with 49 tests and no failures. Aligned public names with the generated status mapping. Added zeta and integer inverse identities before the last check.
 Final verification ran development and release builds and the AUnit suite offline. The runner ignores the real filter, so focused invocations also ran the existing suites. No fixtures, status ticks, dependencies, or build scripts were changed.
+The new inverse boundary law encountered li(1) = -Inf under validity checking. It now handles that known endpoint explicitly. Re-running the gate.
+Finished: real fixtures and seeded, boundary, repeat, and concurrent properties are implemented. Final gate output is recorded in obj/real-gate-final.log. Commits and status regeneration remain with the launcher.

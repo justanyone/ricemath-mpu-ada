@@ -30,7 +30,7 @@ package body Prop_Real is
          W := Inverse_Li (F64 (I));
          AUnit.Assertions.Assert
            (Logarithmicintegral (W) >= F64 (I) and then
-            Logarithmicintegral (W - 1.0) < F64 (I),
+            (I = 1 or else Logarithmicintegral (W - 1.0) < F64 (I)),
             "integer inverse ceiling");
          W := Lambertw (X);
          AUnit.Assertions.Assert
@@ -72,7 +72,7 @@ package body Prop_Real is
          null;
       end;
       AUnit.Assertions.Assert
-        (Values (1) = Values (2) and Values (1) > 0.0,
+        (Values (1) = Values (2) and then Values (1) > 0.0,
          "independent concurrent calls");
    end Concurrent_Calls;
    overriding procedure Register_Tests (T : in out Real_Case) is
