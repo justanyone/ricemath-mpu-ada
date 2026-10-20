@@ -13,6 +13,13 @@ package body Math_Prime_Util.Random is
       Flags : Interfaces.C.unsigned) return Interfaces.C.long
      with Import, Convention => C, External_Name => "getrandom";
 
+   procedure Wipe (Buffer : System.Address; Length : Interfaces.C.size_t)
+     with Import, Convention => C, External_Name => "explicit_bzero";
+
+   function Load (Data : String; Offset : Natural) return U32;
+   procedure Store (Data : in out String; Offset : Natural; V : U32);
+   procedure Quarter (A, B, C, D : in out U32);
+
    function Entropy_Bytes (Count : Natural) return String is
       Result : String (1 .. Count);
       Done : Natural := 0;
@@ -71,11 +78,11 @@ package body Math_Prime_Util.Random is
 
    protected body Generator is
       procedure Seed (Data : String) is
-         Key : String (1 .. 40) := [others => Character'Val (0)]
-           with Volatile;
+         Key : String (1 .. 40) := [others => Character'Val (0)];
          Rng : U32 := 0;
          Inc : U32;
          A, B, C, D, Ignore : U32;
+         function Next return U32;
          function Next return U32 is
             Old : constant U32 := Rng;
             Word : U32;
@@ -111,7 +118,9 @@ package body Math_Prime_Util.Random is
          State (14) := Load (Key, 32); State (15) := Load (Key, 36);
          Position := 64;
          Buffer := [others => Character'Val (0)];
-         Key := [others => Character'Val (0)];
+         Wipe (Key'Address, 40);
+         Wipe (Rng'Address, 4);
+         Wipe (Inc'Address, 4);
       end Seed;
 
       procedure Refill is

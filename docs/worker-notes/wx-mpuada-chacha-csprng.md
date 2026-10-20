@@ -24,3 +24,11 @@ All 50 tests pass after native validation fixes, with zero assertions failed.
 Added mixed/tag and post-irand real fixtures plus reversed-range rejection.
 Mixed/tag checks pass. Blake drand follows seven bytes and one irand.
 Fixed that fixture setup; the full gate is now running.
+The gate prints green even with failed assertions; do not trust its exit alone.
+Blake fixture setup is fixed on disk; rerunning the gate on the final code.
+Used libc explicit_bzero for seed wiping to avoid volatile-copy warnings.
+Final scope: all 12 requested native entry points and compat/property suites exist.
+Named skips remain for unsigned bounds above U64 and signed range wrappers.
+SPARK conversion/proof and complete bigint fixture coverage remain unfinished.
+Final gate: green. All 50 tests passed; zero assertions failed or unexpected errors.
+Stopped with native implementation tested; signed/bigint coverage and SPARK remain.
