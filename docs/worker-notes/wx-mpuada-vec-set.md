@@ -7,3 +7,7 @@ Start with exact signed set operations and stable vector helpers; no new crates.
 Added signed vectors, insertion sorting, set merge, relations, and predicates.
 Set relation direction follows xs_set_relation: subset tests B inside A.
 - 2026-10-20T12:52:16Z launcher: no commit for 60 s; 181 s elapsed. Files changed so far: docs/worker-notes/wx-mpuada-vec-set.md.
+Added fixture replay per implemented function, with named bigint skips.
+Added seeded set laws, duplicate insert, shifted bounds, and invalid set checks.
+Focused test build started. Callback operations and arithmetic vectors remain.
+The current Sidon predicate uses exact wide comparisons; hash port is pending.
