@@ -1,5 +1,7 @@
 with Version_Suite;
 with Test_Fixture_Support;
+with Compat_Count;
+with Prop_Count;
 with Compat_Int;
 with Prop_Int;
 with Compat_Sieve;
@@ -32,6 +34,8 @@ package body All_Suites is
       Result.Add_Test (Prop_Lucas.Suite);
       Result.Add_Test (Compat_Real.Suite);
       Result.Add_Test (Prop_Real.Suite);
+      Result.Add_Test (Compat_Count.Suite);
+      Result.Add_Test (Prop_Count.Suite);
       return Result;
    end Suite;
 end All_Suites;
