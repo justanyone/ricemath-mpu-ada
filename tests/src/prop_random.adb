@@ -31,7 +31,8 @@ package body Prop_Random is
       Part_3 := Random_Bytes (960);
       Part_4 := Random_Bytes (1024);
       AUnit.Assertions.Assert
-        (Part_1 & Part_2 & Part_3 & Part_4 = Whole, "seed 42: partition invariance");
+        (Part_1 & Part_2 & Part_3 & Part_4 = Whole, 
+         "seed 42: partition invariance");
       Srand (42);
       declare
          First : constant U64 := Irand64;
@@ -70,7 +71,7 @@ package body Prop_Random is
       end loop;
       for I in 1 .. 1000 loop
          AUnit.Assertions.Assert
-           (Urandomm (17) < 17 and then Urandomr (7, 31) in 7 .. 31,
+           (Urandomm (17) < 17 and then U64'(Urandomr (7, 31)) in 7 .. 31,
             "seed 42: interval bounds");
       end loop;
       begin
@@ -87,7 +88,7 @@ package body Prop_Random is
       Srand (42);
       AUnit.Assertions.Assert
         (Urandomm (1) = 0 and then
-         Urandomb (0) = 0 and then Urandomr (9, 9) = 9 and then
+         U64'(Urandomb (0)) = 0 and then Urandomr (9, 9) = 9 and then
          Random_Bytes (0)'Length = 0 and then Irand = 445_265_827,
          "seed 42: degenerate calls consume no bytes");
    end Laws;

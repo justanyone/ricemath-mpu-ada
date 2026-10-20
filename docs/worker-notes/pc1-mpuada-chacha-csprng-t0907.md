@@ -9,3 +9,4 @@ Offline Alire settings avoid network; the empty index cannot resolve cached AUni
 Local index resolves AUnit offline, but Alire still cannot determine compiler version. Diagnosing external compiler selection; no dependencies or tooling changed in tracked files.
 Compiler executable works (GNAT 16.1.0); Alire requires toolchain release metadata in its isolated index. Adding cached metadata to the temporary obj index.
 Isolated offline toolchain selection succeeded; focused random test build is running with the new bigint replay assertions.
+Bigint overload exposed an ambiguous zero-bit property expression; qualified the native result explicitly and reran focused tests.
