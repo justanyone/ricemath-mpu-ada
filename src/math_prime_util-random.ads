@@ -1,12 +1,9 @@
-with Ada.Numerics.Big_Numbers.Big_Integers;
 with Interfaces;
 
 --  MPU 0.75 random stream. Strings contain raw bytes, not text.
 --  Calls share one protected stream. Reseeding replaces that stream.
 package Math_Prime_Util.Random is
    use type U64;
-   package BI renames Ada.Numerics.Big_Numbers.Big_Integers;
-   use type BI.Big_Integer;
    --  Seed with bytes; short seeds use PCG expansion. Extra bytes are ignored.
    --  C: csprng.c, csprng_seed; chacha.c, chacha_seed.
    procedure Csrand (Seed : String)
@@ -65,22 +62,4 @@ package Math_Prime_Util.Random is
    function Urandomr (Low, High : U64) return U64
      with Pre => Low <= High,
           Post => Urandomr'Result in Low .. High;
-   --  Bigint fallback for bit counts beyond the native word size.
-   --  C: csprng.c, urandomb; PP.pm, urandomb for larger results.
-   --  Bits is bounded to avoid overflowing byte counts.
-   function Urandomb (Bits : Natural) return BI.Big_Integer
-     with Pre => Bits <= Natural'Last - 7,
-          Post => Urandomb'Result >= BI.To_Big_Integer (0)
-            and then Urandomb'Result < BI.To_Big_Integer (2) ** Bits;
-   --  Positive bigint modulus; native bounds retain the C sampling path.
-   --  C: csprng.c, urandomm64; PP.pm, urandomm for bigint bounds.
-   function Urandomm (Modulus : BI.Big_Integer) return BI.Big_Integer
-     with Pre => Modulus > BI.To_Big_Integer (0),
-          Post => Urandomm'Result >= BI.To_Big_Integer (0)
-            and then Urandomm'Result < Modulus;
-   --  Inclusive signed or bigint interval; reversed bounds are invalid.
-   --  C: XS.xs, urandomr; PP.pm, urandomr for signed/bigint bounds.
-   function Urandomr (Low, High : BI.Big_Integer) return BI.Big_Integer
-     with Pre => Low <= High,
-          Post => Urandomr'Result >= Low and then Urandomr'Result <= High;
 end Math_Prime_Util.Random;

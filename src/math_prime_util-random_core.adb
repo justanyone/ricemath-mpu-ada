@@ -1,5 +1,3 @@
-with Interfaces;
-
 package body Math_Prime_Util.Random_Core with SPARK_Mode => On is
    use Interfaces;
    function Load (Data : String; Offset : Natural) return U32 is
@@ -64,23 +62,23 @@ package body Math_Prime_Util.Random_Core with SPARK_Mode => On is
 
    procedure Block (State : in out Words; Buffer : out String) is
       X : Words := State;
-      begin
-         for Round in 1 .. 10 loop
-            Quarter (X (0), X (4), X (8), X (12));
-            Quarter (X (1), X (5), X (9), X (13));
-            Quarter (X (2), X (6), X (10), X (14));
-            Quarter (X (3), X (7), X (11), X (15));
-            Quarter (X (0), X (5), X (10), X (15));
-            Quarter (X (1), X (6), X (11), X (12));
-            Quarter (X (2), X (7), X (8), X (13));
-            Quarter (X (3), X (4), X (9), X (14));
-         end loop;
-         for I in X'Range loop
-            Store (Buffer, 4 * I, X (I) + State (I));
-         end loop;
-         State (12) := State (12) + 1;
-         if State (12) = 0 then
-            State (13) := State (13) + 1;
-         end if;
+   begin
+      for Round in 1 .. 10 loop
+         Quarter (X (0), X (4), X (8), X (12));
+         Quarter (X (1), X (5), X (9), X (13));
+         Quarter (X (2), X (6), X (10), X (14));
+         Quarter (X (3), X (7), X (11), X (15));
+         Quarter (X (0), X (5), X (10), X (15));
+         Quarter (X (1), X (6), X (11), X (12));
+         Quarter (X (2), X (7), X (8), X (13));
+         Quarter (X (3), X (4), X (9), X (14));
+      end loop;
+      for I in X'Range loop
+         Store (Buffer, 4 * I, X (I) + State (I));
+      end loop;
+      State (12) := State (12) + 1;
+      if State (12) = 0 then
+         State (13) := State (13) + 1;
+      end if;
    end Block;
 end Math_Prime_Util.Random_Core;
