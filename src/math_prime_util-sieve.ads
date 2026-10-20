@@ -7,6 +7,10 @@ package Math_Prime_Util.Sieve is
    package Prime_Vectors is new Ada.Containers.Vectors
      (Index_Type => Natural, Element_Type => U64);
 
+   --  GNAT 16 needs the reference operations emitted for client iteration.
+   pragma No_Inline (Prime_Vectors.Reference);
+   pragma No_Inline (Prime_Vectors.Constant_Reference);
+
    --  sieve.c: range_prime_sieve, sieve_segment. Inclusive bounds.
    --  Reversed bounds return an empty vector. Storage_Error may propagate.
    function Primes (Low, High : U64) return Prime_Vectors.Vector
