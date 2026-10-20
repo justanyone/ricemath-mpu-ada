@@ -7,3 +7,4 @@ Implemented native continued fractions, tree maps, bounded approximation, and Fa
 Added all fourteen function test registrations and deterministic inverse, successor, rank, and invalid-input laws. Running the focused test script now.
 Focused test blocked before compilation: Alire tries to clone its community index and network DNS is unavailable. Checking installed offline toolchain configuration.
 Offline toolchain and AUnit cache exist, but checkout lockfiles are absent. Testing an isolated Alire settings directory under obj without changing dependencies.
+About five minutes remain: local index now resolves cached AUnit offline; compiler detection still blocks test compilation. Fixing toolchain selection next.
