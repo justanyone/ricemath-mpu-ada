@@ -12,3 +12,4 @@ The offline dependency resolves, but Alire cannot select a compiler from the min
 Offline compiler selection now succeeds after adding installed toolchain metadata to the local index. The focused test script is compiling the port.
 Compilation reproduced the reported GNAT vector reference finalizer link defect. Trying an explicit no-inline directive on the public vector reference operations.
 The no-inline directive was not legal on a nested instance. Replaced it with an explicit constant-reference lifetime in Sum_Primes to force finalizer emission without changing the API.
+An explicit reference lifetime did not fix GNAT linking. Moved the public vector instance to a library-level sibling unit and kept the existing Prime_Vectors API as a rename.

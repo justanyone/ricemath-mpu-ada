@@ -1,11 +1,10 @@
-with Ada.Containers.Vectors;
+with Math_Prime_Util.Sieve_Vectors;
 with Math_Prime_Util.Int;
 
 --  Native mod-30 sieve from Math::Prime::Util 0.75.
 package Math_Prime_Util.Sieve is
    use type U64;
-   package Prime_Vectors is new Ada.Containers.Vectors
-     (Index_Type => Natural, Element_Type => U64);
+   package Prime_Vectors renames Math_Prime_Util.Sieve_Vectors;
 
    --  sieve.c: range_prime_sieve, sieve_segment. Inclusive bounds.
    --  Reversed bounds return an empty vector. Storage_Error may propagate.

@@ -1,4 +1,5 @@
 with Interfaces;
+with Ada.Containers.Vectors;
 
 package body Math_Prime_Util.Sieve is
    use type Interfaces.Unsigned_8;
@@ -160,7 +161,7 @@ package body Math_Prime_Util.Sieve is
    begin
       if N < 2 then
          return 2;
-      elsif N < 3 then
+      elsif N = 2 then
          return 3;
       elsif N < 5 then
          return 5;
@@ -348,8 +349,6 @@ package body Math_Prime_Util.Sieve is
          Values : constant Prime_Vectors.Vector := Primes (Low, High);
       begin
          for I in Values.First_Index .. Values.Last_Index loop
-            --  Name the reference type so GNAT emits its finalizer for
-            --  clients of this library's public container instance.
             declare
                Ref : constant Prime_Vectors.Constant_Reference_Type :=
                  Values.Constant_Reference (I);
