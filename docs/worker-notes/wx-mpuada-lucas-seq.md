@@ -12,3 +12,5 @@ The remaining time is reserved for offline compilation and fixing diagnostics.
 Found cached GNAT, GPRbuild, and AUnit; checking local settings for offline use.
 Created disposable settings and a local cache index under obj; compile started.
 Offline compile reached Ada; fixed signed-operator visibility and local specs.
+All modular fixtures pass. Exact fixtures expose wide intermediate overflow;
+Lucas(-1) also needs its signed extension. Fixing these before the final gate.
