@@ -260,5 +260,134 @@ package body Compat_Random is
                      Append (Dummy, Image (Value));
                   end loop;
                   AUnit.Assertions.Assert
- 
-KIT NOTE, NOT FILE CONTENT: this output was shortened by the kit; the file on disk is whole; show a part with sed -n A,Bp FILE (kit removed 4233 bytes)
+                    (To_String (Dummy) = Expected, F & " row" &
+                     C.Line_Number'Image);
+               end if;
+            end if;
+         end;
+      end loop;
+      AUnit.Assertions.Assert (Count > 0, "missing " & Family);
+   end Replay;
+
+   procedure Test_Csrand (T : in out Test_Case'Class);
+   procedure Test_Csrand (T : in out Test_Case'Class) is
+      A, B : Unbounded_String;
+   begin
+      Csrand;
+      Csrand ("repeat seed");
+      A := To_Unbounded_String (Random_Bytes (128));
+      Csrand ("repeat seed");
+      B := To_Unbounded_String (Random_Bytes (128));
+      AUnit.Assertions.Assert (A = B, "reseed repeats");
+   end Test_Csrand;
+
+   procedure Test_Srand (T : in out Test_Case'Class);
+   procedure Test_Srand (T : in out Test_Case'Class) is
+   begin
+      Srand (42);
+      AUnit.Assertions.Assert (Irand = 445_265_827, "srand 42");
+   end Test_Srand;
+
+   procedure Test_Rand (T : in out Test_Case'Class);
+   procedure Test_Rand (T : in out Test_Case'Class) is
+   begin
+      Replay ("rand");
+   end Test_Rand;
+
+   procedure Test_Irand (T : in out Test_Case'Class);
+   procedure Test_Irand (T : in out Test_Case'Class) is
+   begin
+      Replay ("irand");
+   end Test_Irand;
+
+   procedure Test_Irand32 (T : in out Test_Case'Class);
+   procedure Test_Irand32 (T : in out Test_Case'Class) is
+   begin
+      Replay ("irand32");
+   end Test_Irand32;
+
+   procedure Test_Irand64 (T : in out Test_Case'Class);
+   procedure Test_Irand64 (T : in out Test_Case'Class) is
+   begin
+      Replay ("irand64");
+   end Test_Irand64;
+
+   procedure Test_Drand (T : in out Test_Case'Class);
+   procedure Test_Drand (T : in out Test_Case'Class) is
+   begin
+      Replay ("drand");
+   end Test_Drand;
+
+   procedure Test_Random_Bytes (T : in out Test_Case'Class);
+   procedure Test_Random_Bytes (T : in out Test_Case'Class) is
+   begin
+      Replay ("random_bytes");
+   end Test_Random_Bytes;
+
+   procedure Test_Entropy_Bytes (T : in out Test_Case'Class);
+   procedure Test_Entropy_Bytes (T : in out Test_Case'Class) is
+   begin
+      AUnit.Assertions.Assert
+        (Entropy_Bytes (0)'Length = 0 and then
+         Entropy_Bytes (40)'Length = 40, "entropy lengths");
+   end Test_Entropy_Bytes;
+
+   procedure Test_Urandomb (T : in out Test_Case'Class);
+   procedure Test_Urandomb (T : in out Test_Case'Class) is
+   begin
+      Replay ("urandomb");
+   end Test_Urandomb;
+
+   procedure Test_Urandomm (T : in out Test_Case'Class);
+   procedure Test_Urandomm (T : in out Test_Case'Class) is
+   begin
+      Replay ("urandomm");
+   end Test_Urandomm;
+
+   procedure Test_Urandomr (T : in out Test_Case'Class);
+   procedure Test_Urandomr (T : in out Test_Case'Class) is
+   begin
+      Replay ("urandomr");
+   end Test_Urandomr;
+
+   overriding function Name (T : Random_Case) return AUnit.Message_String is
+   begin
+      return AUnit.Format ("Compat_Random");
+   end Name;
+
+   overriding procedure Register_Tests (T : in out Random_Case) is
+   begin
+      Registration.Register_Routine
+        (T, Test_Csrand'Access, "csrand");
+      Registration.Register_Routine
+        (T, Test_Srand'Access, "srand");
+      Registration.Register_Routine
+        (T, Test_Rand'Access, "rand");
+      Registration.Register_Routine
+        (T, Test_Irand'Access, "irand");
+      Registration.Register_Routine
+        (T, Test_Irand32'Access, "irand32");
+      Registration.Register_Routine
+        (T, Test_Irand64'Access, "irand64");
+      Registration.Register_Routine
+        (T, Test_Drand'Access, "drand");
+      Registration.Register_Routine
+        (T, Test_Random_Bytes'Access, "random_bytes");
+      Registration.Register_Routine
+        (T, Test_Entropy_Bytes'Access, "entropy_bytes");
+      Registration.Register_Routine
+        (T, Test_Urandomb'Access, "urandomb");
+      Registration.Register_Routine
+        (T, Test_Urandomm'Access, "urandomm");
+      Registration.Register_Routine
+        (T, Test_Urandomr'Access, "urandomr");
+   end Register_Tests;
+
+   function Suite return AUnit.Test_Suites.Access_Test_Suite is
+      Result : constant AUnit.Test_Suites.Access_Test_Suite :=
+        new AUnit.Test_Suites.Test_Suite;
+   begin
+      Result.Add_Test (new Random_Case);
+      return Result;
+   end Suite;
+end Compat_Random;

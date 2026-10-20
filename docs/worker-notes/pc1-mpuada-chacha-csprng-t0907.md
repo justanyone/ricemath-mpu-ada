@@ -18,3 +18,4 @@ Fixture bigint values do not come from the native stream bytes. PP fallback uses
 Rejected speculative bigint overloads after failing exact fixtures; restored original named skips. Kept the tested SPARK arithmetic-core extraction. gnatprove is unavailable on this host.
 Five-minute checkpoint: native core extraction remains; restoring experimental bigint changes against the pre-session revision because launcher snapshots advance HEAD during work.
 Restoration via git show was truncated by the command wrapper; switched to git cat-file and verified complete source endings before testing again.
+Reconstructed the compat test suffix from the inspected source after discovering read-command output truncation also affects subprocess capture. Retained all twelve registered function tests.
