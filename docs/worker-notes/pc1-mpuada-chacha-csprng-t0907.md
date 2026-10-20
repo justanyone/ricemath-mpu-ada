@@ -11,3 +11,6 @@ Compiler executable works (GNAT 16.1.0); Alire requires toolchain release metada
 Isolated offline toolchain selection succeeded; focused random test build is running with the new bigint replay assertions.
 Bigint overload exposed an ambiguous zero-bit property expression; qualified the native result explicitly and reran focused tests.
 Native properties now disambiguate overloaded results. Preparing a SPARK arithmetic core so OS I/O and secret wiping remain outside the proof boundary.
+Expanded fixture replay found real mismatches in bigint sampling; native tests and cipher vectors pass. Checking dispatch semantics before changing the bigint algorithm.
+SPARK core extracted and compilation passes. Expanded replay exposes bigint outputs using a different fallback stream; investigating the committed reference implementation rather than guessing an algorithm.
+Fixture bigint values do not come from the native stream bytes. PP fallback uses its own ChaCha stream; comparing its seed expansion and buffering to preserve the oracle exactly.
