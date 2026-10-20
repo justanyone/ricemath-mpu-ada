@@ -9,3 +9,4 @@ Offline compilation now works. It exposed string operator visibility and short-c
 
 KIT NOTE, NOT FILE CONTENT: this output was shortened by the kit; the file on disk is whole; show a part with sed -n A,Bp FILE (kit removed -16 bytes)
 Focused tests are still pending after the compile fixes. Check the running process before the final gate; keep all offline configuration and cached build output under ignored obj/.
+Compilation succeeds, but the test runner did not finish promptly. Stopped it and reran with a short timeout and temporary progress output to isolate the runtime wait before the final gate.

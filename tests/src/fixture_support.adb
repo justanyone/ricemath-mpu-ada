@@ -3,8 +3,6 @@ with Ada.Directories;
 with Ada.Text_IO;
 
 package body Fixture_Support is
-   use type Math_Prime_Util.U128;
-
    function Load (Family : String) return Case_Vectors.Vector is
       File : Ada.Text_IO.File_Type;
       Path : constant String :=

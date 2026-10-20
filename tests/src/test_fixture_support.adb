@@ -32,6 +32,7 @@ package body Test_Fixture_Support is
       Found_Undef : Boolean := False;
       Found_Error : Boolean := False;
    begin
+      Ada.Text_IO.Put_Line ("starting fixture test");
       Assert (T.Name /= null, "test has a name");
       Assert (Cases.Length = 14_560, "int case count");
       Assert (Roots.Length = 152, "sqrtint case count");
@@ -80,6 +81,7 @@ package body Test_Fixture_Support is
                  "reject U128: " & Text);
       end Reject_U128;
    begin
+      Ada.Text_IO.Put_Line ("starting fixture test");
       Assert (T.Name /= null, "test has a name");
       Assert (Parse_U64 ("0", Small) and then Small = 0, "U64 zero");
       Assert (Parse_U64 ("00012", Small) and then Small = 12, "zeros");
@@ -116,7 +118,9 @@ package body Test_Fixture_Support is
       First, Second : Reader;
       A, B : Natural;
    begin
+      Ada.Text_IO.Put_Line ("starting fixture test");
       Assert (T.Name /= null, "test has a name");
+      Ada.Text_IO.Put_Line ("waiting for readers");
       First.Get_Count (A);
       Second.Get_Count (B);
       Assert (A = 14_560 and then B = A, "concurrent loads are independent");
