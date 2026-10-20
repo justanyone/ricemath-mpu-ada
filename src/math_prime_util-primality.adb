@@ -516,7 +516,7 @@ package body Math_Prime_Util.Primality is
    begin
       if N < 7 then
          return N in 2 | 3 | 5;
-      elsif N mod 2 = 0 or N = U64'Last or else Int.Is_Square (N) then
+      elsif (N mod 2 = 0 or N = U64'Last) or else Int.Is_Square (N) then
          return False;
       end if;
       D := N - 1;
@@ -661,7 +661,7 @@ package body Math_Prime_Util.Primality is
             V := V / Rest;
          end loop;
       end if;
-      if Factors = 2 and Squarefree and then
+      if (Factors = 2 and Squarefree) and then
         (N < 10_000_000_000 or else 2 * First + 1 >= Last)
       then
          return False;
@@ -682,7 +682,7 @@ package body Math_Prime_Util.Primality is
       V, D, Xi, Xm, Xs, Product, G, R, Left, Count : U64;
       C : U64 := 1;
    begin
-      if N < 2 or N > U64'Last - 2 or else Is_Prime (N) = 0 then
+      if (N < 2 or N > U64'Last - 2) or else Is_Prime (N) = 0 then
          return False;
       end if;
       V := N + 2;
