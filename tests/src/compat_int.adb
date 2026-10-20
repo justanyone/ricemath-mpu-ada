@@ -265,8 +265,8 @@ package body Compat_Int is
       AUnit.Assertions.Assert (not Rows.Is_Empty, "config has no rows");
       for C of Rows loop
          declare
-            Key    : constant String := To_String (C.Args (1));
-            Value  : constant String := To_String (C.Args (2));
+            Key    : constant String := To_String (C.Func);
+            Value  : constant String := To_String (C.Args (1));
             Result : constant String := To_String (C.Result);
             Before : constant Config_Record := Prime_Get_Config;
             Failed : constant Boolean := Rejected (Key, Value);
