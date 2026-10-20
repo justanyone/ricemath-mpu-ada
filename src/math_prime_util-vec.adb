@@ -167,14 +167,14 @@ package body Math_Prime_Util.Vec is
          Passes : Natural := 0;
          Signshift : Natural := 0;
          Vary, Width : U64 := 0;
-         First : constant U64 := U64 (R (1));
+         First : constant U64 := U64'Mod (R (1));
          D : U64;
          Ascending, Descending : Boolean := True;
          Buffer : Vector (R'Range);
          Digit, Key, Total : Natural;
       begin
          for I in R'Range loop
-            D := U64 (R (I));
+            D := U64'Mod (R (I));
             Vary := Vary or (D xor First);
             Width := Width or (D xor (0 - D / 2 ** 63));
             Count (Natural (D mod 256)) :=
@@ -211,7 +211,7 @@ package body Math_Prime_Util.Vec is
          for Pass in 1 .. Passes loop
             Count := [others => 0];
             for V of R loop
-               Digit := Natural ((U64 (V) / 2 ** Shifts (Pass)) mod 256);
+               Digit := Natural ((U64'Mod (V) / 2 ** Shifts (Pass)) mod 256);
                Count (Digit) := Count (Digit) + 1;
             end loop;
             Total := 0;
@@ -222,7 +222,7 @@ package body Math_Prime_Util.Vec is
                Total := Total + Count (Key);
             end loop;
             for V of R loop
-               Digit := Natural ((U64 (V) / 2 ** Shifts (Pass)) mod 256);
+               Digit := Natural ((U64'Mod (V) / 2 ** Shifts (Pass)) mod 256);
                Buffer (Position (Digit) + 1) := V;
                Position (Digit) := Position (Digit) + 1;
             end loop;
@@ -232,13 +232,18 @@ package body Math_Prime_Util.Vec is
       Bits : Natural := 0;
       Len : Natural := A'Length;
    begin
-      if Len >= 400 then
-         Radix;
-      elsif Len > 1 then
-         while Len > 1 loop
-            Bits := Bits + 1;
-            Len := Len / 2;
-         end loop;
+      while Len > 1 loop
+         Bits := Bits + 1;
+         Len := Len / 2;
+      end loop;
+      if A'Length >= 400 then
+         begin
+            Radix;
+         exception
+            --  sort.c: sort_iv_array falls back when radix allocation fails.
+            when Storage_Error => Quick (1, R'Last, Bits);
+         end;
+      elsif A'Length > 1 then
          Quick (1, R'Last, Bits);
       end if;
       return R;
