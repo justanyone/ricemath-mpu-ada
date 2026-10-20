@@ -16,3 +16,5 @@ Extended sort properties to one varying byte at both signed extremes and at byte
 Gate caught missing U128 operator visibility in the strengthened sum contract. Added the required use type clause, then restarted the gate.
 Dependency review: Vec uses only root integer types and Ada standard containers. Remaining algorithm parity: Vecuniq/Vecsingleton and Is_Sidon_Set still use linear or nested scans rather than ds_iset hashing. SPARK proof has not been run; this gate does not invoke gnatprove.
 Final review removed redundant U128 visibility and initialized Vecfreq workspace to avoid a compiler data-flow warning. Final gate rerun follows these edits.
+Final scope: bounds fixes, C sort dispatch and fast paths, C relation counting, sum-free binary search, and deterministic regressions. Fixtures, status, dependencies, and build tooling remain unchanged.
+Stopped with 78 of 78 tests passing and tools/gate.sh printing == gate: green. Result is partial: exact ds_iset hash translations and SPARK proof remain. The test runner ignored the Vec filter, so focused invocations ran the full suite. No network, git writes, or out-of-worktree edits were used.
