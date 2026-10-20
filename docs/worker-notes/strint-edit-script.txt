@@ -1,0 +1,316 @@
+from pathlib import Path
+p=Path('src/math_prime_util-digit_operations-bigints')
+entries=[]
+def api(name,args,ret,comment,pre='True',post='True'):
+ entries.append(f'   --  {comment}\n   function {name}\n     ({args}) return {ret}\n     with Pre => {pre}, Post => {post};\n')
+for n,arity,source in [('Absint',1,'strint_abs'),('Negint',1,'strint_neg'),('Signint',1,'strint_cmp'),('Cmpint',2,'strint_cmp'),('Addint',2,'strint_add_s'),('Subint',2,'strint_add_s'),('Add1int',1,'strint_add_s'),('Sub1int',1,'strint_add_s' <<cut 309 chars by kit>>
+ api(n,', '.join('ABC'[:arity])+ ' : Big_Integer','Integer' if n in ['Signint','Cmpint'] else 'Division_Result' if n.endswith('rem') else 'Big_Integer',f'strops.c: {source}; exact signed arithmetic.', 'B /= 0' if 'div' in n.lower() or 'mod' <<cut 47 chars by kit>>
+for n in ['Lshiftint','Rshiftint','Rashiftint']:
+ api(n,'A : Big_Integer; Bits : Integer := 1','Big_Integer',f'strops.c: strint_{n.lower()}; signed power-of-two shift.')
+api('Toint','Text : String','Big_Integer','XS.xs: toint; parse and truncate; invalid text raises Constraint_Error.')
+for n in ['Is_Odd','Is_Even']:
+ api(n,'A : Big_Integer','Boolean','XS.xs: '+n.lower()+'; test parity.')
+api('Is_Divisible','A, B : Big_Integer','Boolean','XS.xs: is_divisible; only zero is divisible by zero.')
+api('Is_Congruent','A, B, Modulus : Big_Integer','Boolean','XS.xs: is_congruent; zero modulus tests equality.')
+api('Todigits','N : Big_Integer; Base : Big_Integer := 10;\n      Length : Integer := -1','Digit_Array','util.c: to_digit_array; most significant digit first.','Base >= 2 and Length in -1 .. 128')
+api('Todigitstring','N : Big_Integer; Base : Big_Integer := 10;\n      Length : Integer := -1','String','util.c: to_digit_string; lowercase, padded or truncated.','Base >= 2 and Base <= 36 and Length in -1 .. 128')
+api('Fromdigits','Text : String; Base : Big_Integer := 10','Big_Integer','strops.c: strint_fromdigitstring; invalid digits raise Constraint_Error.','Base >= 2 and Base <= 36')
+for n,ret in [('Sumdigits','Big_Integer'),('Reverse_Digits','Big_Integer'),('Is_Palindrome','Boolean'),('Is_Harshad','Boolean'),('Digital_Root','Big_Integer'),('Mult_Digital_Root','Big_Integer')]:
+ api(n,'N : Big_Integer; Base : Big_Integer := 10',ret,('strops.c: strint_reverse_digits' if n=='Reverse_Digits' else 'XS.xs: '+n.lower())+'; base digit operation.','Base >= 2')
+api('Hammingweight','N : Big_Integer','Natural','util.h: popcnt; count bits of the magnitude.')
+api('Tozeckendorf','N : Big_Integer','String','util.c: to_zeckendorf; greedy Fibonacci representation.','N >= 0')
+api('Fromzeckendorf','Text : String','Big_Integer','util.c: from_zeckendorf; invalid representation raises Constraint_Error.')
+p.with_suffix('.ads').write_text('''with Ada.Numerics.Big_Numbers.Big_Integers;
+
+--  Unbounded tier uses the Ada 2022 runtime, with no crate dependency.
+--  This checkout carries strint equivalents in strops.c, not strint.c.
+package Math_Prime_Util.Digit_Operations.Bigints with SPARK_Mode => Off is
+   use Ada.Numerics.Big_Numbers.Big_Integers;
+   type Digit_Array is array (Positive range <>) of Big_Integer;
+   type Division_Result is record
+      Quotient, Remainder : Big_Integer;
+   end record;
+
+'''+ '\n'.join(entries)+'end Math_Prime_Util.Digit_Operations.Bigints;\n')
+body='''with Ada.Characters.Handling;
+with Ada.Strings.Fixed;
+
+package body Math_Prime_Util.Digit_Operations.Bigints is
+'''
+for n,expr in [('Absint','abs A'),('Negint','-A'),('Signint','(if A < 0 then -1 elsif A > 0 then 1 else 0)'),('Cmpint','(if A < B then -1 elsif A > B then 1 else 0)'),('Addint','A + B'),('Subint','A - B'),('Add1int','A + 1'),('Sub1int','A - 1'),('Mulint','A * B'),('Muladdint','A * B + C'),('Mulsubint','A * B - C')]:
+ arity=3 if n in ['Muladdint','Mulsubint'] else 2 if n in ['Cmpint','Addint','Subint','Mulint'] else 1
+ body+=f'   function {n} ({", ".join("ABC"[:arity])} : Big_Integer)\n      return {"Integer" if n in ["Signint","Cmpint"] else "Big_Integer"} is\n     ({expr});\n\n'
+body+='''   function Tdivrem (A, B : Big_Integer) return Division_Result is
+     (Quotient => A / B, Remainder => A rem B);
+
+   function Fdivrem (A, B : Big_Integer) return Division_Result is
+      D : Division_Result := Tdivrem (A, B);
+   begin
+      if D.Remainder /= 0 and then ((A < 0) /= (B < 0)) then
+         D.Quotient := D.Quotient - 1;
+         D.Remainder := D.Remainder + B;
+      end if;
+      return D;
+   end Fdivrem;
+
+   function Cdivrem (A, B : Big_Integer) return Division_Result is
+      D : Division_Result := Fdivrem (A, B);
+   begin
+      if D.Remainder /= 0 then
+         D.Quotient := D.Quotient + 1;
+         D.Remainder := D.Remainder - B;
+      end if;
+      return D;
+   end Cdivrem;
+
+   function Divrem (A, B : Big_Integer) return Division_Result is
+      D : Division_Result := Tdivrem (A, B);
+   begin
+      if D.Remainder < 0 then
+         if B > 0 then
+            D.Quotient := D.Quotient - 1;
+            D.Remainder := D.Remainder + B;
+         else
+            D.Quotient := D.Quotient + 1;
+            D.Remainder := D.Remainder - B;
+         end if;
+      end if;
+      return D;
+   end Divrem;
+
+   function Divint (A, B : Big_Integer) return Big_Integer is
+     (Fdivrem (A, B).Quotient);
+   function Modint (A, B : Big_Integer) return Big_Integer is
+     (Fdivrem (A, B).Remainder);
+   function Cdivint (A, B : Big_Integer) return Big_Integer is
+     (Cdivrem (A, B).Quotient);
+
+   function Lshiftint
+     (A : Big_Integer; Bits : Integer := 1) return Big_Integer is
+   begin
+      if Bits < 0 then
+         return Rshiftint (A, -Bits);
+      end if;
+      return A * To_Big_Integer (2) ** Bits;
+   end Lshiftint;
+
+   function Rshiftint
+     (A : Big_Integer; Bits : Integer := 1) return Big_Integer is
+   begin
+      if Bits < 0 then
+         return Lshiftint (A, -Bits);
+      end if;
+      return A / To_Big_Integer (2) ** Bits;
+   end Rshiftint;
+
+   function Rashiftint
+     (A : Big_Integer; Bits : Integer := 1) return Big_Integer is
+   begin
+      if Bits < 0 then
+         return Lshiftint (A, -Bits);
+      end if;
+      return Fdivrem (A, To_Big_Integer (2) ** Bits).Quotient;
+   end Rashiftint;
+
+   function Is_Odd (A : Big_Integer) return Boolean is (A rem 2 /= 0);
+   function Is_Even (A : Big_Integer) return Boolean is (A rem 2 = 0);
+   function Is_Divisible (A, B : Big_Integer) return Boolean is
+     (if B = 0 then A = 0 else A rem B = 0);
+   function Is_Congruent
+     (A, B, Modulus : Big_Integer) return Boolean is
+     (if Modulus = 0 then A = B else A mod Modulus = B mod Modulus);
+
+   function Todigits
+     (N : Big_Integer; Base : Big_Integer := 10;
+      Length : Integer := -1) return Digit_Array
+   is
+      V : Big_Integer := abs N;
+      Count : Natural := 0;
+   begin
+      while V /= 0 loop
+         Count := Count + 1;
+         V := V / Base;
+      end loop;
+      V := abs N;
+      return Result : Digit_Array
+        (1 .. (if Length < 0 then Count else Length))
+      do
+         for I in reverse Result'Range loop
+            Result (I) := V mod Base;
+            V := V / Base;
+         end loop;
+      end return;
+   end Todigits;
+
+   function Todigitstring
+     (N : Big_Integer; Base : Big_Integer := 10;
+      Length : Integer := -1) return String
+   is
+      Alphabet : constant String := "0123456789abcdefghijklmnopqrstuvwxyz";
+      D : constant Digit_Array := Todigits (N, Base, Length);
+   begin
+      return Result : String (D'Range) do
+         for I in D'Range loop
+            Result (I) := Alphabet (To_Integer (D (I)) + 1);
+         end loop;
+      end return;
+   end Todigitstring;
+
+   function Fromdigits
+     (Text : String; Base : Big_Integer := 10) return Big_Integer
+   is
+      R : Big_Integer := To_Big_Integer (0);
+      D : Integer;
+   begin
+      for C of Ada.Characters.Handling.To_Lower (Text) loop
+         D := (if C in '0' .. '9' then Character'Pos (C) - 48
+               elsif C in 'a' .. 'z' then Character'Pos (C) - 87
+               else -1);
+         if D < 0 or else To_Big_Integer (D) >= Base then
+            raise Constraint_Error with "invalid digit";
+         end if;
+         R := R * Base + To_Big_Integer (D);
+      end loop;
+      return R;
+   end Fromdigits;
+
+   function Sumdigits
+     (N : Big_Integer; Base : Big_Integer := 10) return Big_Integer
+   is
+      R : Big_Integer := To_Big_Integer (0);
+      V : Big_Integer := abs N;
+   begin
+      while V /= 0 loop
+         R := R + V mod Base;
+         V := V / Base;
+      end loop;
+      return R;
+   end Sumdigits;
+
+   function Reverse_Digits
+     (N : Big_Integer; Base : Big_Integer := 10) return Big_Integer
+   is
+      R : Big_Integer := To_Big_Integer (0);
+      V : Big_Integer := abs N;
+   begin
+      while V /= 0 loop
+         R := R * Base + V mod Base;
+         V := V / Base;
+      end loop;
+      return R;
+   end Reverse_Digits;
+
+   function Is_Palindrome
+     (N : Big_Integer; Base : Big_Integer := 10) return Boolean is
+     (N >= 0 and then Reverse_Digits (N, Base) = N);
+   function Is_Harshad
+     (N : Big_Integer; Base : Big_Integer := 10) return Boolean is
+     (N > 0 and then N mod Sumdigits (N, Base) = 0);
+   function Digital_Root
+     (N : Big_Integer; Base : Big_Integer := 10) return Big_Integer is
+     (if N = 0 then To_Big_Integer (0) else 1 + (abs N - 1) mod (Base - 1));
+
+   function Mult_Digital_Root
+     (N : Big_Integer; Base : Big_Integer := 10) return Big_Integer
+   is
+      R : Big_Integer := abs N;
+      V : Big_Integer;
+   begin
+      while R >= Base loop
+         V := R;
+         R := To_Big_Integer (1);
+         while V /= 0 loop
+            R := R * (V mod Base);
+            V := V / Base;
+         end loop;
+      end loop;
+      return R;
+   end Mult_Digital_Root;
+
+   function Hammingweight (N : Big_Integer) return Natural is
+      V : Big_Integer := abs N;
+      Count : Natural := 0;
+   begin
+      while V /= 0 loop
+         Count := Count + To_Integer (V mod 2);
+         V := V / 2;
+      end loop;
+      return Count;
+   end Hammingweight;
+
+   function Tozeckendorf (N : Big_Integer) return String is
+      A : Big_Integer := To_Big_Integer (0);
+      B : Big_Integer := To_Big_Integer (1);
+      C : Big_Integer := To_Big_Integer (1);
+      V : Big_Integer := N;
+      Count : Natural := 0;
+   begin
+      if N = 0 then
+         return "0";
+      end if;
+      while C <= V loop
+         A := B;
+         B := C;
+         C := A + B;
+         Count := Count + 1;
+      end loop;
+      return Result : String (1 .. Count) do
+         for I in Result'Range loop
+            C := B;
+            B := A;
+            A := C - B;
+            Result (I) := (if C <= V then '1' else '0');
+            if C <= V then
+               V := V - C;
+            end if;
+         end loop;
+      end return;
+   end Tozeckendorf;
+
+   function Fromzeckendorf (Text : String) return Big_Integer is
+      A : Big_Integer := To_Big_Integer (1);
+      B : Big_Integer := To_Big_Integer (2);
+      C : Big_Integer;
+      R : Big_Integer := To_Big_Integer (0);
+   begin
+      if Text = "0" then
+         return R;
+      end if;
+      if Text'Length = 0 or else Text (Text'First) /= '1' then
+         raise Constraint_Error with "invalid Zeckendorf representation";
+      end if;
+      for I in reverse Text'Range loop
+         if Text (I) not in '0' | '1' or else
+           (I > Text'First and then Text (I) = '1'
+            and then Text (I - 1) = '1')
+         then
+            raise Constraint_Error with "invalid Zeckendorf representation";
+         end if;
+         if Text (I) = '1' then
+            R := R + A;
+         end if;
+         C := A + B;
+         A := B;
+         B := C;
+      end loop;
+      return R;
+   end Fromzeckendorf;
+
+   function Toint (Text : String) return Big_Integer is
+      Buffer : String (1 .. Text'Length);
+      K : Natural := 0;
+   begin
+      for C of Text loop
+         if C /= '_' and C /= ' ' then
+            K := K + 1;
+            Buffer (K) := C;
+         end if;
+      end loop;
+      declare
+         S : constant String := Ada.Characters.Handling.To_Lower
+           (Buffer (1 .. K));
+         First : Positive := 1;
+         Negative : Boolean := False;
+         R : Big_Integer := To_Big_Integer (0);
+       
+KIT NOTE, NOT FILE CONTENT: this output was shortened by the kit; the file on disk is whole; show a part with sed -n A,Bp FILE (kit removed 2291 bytes)

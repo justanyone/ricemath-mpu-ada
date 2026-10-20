@@ -6,3 +6,5 @@ Digits is an Ada reserved word; retain the existing Digit_Operations unit.
 Focused test blocked: Alire tries fetching an absent community index offline.
 Adding a standard-library bigint child API to replay previously skipped rows.
 - 2026-10-20T13:32:50Z launcher: no commit for 60 s; 152 s elapsed. Files changed so far: docs/worker-notes/pc1-mpuada-strint-t0830.md.
+Implemented bigint child operations using Ada standard Big_Integers; wiring full fixture replay next.
+Bigint generator hit a quoting error before creating sources; correcting it before validation.
