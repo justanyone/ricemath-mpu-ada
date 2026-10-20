@@ -2,9 +2,11 @@ with Math_Prime_Util.Int;
 with Math_Prime_Util.Sieve;
 
 package body Math_Prime_Util.Count is
+   use type U128;
+
    Max_Prime : constant U64 := 18_446_744_073_709_551_557;
 
-   function Sum_Primes (High : U64) return U128 is
+   function Prefix_Sum (High : U64) return U128 is
       N : constant U64 := U64'Min (High, Max_Prime);
    begin
       if N < 2 then
@@ -45,9 +47,9 @@ package body Math_Prime_Util.Count is
          end loop;
          return S (R2);
       end;
-   end Sum_Primes;
+   end Prefix_Sum;
 
-   function Sum_Primes (Low, High : U64) return U128
+   function Sum_Primes (Low, High : U64) return Int.Optional_U64
      with SPARK_Mode => Off
    is
       --  The existing sieve uses Ada containers outside the SPARK subset.
@@ -55,7 +57,9 @@ package body Math_Prime_Util.Count is
       Sum : U128 := 0;
    begin
       if Low > Last or Last < 2 then
-         return 0;
+         return (Defined => True, Value => 0);
+      elsif Low <= 2 and then Last >= 29_505_444_491 then
+         return (Defined => False);
       elsif Low > 2 and then Last - Low < 50_000_000 then
          declare
             Primes : constant Sieve.Prime_Vectors.Vector :=
@@ -65,11 +69,19 @@ package body Math_Prime_Util.Count is
                Sum := Sum + U128 (Primes.Element (I));
             end loop;
          end;
-         return Sum;
       elsif Low <= 2 then
-         return Sum_Primes (Last);
+         Sum := Prefix_Sum (Last);
       else
-         return Sum_Primes (Last) - Sum_Primes (Low - 1);
+         Sum := Prefix_Sum (Last) - Prefix_Sum (Low - 1);
       end if;
+      if Sum > U128 (U64'Last) then
+         return (Defined => False);
+      end if;
+      return (Defined => True, Value => U64 (Sum));
+   end Sum_Primes;
+
+   function Sum_Primes (High : U64) return Int.Optional_U64 is
+   begin
+      return Sum_Primes (0, High);
    end Sum_Primes;
 end Math_Prime_Util.Count;

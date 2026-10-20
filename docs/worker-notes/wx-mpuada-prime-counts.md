@@ -6,3 +6,5 @@ The Count package is absent. Sieve and Real dependencies exist. Inspecting the p
 Chosen slice: Sum_Primes with U128 results and the reference simplified Legendre prefix method. Full LMO and bounds remain outside this session.
 Added the prefix algorithm, range dispatch, exact sum fixture replay, and seeded sum laws. Running the focused tests next.
 Focused tests could not build: Alire tried to fetch its missing community index while offline. Checking whether the installed toolchain can be used without an index.
+Native sum results now return Optional_U64, including the fixture overflow threshold. The U128 prefix arithmetic remains exact.
+Offline retry disabled automatic index creation. Alire then reported missing gnat, gprbuild, and AUnit. Gate also cannot build in this sandbox configuration; no tests executed.

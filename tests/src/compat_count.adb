@@ -3,13 +3,14 @@ with AUnit.Test_Cases;
 with Ada.Strings.Unbounded;
 with Fixture_Support;
 with Math_Prime_Util.Count;
+with Math_Prime_Util.Int;
 
 package body Compat_Count is
    use AUnit.Test_Cases;
    use Fixture_Support;
    use Ada.Strings.Unbounded;
    use Math_Prime_Util;
-   use type U128;
+   use type U64;
    type Count_Case is new Test_Case with null record;
    overriding function Name (T : Count_Case) return AUnit.Message_String;
    overriding procedure Register_Tests (T : in out Count_Case);
@@ -23,7 +24,8 @@ package body Compat_Count is
       Cases : constant Case_Vectors.Vector :=
         For_Function (Load ("count"), "sum_primes");
       Low, High : U64;
-      Actual, Expected : U128;
+      Actual : Int.Optional_U64;
+      Expected : U64;
    begin
       AUnit.Assertions.Assert (not Cases.Is_Empty, "sum fixtures present");
       for C of Cases loop
@@ -37,10 +39,14 @@ package body Compat_Count is
             Actual := Count.Sum_Primes (Low, High);
          end if;
          AUnit.Assertions.Assert
-           (Parse_U128 (To_String (C.Result), Expected), "sum result");
+           (Actual.Defined = not C.Undef, "sum overflow status");
+         if not C.Undef then
+            AUnit.Assertions.Assert
+           (Parse_U64 (To_String (C.Result), Expected), "sum result");
          AUnit.Assertions.Assert
-           (Actual = Expected, "sum_primes row" &
+           (Actual.Value = Expected, "sum_primes row" &
             Positive'Image (C.Line_Number));
+         end if;
       end loop;
    end Check_Sums;
 
