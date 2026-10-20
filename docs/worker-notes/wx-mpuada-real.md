@@ -5,3 +5,4 @@ Leave status generation and commits to the launcher.
 Read the C real algorithms and fixture domains. Start the Ada port and suite wiring.
 - 2026-10-20T13:47:04Z launcher: no commit for 60 s; 121 s elapsed. Files changed so far: docs/worker-notes/wx-mpuada-real.md.
 Wrote the real package with the original tables, sums, inverse iteration, and Pi spigot. Next compile fixture tests.
+Focused tests cannot build: Alire tries to clone its community index and the sandbox has no network. The first source generator failed; replacing it with direct Ada source.
