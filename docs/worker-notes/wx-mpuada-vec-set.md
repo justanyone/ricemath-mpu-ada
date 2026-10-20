@@ -15,3 +15,6 @@ Focused test stopped before compilation: Alire has no index in this sandbox.
 The cached compiler and AUnit exist; investigate offline resolution only.
 Offline index resolves cached AUnit; compiler external metadata needs setup.
 No manifest or tooling changes were made. Continue validation within obj.
+Offline Alire cannot select gnat_external despite working host binaries.
+Stop retrying that resolver; run a compiler check and the required gate.
+About five minutes remain: prioritize a correct partial port and clear limits.
