@@ -1,5 +1,4 @@
 with Interfaces;
-with Ada.Containers.Vectors;
 
 package body Math_Prime_Util.Sieve is
    use type Interfaces.Unsigned_8;
@@ -344,15 +343,19 @@ package body Math_Prime_Util.Sieve is
 
    function Sum_Primes (Low, High : U64) return Int.Optional_U64 is
       Sum : U64 := 0;
+      First : U64 := Low;
+      Last : U64;
+      Values : Prime_Vectors.Vector;
    begin
-      declare
-         Values : constant Prime_Vectors.Vector := Primes (Low, High);
-      begin
+      if Low > High then
+         return (Defined => True, Value => 0);
+      end if;
+      loop
+         Last := First + U64'Min (High - First, Segment_Bytes * 30 - 1);
+         Values := Primes (First, Last);
          for I in Values.First_Index .. Values.Last_Index loop
             declare
-               Ref : constant Prime_Vectors.Constant_Reference_Type :=
-                 Values.Constant_Reference (I);
-               P : constant U64 := Ref.Element.all;
+               P : constant U64 := Values.Element (I);
             begin
                if P > U64'Last - Sum then
                   return (Defined => False);
@@ -360,7 +363,9 @@ package body Math_Prime_Util.Sieve is
                Sum := Sum + P;
             end;
          end loop;
-      end;
+         exit when Last = High;
+         First := Last + 1;
+      end loop;
       return (Defined => True, Value => Sum);
    end Sum_Primes;
 end Math_Prime_Util.Sieve;

@@ -34,13 +34,19 @@ package body Prop_Sieve is
          Left.Append (Right);
          AUnit.Assertions.Assert (Left = Whole, "partition seed 20261020");
          Sum := 0;
-         for P of Whole loop
+         --  Element returns a copy and avoids GNAT 16 reference-finalizer
+         --  links across library units compiled with different profiles.
+         for Index in Whole.First_Index .. Whole.Last_Index loop
+            declare
+               P : constant U64 := Whole.Element (Index);
+            begin
             for D in U64 range 2 .. Int.Sqrtint (P) loop
                AUnit.Assertions.Assert (P mod D /= 0, "trial division");
             end loop;
             AUnit.Assertions.Assert
               (Prev_Prime (Next_Prime (P)) = P, "navigation round trip");
             Sum := Sum + P;
+            end;
          end loop;
          AUnit.Assertions.Assert
            (Sum_Primes (Low, High).Value = Sum, "sum seed 20261020");

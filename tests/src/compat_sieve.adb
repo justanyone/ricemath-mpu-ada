@@ -105,12 +105,18 @@ package body Compat_Sieve is
                   end if;
                end;
             end if;
-            for P of Values loop
+            --  Element returns a copy and avoids GNAT 16 reference-finalizer
+         --  links across library units compiled with different profiles.
+         for Index in Values.First_Index .. Values.Last_Index loop
+            declare
+               P : constant U64 := Values.Element (Index);
+            begin
                if Length (Actual) > 0 then
                   Append (Actual, " ");
                end if;
                Append (Actual, Image (P));
-            end loop;
+               end;
+         end loop;
             if not C.Error then
                AUnit.Assertions.Assert
                  (Actual = C.Result, Func & Positive'Image (C.Line_Number)
