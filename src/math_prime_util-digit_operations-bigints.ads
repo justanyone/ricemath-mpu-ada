@@ -1,6 +1,8 @@
 with Ada.Numerics.Big_Numbers.Big_Integers;
 
 --  Unbounded tier uses the Ada 2022 runtime, with no crate dependency.
+--  Big_Integers supplies the b9 arithmetic backend used by strops.c;
+--  this child keeps its signed wrappers and quotient conventions.
 --  This checkout carries strint equivalents in strops.c, not strint.c.
 package Math_Prime_Util.Digit_Operations.Bigints with SPARK_Mode => Off is
    use Ada.Numerics.Big_Numbers.Big_Integers;
@@ -12,17 +14,17 @@ package Math_Prime_Util.Digit_Operations.Bigints with SPARK_Mode => Off is
    --  strops.c: strint_abs; exact signed arithmetic.
    function Absint
      (A : Big_Integer) return Big_Integer
-     with Pre => True, Post => True;
+     with Pre => True, Post => Absint'Result = abs A;
 
    --  strops.c: strint_neg; exact signed arithmetic.
    function Negint
      (A : Big_Integer) return Big_Integer
-     with Pre => True, Post => True;
+     with Pre => True, Post => Negint'Result = -A;
 
    --  strops.c: strint_cmp; exact signed arithmetic.
    function Signint
      (A : Big_Integer) return Integer
-     with Pre => True, Post => True;
+     with Pre => True, Post => Signint'Result in -1 .. 1;
 
    --  strops.c: strint_add_s; exact signed arithmetic.
    function Add1int
@@ -47,7 +49,7 @@ package Math_Prime_Util.Digit_Operations.Bigints with SPARK_Mode => Off is
    --  strops.c: strint_cmp; exact signed arithmetic.
    function Cmpint
      (A, B : Big_Integer) return Integer
-     with Pre => True, Post => True;
+     with Pre => True, Post => Cmpint'Result in -1 .. 1;
 
    --  strops.c: strint_add_s; exact signed arithmetic.
    function Addint
@@ -122,12 +124,12 @@ package Math_Prime_Util.Digit_Operations.Bigints with SPARK_Mode => Off is
    --  XS.xs: is_odd; test parity.
    function Is_Odd
      (A : Big_Integer) return Boolean
-     with Pre => True, Post => True;
+     with Pre => True, Post => Is_Odd'Result = (A rem 2 /= 0);
 
    --  XS.xs: is_even; test parity.
    function Is_Even
      (A : Big_Integer) return Boolean
-     with Pre => True, Post => True;
+     with Pre => True, Post => Is_Even'Result = (A rem 2 = 0);
 
    --  XS.xs: is_divisible; only zero is divisible by zero.
    function Is_Divisible
@@ -149,12 +151,14 @@ package Math_Prime_Util.Digit_Operations.Bigints with SPARK_Mode => Off is
    function Todigitstring
      (N : Big_Integer; Base : Big_Integer := 10;
       Length : Integer := -1) return String
-     with Pre => Base >= 2 and Base <= 36 and Length in -1 .. 128, Post => True;
+     with Pre => Base >= 2 and Base <= 36 and Length in -1 .. 128,
+          Post => True;
 
-   --  strops.c: strint_fromdigitstring; invalid digits raise Constraint_Error.
+   --  strops.c: strint_fromdigitstring, b9_from_little_digits.
+   --  Invalid digits raise Constraint_Error; bases above 36 are permitted.
    function Fromdigits
      (Text : String; Base : Big_Integer := 10) return Big_Integer
-     with Pre => Base >= 2 and Base <= 36, Post => True;
+     with Pre => Base >= 2, Post => True;
 
    --  XS.xs: sumdigits; base digit operation.
    function Sumdigits

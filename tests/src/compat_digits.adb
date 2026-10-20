@@ -33,7 +33,8 @@ package body Compat_Digits is
       package BI renames Ada.Numerics.Big_Numbers.Big_Integers;
       package B renames Math_Prime_Util.Digit_Operations.Bigints;
       use type BI.Big_Integer;
-      A : array (1 .. 3) of BI.Big_Integer := [others => BI.To_Big_Integer (0)];
+      A : array (1 .. 3) of BI.Big_Integer :=
+        [others => BI.To_Big_Integer (0)];
       Base : BI.Big_Integer := BI.To_Big_Integer (10);
       Len : Integer := -1;
       Actual : Unbounded_String;
@@ -70,9 +71,11 @@ package body Compat_Digits is
          elsif Func = "negint" then
             Actual := To_Unbounded_String (Img (B.Negint (A (1))));
          elsif Func = "signint" then
-            Actual := To_Unbounded_String (Img (BI.To_Big_Integer (B.Signint (A (1)))));
+            Actual := To_Unbounded_String
+              (Img (BI.To_Big_Integer (B.Signint (A (1)))));
          elsif Func = "cmpint" then
-            Actual := To_Unbounded_String (Img (BI.To_Big_Integer (B.Cmpint (A (1), A (2)))));
+            Actual := To_Unbounded_String
+              (Img (BI.To_Big_Integer (B.Cmpint (A (1), A (2)))));
          elsif Func = "addint" then
             Actual := To_Unbounded_String (Img (B.Addint (A (1), A (2))));
          elsif Func = "subint" then
@@ -84,9 +87,11 @@ package body Compat_Digits is
          elsif Func = "mulint" then
             Actual := To_Unbounded_String (Img (B.Mulint (A (1), A (2))));
          elsif Func = "muladdint" then
-            Actual := To_Unbounded_String (Img (B.Muladdint (A (1), A (2), A (3))));
+            Actual := To_Unbounded_String
+              (Img (B.Muladdint (A (1), A (2), A (3))));
          elsif Func = "mulsubint" then
-            Actual := To_Unbounded_String (Img (B.Mulsubint (A (1), A (2), A (3))));
+            Actual := To_Unbounded_String
+              (Img (B.Mulsubint (A (1), A (2), A (3))));
          elsif Func = "divint" then
             Actual := To_Unbounded_String (Img (B.Divint (A (1), A (2))));
          elsif Func = "modint" then

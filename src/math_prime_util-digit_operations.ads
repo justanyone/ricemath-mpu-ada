@@ -96,144 +96,144 @@ package Math_Prime_Util.Digit_Operations with SPARK_Mode => On is
      with Pre => True,
           Post => Hammingweight'Result <= 128;
 
-   --  strint.c: absint (reference absent in this checkout).
+   --  strops.c: strint_abs.
    --  Exact signed arithmetic; undefined on signed 128-bit overflow.
    function Absint (A : I128) return Optional_I128
      with Pre => True, Post => True;
 
-   --  strint.c: negint (reference absent in this checkout).
+   --  strops.c: strint_neg.
    --  Exact signed arithmetic; undefined on signed 128-bit overflow.
    function Negint (A : I128) return Optional_I128
      with Pre => True, Post => True;
 
-   --  strint.c: add1int (reference absent in this checkout).
+   --  strops.c: strint_add_s.
    --  Exact signed arithmetic; undefined on signed 128-bit overflow.
    function Add1int (A : I128) return Optional_I128
      with Pre => True, Post => True;
 
-   --  strint.c: sub1int (reference absent in this checkout).
+   --  strops.c: strint_add_s.
    --  Exact signed arithmetic; undefined on signed 128-bit overflow.
    function Sub1int (A : I128) return Optional_I128
      with Pre => True, Post => True;
 
-   --  strint.c: addint (reference absent in this checkout).
+   --  strops.c: strint_add_s.
    --  Exact signed arithmetic; undefined on signed 128-bit overflow.
    function Addint (A, B : I128) return Optional_I128
      with Pre => True, Post => True;
 
-   --  strint.c: subint (reference absent in this checkout).
+   --  strops.c: strint_add_s.
    --  Exact signed arithmetic; undefined on signed 128-bit overflow.
    function Subint (A, B : I128) return Optional_I128
      with Pre => True, Post => True;
 
-   --  strint.c: mulint (reference absent in this checkout).
+   --  strops.c: strint_mul.
    --  Exact signed arithmetic; undefined on signed 128-bit overflow.
    function Mulint (A, B : I128) return Optional_I128
      with Pre => True, Post => True;
 
-   --  strint.c: muladdint (reference absent in this checkout).
+   --  strops.c: strint_muladd_s.
    --  Exact signed arithmetic; undefined on signed 128-bit overflow.
    function Muladdint (A, B, C : I128) return Optional_I128
      with Pre => True, Post => True;
 
-   --  strint.c: mulsubint (reference absent in this checkout).
+   --  strops.c: strint_muladd_s.
    --  Exact signed arithmetic; undefined on signed 128-bit overflow.
    function Mulsubint (A, B, C : I128) return Optional_I128
      with Pre => True, Post => True;
 
-   --  strint.c: signint (reference absent). Return the sign.
+   --  strops.c: strint_cmp. Return the sign.
    function Signint
      (A : I128) return Integer
      with Pre => True, Post => Signint'Result in -1 .. 1;
 
-   --  strint.c: cmpint (reference absent). Compare two integers.
+   --  strops.c: strint_cmp. Compare two integers.
    function Cmpint
      (A, B : I128) return Integer
      with Pre => True, Post => Cmpint'Result in -1 .. 1;
 
-   --  strint.c: divrem (reference absent). Quotient and remainder; undefined
+   --  strops.c: strint_fdivrem. Quotient and remainder; undefined
    --  for zero divisor or overflow.
    function Divrem
      (A, B : I128) return Division_Result
      with Pre => True, Post => (if B = 0 then not Divrem'Result.Defined);
 
-   --  strint.c: tdivrem (reference absent). Quotient and remainder; undefined
+   --  strops.c: strint_fdivrem. Quotient and remainder; undefined
    --  for zero divisor or overflow.
    function Tdivrem
      (A, B : I128) return Division_Result
      with Pre => True, Post => (if B = 0 then not Tdivrem'Result.Defined);
 
-   --  strint.c: fdivrem (reference absent). Quotient and remainder; undefined
+   --  strops.c: strint_fdivrem. Quotient and remainder; undefined
    --  for zero divisor or overflow.
    function Fdivrem
      (A, B : I128) return Division_Result
      with Pre => True, Post => (if B = 0 then not Fdivrem'Result.Defined);
 
-   --  strint.c: cdivrem (reference absent). Quotient and remainder; undefined
+   --  strops.c: strint_fdivrem. Quotient and remainder; undefined
    --  for zero divisor or overflow.
    function Cdivrem
      (A, B : I128) return Division_Result
      with Pre => True, Post => (if B = 0 then not Cdivrem'Result.Defined);
 
-   --  strint.c: divint (reference absent). Checked division; undefined for
+   --  strops.c: strint_divint. Checked division; undefined for
    --  zero divisor or overflow.
    function Divint
      (A, B : I128) return Optional_I128
      with Pre => True, Post => (if B = 0 then not Divint'Result.Defined);
 
-   --  strint.c: modint (reference absent). Checked division; undefined for
+   --  strops.c: strint_modint. Checked division; undefined for
    --  zero divisor or overflow.
    function Modint
      (A, B : I128) return Optional_I128
      with Pre => True, Post => (if B = 0 then not Modint'Result.Defined);
 
-   --  strint.c: cdivint (reference absent). Checked division; undefined for
+   --  strops.c: strint_cdivint. Checked division; undefined for
    --  zero divisor or overflow.
    function Cdivint
      (A, B : I128) return Optional_I128
      with Pre => True, Post => (if B = 0 then not Cdivint'Result.Defined);
 
-   --  strint.c: lshiftint (reference absent). Shift magnitude; undefined on
+   --  strops.c: strint_lshiftint. Shift magnitude; undefined on
    --  overflow.
    function Lshiftint
      (A : I128; Bits : Integer := 1) return Optional_I128
      with Pre => True, Post => True;
 
-   --  strint.c: rshiftint (reference absent). Shift magnitude; undefined on
+   --  strops.c: strint_rshiftint. Shift magnitude; undefined on
    --  overflow.
    function Rshiftint
      (A : I128; Bits : Integer := 1) return Optional_I128
      with Pre => True, Post => True;
 
-   --  strint.c: rashiftint (reference absent). Shift magnitude; undefined on
+   --  strops.c: strint_rashiftint. Shift magnitude; undefined on
    --  overflow.
    function Rashiftint
      (A : I128; Bits : Integer := 1) return Optional_I128
      with Pre => True, Post => True;
 
-   --  strint.c: toint (reference absent). Parse numeric text; truncate
+   --  XS.xs: toint. Parse numeric text; truncate
    --  fractions; undefined on overflow.
    function Toint
      (Text : String) return Optional_I128
      with Pre => True, Post => True;
 
-   --  strint.c: is_odd (reference absent). Test odd parity.
+   --  XS.xs: is_odd. Test odd parity.
    function Is_Odd
      (A : I128) return Boolean
      with Pre => True, Post => Is_Odd'Result = (A rem 2 /= 0);
 
-   --  strint.c: is_even (reference absent). Test even parity.
+   --  XS.xs: is_even. Test even parity.
    function Is_Even
      (A : I128) return Boolean
      with Pre => True, Post => Is_Even'Result = (A rem 2 = 0);
 
-   --  strint.c: is_divisible (reference absent). Test exact division; only
+   --  XS.xs: is_divisible. Test exact division; only
    --  zero is divisible by zero.
    function Is_Divisible
      (A, B : I128) return Boolean
      with Pre => True, Post => True;
 
-   --  strint.c: is_congruent (reference absent). Test equal residues; modulus
+   --  XS.xs: is_congruent. Test equal residues; modulus
    --  zero tests equality.
    function Is_Congruent
      (A, B, Modulus : I128) return Boolean

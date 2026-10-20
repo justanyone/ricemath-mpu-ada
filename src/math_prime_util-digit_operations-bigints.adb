@@ -167,19 +167,49 @@ package body Math_Prime_Util.Digit_Operations.Bigints is
    function Fromdigits
      (Text : String; Base : Big_Integer := 10) return Big_Integer
    is
-      R : Big_Integer := To_Big_Integer (0);
+      A : Digit_Array (1 .. Text'Length);
+      Power : Big_Integer := Base;
+      Count : Natural := Text'Length;
       D : Integer;
+      I : Positive;
    begin
-      for C of Ada.Characters.Handling.To_Lower (Text) loop
-         D := (if C in '0' .. '9' then Character'Pos (C) - 48
-               elsif C in 'a' .. 'z' then Character'Pos (C) - 87
-               else -1);
+      if Base < 2 then
+         raise Constraint_Error with "invalid base";
+      end if;
+      if Count = 0 then
+         return To_Big_Integer (0);
+      end if;
+      for J in 1 .. Count loop
+         declare
+            C : constant Character := Ada.Characters.Handling.To_Lower
+              (Text (Text'Last - J + 1));
+         begin
+            D := (if C in '0' .. '9' then Character'Pos (C) - 48
+                  elsif C in 'a' .. 'z' then Character'Pos (C) - 87
+                  else -1);
+         end;
          if D < 0 or else To_Big_Integer (D) >= Base then
             raise Constraint_Error with "invalid digit";
          end if;
-         R := R * Base + To_Big_Integer (D);
+         A (J) := To_Big_Integer (D);
       end loop;
-      return R;
+      --  strops.c: b9_from_little_digits combines adjacent blocks and
+      --  squares the base each round; an odd final block is carried over.
+      while Count > 1 loop
+         I := 1;
+         while I < Count loop
+            A ((I + 1) / 2) := A (I) + A (I + 1) * Power;
+            I := I + 2;
+         end loop;
+         if Count mod 2 /= 0 then
+            A ((Count + 1) / 2) := A (Count);
+         end if;
+         Count := (Count + 1) / 2;
+         if Count > 1 then
+            Power := Power * Power;
+         end if;
+      end loop;
+      return A (1);
    end Fromdigits;
 
    function Sumdigits
