@@ -575,8 +575,155 @@ package body Compat_Vec is
       end loop;
    end Test_Vecextract;
 
+   --  Closure functions have no rows in vec.tsv. These individual cases
+   --  cover the XS scalar/list contexts and observable evaluation order.
+   function Add (L, R : I64) return I64 is (L + R);
+   function Subtract (L, R : I64) return I64 is (L - R);
+   function Positive_Value (V : I64) return Boolean is (V > 0);
+   function Total (A : Vector) return I64 is (I64 (Vecsum (A)));
+   function Pair (L, R : I64) return Vector is ([L, R]);
+   function Copy (A : Vector) return Vector is (A);
+   function Drop_Pair (L, R : I64) return Vector is ([]);
+   function Drop_Window (A : Vector) return Vector is ([]);
+
+   procedure Test_Vecreduce (T : in out Test_Case'Class);
+
+   procedure Test_Vecreduce (T : in out Test_Case'Class) is
+   begin
+      AUnit.Assertions.Assert
+        (Vecreduce (Vector'[10, 3, 2], Subtract'Access) =
+           Optional_Integer'(True, 5)
+         and then not Vecreduce (Vector'[], Add'Access).Present, "Vecreduce closure semantics");
+   end Test_Vecreduce;
+
+   procedure Test_Vecany (T : in out Test_Case'Class);
+
+   procedure Test_Vecany (T : in out Test_Case'Class) is
+   begin
+      AUnit.Assertions.Assert
+        (Vecany (Vector'[-1, 2], Positive_Value'Access)
+         and then not Vecany (Vector'[], Positive_Value'Access), "Vecany closure semantics");
+   end Test_Vecany;
+
+   procedure Test_Vecall (T : in out Test_Case'Class);
+
+   procedure Test_Vecall (T : in out Test_Case'Class) is
+   begin
+      AUnit.Assertions.Assert
+        (Vecall (Vector'[1, 2], Positive_Value'Access)
+         and then not Vecall (Vector'[1, -2], Positive_Value'Access)
+         and then Vecall (Vector'[], Positive_Value'Access), "Vecall closure semantics");
+   end Test_Vecall;
+
+   procedure Test_Vecnone (T : in out Test_Case'Class);
+
+   procedure Test_Vecnone (T : in out Test_Case'Class) is
+   begin
+      AUnit.Assertions.Assert
+        (Vecnone (Vector'[-1, -2], Positive_Value'Access)
+         and then not Vecnone (Vector'[-1, 2], Positive_Value'Access)
+         and then Vecnone (Vector'[], Positive_Value'Access), "Vecnone closure semantics");
+   end Test_Vecnone;
+
+   procedure Test_Vecnotall (T : in out Test_Case'Class);
+
+   procedure Test_Vecnotall (T : in out Test_Case'Class) is
+   begin
+      AUnit.Assertions.Assert
+        (Vecnotall (Vector'[1, -2], Positive_Value'Access)
+         and then not Vecnotall (Vector'[], Positive_Value'Access), "Vecnotall closure semantics");
+   end Test_Vecnotall;
+
+   procedure Test_Vecfirst (T : in out Test_Case'Class);
+
+   procedure Test_Vecfirst (T : in out Test_Case'Class) is
+   begin
+      AUnit.Assertions.Assert
+        (Vecfirst (Vector'[-1, 2, 3], Positive_Value'Access) =
+           Optional_Integer'(True, 2)
+         and then not Vecfirst (Vector'[-1], Positive_Value'Access).Present, "Vecfirst closure semantics");
+   end Test_Vecfirst;
+
+   procedure Test_Vecfirstidx (T : in out Test_Case'Class);
+
+   procedure Test_Vecfirstidx (T : in out Test_Case'Class) is
+   begin
+      AUnit.Assertions.Assert
+        (Vecfirstidx (Vector'[-1, 2, 3], Positive_Value'Access) = 1
+         and then Vecfirstidx (Vector'[], Positive_Value'Access) = -1, "Vecfirstidx closure semantics");
+   end Test_Vecfirstidx;
+
+   procedure Test_Vecslide (T : in out Test_Case'Class);
+
+   procedure Test_Vecslide (T : in out Test_Case'Class) is
+   begin
+      AUnit.Assertions.Assert
+        (Vecslide (Vector'[10, 3, 2], Subtract'Access) = Vector'[7, 1]
+         and then Vecslide (Vector'[1], Add'Access)'Length = 0, "Vecslide closure semantics");
+   end Test_Vecslide;
+
+   procedure Test_Vecpairwise (T : in out Test_Case'Class);
+
+   procedure Test_Vecpairwise (T : in out Test_Case'Class) is
+   begin
+      AUnit.Assertions.Assert
+        (Vecpairwise (Vector'[1, 2], Vector'[3], Pair'Access) =
+           Vector'[1, 3]
+         and then Vecpairwise
+           (Vector'[1, 2], Vector'[3, 4], Add'Access) = Vector'[4, 6]
+         and then Vecpairwise
+           (Vector'[1], Vector'[2], Drop_Pair'Access)'Length = 0, "Vecpairwise closure semantics");
+   end Test_Vecpairwise;
+
+   procedure Test_Vecwindow (T : in out Test_Case'Class);
+
+   procedure Test_Vecwindow (T : in out Test_Case'Class) is
+   begin
+      AUnit.Assertions.Assert
+        (Vecwindow (Vector'[1, 2, 3, 4], 1, 2, Copy'Access) =
+           Vector'[1, 2, 2, 3, 3, 4]
+         and then Vecwindow
+           (Vector'[1, 2, 3, 4], 2, 2, Total'Access) = Vector'[3, 7]
+         and then Vecwindow
+           (Vector'[1], 1, 2, Copy'Access)'Length = 0
+         and then Vecwindow
+           (Vector'[1, 2], 1, 2, Drop_Window'Access)'Length = 0, "Vecwindow closure semantics");
+   end Test_Vecwindow;
+
+   procedure Test_Setbinop (T : in out Test_Case'Class);
+
+   procedure Test_Setbinop (T : in out Test_Case'Class) is
+   begin
+      AUnit.Assertions.Assert
+        (Setbinop (Vector'[1, 2], Vector'[2, 3], Add'Access) =
+           Vector'[3, 4, 5]
+         and then Setbinop (Vector'[], Vector'[2], Add'Access)'Length = 0, "Setbinop closure semantics");
+   end Test_Setbinop;
+
    overriding procedure Register_Tests (T : in out Vec_Case) is
    begin
+      Registration.Register_Routine
+        (T, Test_Vecreduce'Access, "vecreduce");
+      Registration.Register_Routine
+        (T, Test_Vecany'Access, "vecany");
+      Registration.Register_Routine
+        (T, Test_Vecall'Access, "vecall");
+      Registration.Register_Routine
+        (T, Test_Vecnone'Access, "vecnone");
+      Registration.Register_Routine
+        (T, Test_Vecnotall'Access, "vecnotall");
+      Registration.Register_Routine
+        (T, Test_Vecfirst'Access, "vecfirst");
+      Registration.Register_Routine
+        (T, Test_Vecfirstidx'Access, "vecfirstidx");
+      Registration.Register_Routine
+        (T, Test_Vecslide'Access, "vecslide");
+      Registration.Register_Routine
+        (T, Test_Vecpairwise'Access, "vecpairwise");
+      Registration.Register_Routine
+        (T, Test_Vecwindow'Access, "vecwindow");
+      Registration.Register_Routine
+        (T, Test_Setbinop'Access, "setbinop");
       Registration.Register_Routine
         (T, Test_Vecsort'Access, "vecsort");
       Registration.Register_Routine
