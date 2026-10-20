@@ -15,3 +15,4 @@ Local dependency resolution works; compiler selection still needs cached toolcha
 Cached toolchains selected through the local index. Waiting for compiler diagnostics.
 About five minutes remain. Local build configured; correcting the root port generator, then rerunning fixture replay and gate.
 First full replay: 22 tests pass; four failures expose K=0 API semantics, error-row handling, and base-two logarithms. Fixing these before the gate.
+Fixture failures reproduced and corrected: zero exponents, error rows, and base greater than the argument.

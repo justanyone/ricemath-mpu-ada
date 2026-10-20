@@ -289,17 +289,71 @@ package body Math_Prime_Util.Int with SPARK_Mode => On is
       return Powint (R, K).Defined and then Powint (R, K).Value = N;
    end Is_Power;
 
+   Max_Power : constant array (U64 range 0 .. 127) of U64 :=
+     [31, 7, 0, 11, 2, 7, 0, 17, 3, 17, 0, 13, 0, 11, 0, 11, 
+      2, 11, 0, 29, 0, 13, 0, 11, 3, 11, 0, 7, 0, 7, 0, 7, 
+      5, 7, 0, 13, 2, 7, 0, 11, 3, 7, 0, 31, 0, 7, 0, 11, 
+      0, 11, 0, 11, 0, 11, 0, 13, 3, 13, 0, 13, 0, 19, 0, 7, 
+      3, 7, 0, 17, 2, 17, 0, 11, 3, 11, 0, 23, 0, 17, 0, 13, 
+      0, 13, 0, 13, 0, 7, 0, 19, 3, 19, 0, 19, 0, 11, 0, 11, 
+      5, 11, 0, 7, 2, 13, 0, 13, 3, 13, 0, 7, 0, 23, 0, 7, 
+      0, 7, 0, 37, 0, 7, 0, 11, 3, 11, 0, 11, 0, 13, 0, 7];
+
    function Is_Power_Exp (N : U64) return U64 is
+      M : U64 := N;
+      K : U64 := 1;
+      R : U64;
+      type Prime_Array is array (Positive range <>) of U64;
+      Small : constant Prime_Array := [2, 3, 5];
+      Large : constant Prime_Array := [13, 17];
    begin
+      --  The public MPU wrapper maps the internal 0/1 special case to zero.
       if N <= 3 or N = U64'Last then
          return 0;
       end if;
-      for K in reverse U64 range 2 .. 63 loop
-         if Is_Power (N, K) then
-            return K;
-         end if;
+      if (N and (N - 1)) = 0 then
+         return Logint (N, 2);
+      end if;
+      for P of Small loop
+         while Is_Power (M, P) loop
+            M := Rootint (M, P);
+            K := K * P;
+         end loop;
       end loop;
-      return 0;
+      if Is_Power (M, 7) then
+         return K * 7;
+      end if;
+      if (((M mod 121) * 16#8DD6_295A#) and 16#0208_8081#) = 0
+        and then Is_Power (M, 11)
+      then
+         return K * 11;
+      end if;
+      if Max_Power (M mod 128) >= 13 then
+         for P of Large loop
+            if Is_Power (M, P) then
+               return K * P;
+            end if;
+         end loop;
+         R := 0;
+         case M is
+            when 1_162_261_467 => R := 19;
+            when 19_073_486_328_125 => R := 19;
+            when 609_359_740_010_496 => R := 19;
+            when 11_398_895_185_373_143 => R := 19;
+            when 10_000_000_000_000_000_000 => R := 19;
+            when 94_143_178_827 => R := 23;
+            when 11_920_928_955_078_125 => R := 23;
+            when 789_730_223_053_602_816 => R := 23;
+            when 68_630_377_364_883 => R := 29;
+            when 617_673_396_283_947 => R := 31;
+            when 450_283_905_890_997_363 => R := 37;
+            when others => null;
+         end case;
+         if R /= 0 then
+            return K * R;
+         end if;
+      end if;
+      return (if K <= 1 then 0 else K);
    end Is_Power_Exp;
 
    function Addmod (A, B, N : U64) return Optional_U64 is
