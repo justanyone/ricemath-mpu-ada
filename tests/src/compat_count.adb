@@ -58,20 +58,29 @@ package body Compat_Count is
    procedure Check_Prime_Count (T : in out Test_Case'Class) is
       Cases : constant Case_Vectors.Vector :=
         For_Function (Load ("count"), "prime_count");
-      N : U64;
+      Low, High : U64 := 0;
       Expected : U64;
    begin
       AUnit.Assertions.Assert (not Cases.Is_Empty, "prime_count present");
       for C of Cases loop
          AUnit.Assertions.Assert
-           (Parse_U64 (To_String (C.Args (1)), N), "prime_count argument");
-         if not C.Undef and then N <= Pc.Prime_Count_Limit then
+           (Parse_U64 (To_String (C.Args (1)), Low), "prime_count argument");
+         if C.Args.Last_Index = 1 then
+            High := Low;
+            Low := 0;
+         else
+            AUnit.Assertions.Assert
+              (Parse_U64 (To_String (C.Args (2)), High), "prime_count high");
+         end if;
+         if not C.Undef and then High <= Pc.Prime_Count_Limit then
             AUnit.Assertions.Assert
               (Parse_U64 (To_String (C.Result), Expected),
                "prime_count result");
+            --  A range row counts primes in Low .. High.
             AUnit.Assertions.Assert
-              (Pc.Prime_Count (N) = Expected, "prime_count row" &
-               Positive'Image (C.Line_Number));
+              (Pc.Prime_Count (High) -
+               (if Low <= 1 then 0 else Pc.Prime_Count (Low - 1)) = Expected,
+               "prime_count row" & Positive'Image (C.Line_Number));
          end if;
       end loop;
    end Check_Prime_Count;
