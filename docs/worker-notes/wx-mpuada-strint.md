@@ -11,3 +11,4 @@ Offline workaround found cached AUnit and compiler files, but Alire still cannot
 About five minutes remain. Prioritize API corrections, fixture parsing, and a recorded final gate attempt. Offline toolchain selection remains blocked.
 Compilation reached Ada: Digits is reserved, so the legal child package is Digit_Operations. Local cached toolchain settings now enable offline builds.
 Resolved Ada type visibility and naming errors. Focused compatibility tests are now compiling; temporary offline pins remain outside the final manifest.
+First compiled run reported 34 fixture failures, including bigint rows beyond fixed-width bounds and text parsing edge cases. Seeded property tests passed.
