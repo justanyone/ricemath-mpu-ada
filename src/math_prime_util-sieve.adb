@@ -56,7 +56,7 @@ package body Math_Prime_Util.Sieve is
       for D in U64 range 0 .. Limit / 30 loop
          for R of Wheel loop
             P := D * 30 + R;
-            if P >= 7 and P <= Limit and then Clear (Bits, P) then
+            if P >= 7 and then P <= Limit and then Clear (Bits, P) then
                Mark (Bits, 0, N, P);
             end if;
          end loop;
@@ -136,7 +136,7 @@ package body Math_Prime_Util.Sieve is
          for D in U64 range 0 .. Limit / 30 loop
             for R of Wheel loop
                P := D * 30 + R;
-               if P >= 7 and P <= Limit and then Clear (Primary, P) then
+               if P >= 7 and then P <= Limit and then Clear (Primary, P) then
                   Mark (Segment, Base, Last, P);
                end if;
             end loop;

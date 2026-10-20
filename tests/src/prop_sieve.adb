@@ -1,0 +1,99 @@
+with AUnit.Assertions;
+with AUnit.Test_Cases;
+with Math_Prime_Util.Sieve;
+
+package body Prop_Sieve is
+   use AUnit.Test_Cases;
+   use Math_Prime_Util;
+   use Math_Prime_Util.Sieve;
+   use type U64;
+   use type Prime_Vectors.Vector;
+   type Sieve_Case is new Test_Case with null record;
+   overriding function Name (T : Sieve_Case) return AUnit.Message_String;
+   overriding procedure Register_Tests (T : in out Sieve_Case);
+
+   overriding function Name (T : Sieve_Case) return AUnit.Message_String is
+   begin
+      return AUnit.Format ("Prop_Sieve seed 20261020");
+   end Name;
+
+   procedure Laws (T : in out Test_Case'Class) is
+      Seed : U64 := 20_261_020;
+      Low, High, Sum : U64;
+      Left, Right, Whole : Prime_Vectors.Vector;
+   begin
+      for I in 1 .. 100 loop
+         Seed := Seed * 6_364_136_223_846_793_005 + 1;
+         Low := Seed mod 100_000;
+         High := Low + 100;
+         Whole := Primes (Low, High);
+         Left := Primes (Low, Low + 49);
+         Right := Primes (Low + 50, High);
+         Left.Append (Right);
+         AUnit.Assertions.Assert (Left = Whole, "partition seed 20261020");
+         Sum := 0;
+         for P of Whole loop
+            for D in U64 range 2 .. Int.Sqrtint (P) loop
+               AUnit.Assertions.Assert (P mod D /= 0, "trial division");
+            end loop;
+            Sum := Sum + P;
+         end loop;
+         AUnit.Assertions.Assert
+           (Sum_Primes (Low, High).Value = Sum, "sum seed 20261020");
+      end loop;
+      AUnit.Assertions.Assert (Primes (100, 2).Is_Empty, "reversed range");
+      AUnit.Assertions.Assert (Primes (0).Is_Empty, "zero bound");
+      Whole := Primes (0, 1_000_000);
+      AUnit.Assertions.Assert
+        (Natural (Whole.Length) = 78_498, "multiple segment count");
+   end Laws;
+
+   procedure Concurrent_Cache (T : in out Test_Case'Class) is
+      protected Results is
+         procedure Fail;
+         function Passed return Boolean;
+      private
+         Good : Boolean := True;
+      end Results;
+      protected body Results is
+         procedure Fail is
+         begin
+            Good := False;
+         end Fail;
+         function Passed return Boolean is (Good);
+      end Results;
+      task type Worker;
+      task body Worker is
+      begin
+         for I in 1 .. 10 loop
+            Prime_Precalc (U64 (I) * 100);
+            Prime_Memfree;
+            if Natural (Primes (1_000).Length) /= 168 then
+               Results.Fail;
+            end if;
+         end loop;
+      end Worker;
+   begin
+      declare
+         Workers : array (1 .. 4) of Worker;
+      begin
+         null;
+      end;
+      AUnit.Assertions.Assert (Results.Passed, "concurrent cache readers");
+   end Concurrent_Cache;
+
+   overriding procedure Register_Tests (T : in out Sieve_Case) is
+   begin
+      Registration.Register_Routine (T, Laws'Access, "sieve laws");
+      Registration.Register_Routine
+        (T, Concurrent_Cache'Access, "concurrent cache");
+   end Register_Tests;
+
+   function Suite return AUnit.Test_Suites.Access_Test_Suite is
+      Result : constant AUnit.Test_Suites.Access_Test_Suite :=
+        new AUnit.Test_Suites.Test_Suite;
+   begin
+      Result.Add_Test (new Sieve_Case);
+      return Result;
+   end Suite;
+end Prop_Sieve;
