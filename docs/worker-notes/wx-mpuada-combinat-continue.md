@@ -8,3 +8,4 @@ Added descending/ascending signed factorials, prime-power LCM, Fubini, and power
 Added algebraic quotient, signed duality, power-sum difference, and overflow boundary tests. Fubini supports 18, the last U64 result.
 Both focused tests and gate stop at missing offline Alire index. Installed compiler binaries do exist; checking a workspace-local Alire configuration.
 Workspace-local Alire settings avoid network, but tests cannot resolve AUnit and compiler without the preinstalled index. No tests reached compilation yet.
+Copied installed toolchain into ignored obj/ to keep all Alire writes within the worktree. Attempting gate with isolated offline settings.
