@@ -239,22 +239,131 @@ package body Math_Prime_Util.Families is
    function Invert (Low, High, N : U64; Kind : Estimate_Kind) return U64 is
       Lo : U64 := Low;
       Hi : U64 := High;
-      Mid, R : U64;
+      Mid, Rlo, Rhi, Rmid : U64;
+      Iteration : Natural := 0;
+
+      function Linear return U64 is
+         Move : U64;
+         D : F64;
+      begin
+         if N = Rlo then
+            return Lo + 1;
+         elsif N = Rhi then
+            return Hi - 1;
+         end if;
+         D := F64 (N - Rlo) * F64 (Hi - Lo) / F64 (Rhi - Rlo) + 0.5;
+         Move := (if D >= F64 (Hi - Lo) then Hi - Lo else Trunc (D));
+         return (if Move = 0 then Lo + 1
+                 elsif Move >= Hi - Lo then Hi - 1 else Lo + Move);
+      end Linear;
    begin
-      while Hi - Lo > 1 loop
-         Mid := Lo + (Hi - Lo) / 2;
-         R := Estimate (Mid, Kind);
-         if R >= N then
+      Mid := Lo + (Hi - Lo) / 2;
+      Rmid := Estimate (Mid, Kind);
+      if Rmid >= N then
+         Hi := Mid;
+         Rhi := Rmid;
+         Rlo := Estimate (Lo, Kind);
+         if Rlo = N then
+            return Lo;
+         end if;
+      else
+         Lo := Mid;
+         Rlo := Rmid;
+         Rhi := Estimate (Hi, Kind);
+      end if;
+      if Hi - Lo <= 1 then
+         return (if Rlo = N or else (Rlo < N and then Rhi > N)
+                 then Lo else Hi);
+      end if;
+      Mid := Linear;
+      while Hi - Lo > 1 and then Rhi > N loop
+         Iteration := Iteration + 1;
+         Rmid := Estimate (Mid, Kind);
+         if Rmid >= N then
             Hi := Mid;
+            Rhi := Rmid;
          else
             Lo := Mid;
+            Rlo := Rmid;
+         end if;
+         exit when Rhi = N or else Hi - Lo <= 1;
+         Mid := Linear;
+         if Iteration mod 6 = 0 then
+            declare
+               Close : constant U64 :=
+                 Trunc (0.003 * F64 (Hi - Lo) + 1.0);
+            begin
+               if Lo + Close > Mid then
+                  Mid := Lo + Close;
+               elsif Hi - Close < Mid then
+                  Mid := Hi - Close;
+               end if;
+            end;
+         end if;
+         Mid := U64'Max (Lo + 1, U64'Min (Hi - 1, Mid));
+      end loop;
+      if Rlo = N then
+         return Lo;
+      elsif Hi - Lo <= 1 then
+         return (if Rlo < N and then Rhi > N then Lo else Hi);
+      end if;
+      --  Ridder refinement, followed by the reference binary finish.
+      while Hi - Lo > 8 loop
+         declare
+            X1 : U64 := Lo + (Hi - Lo) / 2;
+            R1 : U64 := Estimate (X1, Kind);
+            D0 : constant F64 := F64 (N - Rlo);
+            D1 : constant F64 :=
+              F64 ((if R1 >= N then R1 - N else N - R1));
+            D2 : constant F64 := F64 (Rhi - N + 1);
+            Sign : constant F64 := (if R1 >= N then 1.0 else -1.0);
+            Pos : constant F64 := Sign * F64 (X1 - Lo) * D1 /
+              Sqrt (D1 * D1 + D0 * D2);
+            Move : constant U64 := Trunc (abs Pos + 0.5);
+            X3 : U64 := (if Pos >= 0.0 then X1 - Move else X1 + Move);
+            R3, Temp : U64;
+         begin
+            if X3 >= Hi or else X3 <= Lo or else X3 = X1 then
+               if R1 >= N then
+                  Hi := X1;
+                  Rhi := R1;
+               else
+                  Lo := X1;
+                  Rlo := R1;
+               end if;
+            else
+               R3 := Estimate (X3, Kind);
+               if R1 > R3 then
+                  Temp := X1;
+                  X1 := X3;
+                  X3 := Temp;
+                  Temp := R1;
+                  R1 := R3;
+                  R3 := Temp;
+               end if;
+               if R1 >= N then
+                  Hi := X1;
+                  Rhi := R1;
+               elsif R3 >= N then
+                  Lo := X1;
+                  Rlo := R1;
+                  Hi := X3;
+                  Rhi := R3;
+               else
+                  Lo := X3;
+                  Rlo := R3;
+               end if;
+            end if;
+         end;
+      end loop;
+      while Hi - Lo > 1 loop
+         Mid := Lo + (Hi - Lo) / 2;
+         if Estimate (Mid, Kind) < N then
+            Lo := Mid;
+         else
+            Hi := Mid;
          end if;
       end loop;
-      if Estimate (Lo, Kind) = N then
-         return Lo;
-      elsif Estimate (Hi, Kind) > N then
-         return Lo;
-      end if;
       return Hi;
    end Invert;
 
