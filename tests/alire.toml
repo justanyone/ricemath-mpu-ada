@@ -21,3 +21,6 @@ math_prime_util = { path = ".." }
 "*".compile_checks = "Warnings"
 "*".style_checks = "Yes"
 "*".ada_version = "Ada2022"
+
+[[pins]]
+aunit = { path = "/home/kevin/my_code/skybuild-model-workers/runs/wx-mpuada-vec-set-continue-20261020-075743/work/obj/offline-aunit" }

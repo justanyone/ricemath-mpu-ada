@@ -6,3 +6,4 @@ Run the focused test script and the gate; record any offline blockers.
 Reviewed existing signed set API and XS callback loops. Fixtures omit callbacks; add direct tests for those. Native signed fixtures still need arithmetic replay.
 Added arithmetic, scalar closures, extraction and sumsets plus initial tests. Focused test failed before compilation because Alire attempted an offline community-index clone. Check cached host settings next.
 Host has GNAT and AUnit cached, but this checkout lacks Alire resolution metadata. Investigating an isolated offline configuration without changing dependency manifests.
+Using a worktree-local Alire settings directory and an ignored copy of cached AUnit. A temporary existing-dependency pin enables offline builds; restore the manifest before finishing.
