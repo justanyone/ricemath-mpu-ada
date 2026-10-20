@@ -147,6 +147,7 @@ package body Math_Prime_Util.Real is
       Sum : Wide := 0.0;
       Correction : Wide := 0.0;
    end record;
+   procedure Add (S : in out Accumulator; V : Wide);
    procedure Add (S : in out Accumulator; V : Wide) is
       T : constant Wide := S.Sum + V;
    begin
@@ -157,8 +158,10 @@ package body Math_Prime_Util.Real is
       end if;
       S.Sum := T;
    end Add;
+   function Value (S : Accumulator) return Wide;
    function Value (S : Accumulator) return Wide is
      (S.Sum + S.Correction);
+   function Polynomial (C : Vector; X : Wide) return Wide;
    function Polynomial (C : Vector; X : Wide) return Wide is
       R : Wide := C (C'Last);
    begin
@@ -167,6 +170,7 @@ package body Math_Prime_Util.Real is
       end loop;
       return R;
    end Polynomial;
+   function Ei (X : Wide) return Wide;
    function Ei (X : Wide) return Wide is
       S : Accumulator;
       L0 : Wide := 1.0;
@@ -218,6 +222,7 @@ package body Math_Prime_Util.Real is
       end if;
       return Exp (X - Log (X)) * (1.0 + Frac / X);
    end Ei;
+   function Li (X : Wide) return Wide;
    function Li (X : Wide) return Wide is
       S : Wide := 0.0;
       Old, P : Wide := -1.0;
@@ -252,6 +257,7 @@ package body Math_Prime_Util.Real is
       end loop;
       return Euler + Log (L) + Sqrt (X) * S;
    end Li;
+   function Zeta (X : Wide) return Wide;
    function Zeta (X : Wide) return Wide is
       B, S, T : Wide := 0.0;
       Product : Wide := 1.0;
@@ -291,6 +297,7 @@ package body Math_Prime_Util.Real is
       end loop;
       return S;
    end Zeta;
+   function Inverse (X : Wide) return Wide;
    function Inverse (X : Wide) return Wide is
       T, Term, Dn, L : Wide;
       Old : Wide := 0.0;
@@ -358,6 +365,7 @@ package body Math_Prime_Util.Real is
       end if;
       return F64 (R);
    end Inverse_Li;
+   function Moebius (N : Positive) return Integer;
    function Moebius (N : Positive) return Integer is
       V : Positive := N;
       M : Integer := 1;
@@ -412,6 +420,7 @@ package body Math_Prime_Util.Real is
       end if;
       return F64 (Value (S));
    end Riemann_R;
+   function Lambert_Approx (X : Wide) return Wide;
    function Lambert_Approx (X : Wide) return Wide is
       W, K1, K2, K3 : Wide;
    begin
@@ -423,16 +432,17 @@ package body Math_Prime_Util.Real is
          return -1.0 + Eps;
       end if;
          K1 := Sqrt (K2);
-         W := -1.0 + (1.0 + (-1.0/3.0 + (11.0/72.0 + (-43.0/540.0 +
-        (769.0/17280.0 + (-221.0/8505.0 + (680863.0/43545600.0 +
-        (-1963.0/204120.0 + 226287557.0/37623398400.0
-    * K1) * K1) * K1) * K1) * K1) * K1) * K1) * K1) * K1;
+         W := -1.0 + (1.0 + (-1.0 / 3.0 + (11.0 / 72.0 + (-43.0 / 540.0 +
+        (769.0 / 17280.0 + (-221.0 / 8505.0 + (680863.0 / 43545600.0 +
+        (-1963.0 / 204120.0 + 226287557.0 / 37623398400.0 * K1) * K1) * K1) *
+           K1) * K1) * K1) * K1) * K1) * K1;
 
       elsif X > -0.14 and then X < 0.085 then
 
-         W := (1.0 + (-1.0 + (3.0/2.0 + (-8.0/3.0 + (125.0/24.0 + (-54.0/5.0 +
-        (16807.0/720.0 + (-16384.0/315.0 + 531441.0/4480.0
-        * X) * X) * X) * X) * X) * X) * X) * X) * X;
+         W := (1.0 + (-1.0 + (3.0 / 2.0 + (-8.0 / 3.0 + (125.0 / 24.0 + (-54.0
+           / 5.0 +
+        (16807.0 / 720.0 + (-16384.0 / 315.0 + 531441.0 / 4480.0 * X) * X) *
+           X) * X) * X) * X) * X) * X) * X;
 
       elsif X < 1.0 then
 
@@ -440,14 +450,13 @@ package body Math_Prime_Util.Real is
          K2 := 0.33333333333333333333333 + 0.70710678118654752440084 / K1 -
         0.058925565098878960366737 * K1 +
          (X + 0.36787944117144) * (0.050248489761611 + (0.11138904851051 +
-        0.040744556245195 * X) * X)
-         /
-         (1.0 + (2.7090878606183 + (1.5510922597820 + 0.095477712183841 * X)
-        * X) * X);
-         W := -(K2-1.0)/K2;
+        0.040744556245195 * X) * X) / (1.0 + (2.7090878606183 +
+           (1.5510922597820 + 0.095477712183841 * X) * X) * X);
+         W := -(K2-1.0) / K2;
 
       elsif X < 40.0 then
-         K1 := 1.0 + (5.950065500550155 + (13.96586471370701 + (10.52192021050505
+         K1 := 1.0 + (5.950065500550155 + (13.96586471370701 +
+           (10.52192021050505
         + (3.065294254265870 + 0.1204576876518760 * X) * X) * X) * X) * X;
          W := 0.1600049638651493 * Log (K1);
 
@@ -457,16 +466,16 @@ package body Math_Prime_Util.Real is
         +
          (3257.926478908996 + (-10.82545259305382 + (0.6898058947898353e-1
         +
-         0.4703653406071575e-4 * X) * X) * X) * X) * X) * X) * X) * X) *
-        X;
+         0.4703653406071575e-4 * X) * X) * X) * X) * X) * X) * X) * X) * X;
          W := 0.9898045358731312e-1 * Log (K1);
 
       else
          K1 := 1.0 / (1.0 + Log (1.0 + X));
          K2 := 1.0 / K1;
          K3 := Log (K2);
-         W := K2-1.0-K3+(1.0+K3+(-1.0/2.0+(1.0/2.0)*K3*K3 +
-        (-1.0/6.0+(-1.0+(-1.0/2.0+(1.0/3.0)*K3)*K3)*K3) * K1) * K1) * K1;
+         W := K2-1.0-K3+(1.0+K3+(-1.0 / 2.0+(1.0 / 2.0) * K3 * K3 +
+        (-1.0 / 6.0+(-1.0+(-1.0 / 2.0+(1.0 / 3.0) * K3) * K3) * K3) * K1) *
+           K1) * K1;
       end if;
       return W;
    end Lambert_Approx;

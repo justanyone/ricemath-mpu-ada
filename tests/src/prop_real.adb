@@ -4,6 +4,7 @@ with Ada.Numerics.Long_Elementary_Functions;
 with Math_Prime_Util.Real;
 package body Prop_Real is
    use AUnit.Test_Cases;
+   use type Math_Prime_Util.U64;
    use Math_Prime_Util.Real;
    use Ada.Numerics.Long_Elementary_Functions;
    type Real_Case is new Test_Case with null record;
@@ -16,9 +17,11 @@ package body Prop_Real is
    procedure Check_Laws (T : in out Test_Case'Class);
    procedure Check_Laws (T : in out Test_Case'Class) is
       X, W : F64;
+      Seed : Math_Prime_Util.U64 := 20_261_020;
    begin
       for I in 1 .. 100 loop
-         X := F64 (I) / 10.0;
+         Seed := Seed * 6_364_136_223_846_793_005 + 1;
+         X := F64 (Seed mod 100 + 1) / 10.0;
          W := Lambert_W (X);
          AUnit.Assertions.Assert
            (abs (W * Exp (W) - X) < 1.0E-13 * X,
@@ -39,8 +42,33 @@ package body Prop_Real is
            (Riemann_R (X) = Riemann_R (X), "repeat call");
       end loop;
    end Check_Laws;
+   procedure Concurrent_Calls (T : in out Test_Case'Class);
+   procedure Concurrent_Calls (T : in out Test_Case'Class) is
+      type Results is array (1 .. 2) of F64;
+      Values : Results := [others => 0.0];
+      task type Worker (Index : Positive);
+      task body Worker is
+      begin
+         for I in 1 .. 100 loop
+            Values (Index) := Riemann_R (1000.0) +
+              Lambert_W (1000.0) + Harmreal (1000);
+         end loop;
+      end Worker;
+   begin
+      declare
+         First : Worker (1);
+         Second : Worker (2);
+      begin
+         null;
+      end;
+      AUnit.Assertions.Assert
+        (Values (1) = Values (2) and Values (1) > 0.0,
+         "independent concurrent calls");
+   end Concurrent_Calls;
    overriding procedure Register_Tests (T : in out Real_Case) is
    begin
+      Registration.Register_Routine
+        (T, Concurrent_Calls'Access, "concurrent real calls");
       Registration.Register_Routine (T, Check_Laws'Access, "real laws");
    end Register_Tests;
    function Suite return AUnit.Test_Suites.Access_Test_Suite is

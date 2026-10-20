@@ -14,3 +14,4 @@ Offline cache works. First compile found an Ada reserved identifier and numeric 
 About five minutes remain. Offline dependencies are staged under obj. The focused build is running after syntax corrections.
 Gate prints green even when AUnit reports failures. Added explicit input checks for release calls and contextual fixture diagnostics. Nonfinite IEEE inputs need validity checks disabled locally.
 All but Ei(0) now pass. The XS wrapper defines Ei(0) as -Inf although real.c rejects it; adapted the public endpoint to match the fixture.
+All 48 tests pass, including all requested real fixture rows. Added seeded properties and independent concurrent calls; final gate follows.
