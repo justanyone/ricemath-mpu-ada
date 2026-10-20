@@ -18,13 +18,20 @@ package body Prop_Random is
    procedure Laws (T : in out Test_Case'Class) is
       Whole : String (1 .. 2048);
       Raised : Boolean := False;
+      Part_1 : String (1 .. 1);
+      Part_2 : String (1 .. 63);
+      Part_3 : String (1 .. 960);
+      Part_4 : String (1 .. 1024);
    begin
       Srand (42);
       Whole := Random_Bytes (Whole'Length);
       Srand (42);
+      Part_1 := Random_Bytes (1);
+      Part_2 := Random_Bytes (63);
+      Part_3 := Random_Bytes (960);
+      Part_4 := Random_Bytes (1024);
       AUnit.Assertions.Assert
-        (Random_Bytes (1) & Random_Bytes (63) & Random_Bytes (960) &
-         Random_Bytes (1024) = Whole, "seed 42: partition invariance");
+        (Part_1 & Part_2 & Part_3 & Part_4 = Whole, "seed 42: partition invariance");
       Srand (42);
       declare
          First : constant U64 := Irand64;

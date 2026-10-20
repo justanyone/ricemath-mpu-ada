@@ -20,3 +20,5 @@ Test runner returns zero on assertions; inspect the printed test totals.
 Library contracts can be off in dependency builds; added explicit range checks.
 Review confirms seeded native streams and cipher fixture vectors match MPU.
 Remaining scope: bigint/signed wrappers and additional mixed/tag fixture rows.
+All 50 tests pass after native validation fixes, with zero assertions failed.
+Added mixed/tag and post-irand real fixtures plus reversed-range rejection.

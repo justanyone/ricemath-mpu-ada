@@ -83,13 +83,58 @@ package body Compat_Random is
                  F = "irand" or else F = "irand_seq" or else
                  F = "blake_irand" or else F = "blake_irand_after7" or else
                  F = "srand42_irand"
+               elsif Family = "urandomb" then
+                 F = "urandomb" or else F = "mixed_seq"
+               elsif Family = "rand" then
+                 F = "rand" or else F = "tag_irand_irand32_rand"
+               elsif Family = "irand64" then
+                 F = "irand64" or else F = "irand64_seq" or else
+                 F = "irand64_after_bytes" or else F = "tag_irand64" or else
+                 F = "tag_irand_irand64"
+               elsif Family = "drand" then
+                 F = "drand" or else F = "drand_seq" or else
+                 F = "blake_drand_after_irand"
                else F = Family or else F = Family & "_seq" or else
                  F = Family & "_after_bytes");
          begin
             if Selected then
                Csrand (Decode (To_String (C.Args (1))));
                Count := Count + 1;
-               if C.Error and then F = "urandomm" then
+               if F = "mixed_seq" then
+                  Dummy := To_Unbounded_String (Image (U64 (Irand32)));
+                  Append (Dummy, " " & Image (Irand64));
+                  Append (Dummy, " " & Encode (Random_Bytes (3)));
+                  Append (Dummy, " " & Image (U64 (Irand32)));
+                  Append (Dummy, " " & Image (Urandomb (5)));
+                  Append (Dummy, " " & Image (Urandomm (2 ** 32)));
+                  AUnit.Assertions.Assert
+                    (To_String (Dummy) = Expected, "mixed_seq " & Expected);
+               elsif F = "tag_irand_irand32_rand" then
+                  declare
+                     A : constant String := Image (U64 (Irand));
+                     B : constant String := Image (U64 (Irand32));
+                     Prefix : constant String := A & " " & B & " ";
+                  begin
+                     AUnit.Assertions.Assert
+                       (Expected (1 .. Prefix'Length) = Prefix, F);
+                     Check_Real
+                       (Rand, Expected (Prefix'Length + 1 .. Expected'Last));
+                  end;
+               elsif F = "blake_drand_after_irand" then
+                  Value := U64 (Irand);
+                  Check_Real (Drand, Expected);
+               elsif C.Undef and then F = "urandomr" then
+                  Raised := False;
+                  begin
+                     Value := Urandomr
+                       (U64'Value (To_String (C.Args (2))),
+                        U64'Value (To_String (C.Args (3))));
+                  exception
+                     when Constraint_Error | Ada.Assertions.Assertion_Error =>
+                        Raised := True;
+                  end;
+                  AUnit.Assertions.Assert (Raised, "reversed bounds rejected");
+               elsif C.Error and then F = "urandomm" then
                   Raised := False;
                   begin
                      Value := Urandomm (0);
@@ -196,6 +241,8 @@ package body Compat_Random is
                   if Ada.Strings.Fixed.Index (F, "_after_bytes") > 0 then
                      Dummy := To_Unbounded_String (Random_Bytes
                        (Natural'Value (To_String (C.Args (2)))));
+                  elsif F = "tag_irand_irand64" then
+                     Value := U64 (Irand);
                   elsif F = "blake_irand_after7" then
                      Dummy := To_Unbounded_String (Random_Bytes (7));
                   end if;
