@@ -18,6 +18,22 @@ package body Compat_Combinat is
      (T : Combinat_Case) return AUnit.Message_String;
    overriding procedure Register_Tests (T : in out Combinat_Case);
 
+   function Parse_Signed (Text : String; Value : out I128) return Boolean;
+
+   function Parse_Signed (Text : String; Value : out I128) return Boolean is
+      Magnitude : U64;
+      Negative : constant Boolean := Text'Length > 0
+        and then Text (Text'First) = '-';
+      First : constant Integer := Text'First + (if Negative then 1 else 0);
+   begin
+      Value := 0;
+      if not Parse_U64 (Text (First .. Text'Last), Magnitude) then
+         return False;
+      end if;
+      Value := (if Negative then -I128 (Magnitude) else I128 (Magnitude));
+      return True;
+   end Parse_Signed;
+
    procedure Replay (Func : String) is
       Cases : constant Case_Vectors.Vector :=
         For_Function (Load ("combinat"), Func);
@@ -39,9 +55,9 @@ package body Compat_Combinat is
               Parse_U64 (To_String (C.Args (2)), B) and Inputs_Fit;
          end if;
          if Signed_Input then
-            Signed_A := I128'Value (To_String (C.Args (1)));
-            Inputs_Fit := Signed_A in
-              -I128 (U64'Last) .. I128 (U64'Last);
+            Inputs_Fit := Parse_Signed
+              (To_String (C.Args (1)), Signed_A)
+              and Parse_U64 (To_String (C.Args (2)), B);
          end if;
          --  Bigint inputs are outside this native API.
          --  Their fixture rows remain for the later signed/bigint port.
@@ -69,9 +85,8 @@ package body Compat_Combinat is
                     else Rising_Factorial (Signed_A, B));
                   Fits := not C.Undef;
                   if Fits then
-                     Signed_Expected := I128'Value (To_String (C.Result));
-                     Fits := Signed_Expected in
-                       -I128 (U64'Last) .. I128 (U64'Last);
+                     Fits := Parse_Signed
+                       (To_String (C.Result), Signed_Expected);
                   end if;
                   AUnit.Assertions.Assert
                     (Signed_R.Defined = Fits and then
