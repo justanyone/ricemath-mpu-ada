@@ -13,3 +13,5 @@ Focused test build started. Callback operations and arithmetic vectors remain.
 The current Sidon predicate uses exact wide comparisons; hash port is pending.
 Focused test stopped before compilation: Alire has no index in this sandbox.
 The cached compiler and AUnit exist; investigate offline resolution only.
+Offline index resolves cached AUnit; compiler external metadata needs setup.
+No manifest or tooling changes were made. Continue validation within obj.
