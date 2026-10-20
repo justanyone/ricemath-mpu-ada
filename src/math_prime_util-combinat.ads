@@ -3,6 +3,7 @@ with Math_Prime_Util.Int;
 --  Native combinatorics from MPU 0.75.
 package Math_Prime_Util.Combinat with SPARK_Mode => On is
    use type U64;
+   use type U128;
    type I128 is range -(2 ** 127) .. 2 ** 127 - 1;
    type Optional_I128 (Defined : Boolean := False) is record
       case Defined is
@@ -62,6 +63,23 @@ package Math_Prime_Util.Combinat with SPARK_Mode => On is
    function Pn_Primorial (N : U64) return Optional_U64
      with Pre => True,
           Post => Pn_Primorial'Result.Defined = (N <= 15);
+
+   type Optional_Fraction (Defined : Boolean := False) is record
+      case Defined is
+         when True =>
+            Num : I128;
+            Den : U128;
+         when False => null;
+      end case;
+   end record;
+
+   --  util.c: harmfrac and _harmonic_split. Reduced harmonic sum
+   --  1 + 1/2 + ... + 1/N, with H(0) = 0/1. Undefined past I128/U128.
+   function Harmfrac (N : U64) return Optional_Fraction
+     with Pre => True,
+          Post => (if Harmfrac'Result.Defined then
+                     Harmfrac'Result.Num >= 0
+                     and Harmfrac'Result.Den > 0);
 
    --  util.c: falling_factorial and falling_factorial_s. Signed product
    --  of M descending terms. Undefined when the magnitude exceeds U64.

@@ -16,3 +16,4 @@ The first compiled run reached all tests. Signed product fixtures exposed an ove
 39 of 40 tests passed. The zero-step multifactorial regression revealed dependency contracts can be disabled; added an explicit Constraint_Error check for this invalid argument.
 About five minutes remain in the session budget. Validate the corrected head and keep remaining APIs explicit.
 Gate is green with all 40 tests passing under isolated offline settings. Thirteen public task functions are now present; fourteen are still absent.
+Added Harmfrac with the reference binary split and denominator cancellation for wide intermediates. Added exact rational fixture and difference-law tests.

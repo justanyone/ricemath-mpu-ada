@@ -2,6 +2,7 @@ with AUnit.Assertions;
 with AUnit.Test_Cases;
 with Ada.Assertions;
 with Ada.Strings.Unbounded;
+with Ada.Strings.Fixed;
 with Fixture_Support;
 with Math_Prime_Util.Combinat;
 
@@ -12,6 +13,7 @@ package body Compat_Combinat is
    use Math_Prime_Util;
    use Math_Prime_Util.Combinat;
    use type U64;
+   use type U128;
 
    type Combinat_Case is new Test_Case with null record;
    overriding function Name
@@ -193,6 +195,37 @@ package body Compat_Combinat is
       Replay ("powersum");
    end Check_Powersum;
 
+   procedure Check_Harmfrac (T : in out Test_Case'Class) is
+      Cases : constant Case_Vectors.Vector :=
+        For_Function (Load ("combinat"), "harmfrac");
+      N : U64;
+      Num, Den : U128;
+      R : Optional_Fraction;
+      Fits : Boolean;
+   begin
+      AUnit.Assertions.Assert (not Cases.Is_Empty, "missing harmfrac");
+      for C of Cases loop
+         AUnit.Assertions.Assert
+           (Parse_U64 (To_String (C.Args (1)), N), "harmfrac input");
+         R := Harmfrac (N);
+         declare
+            Text : constant String := To_String (C.Result);
+            Space : constant Natural := Ada.Strings.Fixed.Index (Text, " ");
+         begin
+            Fits := not C.Undef and then Space > 0;
+            if Fits then
+               Fits := Parse_U128 (Text (Text'First .. Space - 1), Num)
+                 and then Num <= U128 (I128'Last)
+                 and then Parse_U128 (Text (Space + 1 .. Text'Last), Den);
+            end if;
+            AUnit.Assertions.Assert
+              (R.Defined = Fits and then
+               (not Fits or else (R.Num = I128 (Num) and R.Den = Den)),
+               "harmfrac" & Positive'Image (C.Line_Number));
+         end;
+      end loop;
+   end Check_Harmfrac;
+
    overriding function Name
      (T : Combinat_Case) return AUnit.Message_String is
    begin
@@ -212,6 +245,7 @@ package body Compat_Combinat is
         (T, Check_Fubini'Access, "fubini");
       Register_Routine
         (T, Check_Powersum'Access, "powersum");
+      Register_Routine (T, Check_Harmfrac'Access, "harmfrac");
       Register_Routine (T, Check_Factorial'Access, "factorial");
       Register_Routine (T, Check_Subfactorial'Access, "subfactorial");
       Register_Routine (T, Check_Multifactorial'Access, "multifactorial");

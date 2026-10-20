@@ -7,6 +7,7 @@ package body Prop_Combinat is
    use Math_Prime_Util;
    use Math_Prime_Util.Combinat;
    use type U64;
+   use type U128;
 
    type Combinat_Case is new Test_Case with null record;
    overriding function Name
@@ -64,6 +65,21 @@ package body Prop_Combinat is
            and Falling_Factorial (0, U64'Last).Value = 0
            and Rising_Factorial (0, U64'Last).Value = 0,
          "factorial boundaries and overflow");
+      for N in U64 range 1 .. 30 loop
+         declare
+            A : constant Optional_Fraction := Harmfrac (N - 1);
+            B : constant Optional_Fraction := Harmfrac (N);
+         begin
+            AUnit.Assertions.Assert
+              (U128 (B.Num) * A.Den * U128 (N)
+                 = U128 (A.Num) * B.Den * U128 (N) + A.Den * B.Den,
+               "harmonic difference");
+         end;
+      end loop;
+      AUnit.Assertions.Assert
+        (Harmfrac (88).Defined and not Harmfrac (89).Defined
+           and not Harmfrac (U64'Last).Defined,
+         "harmonic overflow boundaries");
       for N of Edges
       loop
          AUnit.Assertions.Assert

@@ -148,6 +148,69 @@ package body Math_Prime_Util.Combinat with SPARK_Mode => On is
       end if;
       return (True, Primorials (Prime_Map (Natural (N))));
    end Primorial;
+   function Harmfrac (N : U64) return Optional_Fraction is
+      use type U128;
+      function Gcd_Wide (A, B : U128) return U128;
+      function Split (A, B : U64) return Optional_Fraction;
+
+      function Gcd_Wide (A, B : U128) return U128 is
+         X : U128 := A;
+         Y : U128 := B;
+         T : U128;
+      begin
+         while Y /= 0 loop
+            T := X mod Y;
+            X := Y;
+            Y := T;
+         end loop;
+         return X;
+      end Gcd_Wide;
+
+      function Split (A, B : U64) return Optional_Fraction is
+         L, R : Optional_Fraction;
+         G, H, P, Q, Num, Den : U128;
+      begin
+         if B - A = 1 then
+            return (True, 1, U128 (A));
+         end if;
+         L := Split (A, (A + B) / 2);
+         R := Split ((A + B) / 2, B);
+         if not L.Defined or not R.Defined then
+            return (Defined => False);
+         end if;
+         --  Cancel the shared denominator before the split's products.
+         G := Gcd_Wide (L.Den, R.Den);
+         P := L.Den / G;
+         Q := R.Den / G;
+         if U128 (L.Num) > U128'Last / Q
+           or U128 (R.Num) > U128'Last / P
+         then
+            return (Defined => False);
+         end if;
+         Num := U128 (L.Num) * Q;
+         Den := U128 (R.Num) * P;
+         if Num > U128'Last - Den then
+            return (Defined => False);
+         end if;
+         Num := Num + Den;
+         H := Gcd_Wide (Num, G);
+         Num := Num / H;
+         Q := R.Den / H;
+         if P > U128'Last / Q or Num > U128 (I128'Last) then
+            return (Defined => False);
+         end if;
+         Den := P * Q;
+         return (True, I128 (Num), Den);
+      end Split;
+   begin
+      if N = 0 then
+         return (True, 0, 1);
+      elsif N > 88 then
+         return (Defined => False);
+      end if;
+      return Split (1, N + 1);
+   end Harmfrac;
+
    function Falling_Factorial (N : I128; M : U64) return Optional_I128 is
       R : U64 := 1;
       A : U64;
