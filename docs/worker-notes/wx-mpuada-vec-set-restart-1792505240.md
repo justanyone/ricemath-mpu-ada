@@ -13,3 +13,5 @@ Sort regression caught checked conversion of negative I64 to U64. Replaced it wi
 About five minutes remain. The sort boundary cases now pass: 78 tests green. Final work checks C fast paths, contracts, and gate output; exact hash-based uniqueness/Sidon translation still needs review.
 Added C single-varying-byte radix reconstruction and checkable ordering contracts. Named bigint fixture exclusions remain unchanged. No source dependency was added.
 Extended sort properties to one varying byte at both signed extremes and at byte six. This covers the direct histogram reconstruction path.
+Gate caught missing U128 operator visibility in the strengthened sum contract. Added the required use type clause, then restarted the gate.
+Dependency review: Vec uses only root integer types and Ada standard containers. Remaining algorithm parity: Vecuniq/Vecsingleton and Is_Sidon_Set still use linear or nested scans rather than ds_iset hashing. SPARK proof has not been run; this gate does not invoke gnatprove.

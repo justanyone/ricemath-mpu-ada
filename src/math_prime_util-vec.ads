@@ -1,5 +1,7 @@
 --  Signed integer vectors and sorted sets from MPU 0.75.
 package Math_Prime_Util.Vec with SPARK_Mode => On is
+   use type U128;
+
    type I128 is range -(2 ** 127) .. 2 ** 127 - 1;
    type Wide_Vector is array (Positive range <>) of I128;
    type Unsigned_Vector is array (Positive range <>) of U64;
