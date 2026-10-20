@@ -70,6 +70,35 @@ package body Math_Prime_Util.Digits is
       return S;
    end Sumdigits;
 
+   function Sumdigits (Text : String; Base : U128 := 10) return U128 is
+      S : U128 := 0;
+      B : U128 := Base;
+      First : Integer := Text'First;
+      D : U128;
+   begin
+      if Base = 10 and then Text'Length > 2 and then
+        Text (First) = '0' and then Text (First + 1) in 'x' | 'b'
+      then
+         B := (if Text (First + 1) = 'x' then 16 else 2);
+         First := First + 2;
+      end if;
+      for C of Text (First .. Text'Last) loop
+         if C in '0' .. '9' then
+            D := Character'Pos (C) - Character'Pos ('0');
+         elsif C in 'a' .. 'z' then
+            D := Character'Pos (C) - Character'Pos ('a') + 10;
+         elsif C in 'A' .. 'Z' then
+            D := Character'Pos (C) - Character'Pos ('A') + 10;
+         else
+            D := B;
+         end if;
+         if D < B then
+            S := S + D;
+         end if;
+      end loop;
+      return S;
+   end Sumdigits;
+
    function Reverse_Digits (N : U128; Base : U128 := 10) return U128 is
       V : U128 := N;
       R, D : U128 := 0;

@@ -41,7 +41,8 @@ package body Compat_Digits is
          Raised := False;
          A := [others => 0];
          begin
-            if Func not in "toint" | "fromdigits" | "fromzeckendorf" then
+            if Func not in "toint" | "fromdigits" | "fromzeckendorf" |
+              "sumdigits" then
                for I in 1 .. Natural (C.Args.Length) loop
                   A (I) := I128'Value (To_String (C.Args (I)));
                end loop;
@@ -144,8 +145,10 @@ package body Compat_Digits is
                        U128'Value (To_String (C.Args (2))) else 10))));
                end;
             elsif Func = "sumdigits" then
-               Actual := To_Unbounded_String
-                 (Image (Sumdigits (U128 (abs A (1)), Base)));
+               Actual := To_Unbounded_String (Image (Sumdigits
+                 (To_String (C.Args (1)),
+                  (if C.Args.Length > 1 then
+                     U128'Value (To_String (C.Args (2))) else 10))));
             elsif Func = "reverse_digits" then
                Actual := To_Unbounded_String
                  (Image (Reverse_digits (U128 (abs A (1)), Base)));

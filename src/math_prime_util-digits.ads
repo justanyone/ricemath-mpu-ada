@@ -41,6 +41,10 @@ package Math_Prime_Util.Digits with SPARK_Mode => On is
      with Pre => Base >= 2,
           Post => Sumdigits'Result <= N;
 
+   --  XS.xs: sumdigits. Sum valid text digits; ignore signs and punctuation.
+   function Sumdigits (Text : String; Base : U128 := 10) return U128
+     with Pre => Base in 2 .. 36, Post => True;
+
    --  XS.xs: reverse_digits. Reverse base digits; overflow raises
    --  Constraint_Error.
    function Reverse_Digits
