@@ -15,3 +15,4 @@ The no-inline directive was not legal on a nested instance. Replaced it with an 
 An explicit reference lifetime did not fix GNAT linking. Moved the public vector instance to a library-level sibling unit and kept the existing Prime_Vectors API as a rename.
 The standalone generic still omitted its finalizer with optimization. Testing unit-local Optimize (Off) for the container only; arithmetic sieve code keeps normal optimization.
 Container workarounds did not fix the compiler defect. Removed them. Tests now use Element copies instead of implicit references across mixed build profiles. Sum_Primes now streams bounded segments.
+Tests now link and run: 33 passed, 4 assertions failed. Correcting undef navigation spelling, enforcing cluster validation in release dependencies, and fixing the partial-sieve property expectation.
