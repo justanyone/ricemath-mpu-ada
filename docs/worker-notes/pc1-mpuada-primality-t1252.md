@@ -6,3 +6,4 @@ Inspected existing predicates and fixture harness; translating missing Perrin/Fr
 Added Perrin signature doubling and three Frobenius variants; next complete dependent Catalan/Chen/delicate predicates and compile.
 All deterministic entry points now exist; first test build started. About five minutes remain for compiler fixes, fixture failures, and gate validation.
 Test script blocked: Alire attempted to clone its community index and network is unavailable. Checking preinstalled toolchain/configuration without modifying build tooling.
+Offline Alire setup found cached AUnit and compiler; local obj copy avoids writing outside worktree. Compiler selection still blocks builds; completing source review meanwhile.
