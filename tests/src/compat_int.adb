@@ -1,4 +1,5 @@
 with AUnit.Assertions;
+with Ada.Assertions;
 with AUnit.Test_Cases;
 with Ada.Strings;
 with Ada.Strings.Unbounded;
@@ -49,6 +50,25 @@ package body Compat_Int is
                  (Parse_U64 (To_String (C.Args (I)), A (I)),
                   "invalid unsigned fixture argument");
             end loop;
+            if C.Error then
+               declare
+                  Raised : Boolean := False;
+               begin
+                  begin
+                     if Func = "rootint" then
+                        V := Rootint (A (1), A (2));
+                     elsif Func = "crootint" then
+                        V := Crootint (A (1), A (2));
+                     else
+                        V := Logint (A (1), A (2));
+                     end if;
+                  exception
+                     when Constraint_Error | Ada.Assertions.Assertion_Error =>
+                        Raised := True;
+                  end;
+                  AUnit.Assertions.Assert (Raised, "expected input error");
+               end;
+            else
             O := (Defined => False);
             if Func = "sqrtint" then
                O := (True, Sqrtint (A (1)));
@@ -99,6 +119,7 @@ package body Compat_Int is
                  (O.Value = V, Func & " row" &
                   Positive'Image (C.Line_Number) & " expected" &
                   U64'Image (V) & " got" & U64'Image (O.Value));
+            end if;
             end if;
          end if;
       end loop;

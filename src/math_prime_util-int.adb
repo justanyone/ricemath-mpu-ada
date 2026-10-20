@@ -162,6 +162,9 @@ package body Math_Prime_Util.Int with SPARK_Mode => On is
    function Rootint (N, K : U64) return U64 is
       Lo, Hi, Mid, R : U64;
    begin
+      if K = 0 then
+         raise Constraint_Error with "zero root exponent";
+      end if;
       if N <= 1 then
          return (if K /= 0 and N /= 0 then 1 else 0);
       end if;
@@ -218,6 +221,11 @@ package body Math_Prime_Util.Int with SPARK_Mode => On is
       M : U64 := N;
       E : U64 := 0;
    begin
+      if N = 0 or B < 2 then
+         raise Constraint_Error with "invalid logarithm";
+      elsif B > N then
+         return 0;
+      end if;
       if M > U64'Last / B then
          M := M / B;
          E := 1;
@@ -255,7 +263,9 @@ package body Math_Prime_Util.Int with SPARK_Mode => On is
       R : U64;
       V : U32;
    begin
-      if N < 2 or K = 1 then
+      if K = 0 then
+         return Is_Power_Exp (N) /= 0;
+      elsif N < 2 or K = 1 then
          return True;
       elsif K > 40 then
          return K < 64 and then N = 2 ** Natural (K);

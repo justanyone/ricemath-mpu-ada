@@ -49,13 +49,13 @@ package Math_Prime_Util.Int with SPARK_Mode => On is
           Post => U128 (Sqrtint'Result) ** 2 <= U128 (N)
        and (U128 (Sqrtint'Result) + 1) ** 2 > U128 (N);
 
-   --  util.c: rootint. Floor K-th root; K = 0 gives zero.
+   --  util.c: rootint. Floor K-th root; K = 0 raises Constraint_Error.
    function Rootint (N, K : U64) return U64
-     with Pre => True, Post => Rootint'Result <= N;
+     with Pre => K > 0, Post => Rootint'Result <= N;
 
-   --  util.c: crootint. Ceiling K-th root; K = 0 gives zero.
+   --  util.c: crootint. Ceiling K-th root; K = 0 raises Constraint_Error.
    function Crootint (N, K : U64) return U64
-     with Pre => True, Post => Crootint'Result <= N;
+     with Pre => K > 0, Post => Crootint'Result <= N;
 
    --  util.c: logint. Floor logarithm to base B; N > 0 and B >= 2.
    function Logint (N, B : U64) return U64
@@ -66,10 +66,10 @@ package Math_Prime_Util.Int with SPARK_Mode => On is
      with Pre => True,
           Post => Is_Square'Result = (Sqrtint (N) ** 2 = N);
 
-   --  util.c: is_power_ret. Test an exact K-th power; K must be positive.
+   --  util.c: is_power_ret. Test a K-th power; K = 0 tests any exponent >= 2.
    function Is_Power (N, K : U64) return Boolean
-     with Pre => K > 0,
-          Post => (if N < 2 or K = 1 then Is_Power'Result);
+     with Pre => True,
+          Post => (if K = 1 then Is_Power'Result);
 
    --  util.c: powerof_ret. Largest exponent >= 2; zero if none or N < 2.
    function Is_Power_Exp (N : U64) return U64
