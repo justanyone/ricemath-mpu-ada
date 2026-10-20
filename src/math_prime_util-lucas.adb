@@ -1,5 +1,4 @@
 package body Math_Prime_Util.Lucas is
-   use type I64;
    use type U128;
 
    function Residue (A : I64; N : U64) return U64 is
@@ -141,6 +140,36 @@ package body Math_Prime_Util.Lucas is
      (if V in -I128 (U64'Last) .. I128 (U64'Last)
       then (True, V) else (Defined => False));
 
+   --  Keep the final square and subtraction unsigned until their sign is
+   --  known. Either term may exceed the signed wide range.
+   function Final_V (V, Qk : I128) return Optional_Integer;
+   function Final_V (V, Qk : I128) return Optional_Integer is
+      Square, Twice, Difference : U128;
+   begin
+      if V not in -I128 (U64'Last) .. I128 (U64'Last) then
+         return (Defined => False);
+      end if;
+      Square := U128 (abs V) ** 2;
+      Twice := U128 (abs Qk) * 2;
+      if Qk < 0 then
+         if Square > U128 (U64'Last) or Twice > U128 (U64'Last) then
+            return (Defined => False);
+         end if;
+         return Native (I128 (Square) + I128 (Twice));
+      elsif Square >= Twice then
+         Difference := Square - Twice;
+         if Difference <= U128 (U64'Last) then
+            return (True, I128 (Difference));
+         end if;
+      else
+         Difference := Twice - Square;
+         if Difference <= U128 (U64'Last) then
+            return (True, -I128 (Difference));
+         end if;
+      end if;
+      return (Defined => False);
+   end Final_V;
+
    function Lucasuv (P, Q : I64; K : U64) return Integer_Pair is
       Uh : I128 := 1;
       Vl : I128 := 2;
@@ -181,6 +210,9 @@ package body Math_Prime_Util.Lucas is
       end if;
       for J in 1 .. S loop
          Uh := Uh * Vl;
+         if J = S then
+            return (Native (Uh), Final_V (Vl, Ql));
+         end if;
          Vl := Vl * Vl - 2 * Ql;
          if J < S then
             Ql := Ql * Ql;
