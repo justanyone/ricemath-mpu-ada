@@ -1,4 +1,5 @@
 with AUnit.Assertions;
+with Ada.Assertions;
 with AUnit.Test_Cases;
 with Ada.Strings;
 with Ada.Strings.Fixed;
@@ -184,10 +185,16 @@ package body Compat_Vec is
                      Actual := To_Unbounded_String
                        (Image (Setinvert (SX, SY)));
                   elsif Func = "vecmex" or Func = "vecpmex" then
+                     begin
                      V := (if Func = "vecmex" then Vecmex (X)
                            else Vecpmex (X));
                      Actual := To_Unbounded_String (Ada.Strings.Fixed.Trim
                        (I64'Image (V), Ada.Strings.Both));
+                     exception
+                        when Constraint_Error |
+                          Ada.Assertions.Assertion_Error =>
+                           Actual := To_Unbounded_String ("ERROR");
+                     end;
                   else
                      if Func = "vecequal" then
                         Flag := Vecequal (X, Y);
@@ -217,10 +224,36 @@ package body Compat_Vec is
                      Actual := To_Unbounded_String
                        (if Flag then "1" else "0");
                   end if;
+                  --  Integer_API_Spelling: Ada integers have no decimal
+                  --  spelling. Normalize Perl's retained leading zeros.
+                  declare
+                     Expected : Unbounded_String := C.Result;
+                     Text : constant String := To_String (C.Result);
+                     First : Positive := Text'First;
+                  begin
+                     if Func = "vecuniq" or Func = "vecsingleton" or
+                       Func = "vecmin" or Func = "vecmax"
+                     then
+                        if Text /= "undef" then
+                           Expected := Null_Unbounded_String;
+                           for I in Text'Range loop
+                              if Text (I) = ' ' or I = Text'Last then
+                                 if Length (Expected) > 0 then
+                                    Append (Expected, " ");
+                                 end if;
+                                 Append (Expected, Wide_Image (I128'Value
+                                   (Text (First .. (if Text (I) = ' '
+                                    then I - 1 else I)))));
+                                 First := I + 1;
+                              end if;
+                           end loop;
+                        end if;
+                     end if;
                   AUnit.Assertions.Assert
-                    (Actual = C.Result, Func &
+                    (Actual = Expected, Func &
                      Positive'Image (C.Line_Number) & ": " &
                      To_String (Actual) & " /= " & To_String (C.Result));
+                  end;
                   Checked := Checked + 1;
                end;
             end if;

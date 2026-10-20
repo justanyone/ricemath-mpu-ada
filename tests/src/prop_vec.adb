@@ -122,9 +122,16 @@ package body Prop_Vec is
          Raised : Boolean := False;
       begin
          begin
-            A := Setunion (Vector'[2, 1], Vector'[3]);
+            declare
+               Invalid : constant Vector :=
+                 Setunion (Vector'[2, 1], Vector'[3]);
+            begin
+               AUnit.Assertions.Assert
+                 (Invalid'Length = 0, "invalid input must raise");
+            end;
          exception
-            when Ada.Assertions.Assertion_Error => Raised := True;
+            when Ada.Assertions.Assertion_Error | Constraint_Error =>
+               Raised := True;
          end;
          AUnit.Assertions.Assert (Raised, "unsorted set rejected");
       end;

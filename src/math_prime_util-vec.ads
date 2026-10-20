@@ -46,14 +46,14 @@ package Math_Prime_Util.Vec with SPARK_Mode => On is
      with Pre => True,
           Post => Vecsingleton'Result'Length <= A'Length;
 
-   --  ds_iset.h: iset_contains. First missing nonnegative integer.
+   --  XS.xs: vecmex. Negative inputs raise Constraint_Error.
    function Vecmex (A : Vector) return I64
-     with Pre => True,
+     with Pre => (for all V of A => V >= 0),
           Post => Vecmex'Result >= 0;
 
-   --  ds_iset.h: iset_contains. First missing nonnegative integer.
+   --  XS.xs: vecpmex. Nonpositive inputs raise Constraint_Error.
    function Vecpmex (A : Vector) return I64
-     with Pre => True,
+     with Pre => (for all V of A => V > 0),
           Post => Vecpmex'Result >= 1;
 
    --  sort.c: signed comparison. Ordered equality; no errors.

@@ -93,6 +93,9 @@ package body Math_Prime_Util.Vec is
    function Missing (A : Vector; Start : I64) return I64 is
       M : I64 := Start;
    begin
+      if (for some V of A => V < Start) then
+         raise Constraint_Error with "invalid MEX input";
+      end if;
       while (for some V of A => V = M) loop
          M := M + 1;
       end loop;
@@ -116,6 +119,9 @@ package body Math_Prime_Util.Vec is
       V : I64;
       Keep : Boolean;
    begin
+      if not Is_Set (A) or else not Is_Set (B) then
+         raise Constraint_Error with "set inputs must be sorted and unique";
+      end if;
       while I <= A'Last or J <= B'Last loop
          if I <= A'Last and then J <= B'Last and then A (I) = B (J)
          then
