@@ -44,7 +44,8 @@ package body Prop_Sieve is
                   AUnit.Assertions.Assert (P mod D /= 0, "trial division");
                end loop;
                AUnit.Assertions.Assert
-                 (Prev_Prime (Next_Prime (P).Value).Value = P, "navigation round trip");
+                 (Prev_Prime (Next_Prime (P).Value).Value = P,
+                  "navigation round trip");
                Sum := Sum + P;
             end;
          end loop;

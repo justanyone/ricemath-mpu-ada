@@ -179,7 +179,7 @@ package body Math_Prime_Util.Sieve is
    begin
       if N <= 2 then
          return (Defined => False);
-      elsif N <= 3 then
+      elsif N = 3 then
          return (Defined => True, Value => 2);
       elsif N <= 5 then
          return (Defined => True, Value => 3);

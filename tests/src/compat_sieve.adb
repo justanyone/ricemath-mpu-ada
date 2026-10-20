@@ -39,11 +39,7 @@ package body Compat_Sieve is
          Depth := 0;
          Valid := True;
          for Arg of C.Args loop
-            declare
-               V : U64;
-            begin
-               Valid := Parse_U64 (To_String (Arg), V) and then Valid;
-            end;
+            Valid := Parse_U64 (To_String (Arg), Depth) and then Valid;
          end loop;
          if Natural (C.Args.Length) = 1 then
             Valid := Parse_U64 (To_String (C.Args (1)), High)
