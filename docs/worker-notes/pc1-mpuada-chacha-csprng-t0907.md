@@ -14,3 +14,4 @@ Native properties now disambiguate overloaded results. Preparing a SPARK arithme
 Expanded fixture replay found real mismatches in bigint sampling; native tests and cipher vectors pass. Checking dispatch semantics before changing the bigint algorithm.
 SPARK core extracted and compilation passes. Expanded replay exposes bigint outputs using a different fallback stream; investigating the committed reference implementation rather than guessing an algorithm.
 Fixture bigint values do not come from the native stream bytes. PP fallback uses its own ChaCha stream; comparing its seed expansion and buffering to preserve the oracle exactly.
+- 2026-10-20T14:13:42Z launcher: no commit for 60 s; 367 s elapsed. Files changed so far: docs/worker-notes/pc1-mpuada-chacha-csprng-t0907.md, src/math_prime_util-random.adb, src/math_prime_util-random.ads, src/math_prime_util-random_core.adb, src/math_prime_util-random_core.ads, tests/src/compat_random.adb, tests/src/prop_random.adb.
