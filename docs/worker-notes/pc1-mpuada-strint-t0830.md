@@ -22,3 +22,6 @@ All bigint fixtures except fromdigits pass with checks on; its base contract was
 All 61 tests passed, including every bigint digits fixture. Added seeded unbounded arithmetic, division, conversion, and parity laws before final gate.
 Added one fixture test per parity/divisibility predicate using their existing combinat rows; final gate needs rerun for this additional coverage.
 Gate passed before the final predicate fixtures were added. Waiting for the updated 65-test gate; retaining generated status unchanged.
+Finished: tools/gate.sh printed == gate: green; all 65 tests passed with library validation contracts enabled.
+Every listed digits.tsv row is replayed by the unbounded tier; the native pass retains named fixed-tier exclusions. Predicate fixtures replay from combinat.tsv.
+No fixture, STATUS.md, dependency list, tools/, or CI changes. No commit, push, or READY marking performed.
