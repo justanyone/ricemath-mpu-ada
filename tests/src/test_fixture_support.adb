@@ -9,6 +9,7 @@ package body Test_Fixture_Support is
    use AUnit.Test_Cases;
    use Fixture_Support;
    use type Ada.Containers.Count_Type;
+   use type AUnit.Message_String;
    use type Math_Prime_Util.U64;
    use type Math_Prime_Util.U128;
 
@@ -31,11 +32,11 @@ package body Test_Fixture_Support is
       Assert (T.Name /= null, "test has a name");
       Assert (Cases.Length = 14_560, "int case count");
       Assert (Roots.Length = 152, "sqrtint case count");
-      Assert (Roots (1).Func.all = "sqrtint", "function name");
-      Assert (Roots (1).Args (1).all = "1524155677489", "first argument");
-      Assert (Roots (1).Result.all = "1234567", "first result");
+      Assert (Roots (1).Func = "sqrtint", "function name");
+      Assert (Roots (1).Args (1) = "1524155677489", "first argument");
+      Assert (Roots (1).Result = "1234567", "first result");
       Assert (Roots (1).Line_Number = 2, "comment counts as a line");
-      Assert (Roots (152).Result.all = "4294967295", "last result");
+      Assert (Roots (152).Result = "4294967295", "last result");
       Assert (not Roots (1).Undef and not Roots (1).Error, "value flags");
       Assert (For_Function (Cases, "missing").Is_Empty, "absent function");
       Assert (Again.Length = Cases.Length, "repeated load count");
@@ -43,17 +44,17 @@ package body Test_Fixture_Support is
       for C of Powers loop
          if C.Line_Number = 1_074 then
             Assert (C.Undef and not C.Error, "undef flags");
-            Assert (C.Result.all = "undef", "undef result");
+            Assert (C.Result = "undef", "undef result");
             Assert (C.Args.Length = 2, "argument count");
-            Assert (C.Args (1).all = "2", "first power argument");
-            Assert (C.Args (2).all = "64", "second power argument");
+            Assert (C.Args (1) = "2", "first power argument");
+            Assert (C.Args (2) = "64", "second power argument");
             Found_Undef := True;
          end if;
       end loop;
       for C of Nth_Roots loop
          if C.Line_Number = 841 then
             Assert (C.Error and not C.Undef, "error flags");
-            Assert (C.Result.all = "ERROR", "error result");
+            Assert (C.Result = "ERROR", "error result");
             Found_Error := True;
          end if;
       end loop;
