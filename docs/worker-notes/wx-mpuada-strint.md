@@ -7,3 +7,4 @@ API uses checked signed 128-bit results and unsigned digit magnitudes. Tests wil
 Implemented digit conversion, roots, Zeckendorf, and checked integer operations. Next: fixture dispatch and compilation.
 Compatibility replay and seeded algebraic laws are registered. The first focused build is running; no shared mutable state was added.
 Focused test failed before compilation: Alire attempted to clone its missing community index, and DNS/network is unavailable. Checking host cache without changing build tools.
+Offline workaround found cached AUnit and compiler files, but Alire still cannot select a compiler without its index. All temporary manifest pins were restored.
