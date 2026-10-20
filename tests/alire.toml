@@ -1,0 +1,23 @@
+name = "math_prime_util_tests"
+description = "Tests of math_prime_util (AUnit)"
+version = "0.1.0-dev"
+
+authors = ["Kevin J. Rice"]
+maintainers = ["Kevin J. Rice <justanyone@gmail.com>"]
+maintainers-logins = ["justanyone"]
+licenses = "GPL-1.0-or-later OR Artistic-1.0-Perl"
+
+executables = ["test_runner"]
+
+[[depends-on]]
+math_prime_util = "*"
+aunit = "*"
+
+[[pins]]
+math_prime_util = { path = ".." }
+
+[build-switches]
+"*".contracts = "Yes"
+"*".compile_checks = "Warnings"
+"*".style_checks = "Yes"
+"*".ada_version = "Ada2022"

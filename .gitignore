@@ -23,3 +23,9 @@ cov/
 gnatprove/
 # CodeGraph index that factory workers create in their worktree
 .codegraph/
+/obj/
+/lib/
+/alire/
+/config/
+**/bin/
+**/share/

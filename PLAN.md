@@ -32,6 +32,12 @@ Vendor MPU 0.75 read-only under `reference/mpu/` (plain copy, not a submodule: o
 | Coverage gate | 95% statement coverage and 90% decision coverage per package (GNATcoverage), enforced in CI | Same numbers as the Rust gate. |
 | Workers | SkyBuild board rows per phase/module (project onboarding is a later owner step; not part of this PR) | Same as Rust. |
 
+**Phase 0 verification, 2026-10-20 (jeltz):** Alire 2.1.1 (`alr`), `gnat_native` 16.1.0 and `gprbuild` 26.0.1 install
+user-level with `alr -n toolchain --select gnat_native gprbuild`; `Interfaces.Unsigned_128` exists in GNAT 16.1.0;
+Alire crates found: `aunit` 26.0.0, `gnatcov` 26.2.1, `gnatformat` 26.0.0, `gnatprove`, `gnatdoc`; no `gnatcheck`
+crate. Still VERIFY: gnatprove/gnatcov command lines, `alr publish` details, licence expression acceptance, oldest
+supported GNAT, setup-alire action version. Crate description limit is 72 characters.
+
 ## 3. How Ada distributes libraries (CPAN / PyPI equivalent) and how to publish
 
 **The registry is Alire** (https://alire.ada.dev), the package manager for Ada and SPARK. A library is a *crate*.
