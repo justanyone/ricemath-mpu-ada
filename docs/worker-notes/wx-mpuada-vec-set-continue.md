@@ -7,3 +7,4 @@ Reviewed existing signed set API and XS callback loops. Fixtures omit callbacks;
 Added arithmetic, scalar closures, extraction and sumsets plus initial tests. Focused test failed before compilation because Alire attempted an offline community-index clone. Check cached host settings next.
 Host has GNAT and AUnit cached, but this checkout lacks Alire resolution metadata. Investigating an isolated offline configuration without changing dependency manifests.
 Using a worktree-local Alire settings directory and an ignored copy of cached AUnit. A temporary existing-dependency pin enables offline builds; restore the manifest before finishing.
+About five minutes remain. Alire cannot select cached toolchains without index metadata. Stop repeating selection commands; preserve the implementation and validate what the available offline setup permits.
