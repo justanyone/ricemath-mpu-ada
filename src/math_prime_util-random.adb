@@ -298,6 +298,70 @@ package body Math_Prime_Util.Random is
       end if;
       return Low + Urandomm (High - Low + 1);
    end Urandomr;
+   package Native_Conversions is new BI.Unsigned_Conversions (U64);
+
+   function Urandomb (Bits : Natural) return BI.Big_Integer is
+      Result : BI.Big_Integer := BI.To_Big_Integer (0);
+   begin
+      if Bits <= 64 then
+         return Native_Conversions.To_Big_Integer (U64'(Urandomb (Bits)));
+      end if;
+      declare
+         Data : constant String := Random_Bytes ((Bits + 7) / 8);
+      begin
+         for Ch of Data loop
+            Result := Result * BI.To_Big_Integer (256)
+              + BI.To_Big_Integer (Character'Pos (Ch));
+         end loop;
+      end;
+      return Result / BI.To_Big_Integer (2) ** ((8 - Bits mod 8) mod 8);
+   end Urandomb;
+
+   function Urandomm (Modulus : BI.Big_Integer) return BI.Big_Integer is
+      Zero : constant BI.Big_Integer := BI.To_Big_Integer (0);
+      Maximum : constant BI.Big_Integer :=
+        Native_Conversions.To_Big_Integer (U64'Last);
+      Result : BI.Big_Integer := Zero;
+   begin
+      if Modulus <= Zero then
+         raise Constraint_Error with "urandomm requires positive modulus";
+      end if;
+      if Modulus <= Maximum then
+         return Native_Conversions.To_Big_Integer
+           (Urandomm (Native_Conversions.From_Big_Integer (Modulus)));
+      end if;
+      declare
+         --  PP.pm estimates bytes from the decimal digit count.
+         Digits_Count : constant Natural :=
+           BI.To_String (Modulus, Width => 0)'Length;
+         Bytes : constant Natural := (3_322 * Digits_Count / 1_000 + 15) / 8;
+         Rmax : constant BI.Big_Integer := BI.To_Big_Integer (2) ** (Bytes * 8)
+           - BI.To_Big_Integer (1);
+         Overflow : constant BI.Big_Integer := Rmax - Rmax mod Modulus;
+      begin
+         loop
+            Result := Urandomb (Bytes * 8);
+            exit when Result < Overflow;
+         end loop;
+      end;
+      return Result mod Modulus;
+   end Urandomm;
+
+   function Urandomr (Low, High : BI.Big_Integer) return BI.Big_Integer is
+      Zero : constant BI.Big_Integer := BI.To_Big_Integer (0);
+      Maximum : constant BI.Big_Integer :=
+        Native_Conversions.To_Big_Integer (U64'Last);
+   begin
+      if Low > High then
+         raise Constraint_Error with "urandomr requires ordered bounds";
+      end if;
+      if Low >= Zero and then High <= Maximum then
+         return Native_Conversions.To_Big_Integer (Urandomr
+           (Native_Conversions.From_Big_Integer (Low),
+            Native_Conversions.From_Big_Integer (High)));
+      end if;
+      return Low + Urandomm (High - Low + BI.To_Big_Integer (1));
+   end Urandomr;
 begin
    Csrand;
 end Math_Prime_Util.Random;
