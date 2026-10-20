@@ -139,8 +139,184 @@ package body Compat_Count is
       end loop;
    end Check_Legendre_Phi;
 
+   procedure Check_Prime_Count_Lower (T : in out Test_Case'Class) is
+      Cases : constant Case_Vectors.Vector :=
+        For_Function (Load ("count"), "prime_count_lower");
+      N : U64;
+      Expected : U64;
+   begin
+      for C of Cases loop
+         AUnit.Assertions.Assert
+           (Parse_U64 (To_String (C.Args (1)), N), "argument");
+         --  Extended precision and large Chebyshev table replay pending.
+         if not C.Undef and then N <= 100_000_000_000_000 then
+            AUnit.Assertions.Assert
+              (Parse_U64 (To_String (C.Result), Expected), "result");
+            AUnit.Assertions.Assert
+              (Pc.Prime_Count_Lower (N) = Expected,
+               "prime_count_lower row" & Positive'Image (C.Line_Number));
+         end if;
+      end loop;
+   end Check_Prime_Count_Lower;
+
+   procedure Check_Prime_Count_Upper (T : in out Test_Case'Class) is
+      Cases : constant Case_Vectors.Vector :=
+        For_Function (Load ("count"), "prime_count_upper");
+      N : U64;
+      Expected : U64;
+   begin
+      for C of Cases loop
+         AUnit.Assertions.Assert
+           (Parse_U64 (To_String (C.Args (1)), N), "argument");
+         --  Extended precision and large Chebyshev table replay pending.
+         if not C.Undef and then N <= 100_000_000_000_000 then
+            AUnit.Assertions.Assert
+              (Parse_U64 (To_String (C.Result), Expected), "result");
+            AUnit.Assertions.Assert
+              (Pc.Prime_Count_Upper (N) = Expected,
+               "prime_count_upper row" & Positive'Image (C.Line_Number));
+         end if;
+      end loop;
+   end Check_Prime_Count_Upper;
+
+   procedure Check_Prime_Count_Approx (T : in out Test_Case'Class) is
+      Cases : constant Case_Vectors.Vector :=
+        For_Function (Load ("count"), "prime_count_approx");
+      N : U64;
+      Expected : U64;
+   begin
+      for C of Cases loop
+         AUnit.Assertions.Assert
+           (Parse_U64 (To_String (C.Args (1)), N), "argument");
+         --  Extended precision and large Chebyshev table replay pending.
+         if not C.Undef and then N <= 100_000_000_000_000 then
+            AUnit.Assertions.Assert
+              (Parse_U64 (To_String (C.Result), Expected), "result");
+            AUnit.Assertions.Assert
+              (Pc.Prime_Count_Approx (N) = Expected,
+               "prime_count_approx row" & Positive'Image (C.Line_Number));
+         end if;
+      end loop;
+   end Check_Prime_Count_Approx;
+
+   procedure Check_Nth_Prime_Lower (T : in out Test_Case'Class) is
+      Cases : constant Case_Vectors.Vector :=
+        For_Function (Load ("count"), "nth_prime_lower");
+      N : U64;
+      Expected : U64;
+   begin
+      for C of Cases loop
+         AUnit.Assertions.Assert
+           (Parse_U64 (To_String (C.Args (1)), N), "argument");
+         --  Extended precision and large Chebyshev table replay pending.
+         if not C.Undef and then N >= 1 and then N <= 100_000_000_000_000 then
+            AUnit.Assertions.Assert
+              (Parse_U64 (To_String (C.Result), Expected), "result");
+            AUnit.Assertions.Assert
+              (Pc.Nth_Prime_Lower (N) = Expected,
+               "nth_prime_lower row" & Positive'Image (C.Line_Number));
+         end if;
+      end loop;
+   end Check_Nth_Prime_Lower;
+
+   procedure Check_Nth_Prime_Upper (T : in out Test_Case'Class) is
+      Cases : constant Case_Vectors.Vector :=
+        For_Function (Load ("count"), "nth_prime_upper");
+      N : U64;
+      Expected : U64;
+   begin
+      for C of Cases loop
+         AUnit.Assertions.Assert
+           (Parse_U64 (To_String (C.Args (1)), N), "argument");
+         --  Extended precision and large Chebyshev table replay pending.
+         if not C.Undef and then N >= 1 and then N <= 100_000_000_000_000 then
+            AUnit.Assertions.Assert
+              (Parse_U64 (To_String (C.Result), Expected), "result");
+            AUnit.Assertions.Assert
+              (Pc.Nth_Prime_Upper (N) = Expected,
+               "nth_prime_upper row" & Positive'Image (C.Line_Number));
+         end if;
+      end loop;
+   end Check_Nth_Prime_Upper;
+
+   procedure Check_Nth_Prime_Approx (T : in out Test_Case'Class) is
+      Cases : constant Case_Vectors.Vector :=
+        For_Function (Load ("count"), "nth_prime_approx");
+      N : U64;
+      Expected : U64;
+   begin
+      for C of Cases loop
+         AUnit.Assertions.Assert
+           (Parse_U64 (To_String (C.Args (1)), N), "argument");
+         --  Extended precision and large Chebyshev table replay pending.
+         if not C.Undef and then N >= 1 and then N <= 100_000_000_000_000 then
+            AUnit.Assertions.Assert
+              (Parse_U64 (To_String (C.Result), Expected), "result");
+            AUnit.Assertions.Assert
+              (Pc.Nth_Prime_Approx (N) = Expected,
+               "nth_prime_approx row" & Positive'Image (C.Line_Number));
+         end if;
+      end loop;
+   end Check_Nth_Prime_Approx;
+
+   procedure Check_Chebyshev_Theta (T : in out Test_Case'Class) is
+      Cases : constant Case_Vectors.Vector :=
+        For_Function (Load ("count"), "chebyshev_theta");
+      N : U64;
+      Expected : Long_Float;
+   begin
+      for C of Cases loop
+         AUnit.Assertions.Assert
+           (Parse_U64 (To_String (C.Args (1)), N), "argument");
+         --  Extended precision and large Chebyshev table replay pending.
+         if not C.Undef and then N <= 100_000_000 then
+            Expected := Long_Float'Value (To_String (C.Result));
+            AUnit.Assertions.Assert
+              (abs (Pc.Chebyshev_Theta (N) - Expected) <=
+                 1.0E-12 * Long_Float'Max (1.0, Expected),
+               "chebyshev_theta row" & Positive'Image (C.Line_Number));
+         end if;
+      end loop;
+   end Check_Chebyshev_Theta;
+
+   procedure Check_Chebyshev_Psi (T : in out Test_Case'Class) is
+      Cases : constant Case_Vectors.Vector :=
+        For_Function (Load ("count"), "chebyshev_psi");
+      N : U64;
+      Expected : Long_Float;
+   begin
+      for C of Cases loop
+         AUnit.Assertions.Assert
+           (Parse_U64 (To_String (C.Args (1)), N), "argument");
+         --  Extended precision and large Chebyshev table replay pending.
+         if not C.Undef and then N <= 100_000_000 then
+            Expected := Long_Float'Value (To_String (C.Result));
+            AUnit.Assertions.Assert
+              (abs (Pc.Chebyshev_Psi (N) - Expected) <=
+                 1.0E-12 * Long_Float'Max (1.0, Expected),
+               "chebyshev_psi row" & Positive'Image (C.Line_Number));
+         end if;
+      end loop;
+   end Check_Chebyshev_Psi;
+
    overriding procedure Register_Tests (T : in out Count_Case) is
    begin
+      Registration.Register_Routine
+        (T, Check_Prime_Count_Lower'Access, "prime_count_lower");
+      Registration.Register_Routine
+        (T, Check_Prime_Count_Upper'Access, "prime_count_upper");
+      Registration.Register_Routine
+        (T, Check_Prime_Count_Approx'Access, "prime_count_approx");
+      Registration.Register_Routine
+        (T, Check_Nth_Prime_Lower'Access, "nth_prime_lower");
+      Registration.Register_Routine
+        (T, Check_Nth_Prime_Upper'Access, "nth_prime_upper");
+      Registration.Register_Routine
+        (T, Check_Nth_Prime_Approx'Access, "nth_prime_approx");
+      Registration.Register_Routine
+        (T, Check_Chebyshev_Theta'Access, "chebyshev_theta");
+      Registration.Register_Routine
+        (T, Check_Chebyshev_Psi'Access, "chebyshev_psi");
       Registration.Register_Routine (T, Check_Sums'Access, "sum_primes");
       Registration.Register_Routine
         (T, Check_Prime_Count'Access, "prime_count");
