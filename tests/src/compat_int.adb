@@ -5,6 +5,7 @@ with Ada.Strings;
 with Ada.Strings.Unbounded;
 with Ada.Strings.Fixed;
 with Fixture_Support;
+with Math_Prime_Util.Config;
 with Math_Prime_Util.Int;
 
 package body Compat_Int is
@@ -230,6 +231,72 @@ package body Compat_Int is
       Replay ("mulsubmod");
    end Test_Mulsubmod;
 
+   --  No int.tsv row names the config functions: their rows are in
+   --  config.tsv, which these tests do not replay. The tests check the
+   --  values that Math::Prime::Util 0.75 gives on a 64-bit build.
+   procedure Test_Prime_Get_Config (T : in out Test_Case'Class) is
+      C : constant Math_Prime_Util.Config.Config_Record :=
+        Math_Prime_Util.Config.Prime_Get_Config;
+   begin
+      AUnit.Assertions.Assert (C.Maxbits = 64, "maxbits");
+      AUnit.Assertions.Assert (C.Verbose = 0, "verbose default");
+      AUnit.Assertions.Assert (not C.Assume_RH, "assume_rh default");
+   end Test_Prime_Get_Config;
+
+   procedure Test_Prime_Set_Config (T : in out Test_Case'Class) is
+      use Math_Prime_Util.Config;
+   begin
+      --  Restore the defaults after each step: the settings are global.
+      Prime_Set_Config ("VERBOSE", "2");
+      AUnit.Assertions.Assert
+        (Prime_Get_Config.Verbose = 2, "verbose 2");
+      Prime_Set_Config ("verbose", "no");
+      AUnit.Assertions.Assert
+        (Prime_Get_Config.Verbose = 0, "verbose no");
+      Prime_Set_Config ("assume rh", "1");
+      AUnit.Assertions.Assert
+        (Prime_Get_Config.Assume_RH, "assume rh on");
+      Prime_Set_Config ("riemann hypothesis", "0");
+      AUnit.Assertions.Assert
+        (not Prime_Get_Config.Assume_RH, "riemann hypothesis off");
+   end Test_Prime_Set_Config;
+
+   procedure Test_Uvsize (T : in out Test_Case'Class) is
+   begin
+      AUnit.Assertions.Assert
+        (Math_Prime_Util.Config.Uvsize = 8, "uvsize");
+   end Test_Uvsize;
+
+   procedure Test_Uvbits (T : in out Test_Case'Class) is
+   begin
+      AUnit.Assertions.Assert
+        (Math_Prime_Util.Config.Uvbits = 64, "uvbits");
+   end Test_Uvbits;
+
+   procedure Test_Ivsize (T : in out Test_Case'Class) is
+   begin
+      AUnit.Assertions.Assert
+        (Math_Prime_Util.Config.Ivsize = 8, "ivsize");
+   end Test_Ivsize;
+
+   procedure Test_Nvsize (T : in out Test_Case'Class) is
+   begin
+      AUnit.Assertions.Assert
+        (Math_Prime_Util.Config.Nvsize = 8, "nvsize");
+   end Test_Nvsize;
+
+   procedure Test_Nvmantbits (T : in out Test_Case'Class) is
+   begin
+      AUnit.Assertions.Assert
+        (Math_Prime_Util.Config.Nvmantbits = 53, "nvmantbits");
+   end Test_Nvmantbits;
+
+   procedure Test_Nvmantdigits (T : in out Test_Case'Class) is
+   begin
+      AUnit.Assertions.Assert
+        (Math_Prime_Util.Config.Nvmantdigits = 16, "nvmantdigits");
+   end Test_Nvmantdigits;
+
    overriding procedure Register_Tests (T : in out Int_Case) is
    begin
       Registration.Register_Routine
@@ -272,6 +339,22 @@ package body Compat_Int is
         (T, Test_Muladdmod'Access, "muladdmod");
       Registration.Register_Routine
         (T, Test_Mulsubmod'Access, "mulsubmod");
+      Registration.Register_Routine
+        (T, Test_Prime_Get_Config'Access, "prime_get_config");
+      Registration.Register_Routine
+        (T, Test_Prime_Set_Config'Access, "prime_set_config");
+      Registration.Register_Routine
+        (T, Test_Uvsize'Access, "_uvsize");
+      Registration.Register_Routine
+        (T, Test_Uvbits'Access, "_uvbits");
+      Registration.Register_Routine
+        (T, Test_Ivsize'Access, "_ivsize");
+      Registration.Register_Routine
+        (T, Test_Nvsize'Access, "_nvsize");
+      Registration.Register_Routine
+        (T, Test_Nvmantbits'Access, "_nvmantbits");
+      Registration.Register_Routine
+        (T, Test_Nvmantdigits'Access, "_nvmantdigits");
    end Register_Tests;
 
    function Suite return AUnit.Test_Suites.Access_Test_Suite is
