@@ -16,3 +16,4 @@ An explicit reference lifetime did not fix GNAT linking. Moved the public vector
 The standalone generic still omitted its finalizer with optimization. Testing unit-local Optimize (Off) for the container only; arithmetic sieve code keeps normal optimization.
 Container workarounds did not fix the compiler defect. Removed them. Tests now use Element copies instead of implicit references across mixed build profiles. Sum_Primes now streams bounded segments.
 Tests now link and run: 33 passed, 4 assertions failed. Correcting undef navigation spelling, enforcing cluster validation in release dependencies, and fixing the partial-sieve property expectation.
+Navigation now returns Optional_U64 for MPU undef. Added explicit input checks so release dependencies reject invalid offsets and overflowing widths. The gate script can print green despite AUnit assertion failures; inspect totals as well.

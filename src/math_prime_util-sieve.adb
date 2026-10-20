@@ -155,42 +155,42 @@ package body Math_Prime_Util.Sieve is
       return True;
    end Native_Prime;
 
-   function Next_Prime (N : U64) return U64 is
+   function Next_Prime (N : U64) return Int.Optional_U64 is
       P : U64 := N;
    begin
       if N < 2 then
-         return 2;
+         return (Defined => True, Value => 2);
       elsif N = 2 then
-         return 3;
+         return (Defined => True, Value => 3);
       elsif N < 5 then
-         return 5;
+         return (Defined => True, Value => 5);
       elsif N >= 18_446_744_073_709_551_557 then
-         return 0;
+         return (Defined => False);
       end if;
       loop
          P := P + 1;
          exit when Masks (P mod 30) /= 0 and then Native_Prime (P);
       end loop;
-      return P;
+      return (Defined => True, Value => P);
    end Next_Prime;
 
-   function Prev_Prime (N : U64) return U64 is
+   function Prev_Prime (N : U64) return Int.Optional_U64 is
       P : U64 := N;
    begin
       if N <= 2 then
-         return 0;
+         return (Defined => False);
       elsif N <= 3 then
-         return 2;
+         return (Defined => True, Value => 2);
       elsif N <= 5 then
-         return 3;
+         return (Defined => True, Value => 3);
       elsif N <= 7 then
-         return 5;
+         return (Defined => True, Value => 5);
       end if;
       loop
          P := P - 1;
          exit when Masks (P mod 30) /= 0 and then Native_Prime (P);
       end loop;
-      return P;
+      return (Defined => True, Value => P);
    end Prev_Prime;
 
    function Primes (Low, High : U64) return Prime_Vectors.Vector is
@@ -273,6 +273,9 @@ package body Math_Prime_Util.Sieve is
       if Width = 0 then
          return Result;
       end if;
+      if Start > U64'Last - (Width - 1) then
+         raise Constraint_Error with "sieve interval exceeds U64";
+      end if;
       High := Start + (Width - 1);
       if High < 2 then
          return Result;
@@ -311,6 +314,17 @@ package body Math_Prime_Util.Sieve is
       Good, Covered : Boolean;
       Count : constant U64 := U64 (Offsets'Length) + 1;
    begin
+      if Offsets'Length > 98 then
+         raise Constraint_Error with "too many cluster offsets";
+      end if;
+      for I in Offsets'Range loop
+         if Offsets (I) > 2 ** 32 - 1 or else Offsets (I) mod 2 /= 0
+           or else (I > Offsets'First
+                    and then Offsets (I) <= Offsets (I - 1))
+         then
+            raise Constraint_Error with "invalid cluster offsets";
+         end if;
+      end loop;
       --  sieve_cluster.c: is_admissible. A covered residue class bounds
       --  all exceptional clusters by its small prime.
       for Q of Primes (Count) loop

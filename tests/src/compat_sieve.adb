@@ -68,10 +68,15 @@ package body Compat_Sieve is
          elsif Valid then
             if Func = "primes" then
                Values := Primes (Low, High);
-            elsif Func = "next_prime" then
-               Actual := To_Unbounded_String (Image (Next_Prime (High)));
-            elsif Func = "prev_prime" then
-               Actual := To_Unbounded_String (Image (Prev_Prime (High)));
+            elsif Func = "next_prime" or else Func = "prev_prime" then
+               declare
+                  R : constant Int.Optional_U64 :=
+                    (if Func = "next_prime" then Next_Prime (High)
+                     else Prev_Prime (High));
+               begin
+                  Actual := To_Unbounded_String
+                    ((if R.Defined then Image (R.Value) else "undef"));
+               end;
             elsif Func = "sieve_range" then
                Valid := Parse_U64 (To_String (C.Args (3)), Depth);
                Values := Sieve_Range (Low, High, Depth);
@@ -88,7 +93,7 @@ package body Compat_Sieve is
                   begin
                      Values := Sieve_Prime_Cluster (Low, High, Offsets);
                   exception
-                     when Ada.Assertions.Assertion_Error =>
+                     when Constraint_Error | Ada.Assertions.Assertion_Error =>
                         Rejected := True;
                   end;
                   AUnit.Assertions.Assert
@@ -111,10 +116,10 @@ package body Compat_Sieve is
             declare
                P : constant U64 := Values.Element (Index);
             begin
-               if Length (Actual) > 0 then
-                  Append (Actual, " ");
-               end if;
-               Append (Actual, Image (P));
+                  if Length (Actual) > 0 then
+                     Append (Actual, " ");
+                  end if;
+                  Append (Actual, Image (P));
                end;
          end loop;
             if not C.Error then

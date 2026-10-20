@@ -19,15 +19,17 @@ package Math_Prime_Util.Sieve is
      with Pre => True,
           Post => (for all P of Primes'Result => P >= 2 and P <= High);
 
-   --  util.c: next_prime. Strict successor; zero at native overflow.
-   function Next_Prime (N : U64) return U64
+   --  util.c: next_prime. Strict successor; undefined at native overflow.
+   function Next_Prime (N : U64) return Int.Optional_U64
      with Pre => True,
-          Post => Next_Prime'Result = 0 or else Next_Prime'Result > N;
+          Post => (if Next_Prime'Result.Defined then
+                     Next_Prime'Result.Value > N);
 
-   --  util.c: prev_prime. Strict predecessor; zero for N <= 2.
-   function Prev_Prime (N : U64) return U64
+   --  util.c: prev_prime. Strict predecessor; undefined for N <= 2.
+   function Prev_Prime (N : U64) return Int.Optional_U64
      with Pre => True,
-          Post => Prev_Prime'Result = 0 or else Prev_Prime'Result < N;
+          Post => (if Prev_Prime'Result.Defined then
+                     Prev_Prime'Result.Value < N);
 
    --  sieve.c: range_partial_sieve; XS.xs: sieve_range.
    --  Return offsets in [Start, Start + Width), sieved through Depth.
@@ -40,7 +42,8 @@ package Math_Prime_Util.Sieve is
    type Cluster_Offsets is array (Positive range <>) of U64;
    --  sieve_cluster.c: sieve_cluster_simple, is_admissible, is_cluster.
    --  Zero is implicit. Offsets must be even and strictly increasing.
-   --  A leading zero is allowed. Overflowing members cannot form a cluster.
+   --  A leading zero is allowed. Invalid offsets raise Constraint_Error.
+   --  Overflowing members cannot form a cluster.
    function Sieve_Prime_Cluster
      (Low, High : U64; Offsets : Cluster_Offsets)
       return Prime_Vectors.Vector

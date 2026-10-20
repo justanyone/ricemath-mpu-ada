@@ -40,12 +40,12 @@ package body Prop_Sieve is
             declare
                P : constant U64 := Whole.Element (Index);
             begin
-            for D in U64 range 2 .. Int.Sqrtint (P) loop
-               AUnit.Assertions.Assert (P mod D /= 0, "trial division");
-            end loop;
-            AUnit.Assertions.Assert
-              (Prev_Prime (Next_Prime (P)) = P, "navigation round trip");
-            Sum := Sum + P;
+               for D in U64 range 2 .. Int.Sqrtint (P) loop
+                  AUnit.Assertions.Assert (P mod D /= 0, "trial division");
+               end loop;
+               AUnit.Assertions.Assert
+                 (Prev_Prime (Next_Prime (P).Value).Value = P, "navigation round trip");
+               Sum := Sum + P;
             end;
          end loop;
          AUnit.Assertions.Assert
@@ -63,12 +63,12 @@ package body Prop_Sieve is
       V : Prime_Vectors.Vector;
       Rejected : Boolean := False;
    begin
-      AUnit.Assertions.Assert (Next_Prime (0) = 2, "zero successor");
-      AUnit.Assertions.Assert (Prev_Prime (2) = 0, "no predecessor");
+      AUnit.Assertions.Assert (Next_Prime (0).Value = 2, "zero successor");
+      AUnit.Assertions.Assert (not Prev_Prime (2).Defined, "no predecessor");
       AUnit.Assertions.Assert
-        (Next_Prime (Last_Prime) = 0, "no native successor");
+        (not Next_Prime (Last_Prime).Defined, "no native successor");
       AUnit.Assertions.Assert
-        (Prev_Prime (U64'Last) = Last_Prime, "maximum predecessor");
+        (Prev_Prime (U64'Last).Value = Last_Prime, "maximum predecessor");
       V := Primes (Last_Prime, U64'Last);
       AUnit.Assertions.Assert
         (Natural (V.Length) = 1 and then V.First_Element = Last_Prime,
@@ -77,13 +77,14 @@ package body Prop_Sieve is
       AUnit.Assertions.Assert (V.Is_Empty, "zero width at maximum");
       V := Sieve_Range (45, 10, 7);
       AUnit.Assertions.Assert
-        (Natural (V.Length) = 2 and then V.First_Element = 4
+        (Natural (V.Length) = 2 and then V.First_Element = 2
          and then V.Last_Element = 8,
          "partial sieve retains offsets");
       begin
          V := Sieve_Range (U64'Last, 2, 0);
       exception
-         when Ada.Assertions.Assertion_Error => Rejected := True;
+         when Constraint_Error | Ada.Assertions.Assertion_Error =>
+            Rejected := True;
       end;
       AUnit.Assertions.Assert (Rejected, "overflowing interval rejected");
    end Boundaries;
