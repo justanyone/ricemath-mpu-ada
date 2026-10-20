@@ -9,57 +9,57 @@ package Math_Prime_Util.Digit_Operations.Bigints with SPARK_Mode => Off is
       Quotient, Remainder : Big_Integer;
    end record;
 
-   --  strops.c: strint_absint; exact signed arithmetic.
+   --  strops.c: strint_abs; exact signed arithmetic.
    function Absint
      (A : Big_Integer) return Big_Integer
      with Pre => True, Post => True;
 
-   --  strops.c: strint_negint; exact signed arithmetic.
+   --  strops.c: strint_neg; exact signed arithmetic.
    function Negint
      (A : Big_Integer) return Big_Integer
      with Pre => True, Post => True;
 
-   --  strops.c: strint_signint; exact signed arithmetic.
+   --  strops.c: strint_cmp; exact signed arithmetic.
    function Signint
      (A : Big_Integer) return Integer
      with Pre => True, Post => True;
 
-   --  strops.c: strint_add1int; exact signed arithmetic.
+   --  strops.c: strint_add_s; exact signed arithmetic.
    function Add1int
      (A : Big_Integer) return Big_Integer
      with Pre => True, Post => True;
 
-   --  strops.c: strint_sub1int; exact signed arithmetic.
+   --  strops.c: strint_add_s; exact signed arithmetic.
    function Sub1int
      (A : Big_Integer) return Big_Integer
      with Pre => True, Post => True;
 
-   --  strops.c: strint_muladdint; exact signed arithmetic.
+   --  strops.c: strint_muladd_s; exact signed arithmetic.
    function Muladdint
      (A, B, C : Big_Integer) return Big_Integer
      with Pre => True, Post => True;
 
-   --  strops.c: strint_mulsubint; exact signed arithmetic.
+   --  strops.c: strint_muladd_s; exact signed arithmetic.
    function Mulsubint
      (A, B, C : Big_Integer) return Big_Integer
      with Pre => True, Post => True;
 
-   --  strops.c: strint_cmpint; exact signed arithmetic.
+   --  strops.c: strint_cmp; exact signed arithmetic.
    function Cmpint
      (A, B : Big_Integer) return Integer
      with Pre => True, Post => True;
 
-   --  strops.c: strint_addint; exact signed arithmetic.
+   --  strops.c: strint_add_s; exact signed arithmetic.
    function Addint
      (A, B : Big_Integer) return Big_Integer
      with Pre => True, Post => True;
 
-   --  strops.c: strint_subint; exact signed arithmetic.
+   --  strops.c: strint_add_s; exact signed arithmetic.
    function Subint
      (A, B : Big_Integer) return Big_Integer
      with Pre => True, Post => True;
 
-   --  strops.c: strint_mulint; exact signed arithmetic.
+   --  strops.c: strint_mul; exact signed arithmetic.
    function Mulint
      (A, B : Big_Integer) return Big_Integer
      with Pre => True, Post => True;
@@ -79,12 +79,12 @@ package Math_Prime_Util.Digit_Operations.Bigints with SPARK_Mode => Off is
      (A, B : Big_Integer) return Big_Integer
      with Pre => B /= 0, Post => True;
 
-   --  strops.c: strint_divrem; exact signed arithmetic.
+   --  strops.c: strint_fdivrem; exact signed arithmetic.
    function Divrem
      (A, B : Big_Integer) return Division_Result
      with Pre => B /= 0, Post => True;
 
-   --  strops.c: strint_tdivrem; exact signed arithmetic.
+   --  strops.c: strint_fdivrem; exact signed arithmetic.
    function Tdivrem
      (A, B : Big_Integer) return Division_Result
      with Pre => B /= 0, Post => True;
@@ -94,7 +94,7 @@ package Math_Prime_Util.Digit_Operations.Bigints with SPARK_Mode => Off is
      (A, B : Big_Integer) return Division_Result
      with Pre => B /= 0, Post => True;
 
-   --  strops.c: strint_cdivrem; exact signed arithmetic.
+   --  strops.c: strint_fdivrem; exact signed arithmetic.
    function Cdivrem
      (A, B : Big_Integer) return Division_Result
      with Pre => B /= 0, Post => True;
