@@ -13,3 +13,7 @@ Checking local toolchain configuration; no dependency or tooling changes.
 About five minutes remain. Tests have not compiled due to missing offline Alire index.
 Next/prev prime, sieve_range, and sieve_prime_cluster remain unwritten.
 The wheel marking is scalar; MPU prefill and carried wheel state remain pending.
+Gate also stopped at build-development while fetching the missing index.
+No Ada compilation, AUnit execution, or SPARK proof completed on this host.
+Final: partial port only. New Ada files pass a 79-column source check.
+No fixture, status, dependency, build tool, or git metadata was changed.
