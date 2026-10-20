@@ -9,3 +9,4 @@ Adding a standard-library bigint child API to replay previously skipped rows.
 Implemented bigint child operations using Ada standard Big_Integers; wiring full fixture replay next.
 Bigint generator hit a quoting error before creating sources; correcting it before validation.
 Bigint source and spec created; configuring an isolated offline Alire settings directory under obj/.
+Offline Alire has no index and cannot resolve AUnit, although its release is cached. Investigating local-only resolution.

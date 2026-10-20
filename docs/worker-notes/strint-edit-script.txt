@@ -11,7 +11,11 @@ for n in names:
  arity = 1 if n in unary else 3 if n in ternary else 2
  source = 'strint_' + n.lower()
 
- api(n,', '.join('ABC'[:arity])+ ' : Big_Integer','Integer' if n in ['Signint','Cmpint'] else 'Division_Result' if n.endswith('rem') else 'Big_Integer',f'strops.c: {source}; exact signed arithmetic.', 'B /= 0' if 'div' in n.lower() or 'mod' <<cut 47 chars by kit>>
+ ret = "Integer" if n in ["Signint", "Cmpint"] else "Big_Integer"
+ if n.endswith("rem"): ret = "Division_Result"
+ pre = "B /= 0" if "div" in n.lower() or "mod" in n.lower() else "True"
+ api(n, ", ".join("ABC"[:arity]) + " : Big_Integer", ret,
+     "strops.c: " + source + "; exact signed arithmetic.", pre)
 for n in ['Lshiftint','Rshiftint','Rashiftint']:
  api(n,'A : Big_Integer; Bits : Integer := 1','Big_Integer',f'strops.c: strint_{n.lower()}; signed power-of-two shift.')
 api('Toint','Text : String','Big_Integer','XS.xs: toint; parse and truncate; invalid text raises Constraint_Error.')
