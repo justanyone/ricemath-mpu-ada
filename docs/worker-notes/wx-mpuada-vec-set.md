@@ -21,3 +21,9 @@ About five minutes remain: prioritize a correct partial port and clear limits.
 Vec now passes gcc -gnat2022 -gnata -gnaty -gnatwa -gnatwe compilation.
 Gate builds development and release, then fails tests compiler resolution.
 Existing Int style messages were observed and left outside task scope.
+NOTES: Partial implementation. Missing arithmetic, frequency, extraction,
+closures, windows, sumset, and full-width fixture support. Sorting uses the
+reference insertion kernel, not its complete production sort dispatch.
+Sidon and sumfree results use wide exhaustive checks; hashed/binary-search
+reference methods remain to be ported. No performance claim or SPARK proof.
+Gate did not reach green: test crate cannot resolve its external compiler.
