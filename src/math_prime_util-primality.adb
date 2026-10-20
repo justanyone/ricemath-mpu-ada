@@ -614,4 +614,178 @@ package body Math_Prime_Util.Primality is
       return A = 0 and B = Expected;
    end Is_Frobenius_Underwood_Pseudoprime;
 
+   function Is_Catalan_Pseudoprime (N : U64) return Boolean is
+      A : constant U64 := N / 2;
+      M : U64 := 1;
+      Rest : U64 := N;
+      D : U64 := 3;
+      Factors, First, Last, Exponent, V : U64 := 0;
+      Squarefree : Boolean := True;
+   begin
+      if N < 2 or (N mod 2 = 0 and N /= 2) then
+         return False;
+      elsif Is_Prob_Prime (N) /= 0 then
+         return True;
+      end if;
+      while D <= Rest / D loop
+         if Rest mod D = 0 then
+            Factors := Factors + 1;
+            if First = 0 then
+               First := D;
+            end if;
+            Last := D;
+            Exponent := 0;
+            while Rest mod D = 0 loop
+               Rest := Rest / D;
+               Exponent := Exponent + 1;
+            end loop;
+            Squarefree := Squarefree and Exponent = 1;
+            V := 2 * A / D;
+            while V > 0 loop
+               if V mod 2 = 1 then
+                  return False;
+               end if;
+               V := V / D;
+            end loop;
+         end if;
+         D := D + 2;
+      end loop;
+      if Rest > 1 then
+         Factors := Factors + 1;
+         Last := Rest;
+         V := 2 * A / Rest;
+         while V > 0 loop
+            if V mod 2 = 1 then
+               return False;
+            end if;
+            V := V / Rest;
+         end loop;
+      end if;
+      if Factors = 2 and Squarefree and then
+        (N < 10_000_000_000 or else 2 * First + 1 >= Last)
+      then
+         return False;
+      end if;
+      for P of Sieve.Primes (N) loop
+         Exponent := 0;
+         V := 2 * A;
+         while V >= P loop
+            V := V / P;
+            Exponent := Exponent + V mod 2;
+         end loop;
+         M := Mul (M, Power (P, Exponent, N), N);
+      end loop;
+      return M = (if A mod 2 = 1 then N - 1 else 1);
+   end Is_Catalan_Pseudoprime;
+
+   function Is_Chen_Prime (N : U64) return Boolean is
+      V, D, Xi, Xm, Xs, Product, G, R, Left, Count : U64;
+      C : U64 := 1;
+   begin
+      if N < 2 or N > U64'Last - 2 or else Is_Prime (N) = 0 then
+         return False;
+      end if;
+      V := N + 2;
+      if Is_Prime (V) /= 0 then
+         return True;
+      end if;
+      D := 2;
+      while D <= 1_000 and D <= V / D loop
+         if V mod D = 0 then
+            return Is_Prime (D) /= 0 and then Is_Prime (V / D) /= 0;
+         end if;
+         D := (if D = 2 then 3 else D + 2);
+      end loop;
+      --  factor.c: pbrent_factor, portable modular arithmetic path.
+      loop
+         Xi := 1;
+         Xm := 1;
+         Xs := 1;
+         R := 1;
+         G := 1;
+         while G = 1 loop
+            Xm := Xi;
+            Left := R;
+            while Left > 0 and G = 1 loop
+               Count := U64'Min (Left, 320);
+               Left := Left - Count;
+               Xs := Xi;
+               Product := 1;
+               for I in 1 .. Count loop
+                  Xi := Add (Mul (Xi, Xi, V), C, V);
+                  D := (if Xi > Xm then Xi - Xm else Xm - Xi);
+                  Product := Mul (Product, D, V);
+               end loop;
+               G := Int.Gcd (Product, V);
+            end loop;
+            R := R * 2;
+         end loop;
+         if G = V then
+            loop
+               Xs := Add (Mul (Xs, Xs, V), C, V);
+               D := (if Xs > Xm then Xs - Xm else Xm - Xs);
+               G := Int.Gcd (D, V);
+               exit when G /= 1;
+            end loop;
+         end if;
+         exit when G /= V;
+         C := C + 11;
+      end loop;
+      return Is_Prime (G) /= 0 and then Is_Prime (V / G) /= 0;
+   end Is_Chen_Prime;
+
+   function Is_Delicate_Prime
+     (N : U64; Base : U64 := 10) return Mersenne_Result
+   is
+      Place : U64 := 1;
+      Old, Candidate, Digit : U64;
+   begin
+      if Base = 10 and N < 100 then
+         return (True, False);
+      elsif Base = 3 and N = 2 then
+         return (True, True);
+      elsif Is_Prime (N) = 0 then
+         return (True, False);
+      end if;
+      if Base = 2 then
+         if N < 127 then
+            return (True, False);
+         end if;
+         Place := 2;
+         while Place <= N loop
+            if Is_Prime (N xor Place) /= 0 then
+               return (True, False);
+            end if;
+            exit when Place > U64'Last / 2;
+            Place := Place * 2;
+         end loop;
+         return (True, True);
+      end if;
+      if Base = 10 and N >= 10 ** 19 then
+         return (Defined => False);
+      end if;
+      while Place <= N loop
+         Old := N / Place mod Base;
+         if Base /= 10 and then
+           (Place > U64'Last / Base or else
+              N > U64'Last - Place * Base)
+         then
+            return (Defined => False);
+         end if;
+         Candidate := N - Old * Place;
+         Digit := 0;
+         while Digit < Base loop
+            if Digit /= Old and then Is_Prime (Candidate) /= 0 then
+               return (True, False);
+            end if;
+            Digit := Digit + 1;
+            exit when Digit = Base;
+            Candidate := Candidate + Place;
+         end loop;
+         exit when Place > U64'Last / Base;
+         Place := Place * Base;
+      end loop;
+      return (True, True);
+   end Is_Delicate_Prime;
+
 end Math_Prime_Util.Primality;

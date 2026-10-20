@@ -1,5 +1,6 @@
 with AUnit.Assertions;
 with Ada.Assertions;
+with Interfaces;
 with AUnit.Test_Cases;
 with Ada.Strings.Unbounded;
 with Fixture_Support;
@@ -84,6 +85,35 @@ package body Compat_Primality is
          end if;
          return Boolean'Pos
            (Is_Almost_Extra_Strong_Lucas_Pseudoprime (N, A));
+      elsif F = "is_perrin_pseudoprime" then
+         if Natural (C.Args.Length) > 1 then
+            A := U64'Value (To_String (C.Args (2)));
+         else
+            A := 0;
+         end if;
+         return Boolean'Pos (Is_Perrin_Pseudoprime (N, Natural (A)));
+      elsif F = "is_frobenius_pseudoprime" then
+         if Natural (C.Args.Length) = 3 then
+            return Boolean'Pos (Is_Frobenius_Pseudoprime
+              (N, Interfaces.Integer_64'Value (To_String (C.Args (2))),
+               Interfaces.Integer_64'Value (To_String (C.Args (3)))));
+         end if;
+         return Boolean'Pos (Is_Frobenius_Pseudoprime (N));
+      elsif F = "is_frobenius_khashin_pseudoprime" then
+         return Boolean'Pos (Is_Frobenius_Khashin_Pseudoprime (N));
+      elsif F = "is_frobenius_underwood_pseudoprime" then
+         return Boolean'Pos (Is_Frobenius_Underwood_Pseudoprime (N));
+      elsif F = "is_catalan_pseudoprime" then
+         return Boolean'Pos (Is_Catalan_Pseudoprime (N));
+      elsif F = "is_chen_prime" then
+         return Boolean'Pos (Is_Chen_Prime (N));
+      elsif F = "is_delicate_prime" then
+         A := 10;
+         if Natural (C.Args.Length) > 1 then
+            A := U64'Value (To_String (C.Args (2)));
+         end if;
+         M := Is_Delicate_Prime (N, A);
+         return (if M.Defined then Boolean'Pos (M.Value) else -1);
       elsif F = "is_safe_prime" then
          return Boolean'Pos (Is_Safe_Prime (N));
       elsif F = "is_mersenne_prime" then
@@ -183,6 +213,41 @@ package body Compat_Primality is
    begin
       Replay ("is_mersenne_prime");
    end Test_12;
+   procedure Test_13 (T : in out Test_Case'Class);
+   procedure Test_13 (T : in out Test_Case'Class) is
+   begin
+      Replay ("is_perrin_pseudoprime");
+   end Test_13;
+   procedure Test_14 (T : in out Test_Case'Class);
+   procedure Test_14 (T : in out Test_Case'Class) is
+   begin
+      Replay ("is_frobenius_pseudoprime");
+   end Test_14;
+   procedure Test_15 (T : in out Test_Case'Class);
+   procedure Test_15 (T : in out Test_Case'Class) is
+   begin
+      Replay ("is_frobenius_khashin_pseudoprime");
+   end Test_15;
+   procedure Test_16 (T : in out Test_Case'Class);
+   procedure Test_16 (T : in out Test_Case'Class) is
+   begin
+      Replay ("is_frobenius_underwood_pseudoprime");
+   end Test_16;
+   procedure Test_17 (T : in out Test_Case'Class);
+   procedure Test_17 (T : in out Test_Case'Class) is
+   begin
+      Replay ("is_catalan_pseudoprime");
+   end Test_17;
+   procedure Test_18 (T : in out Test_Case'Class);
+   procedure Test_18 (T : in out Test_Case'Class) is
+   begin
+      Replay ("is_chen_prime");
+   end Test_18;
+   procedure Test_19 (T : in out Test_Case'Class);
+   procedure Test_19 (T : in out Test_Case'Class) is
+   begin
+      Replay ("is_delicate_prime");
+   end Test_19;
    overriding procedure Register_Tests (T : in out Primality_Case) is
    begin
       Registration.Register_Routine
@@ -211,6 +276,20 @@ package body Compat_Primality is
         (T, Test_11'Access, "is_safe_prime");
       Registration.Register_Routine
         (T, Test_12'Access, "is_mersenne_prime");
+      Registration.Register_Routine
+        (T, Test_13'Access, "is_perrin_pseudoprime");
+      Registration.Register_Routine
+        (T, Test_14'Access, "is_frobenius_pseudoprime");
+      Registration.Register_Routine
+        (T, Test_15'Access, "is_frobenius_khashin_pseudoprime");
+      Registration.Register_Routine
+        (T, Test_16'Access, "is_frobenius_underwood_pseudoprime");
+      Registration.Register_Routine
+        (T, Test_17'Access, "is_catalan_pseudoprime");
+      Registration.Register_Routine
+        (T, Test_18'Access, "is_chen_prime");
+      Registration.Register_Routine
+        (T, Test_19'Access, "is_delicate_prime");
    end Register_Tests;
    function Suite return AUnit.Test_Suites.Access_Test_Suite is
       Result : constant AUnit.Test_Suites.Access_Test_Suite :=

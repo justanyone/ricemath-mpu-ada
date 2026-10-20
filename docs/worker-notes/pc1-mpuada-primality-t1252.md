@@ -4,3 +4,5 @@ Leave random Miller–Rabin deferred pending the random module; do not edit STAT
 Run focused primality tests and the repository gate; record blockers honestly.
 Inspected existing predicates and fixture harness; translating missing Perrin/Frobenius algorithms from the C reference.
 Added Perrin signature doubling and three Frobenius variants; next complete dependent Catalan/Chen/delicate predicates and compile.
+All deterministic entry points now exist; first test build started. About five minutes remain for compiler fixes, fixture failures, and gate validation.
+Test script blocked: Alire attempted to clone its community index and network is unavailable. Checking preinstalled toolchain/configuration without modifying build tooling.
