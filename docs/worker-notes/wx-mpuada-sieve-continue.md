@@ -9,3 +9,4 @@ About five minutes remain. Native APIs and fixture dispatch are written. Offline
 Gate also stops at Alire index initialization. Added boundary and round-trip tests. The full optimized C sum and cluster residue paths still need work.
 Built a worktree-local offline Alire index from the installed AUnit release. Retrying the repository test script with the installed compilers on PATH; no dependency or tooling files changed.
 The offline dependency resolves, but Alire cannot select a compiler from the minimal index. Checking installed toolchain metadata rather than repeating that failure.
+Offline compiler selection now succeeds after adding installed toolchain metadata to the local index. The focused test script is compiling the port.

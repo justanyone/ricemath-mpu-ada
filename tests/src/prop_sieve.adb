@@ -55,6 +55,7 @@ package body Prop_Sieve is
    procedure Boundaries (T : in out Test_Case'Class) is
       Last_Prime : constant U64 := 18_446_744_073_709_551_557;
       V : Prime_Vectors.Vector;
+      Rejected : Boolean := False;
    begin
       AUnit.Assertions.Assert (Next_Prime (0) = 2, "zero successor");
       AUnit.Assertions.Assert (Prev_Prime (2) = 0, "no predecessor");
@@ -74,10 +75,10 @@ package body Prop_Sieve is
          "partial sieve retains offsets");
       begin
          V := Sieve_Range (U64'Last, 2, 0);
-         AUnit.Assertions.Assert (False, "overflowing interval accepted");
       exception
-         when Ada.Assertions.Assertion_Error => null;
+         when Ada.Assertions.Assertion_Error => Rejected := True;
       end;
+      AUnit.Assertions.Assert (Rejected, "overflowing interval rejected");
    end Boundaries;
 
    procedure Concurrent_Cache (T : in out Test_Case'Class) is

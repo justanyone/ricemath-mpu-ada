@@ -77,6 +77,7 @@ package body Compat_Sieve is
                Values := Sieve_Range (Low, High, Depth);
             elsif Func = "sieve_prime_cluster" then
                declare
+                  Rejected : Boolean := False;
                   Offsets : Cluster_Offsets
                     (1 .. Natural (C.Args.Length) - 2);
                begin
@@ -86,13 +87,12 @@ package body Compat_Sieve is
                   end loop;
                   begin
                      Values := Sieve_Prime_Cluster (Low, High, Offsets);
-                     AUnit.Assertions.Assert
-                       (not C.Error, "cluster must reject invalid offsets");
                   exception
                      when Ada.Assertions.Assertion_Error =>
-                        AUnit.Assertions.Assert
-                          (C.Error, "unexpected cluster precondition");
+                        Rejected := True;
                   end;
+                  AUnit.Assertions.Assert
+                    (Rejected = C.Error, "cluster offset validation");
                end;
             else
                declare
