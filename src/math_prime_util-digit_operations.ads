@@ -1,9 +1,10 @@
 with Math_Prime_Util.Int;
 
 --  Digit conversion and checked integer operations from MPU 0.75.
-package Math_Prime_Util.Digits with SPARK_Mode => On is
+package Math_Prime_Util.Digit_Operations with SPARK_Mode => On is
    use type U128;
    subtype I128 is Math_Prime_Util.Int.I128;
+   use type I128;
    type Optional_I128 (Defined : Boolean := False) is record
       case Defined is
          when True => Value : I128;
@@ -238,4 +239,4 @@ package Math_Prime_Util.Digits with SPARK_Mode => On is
      (A, B, Modulus : I128) return Boolean
      with Pre => True, Post => True;
 
-end Math_Prime_Util.Digits;
+end Math_Prime_Util.Digit_Operations;

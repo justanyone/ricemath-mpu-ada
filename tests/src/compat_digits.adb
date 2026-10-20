@@ -1,3 +1,4 @@
+with Ada.Containers;
 with AUnit.Assertions;
 with Ada.Assertions;
 with AUnit.Test_Cases;
@@ -5,15 +6,17 @@ with Ada.Strings;
 with Ada.Strings.Fixed;
 with Ada.Strings.Unbounded;
 with Fixture_Support;
-with Math_Prime_Util.Digits;
+with Math_Prime_Util.Digit_Operations;
 
 package body Compat_Digits is
    use AUnit.Test_Cases;
    use Ada.Strings.Unbounded;
    use Fixture_Support;
    use Math_Prime_Util;
-   use Math_Prime_Util.Digits;
+   use Math_Prime_Util.Digit_Operations;
+   use type Ada.Containers.Count_Type;
    use type U128;
+   use type I128;
 
    type Digits_Case is new Test_Case with null record;
    overriding function Name (T : Digits_Case) return AUnit.Message_String;
@@ -151,19 +154,19 @@ package body Compat_Digits is
                      U128'Value (To_String (C.Args (2))) else 10))));
             elsif Func = "reverse_digits" then
                Actual := To_Unbounded_String
-                 (Image (Reverse_digits (U128 (abs A (1)), Base)));
+                 (Image (Reverse_Digits (U128 (abs A (1)), Base)));
             elsif Func = "is_palindrome" then
                Actual := To_Unbounded_String (Image (I128
-                 (Boolean'Pos (Is_palindrome (U128 (abs A (1)), Base)))));
+                 (Boolean'Pos (Is_Palindrome (U128 (abs A (1)), Base)))));
             elsif Func = "is_harshad" then
                Actual := To_Unbounded_String (Image (I128
-                 (Boolean'Pos (Is_harshad (U128 (abs A (1)), Base)))));
+                 (Boolean'Pos (Is_Harshad (U128 (abs A (1)), Base)))));
             elsif Func = "digital_root" then
                Actual := To_Unbounded_String
-                 (Image (Digital_root (U128 (abs A (1)), Base)));
+                 (Image (Digital_Root (U128 (abs A (1)), Base)));
             elsif Func = "mult_digital_root" then
                Actual := To_Unbounded_String
-                 (Image (Mult_digital_root (U128 (abs A (1)), Base)));
+                 (Image (Mult_Digital_Root (U128 (abs A (1)), Base)));
             elsif Func = "hammingweight" then
                Actual := To_Unbounded_String
                  (Image (I128 (Hammingweight (U128 (abs A (1))))));
@@ -333,30 +336,30 @@ package body Compat_Digits is
       Replay ("sumdigits");
    end Test_Sumdigits;
 
-   procedure Test_Reverse_digits (T : in out Test_Case'Class) is
+   procedure Test_Reverse_Digits (T : in out Test_Case'Class) is
    begin
       Replay ("reverse_digits");
-   end Test_Reverse_digits;
+   end Test_Reverse_Digits;
 
-   procedure Test_Is_palindrome (T : in out Test_Case'Class) is
+   procedure Test_Is_Palindrome (T : in out Test_Case'Class) is
    begin
       Replay ("is_palindrome");
-   end Test_Is_palindrome;
+   end Test_Is_Palindrome;
 
-   procedure Test_Is_harshad (T : in out Test_Case'Class) is
+   procedure Test_Is_Harshad (T : in out Test_Case'Class) is
    begin
       Replay ("is_harshad");
-   end Test_Is_harshad;
+   end Test_Is_Harshad;
 
-   procedure Test_Digital_root (T : in out Test_Case'Class) is
+   procedure Test_Digital_Root (T : in out Test_Case'Class) is
    begin
       Replay ("digital_root");
-   end Test_Digital_root;
+   end Test_Digital_Root;
 
-   procedure Test_Mult_digital_root (T : in out Test_Case'Class) is
+   procedure Test_Mult_Digital_Root (T : in out Test_Case'Class) is
    begin
       Replay ("mult_digital_root");
-   end Test_Mult_digital_root;
+   end Test_Mult_Digital_Root;
 
    procedure Test_Hammingweight (T : in out Test_Case'Class) is
    begin
@@ -428,15 +431,15 @@ package body Compat_Digits is
       Registration.Register_Routine
         (T, Test_Sumdigits'Access, "sumdigits");
       Registration.Register_Routine
-        (T, Test_Reverse_digits'Access, "reverse_digits");
+        (T, Test_Reverse_Digits'Access, "reverse_digits");
       Registration.Register_Routine
-        (T, Test_Is_palindrome'Access, "is_palindrome");
+        (T, Test_Is_Palindrome'Access, "is_palindrome");
       Registration.Register_Routine
-        (T, Test_Is_harshad'Access, "is_harshad");
+        (T, Test_Is_Harshad'Access, "is_harshad");
       Registration.Register_Routine
-        (T, Test_Digital_root'Access, "digital_root");
+        (T, Test_Digital_Root'Access, "digital_root");
       Registration.Register_Routine
-        (T, Test_Mult_digital_root'Access, "mult_digital_root");
+        (T, Test_Mult_Digital_Root'Access, "mult_digital_root");
       Registration.Register_Routine
         (T, Test_Hammingweight'Access, "hammingweight");
       Registration.Register_Routine

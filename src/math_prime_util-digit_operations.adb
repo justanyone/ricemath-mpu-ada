@@ -1,7 +1,7 @@
 with Ada.Characters.Handling;
 with Ada.Strings.Fixed;
 
-package body Math_Prime_Util.Digits is
+package body Math_Prime_Util.Digit_Operations is
    function Todigits
      (N : U128; Base : U128 := 10; Length : Integer := -1)
       return Digit_Array
@@ -442,4 +442,4 @@ package body Math_Prime_Util.Digits is
    function Is_Congruent (A, B, Modulus : I128) return Boolean is
      (if Modulus = 0 then A = B elsif Modulus = -1 then True
       else A mod Modulus = B mod Modulus);
-end Math_Prime_Util.Digits;
+end Math_Prime_Util.Digit_Operations;
