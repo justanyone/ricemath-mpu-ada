@@ -28,7 +28,8 @@ package Math_Prime_Util.Digits with SPARK_Mode => On is
      with Pre => Base in 2 .. 36 and Length in -1 .. 128,
           Post => Todigitstring'Result'Length <= 128;
 
-   --  util.c: from_digit_to_UV. Invalid digits or overflow raise Constraint_Error.
+   --  util.c: from_digit_to_UV. Invalid digits or overflow raise
+   --  Constraint_Error.
    function Fromdigits
      (Text : String; Base : U128 := 10) return U128
      with Pre => Base in 2 .. 36,
@@ -40,7 +41,8 @@ package Math_Prime_Util.Digits with SPARK_Mode => On is
      with Pre => Base >= 2,
           Post => Sumdigits'Result <= N;
 
-   --  XS.xs: reverse_digits. Reverse base digits; overflow raises Constraint_Error.
+   --  XS.xs: reverse_digits. Reverse base digits; overflow raises
+   --  Constraint_Error.
    function Reverse_Digits
      (N : U128; Base : U128 := 10) return U128
      with Pre => Base >= 2,
@@ -76,7 +78,8 @@ package Math_Prime_Util.Digits with SPARK_Mode => On is
      with Pre => True,
           Post => Tozeckendorf'Result'Length in 1 .. 92;
 
-   --  util.c: validate_zeckendorf, from_zeckendorf. Invalid text raises Constraint_Error.
+   --  util.c: validate_zeckendorf, from_zeckendorf. Invalid text raises
+   --  Constraint_Error.
    function Fromzeckendorf
      (Text : String) return U64
      with Pre => Text'Length in 1 .. 92,
@@ -143,57 +146,68 @@ package Math_Prime_Util.Digits with SPARK_Mode => On is
      (A, B : I128) return Integer
      with Pre => True, Post => Cmpint'Result in -1 .. 1;
 
-   --  strint.c: divrem (reference absent). Quotient and remainder; undefined for zero divisor or overflow.
+   --  strint.c: divrem (reference absent). Quotient and remainder; undefined
+   --  for zero divisor or overflow.
    function Divrem
      (A, B : I128) return Division_Result
      with Pre => True, Post => (if B = 0 then not Divrem'Result.Defined);
 
-   --  strint.c: tdivrem (reference absent). Quotient and remainder; undefined for zero divisor or overflow.
+   --  strint.c: tdivrem (reference absent). Quotient and remainder; undefined
+   --  for zero divisor or overflow.
    function Tdivrem
      (A, B : I128) return Division_Result
      with Pre => True, Post => (if B = 0 then not Tdivrem'Result.Defined);
 
-   --  strint.c: fdivrem (reference absent). Quotient and remainder; undefined for zero divisor or overflow.
+   --  strint.c: fdivrem (reference absent). Quotient and remainder; undefined
+   --  for zero divisor or overflow.
    function Fdivrem
      (A, B : I128) return Division_Result
      with Pre => True, Post => (if B = 0 then not Fdivrem'Result.Defined);
 
-   --  strint.c: cdivrem (reference absent). Quotient and remainder; undefined for zero divisor or overflow.
+   --  strint.c: cdivrem (reference absent). Quotient and remainder; undefined
+   --  for zero divisor or overflow.
    function Cdivrem
      (A, B : I128) return Division_Result
      with Pre => True, Post => (if B = 0 then not Cdivrem'Result.Defined);
 
-   --  strint.c: divint (reference absent). Checked division; undefined for zero divisor or overflow.
+   --  strint.c: divint (reference absent). Checked division; undefined for
+   --  zero divisor or overflow.
    function Divint
      (A, B : I128) return Optional_I128
      with Pre => True, Post => (if B = 0 then not Divint'Result.Defined);
 
-   --  strint.c: modint (reference absent). Checked division; undefined for zero divisor or overflow.
+   --  strint.c: modint (reference absent). Checked division; undefined for
+   --  zero divisor or overflow.
    function Modint
      (A, B : I128) return Optional_I128
      with Pre => True, Post => (if B = 0 then not Modint'Result.Defined);
 
-   --  strint.c: cdivint (reference absent). Checked division; undefined for zero divisor or overflow.
+   --  strint.c: cdivint (reference absent). Checked division; undefined for
+   --  zero divisor or overflow.
    function Cdivint
      (A, B : I128) return Optional_I128
      with Pre => True, Post => (if B = 0 then not Cdivint'Result.Defined);
 
-   --  strint.c: lshiftint (reference absent). Shift magnitude; undefined on overflow.
+   --  strint.c: lshiftint (reference absent). Shift magnitude; undefined on
+   --  overflow.
    function Lshiftint
      (A : I128; Bits : Natural := 1) return Optional_I128
      with Pre => True, Post => True;
 
-   --  strint.c: rshiftint (reference absent). Shift magnitude; undefined on overflow.
+   --  strint.c: rshiftint (reference absent). Shift magnitude; undefined on
+   --  overflow.
    function Rshiftint
      (A : I128; Bits : Natural := 1) return Optional_I128
      with Pre => True, Post => True;
 
-   --  strint.c: rashiftint (reference absent). Shift magnitude; undefined on overflow.
+   --  strint.c: rashiftint (reference absent). Shift magnitude; undefined on
+   --  overflow.
    function Rashiftint
      (A : I128; Bits : Natural := 1) return Optional_I128
      with Pre => True, Post => True;
 
-   --  strint.c: toint (reference absent). Parse numeric text; truncate fractions; undefined on overflow.
+   --  strint.c: toint (reference absent). Parse numeric text; truncate
+   --  fractions; undefined on overflow.
    function Toint
      (Text : String) return Optional_I128
      with Pre => True, Post => True;
@@ -208,12 +222,14 @@ package Math_Prime_Util.Digits with SPARK_Mode => On is
      (A : I128) return Boolean
      with Pre => True, Post => Is_Even'Result = (A rem 2 = 0);
 
-   --  strint.c: is_divisible (reference absent). Test exact division; only zero is divisible by zero.
+   --  strint.c: is_divisible (reference absent). Test exact division; only
+   --  zero is divisible by zero.
    function Is_Divisible
      (A, B : I128) return Boolean
      with Pre => True, Post => True;
 
-   --  strint.c: is_congruent (reference absent). Test equal residues; modulus zero tests equality.
+   --  strint.c: is_congruent (reference absent). Test equal residues; modulus
+   --  zero tests equality.
    function Is_Congruent
      (A, B, Modulus : I128) return Boolean
      with Pre => True, Post => True;
