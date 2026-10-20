@@ -180,14 +180,36 @@ package body Math_Prime_Util.Vec is
    function Setinvert (A, B : Vector) return Vector is
      (Setdelta (A, B));
 
+   --  xs_set.c: xs_set_relation. Count a merge intersection without
+   --  allocating a result. Offsets permit arrays ending at Positive'Last.
+   function Intersection_Count (A, B : Vector) return Natural;
+
+   function Intersection_Count (A, B : Vector) return Natural is
+      I, J, Count : Natural := 0;
+   begin
+      while I < A'Length and then J < B'Length loop
+         if A (A'First + I) = B (B'First + J) then
+            Count := Count + 1;
+            I := I + 1;
+            J := J + 1;
+         elsif A (A'First + I) < B (B'First + J) then
+            I := I + 1;
+         else
+            J := J + 1;
+         end if;
+      end loop;
+      return Count;
+   end Intersection_Count;
+
    function Setcontains (A, B : Vector) return Boolean is
-     (Setminus (A => B, B => A)'Length = 0);
+     (A'Length >= B'Length and then
+      Intersection_Count (A, B) = B'Length);
 
    function Setcontainsany (A, B : Vector) return Boolean is
-     (Setintersect (A, B)'Length > 0);
+     (Intersection_Count (A, B) > 0);
 
    function Set_Is_Disjoint (A, B : Vector) return Boolean is
-     (Setintersect (A, B)'Length = 0);
+     (Intersection_Count (A, B) = 0);
 
    function Set_Is_Equal (A, B : Vector) return Boolean is
      (A = B);
@@ -205,8 +227,10 @@ package body Math_Prime_Util.Vec is
      (A'Length < B'Length and then Setcontains (A => B, B => A));
 
    function Set_Is_Proper_Intersection (A, B : Vector) return Boolean is
-     (Setcontainsany (A, B) and then
-      not Setcontains (A, B) and then not Setcontains (A => B, B => A));
+      Count : constant Natural := Intersection_Count (A, B);
+   begin
+      return Count > 0 and then Count < A'Length and then Count < B'Length;
+   end Set_Is_Proper_Intersection;
 
    function Is_Sidon_Set (A : Vector) return Boolean is
    begin
@@ -231,14 +255,26 @@ package body Math_Prime_Util.Vec is
    end Is_Sidon_Set;
 
    function Is_Sumfree_Set (A : Vector) return Boolean is
+      Low, High, Mid : Natural;
+      Sum : I128;
    begin
+      --  xs_set.c: xs_is_sumfree_set. Test each unordered pair sum by
+      --  binary search in the sorted input, using wide sums at I64 edges.
       for I in A'Range loop
          for J in I .. A'Last loop
-            if (for some V of A =>
-                  I128 (V) = I128 (A (I)) + I128 (A (J)))
-            then
-               return False;
-            end if;
+            Sum := I128 (A (I)) + I128 (A (J));
+            Low := 0;
+            High := A'Length;
+            while Low < High loop
+               Mid := Low + (High - Low) / 2;
+               if I128 (A (A'First + Mid)) < Sum then
+                  Low := Mid + 1;
+               elsif I128 (A (A'First + Mid)) > Sum then
+                  High := Mid;
+               else
+                  return False;
+               end if;
+            end loop;
          end loop;
       end loop;
       return True;
