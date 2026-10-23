@@ -3,3 +3,29 @@
 
 # Ada Library Information
 *.ali
+
+# Alire / GNAT build output
+/obj/
+/lib/
+/bin/
+/alire/
+/config/
+**/obj/
+**/alire/
+**/config/
+*.gcda
+*.gcno
+*.sid
+*.trace
+*.srctrace
+cov/
+# GNATprove
+gnatprove/
+# CodeGraph index that factory workers create in their worktree
+.codegraph/
+/obj/
+/lib/
+/alire/
+/config/
+**/bin/
+**/share/
