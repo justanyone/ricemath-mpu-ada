@@ -1,0 +1,3 @@
+- Plan: union merge rule in .gitattributes for tests/src/all_suites.adb plus one-line-per-entry layout; test with scripted merge.
+- Added .gitattributes union rule for tests/src/all_suites.adb (one entry per line, deterministic order: ours then theirs).
+- Scripted two-branch merge check was denied by permission; not run. Runner count unchanged (no source edit).
