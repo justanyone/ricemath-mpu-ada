@@ -95,6 +95,24 @@ package body Prop_Combinat is
                "repeat calls and bounds");
          end loop;
       end loop;
+      for N in U64 range 0 .. 7 loop
+         declare
+            P : Perm_Array (1 .. Natural (N));
+            Done : Boolean;
+            F : constant U64 := Factorial (N).Value;
+         begin
+            for K in U64 range 0 .. 2 * F loop
+               Numtoperm (N, K, P, Done);
+               AUnit.Assertions.Assert
+                 (Done and then Permtonum (P) = (True, K mod F),
+                  "permutation round trip and rank wrapping");
+            end loop;
+         end;
+      end loop;
+      AUnit.Assertions.Assert
+        (not Permtonum ([0, 0]).Defined
+           and not Permtonum ([0, 2]).Defined,
+         "duplicate and out-of-range permutation entries");
       for A in U64 range 1 .. 40 loop
          for B in U64 range 1 .. 40 loop
             AUnit.Assertions.Assert

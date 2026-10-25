@@ -307,6 +307,8 @@ package body Compat_Combinat is
                Text : Unbounded_String;
             begin
                Numtoperm (N, K, P, Done);
+               AUnit.Assertions.Assert
+                 (Done, "numtoperm must wrap the rank modulo N!");
                if Done then
                   for I in P'Range loop
                      Append (Text, (if I > 0 then " " else "")
