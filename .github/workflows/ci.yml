@@ -1,0 +1,21 @@
+name: CI
+on:
+  push:
+    branches: [main, "dev-*"]
+  pull_request:
+permissions:
+  contents: read
+# The steps in this file and in tools/gate.sh must match.
+jobs:
+  gate:
+    name: gate (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: alire-project/setup-alire@v5
+      - run: alr -n toolchain --select gnat_native gprbuild
+      - run: sh tools/gate.sh
