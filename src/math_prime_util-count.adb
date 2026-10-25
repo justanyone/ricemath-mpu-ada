@@ -32,7 +32,9 @@ package body Math_Prime_Util.Count is
 
       function Phi (X : U64; A : Natural) return U64 is
       begin
-         if A = 0 then
+         if X = 0 then
+            return 0;
+         elsif A = 0 then
             return X;
          elsif A < Layers and then X < Width then
             return Phi_Table (A * Width + Natural (X));
