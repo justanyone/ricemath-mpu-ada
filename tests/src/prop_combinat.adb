@@ -9,6 +9,7 @@ package body Prop_Combinat is
    use Math_Prime_Util.Combinat;
    use type U64;
    use type U128;
+   use type Math_Prime_Util.Int.Optional_U64;
 
    type Combinat_Case is new Test_Case with null record;
    overriding function Name

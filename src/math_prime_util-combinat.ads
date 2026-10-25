@@ -153,18 +153,20 @@ package Math_Prime_Util.Combinat with SPARK_Mode => On is
 
    type Perm_Array is array (Natural range <>) of U64;
 
-   --  util.c: numtoperm. The K-th (0-based, lexicographic) permutation of
-   --  0 .. N-1, for N <= 20; undefined when N > 20 or K >= N!.
+   --  util.c: num_to_perm; XS.xs: numtoperm. The K-th lexicographic
+   --  permutation of 0 .. N-1, for N <= 20. K is reduced modulo N!.
    procedure Numtoperm
      (N, K : U64; Perm : out Perm_Array; Defined : out Boolean)
-     with Pre => N <= 20 and then Perm'Length = Natural (N);
+     with Pre => N <= 20 and then Perm'Length = Natural (N),
+          Post => Defined
+            and then (for all X of Perm => X < N);
 
-   --  util.c: permtonum. Lexicographic rank of a permutation of
+   --  util.c: perm_to_num. Lexicographic rank of a permutation of
    --  0 .. P'Length-1; undefined when P is not a permutation or longer
    --  than 20 entries.
    function Permtonum (P : Perm_Array) return Optional_U64
      with Pre => True,
-          Post => (if P'Length <= 1 and then P'Length = 0 then
+          Post => (if P'Length = 0 then
                      Permtonum'Result = (True, 0));
 
    --  intcomplexity.c: integer_complexity (A005245), the fewest ones
@@ -189,7 +191,9 @@ package Math_Prime_Util.Combinat with SPARK_Mode => On is
 
    --  True when the gcd of all entries is 1 (fewer than two entries are
    --  taken as coprime).
-   function Coprime_Set (A : Number_Array) return Boolean;
+   function Coprime_Set (A : Number_Array) return Boolean
+     with Pre => True,
+          Post => (if A'Length < 2 then Coprime_Set'Result);
 
    --  util.c: frobenius_number. Largest integer that is no non-negative
    --  combination of A: closed form for two entries, the Round Robin
@@ -197,14 +201,17 @@ package Math_Prime_Util.Combinat with SPARK_Mode => On is
    --  fewer than two entries give an undefined result, as does a result
    --  that leaves I128 or a smallest entry above 5 000 000 (table size).
    function Frobenius_Number (A : Number_Array) return Optional_I128
-     with Pre => (for all X of A => X > 0) and then Coprime_Set (A);
+     with Pre => (for all X of A => X > 0) and then Coprime_Set (A),
+          Post => (if Frobenius_Number'Result.Defined then
+                     Frobenius_Number'Result.Value >= -1);
 
    --  congruent_numbers.c: is_congruent_number. Tunnell's counting of
    --  ternary quadratic solutions on the square-free part of N (weak
    --  BSD, proven below 10**6); the MPU pre-filters are only shortcuts.
    --  N = 0 gives False.
    function Is_Congruent_Number (N : U64) return Boolean
-     with Pre => N <= 2 ** 32 - 1;
+     with Pre => N <= 2 ** 32 - 1,
+          Post => (if N = 0 then not Is_Congruent_Number'Result);
 
    --  util.c: hclassno. 12 * H(N), the Hurwitz class number times 12.
    --  Undefined for N = 0 (MPU returns UV_MAX) and on overflow.

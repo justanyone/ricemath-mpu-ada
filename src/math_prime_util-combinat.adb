@@ -1,4 +1,4 @@
-with Ada.Unchecked_Deallocation;
+with Ada.Containers.Vectors;
 with Interfaces;
 with Math_Prime_Util.Sieve;
 package body Math_Prime_Util.Combinat with SPARK_Mode => Off is
@@ -591,10 +591,8 @@ package body Math_Prime_Util.Combinat with SPARK_Mode => Off is
       for I in 2 .. N loop
          Fact := Fact * I;
       end loop;
-      Defined := K < Fact;
-      if not Defined then
-         return;
-      end if;
+      Rest := K mod Fact;
+      Defined := True;
       for I in 0 .. Count - 1 loop
          Pool (I) := U64 (I);
       end loop;
@@ -689,10 +687,8 @@ package body Math_Prime_Util.Combinat with SPARK_Mode => Off is
    --  intcomplexity.c
    ---------------------------------------------------------------------
 
-   type Byte_Array is array (U64 range <>) of Interfaces.Unsigned_8;
-   type Byte_Access is access Byte_Array;
-   procedure Free_Bytes is new Ada.Unchecked_Deallocation
-     (Byte_Array, Byte_Access);
+   package Byte_Vectors is new Ada.Containers.Vectors
+     (Index_Type => U64, Element_Type => Interfaces.Unsigned_8);
 
    --  intcomplexity.c: _calcg (A000792).
    function Calc_G (N_In : U64) return U64
@@ -714,7 +710,7 @@ package body Math_Prime_Util.Combinat with SPARK_Mode => Off is
    protected IC_Cache with SPARK_Mode => Off is
       procedure Lookup (N : U64; Result : out U64);
    private
-      Data : Byte_Access;
+      Data : Byte_Vectors.Vector;
       Size : U64 := 0;
    end IC_Cache;
 
@@ -724,8 +720,7 @@ package body Math_Prime_Util.Combinat with SPARK_Mode => Off is
         with SPARK_Mode => Off
       is
          To : constant U64 := To_In + 32_767;
-         Old : Byte_Access := Data;
-         A : Byte_Access;
+         A : Byte_Vectors.Vector;
          G : array (U64 range 0 .. 127) of U64;
          First : U64;
          J, IJ, T, K : U64;
@@ -733,10 +728,11 @@ package body Math_Prime_Util.Combinat with SPARK_Mode => Off is
          if Size >= To then
             return;
          end if;
-         A := new Byte_Array (0 .. To);
-         if Old /= null then
-            A (0 .. Size) := Old (0 .. Size);
-            Free_Bytes (Old);
+         A.Set_Length (Ada.Containers.Count_Type (To + 1));
+         if not Data.Is_Empty then
+            for I in U64 range 0 .. Size loop
+               A (I) := Data (I);
+            end loop;
          end if;
          if Size < 2 then
             A (0) := 0;
@@ -800,7 +796,7 @@ package body Math_Prime_Util.Combinat with SPARK_Mode => Off is
                end loop;
             end if;
          end loop;
-         Data := A;
+         Data.Move (A);
          Size := To;
       end Expand;
 
@@ -969,10 +965,8 @@ package body Math_Prime_Util.Combinat with SPARK_Mode => Off is
       return A'Length < 2 or else G = 1;
    end Coprime_Set;
 
-   type U128_Array is array (U64 range <>) of U128;
-   type U128_Access is access U128_Array;
-   procedure Free_Words is new Ada.Unchecked_Deallocation
-     (U128_Array, U128_Access);
+   package Word_Vectors is new Ada.Containers.Vectors
+     (Index_Type => U64, Element_Type => U128);
 
    function Frobenius_Number (A : Number_Array) return Optional_I128
      with SPARK_Mode => Off
@@ -981,7 +975,7 @@ package body Math_Prime_Util.Combinat with SPARK_Mode => Off is
       Max : constant U128 := U128'Last;
       Swap : U64;
       Nlen, G_Len, R_Len : U64;
-      N : U128_Access;
+      N : Word_Vectors.Vector;
       Result : Optional_I128;
       Big_Max : U128 := 0;
    begin
@@ -1022,7 +1016,7 @@ package body Math_Prime_Util.Combinat with SPARK_Mode => Off is
       if Nlen > 5_000_000 then
          return (Defined => False);
       end if;
-      N := new U128_Array (0 .. Nlen);
+      N.Set_Length (Ada.Containers.Count_Type (Nlen + 1));
       N (0) := 0;
       for J in U64 range 1 .. Nlen - 1 loop
          N (J) := Max;
@@ -1055,7 +1049,6 @@ package body Math_Prime_Util.Combinat with SPARK_Mode => Off is
                         R_Len := 1;
                         while R_Len < G_Len loop
                            if Nn > Max - U128 (Ai) then
-                              Free_Words (N);
                               return (Defined => False);
                            end if;
                            Nn := Nn + U128 (Ai);
@@ -1075,13 +1068,11 @@ package body Math_Prime_Util.Combinat with SPARK_Mode => Off is
       end loop;
       for I in U64 range 0 .. Nlen - 1 loop
          if N (I) = Max then
-            Free_Words (N);
             return (Defined => False);
          elsif N (I) > Big_Max then
             Big_Max := N (I);
          end if;
       end loop;
-      Free_Words (N);
       Big_Max := Big_Max - U128 (Nlen);
       if Big_Max > U128 (I128'Last) then
          return (Defined => False);

@@ -7,3 +7,5 @@ Alire could not write its runtime temp file. Retrying with runtime and temp path
 Review found missing permutation assertions and unchecked cache deallocation outside Int. Checking reference behavior before fixing.
 Added regression assertions for wrapped permutation ranks, repeated round trips, and invalid permutations.
 Reference XS.xs:numtoperm explicitly reduces K modulo N!. Regression test is in place; waiting for offline build.
+Fixed rank wrapping and contracts. Replaced unchecked frees with controlled vectors. Alire tried to deploy the toolchain; offline validation remains blocked.
+Added visibility for optional-value equality in the new regression. Toolchain now builds; resolving compiler diagnostics before the gate.
