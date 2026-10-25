@@ -5,6 +5,8 @@ Port prime_counts.c, lmo.c, lehmer.c, legendre_phi.c, prime_count_cache.c, prime
 - t0: notes written; next is size check of named files and the current count API.
 - t1: Count package, compat tests, and suite wiring are already on the merged head. Fixed prime_count_lower coefficient -3.0 for 300071 .. 299999 (C branch). Next: time Prime_Count and run tools/test.sh.
 - t2: spot checks match fixtures (pi(10^10)=455052511 in 0.03s, nth, bounds, phi(2^32,20), sum). No tools/bench_vs_perl.pl. Next: tools/test.sh.
+- t3: tools/test.sh passed, 201 tests, 0 failures. Named the skipped count rows in compat_count.adb. Next: time pi(10^k) and tools/gate.sh.
+
 
 
 - 2026-10-25T04:58:20Z launcher: no commit for 61 s; 91 s elapsed. Files changed so far: docs/worker-notes/wx-mpuada-prime-counts-a1.md.
