@@ -12,3 +12,7 @@ Added visibility for optional-value equality in the new regression. Toolchain no
 Container instantiations need signed indices. Converted vector indices to Natural within the existing memory bounds.
 Permutation regression and container changes are ready for focused validation. Full SPARK conversion and broad API-domain review remain outside this small repair.
 Changed sources compile successfully. The runner appears to ignore filters; the requested focused invocation is running the aggregate suite.
+Gate development, release, and test builds passed. Both test processes are still running; no final test result yet.
+Test invocation passed: 201 tests, zero failures and errors. Gate builds passed; its final suite run is pending.
+Final: tools/gate.sh printed == gate: green; all 201 tests passed. Diff whitespace check passed.
+Remaining: the existing Combinat body is SPARK_Mode Off and has no proof validation. Existing native-domain fixture exclusions remain; full reference-method parity was not established in this repair.
