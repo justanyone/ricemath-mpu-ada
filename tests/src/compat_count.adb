@@ -51,10 +51,13 @@ package body Compat_Count is
       end loop;
    end Check_Sums;
 
-   --  Rows above the limits of Count (Prime_Count_Limit 2 * 10**13,
-   --  Nth_Prime_Limit, Legendre_Index_Limit) are skipped: the full LMO
-   --  method for arguments up to 2**64 needs tables not ported yet.
-   --  Rows with undef results are skipped: a Pre check rejects them.
+   --  Skipped prime_count rows, High above Prime_Count_Limit:
+   --  10**14 .. 10**14+65536; the four ranges at U64'Last;
+   --  9223372036854775800 .. 9223372036854775900.
+   --  Skipped nth_prime: argument 0 (undef; Pre rejects N = 0).
+   --  Skipped legendre_phi: a above 40 (0/92372, 1000000/168,
+   --  800000/213, 4000/255, 10**12/50, 10**9/100) and x = U64'Last
+   --  with a in 0, 1, 5, 18. A Pre check rejects those inputs.
    procedure Check_Prime_Count (T : in out Test_Case'Class) is
       Cases : constant Case_Vectors.Vector :=
         For_Function (Load ("count"), "prime_count");
@@ -148,7 +151,7 @@ package body Compat_Count is
       for C of Cases loop
          AUnit.Assertions.Assert
            (Parse_U64 (To_String (C.Args (1)), N), "argument");
-         --  Extended precision and large Chebyshev table replay pending.
+         --  Skip N above 10**14, and nth N = 0 or N >= 425656284035217743.
          if not C.Undef and then N <= 100_000_000_000_000 then
             AUnit.Assertions.Assert
               (Parse_U64 (To_String (C.Result), Expected), "result");
@@ -168,7 +171,7 @@ package body Compat_Count is
       for C of Cases loop
          AUnit.Assertions.Assert
            (Parse_U64 (To_String (C.Args (1)), N), "argument");
-         --  Extended precision and large Chebyshev table replay pending.
+         --  Skip N above 10**14, and nth N = 0 or N >= 425656284035217743.
          if not C.Undef and then N <= 100_000_000_000_000 then
             AUnit.Assertions.Assert
               (Parse_U64 (To_String (C.Result), Expected), "result");
@@ -188,7 +191,7 @@ package body Compat_Count is
       for C of Cases loop
          AUnit.Assertions.Assert
            (Parse_U64 (To_String (C.Args (1)), N), "argument");
-         --  Extended precision and large Chebyshev table replay pending.
+         --  Skip N above 10**14, and nth N = 0 or N >= 425656284035217743.
          if not C.Undef and then N <= 100_000_000_000_000 then
             AUnit.Assertions.Assert
               (Parse_U64 (To_String (C.Result), Expected), "result");
@@ -208,7 +211,7 @@ package body Compat_Count is
       for C of Cases loop
          AUnit.Assertions.Assert
            (Parse_U64 (To_String (C.Args (1)), N), "argument");
-         --  Extended precision and large Chebyshev table replay pending.
+         --  Skip N above 10**14, and nth N = 0 or N >= 425656284035217743.
          if not C.Undef and then N >= 1 and then N <= 100_000_000_000_000 then
             AUnit.Assertions.Assert
               (Parse_U64 (To_String (C.Result), Expected), "result");
@@ -228,7 +231,7 @@ package body Compat_Count is
       for C of Cases loop
          AUnit.Assertions.Assert
            (Parse_U64 (To_String (C.Args (1)), N), "argument");
-         --  Extended precision and large Chebyshev table replay pending.
+         --  Skip N above 10**14, and nth N = 0 or N >= 425656284035217743.
          if not C.Undef and then N >= 1 and then N <= 100_000_000_000_000 then
             AUnit.Assertions.Assert
               (Parse_U64 (To_String (C.Result), Expected), "result");
@@ -248,7 +251,7 @@ package body Compat_Count is
       for C of Cases loop
          AUnit.Assertions.Assert
            (Parse_U64 (To_String (C.Args (1)), N), "argument");
-         --  Extended precision and large Chebyshev table replay pending.
+         --  Skip N above 10**14, and nth N = 0 or N >= 425656284035217743.
          if not C.Undef and then N >= 1 and then N <= 100_000_000_000_000 then
             AUnit.Assertions.Assert
               (Parse_U64 (To_String (C.Result), Expected), "result");
@@ -270,7 +273,7 @@ package body Compat_Count is
       for C of Cases loop
          AUnit.Assertions.Assert
            (Parse_U64 (To_String (C.Args (1)), N), "argument");
-         --  Extended precision and large Chebyshev table replay pending.
+         --  Every chebyshev_theta fixture row is within Prime_Count_Limit.
          if not C.Undef and then N <= Pc.Prime_Count_Limit then
             Expected := Long_Float'Value (To_String (C.Result));
             AUnit.Assertions.Assert
@@ -290,7 +293,7 @@ package body Compat_Count is
       for C of Cases loop
          AUnit.Assertions.Assert
            (Parse_U64 (To_String (C.Args (1)), N), "argument");
-         --  Extended precision and large Chebyshev table replay pending.
+         --  Every chebyshev_psi fixture row is within Prime_Count_Limit.
          if not C.Undef and then N <= Pc.Prime_Count_Limit then
             Expected := Long_Float'Value (To_String (C.Result));
             AUnit.Assertions.Assert
