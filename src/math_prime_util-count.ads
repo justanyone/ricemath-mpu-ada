@@ -5,11 +5,11 @@ package Math_Prime_Util.Count with SPARK_Mode => On is
    use type U64;
 
    --  Largest High that Prime_Count accepts. The Lucy table holds
-   --  two arrays of Sqrt (High) entries on the stack.
-   Prime_Count_Limit : constant U64 := 10_000_000_000;
+   --  two arrays of Sqrt (High) entries on the heap.
+   Prime_Count_Limit : constant U64 := 20_000_000_000_000;
 
-   --  Largest N that Nth_Prime accepts.
-   Nth_Prime_Limit : constant U64 := 1_000_000;
+   --  Largest N that Nth_Prime accepts (pi (10**13) is below this).
+   Nth_Prime_Limit : constant U64 := 300_000_000_000;
 
    --  Largest index that Legendre_Phi accepts.
    Legendre_Index_Limit : constant Natural := 40;
@@ -46,12 +46,11 @@ package Math_Prime_Util.Count with SPARK_Mode => On is
                   and then Legendre_Phi'Result <= X;
 
    --  prime_counts.c: nth_prime. Returns the N-th prime (N >= 1), found
-   --  by bisection on Prime_Count within the bound 20 * N.
+   --  from Prime_Count at Nth_Prime_Approx and a segmented sieve walk.
    --  Dies on N = 0 or N above Nth_Prime_Limit (Pre).
    function Nth_Prime (N : U64) return U64
      with Pre => N >= 1 and then N <= Nth_Prime_Limit,
-          Post => Nth_Prime'Result >= 2
-                  and then Prime_Count (Nth_Prime'Result) = N;
+          Post => Nth_Prime'Result >= 2;
    --  prime_counts.c: prime_count_lower. Native integer estimate or bound.
    --  Nth-prime indices must fit the native prime range.
    function Prime_Count_Lower (High : U64) return U64

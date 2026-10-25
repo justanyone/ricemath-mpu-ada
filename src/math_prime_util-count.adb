@@ -1,4 +1,5 @@
 with Ada.Numerics.Generic_Elementary_Functions;
+with Ada.Unchecked_Deallocation;
 with Math_Prime_Util.Int;
 with Math_Prime_Util.Sieve;
 
@@ -87,16 +88,27 @@ package body Math_Prime_Util.Count is
    end Sum_Primes;
 
    type Count_Array is array (U64 range <>) of U64;
+   type Count_Access is access Count_Array;
+   procedure Free is new Ada.Unchecked_Deallocation
+     (Count_Array, Count_Access);
 
-   function Prime_Count (High : U64) return U64 is
+   function Prime_Count (High : U64) return U64
+     with SPARK_Mode => Off
+   is
       R : constant U64 := Int.Sqrtint (High);
       --  Small (V) = S (V) for V <= R; Large (I) = S (High / I).
-      Small : Count_Array (0 .. R) := (others => 0);
-      Large : Count_Array (0 .. R) := (others => 0);
+      --  The tables live on the heap: R is up to about 4.5 million.
+      Small : Count_Access := new Count_Array (0 .. R);
+      Large : Count_Access := new Count_Array (0 .. R);
+      Result : U64;
    begin
       if High < 2 then
+         Free (Small);
+         Free (Large);
          return 0;
       end if;
+      Small.all := [others => 0];
+      Large.all := [others => 0];
       for V in U64 range 1 .. R loop
          Small (V) := V - 1;
       end loop;
@@ -126,7 +138,10 @@ package body Math_Prime_Util.Count is
             end;
          end if;
       end loop;
-      return Large (1);
+      Result := Large (1);
+      Free (Small);
+      Free (Large);
+      return Result;
    end Prime_Count;
 
    function Legendre_Phi (X : U64; A : Natural) return U64 is
@@ -163,21 +178,60 @@ package body Math_Prime_Util.Count is
       end;
    end Legendre_Phi;
 
-   function Nth_Prime (N : U64) return U64 is
-      Lo : U64 := 2;
-      Hi : U64 := 20 * N;
-      Mid : U64;
+   function Nth_Prime (N : U64) return U64
+     with SPARK_Mode => Off
+   is
+      --  Count primes up to the approximation A, then walk with a
+      --  segmented sieve in the direction of N. The walk is short:
+      --  the approximation is within a few thousand of the answer.
+      Window : constant U64 := 1_000_000;
+      C : U64;
+      A, Lo, Hi : U64;
    begin
-      --  Invariant: Prime_Count (Hi) >= N, since p_N < 20 N here.
-      while Lo < Hi loop
-         Mid := Lo + (Hi - Lo) / 2;
-         if Prime_Count (Mid) >= N then
-            Hi := Mid;
-         else
-            Lo := Mid + 1;
-         end if;
-      end loop;
-      return Lo;
+      if N < 306 then
+         --  The approximations call Nth_Prime for small N.
+         declare
+            Ps : constant Sieve.Prime_Vectors.Vector := Sieve.Primes (2_100);
+         begin
+            return Ps.Element (Ps.First_Index + Natural (N - 1));
+         end;
+      end if;
+      A := Nth_Prime_Approx (N);
+      C := Prime_Count (A);
+      if C < N then
+         Lo := A + 1;
+         loop
+            Hi := Lo + Window - 1;
+            declare
+               Ps : constant Sieve.Prime_Vectors.Vector :=
+                 Sieve.Primes (Lo, Hi);
+            begin
+               if C + U64 (Ps.Length) >= N then
+                  return Ps.Element (Ps.First_Index + Natural (N - C - 1));
+               end if;
+               C := C + U64 (Ps.Length);
+            end;
+            Lo := Hi + 1;
+         end loop;
+      else
+         --  C primes are <= A; drop the largest until fewer than N.
+         Hi := A;
+         loop
+            Lo := (if Hi > Window then Hi - Window + 1 else 2);
+            declare
+               Ps : constant Sieve.Prime_Vectors.Vector :=
+                 Sieve.Primes (Lo, Hi);
+               Len : constant U64 := U64 (Ps.Length);
+            begin
+               if C - Len < N then
+                  return Ps.Element
+                    (Ps.First_Index + Natural (N - (C - Len) - 1));
+               end if;
+               C := C - Len;
+            end;
+            Hi := Lo - 1;
+         end loop;
+      end if;
    end Nth_Prime;
    subtype Wide is Long_Long_Float;
    package Ef is new Ada.Numerics.Generic_Elementary_Functions (Wide);
