@@ -1,0 +1,591 @@
+with AUnit.Assertions;
+with AUnit.Test_Cases;
+with Ada.Assertions;
+with Ada.Strings.Unbounded;
+with Ada.Strings.Fixed;
+with Fixture_Support;
+with Math_Prime_Util.Combinat;
+
+package body Compat_Combinat is
+   use AUnit.Test_Cases;
+   use Ada.Strings.Unbounded;
+   use Fixture_Support;
+   use Math_Prime_Util;
+   use Math_Prime_Util.Combinat;
+   use type U64;
+   use type U128;
+
+   type Combinat_Case is new Test_Case with null record;
+   overriding function Name
+     (T : Combinat_Case) return AUnit.Message_String;
+   overriding procedure Register_Tests (T : in out Combinat_Case);
+
+   function Parse_Signed (Text : String; Value : out I128) return Boolean;
+
+   function Parse_Signed (Text : String; Value : out I128) return Boolean is
+      Magnitude : U64;
+      Negative : constant Boolean := Text'Length > 0
+        and then Text (Text'First) = '-';
+      First : constant Integer := Text'First + (if Negative then 1 else 0);
+   begin
+      Value := 0;
+      if not Parse_U64 (Text (First .. Text'Last), Magnitude) then
+         return False;
+      end if;
+      Value := (if Negative then -I128 (Magnitude) else I128 (Magnitude));
+      return True;
+   end Parse_Signed;
+
+   procedure Replay (Func : String) is
+      Cases : constant Case_Vectors.Vector :=
+        For_Function (Load ("combinat"), Func);
+      A, B, Expected : U64 := 0;
+      R : Optional_U64;
+      Signed_R : Optional_I128;
+      Signed_A, Signed_Expected : I128 := 0;
+      Signed_Input : Boolean;
+      Fits, Inputs_Fit : Boolean;
+   begin
+      AUnit.Assertions.Assert (not Cases.Is_Empty, "missing " & Func);
+      for C of Cases loop
+         Signed_Input := Func = "falling_factorial"
+           or Func = "rising_factorial";
+         Inputs_Fit := Parse_U64 (To_String (C.Args (1)), A);
+         B := 0;
+         if Natural (C.Args.Length) > 1 then
+            Inputs_Fit :=
+              Parse_U64 (To_String (C.Args (2)), B) and Inputs_Fit;
+         end if;
+         if Signed_Input then
+            Inputs_Fit := Parse_Signed
+              (To_String (C.Args (1)), Signed_A)
+              and Parse_U64 (To_String (C.Args (2)), B);
+         end if;
+         --  Bigint inputs are outside this native API.
+         --  Their fixture rows remain for the later signed/bigint port.
+         if Inputs_Fit then
+            if C.Error then
+               if Func = "multifactorial" and B = 0 then
+                  declare
+                     Raised : Boolean := False;
+                  begin
+                     begin
+                        R := Multifactorial (A, B);
+                     exception
+                        when Ada.Assertions.Assertion_Error
+                           | Constraint_Error =>
+                           Raised := True;
+                     end;
+                     AUnit.Assertions.Assert (Raised, "zero step");
+                  end;
+               else
+                  AUnit.Assertions.Assert (False, "unexpected error row");
+               end if;
+            else
+               if Signed_Input then
+                  Signed_R := (if Func = "falling_factorial" then
+                    Falling_Factorial (Signed_A, B)
+                    else Rising_Factorial (Signed_A, B));
+                  Fits := not C.Undef;
+                  if Fits then
+                     Fits := Parse_Signed
+                       (To_String (C.Result), Signed_Expected);
+                  end if;
+                  AUnit.Assertions.Assert
+                    (Signed_R.Defined = Fits and then
+                     (not Fits or else Signed_R.Value = Signed_Expected),
+                     Func & Positive'Image (C.Line_Number));
+               else
+               if Func = "factorial" then
+                  R := Factorial (A);
+               elsif Func = "subfactorial" then
+                  R := Subfactorial (A);
+               elsif Func = "multifactorial" then
+                  R := Multifactorial (A, B);
+               elsif Func = "binomial" then
+                  R := Binomial (A, B);
+               elsif Func = "catalan_number" then
+                  R := Catalan_Number (A);
+               elsif Func = "bell_number" then
+                  R := Bell_Number (A);
+               elsif Func = "primorial" then
+                  R := Primorial (A);
+               elsif Func = "fubini" then
+                  R := Fubini (A);
+               elsif Func = "powersum" then
+                  R := Powersum (A, B);
+               elsif Func = "consecutive_integer_lcm" then
+                  R := Consecutive_Integer_Lcm (A);
+               elsif Func = "pn_primorial" then
+                  R := Pn_Primorial (A);
+               end if;
+               Fits := not C.Undef and then
+                 Parse_U64 (To_String (C.Result), Expected);
+               AUnit.Assertions.Assert
+                 (R.Defined = Fits and then
+                  (not Fits or else R.Value = Expected),
+                  Func & Positive'Image (C.Line_Number));
+               end if;
+            end if;
+         end if;
+      end loop;
+   end Replay;
+
+   procedure Check_Factorial (T : in out Test_Case'Class) is
+   begin
+      Replay ("factorial");
+   end Check_Factorial;
+
+   procedure Check_Subfactorial (T : in out Test_Case'Class) is
+   begin
+      Replay ("subfactorial");
+   end Check_Subfactorial;
+
+   procedure Check_Multifactorial (T : in out Test_Case'Class) is
+   begin
+      Replay ("multifactorial");
+   end Check_Multifactorial;
+
+   procedure Check_Binomial (T : in out Test_Case'Class) is
+   begin
+      Replay ("binomial");
+   end Check_Binomial;
+
+   procedure Check_Catalan_Number (T : in out Test_Case'Class) is
+   begin
+      Replay ("catalan_number");
+   end Check_Catalan_Number;
+
+   procedure Check_Bell_Number (T : in out Test_Case'Class) is
+   begin
+      Replay ("bell_number");
+   end Check_Bell_Number;
+
+   procedure Check_Primorial (T : in out Test_Case'Class) is
+   begin
+      Replay ("primorial");
+   end Check_Primorial;
+
+   procedure Check_Pn_Primorial (T : in out Test_Case'Class) is
+   begin
+      Replay ("pn_primorial");
+   end Check_Pn_Primorial;
+
+   procedure Check_Falling_Factorial (T : in out Test_Case'Class) is
+   begin
+      Replay ("falling_factorial");
+   end Check_Falling_Factorial;
+
+   procedure Check_Rising_Factorial (T : in out Test_Case'Class) is
+   begin
+      Replay ("rising_factorial");
+   end Check_Rising_Factorial;
+
+   procedure Check_Consecutive_Integer_Lcm (T : in out Test_Case'Class) is
+   begin
+      Replay ("consecutive_integer_lcm");
+   end Check_Consecutive_Integer_Lcm;
+
+   procedure Check_Fubini (T : in out Test_Case'Class) is
+   begin
+      Replay ("fubini");
+   end Check_Fubini;
+
+   procedure Check_Powersum (T : in out Test_Case'Class) is
+   begin
+      Replay ("powersum");
+   end Check_Powersum;
+
+   --  Replay for the functions with up to three arguments and a
+   --  defined-or-not scalar result; rows with bigint inputs are skipped.
+   procedure Replay_Multi (Func : String) is
+      Cases : constant Case_Vectors.Vector :=
+        For_Function (Load ("combinat"), Func);
+      Arg : array (1 .. 3) of U64 := (0, 0, 0);
+      Ok, Fits : Boolean;
+      Got, Expected : U64;
+      Opt : Optional_U64;
+      Signed_R : Optional_I128;
+      Signed_Expected : I128;
+   begin
+      AUnit.Assertions.Assert (not Cases.Is_Empty, "missing " & Func);
+      for C of Cases loop
+         Ok := True;
+         Arg (3) := 1;
+         for I in 1 .. Natural (C.Args.Length) loop
+            Ok := Parse_U64 (To_String (C.Args (I)), Arg (I)) and Ok;
+         end loop;
+         --  Skipped: the one stirling row with kind 4 (not in MPU 0.75 C).
+         if Ok and then Arg (3) <= 3 then
+            Fits := not C.Undef and then
+              (Func = "partitions" or Func = "partitionsq"
+               or Func = "stirling"
+               or Parse_U64 (To_String (C.Result), Expected));
+            if Func = "is_happy" then
+               Got := (case C.Args.Length is
+                  when 1 => Is_Happy (Arg (1)),
+                  when 2 => Is_Happy (Arg (1), Arg (2)),
+                  when others => Is_Happy (Arg (1), Arg (2), Arg (3)));
+               Ok := Parse_U64 (To_String (C.Result), Expected)
+                 and then Got = Expected;
+            elsif Func = "is_polygonal" then
+               Ok := Parse_U64 (To_String (C.Result), Expected)
+                 and then Is_Polygonal (Arg (1), Arg (2))
+                   = (Expected = 1);
+            elsif Func = "is_pillai" then
+               Ok := Parse_U64 (To_String (C.Result), Expected)
+                 and then Is_Pillai (Arg (1)) = Expected;
+            elsif Func = "stirling" then
+               Signed_R := Stirling
+                 (Arg (1), Arg (2), Stirling_Kind (Arg (3)));
+               Fits := not C.Undef
+                 and then Parse_Signed
+                   (To_String (C.Result), Signed_Expected);
+               Ok := Signed_R.Defined = Fits and then
+                 (not Fits or else Signed_R.Value = Signed_Expected);
+            else
+               Opt := (if Func = "partitions" then Partitions (Arg (1))
+                       else Partitionsq (Arg (1)));
+               Fits := not C.Undef
+                 and then Parse_U64 (To_String (C.Result), Expected);
+               Ok := Opt.Defined = Fits and then
+                 (not Fits or else Opt.Value = Expected);
+            end if;
+            AUnit.Assertions.Assert
+              (Ok, Func & Positive'Image (C.Line_Number));
+         end if;
+      end loop;
+   end Replay_Multi;
+
+   procedure Check_Is_Happy (T : in out Test_Case'Class) is
+   begin
+      Replay_Multi ("is_happy");
+   end Check_Is_Happy;
+
+   procedure Check_Is_Polygonal (T : in out Test_Case'Class) is
+   begin
+      Replay_Multi ("is_polygonal");
+   end Check_Is_Polygonal;
+
+   procedure Check_Is_Pillai (T : in out Test_Case'Class) is
+   begin
+      Replay_Multi ("is_pillai");
+   end Check_Is_Pillai;
+
+   procedure Check_Stirling (T : in out Test_Case'Class) is
+   begin
+      Replay_Multi ("stirling");
+   end Check_Stirling;
+
+   procedure Check_Partitions (T : in out Test_Case'Class) is
+   begin
+      Replay_Multi ("partitions");
+   end Check_Partitions;
+
+   procedure Check_Partitionsq (T : in out Test_Case'Class) is
+   begin
+      Replay_Multi ("partitionsq");
+   end Check_Partitionsq;
+
+   --  Native subset only: rows with a negative or bigint K, or more than
+   --  20 entries, are skipped.
+   procedure Check_Numtoperm (T : in out Test_Case'Class) is
+      Cases : constant Case_Vectors.Vector :=
+        For_Function (Load ("combinat"), "numtoperm");
+      N, K, V : U64;
+      Done : Boolean;
+   begin
+      AUnit.Assertions.Assert (not Cases.Is_Empty, "missing numtoperm");
+      for C of Cases loop
+         if Natural (C.Args.Length) = 2
+           and then Parse_U64 (To_String (C.Args (1)), N)
+           and then Parse_U64 (To_String (C.Args (2)), K)
+           and then N <= 20 and then not C.Error and then not C.Undef
+         then
+            declare
+               P : Perm_Array (0 .. Natural (N) - 1);
+               Text : Unbounded_String;
+            begin
+               Numtoperm (N, K, P, Done);
+               if Done then
+                  for I in P'Range loop
+                     Append (Text, (if I > 0 then " " else "")
+                       & Ada.Strings.Fixed.Trim
+                           (U64'Image (P (I)), Ada.Strings.Left));
+                  end loop;
+                  AUnit.Assertions.Assert
+                    (To_String (Text) = To_String (C.Result),
+                     "numtoperm" & Positive'Image (C.Line_Number));
+               end if;
+            end;
+         end if;
+      end loop;
+   end Check_Numtoperm;
+
+   procedure Check_Permtonum (T : in out Test_Case'Class) is
+      Cases : constant Case_Vectors.Vector :=
+        For_Function (Load ("combinat"), "permtonum");
+      V, Expected : U64;
+   begin
+      AUnit.Assertions.Assert (not Cases.Is_Empty, "missing permtonum");
+      for C of Cases loop
+         if not C.Error and then not C.Undef and then Natural (C.Args.Length) > 0
+           and then Natural (C.Args.Length) <= 20
+           and then Parse_U64 (To_String (C.Result), Expected)
+         then
+            declare
+               P : Perm_Array (0 .. Natural (C.Args.Length) - 1);
+               Ok : Boolean := True;
+               R : Optional_U64;
+            begin
+               for I in P'Range loop
+                  Ok := Parse_U64 (To_String (C.Args (I + 1)), V) and Ok;
+                  P (I) := V;
+               end loop;
+               if Ok then
+                  R := Permtonum (P);
+                  AUnit.Assertions.Assert
+                    (R.Defined and then R.Value = Expected,
+                     "permtonum" & Positive'Image (C.Line_Number));
+               end if;
+            end;
+         end if;
+      end loop;
+   end Check_Permtonum;
+
+   procedure Check_Harmfrac (T : in out Test_Case'Class) is
+      Cases : constant Case_Vectors.Vector :=
+        For_Function (Load ("combinat"), "harmfrac");
+      N : U64;
+      Num, Den : U128;
+      R : Optional_Fraction;
+      Fits : Boolean;
+   begin
+      AUnit.Assertions.Assert (not Cases.Is_Empty, "missing harmfrac");
+      for C of Cases loop
+         AUnit.Assertions.Assert
+           (Parse_U64 (To_String (C.Args (1)), N), "harmfrac input");
+         R := Harmfrac (N);
+         declare
+            Text : constant String := To_String (C.Result);
+            Space : constant Natural := Ada.Strings.Fixed.Index (Text, " ");
+         begin
+            Fits := not C.Undef and then Space > 0;
+            if Fits then
+               Fits := Parse_U128 (Text (Text'First .. Space - 1), Num)
+                 and then Num <= U128 (I128'Last)
+                 and then Parse_U128 (Text (Space + 1 .. Text'Last), Den);
+            end if;
+            AUnit.Assertions.Assert
+              (R.Defined = Fits and then
+               (not Fits or else (R.Num = I128 (Num) and R.Den = Den)),
+               "harmfrac" & Positive'Image (C.Line_Number));
+         end;
+      end loop;
+   end Check_Harmfrac;
+
+   function Img (V : I128) return String is
+     (Ada.Strings.Fixed.Trim (I128'Image (V), Ada.Strings.Left));
+   function Img (V : U128) return String is
+     (Ada.Strings.Fixed.Trim (U128'Image (V), Ada.Strings.Left));
+
+   --  Rows with N = 0 (undef: the C function clears its cache) are
+   --  skipped; the port bounds N by Integer_Complexity_Limit.
+   procedure Check_Integer_Complexity (T : in out Test_Case'Class) is
+      Cases : constant Case_Vectors.Vector :=
+        For_Function (Load ("combinat"), "integer_complexity");
+      N, Expected : U64;
+   begin
+      AUnit.Assertions.Assert (not Cases.Is_Empty, "missing complexity");
+      for C of Cases loop
+         if not C.Undef and then not C.Error
+           and then Parse_U64 (To_String (C.Args (1)), N)
+           and then Parse_U64 (To_String (C.Result), Expected)
+           and then N >= 1 and then N <= Integer_Complexity_Limit
+         then
+            AUnit.Assertions.Assert
+              (Integer_Complexity (N) = Expected,
+               "integer_complexity" & Positive'Image (C.Line_Number));
+         end if;
+      end loop;
+   end Check_Integer_Complexity;
+
+   --  Results past I128 numerators (B_60 and up) must be undefined.
+   procedure Check_Bernfrac (T : in out Test_Case'Class) is
+      Cases : constant Case_Vectors.Vector :=
+        For_Function (Load ("combinat"), "bernfrac");
+      N : U64;
+      R : Optional_Fraction;
+   begin
+      AUnit.Assertions.Assert (not Cases.Is_Empty, "missing bernfrac");
+      for C of Cases loop
+         if Parse_U64 (To_String (C.Args (1)), N) then
+            R := Bernfrac (N);
+            declare
+               Text : constant String := To_String (C.Result);
+               Space : constant Natural :=
+                 Ada.Strings.Fixed.Index (Text, " ");
+               Num_Text : constant String :=
+                 (if Text (Text'First) = '-'
+                  then Text (Text'First + 1 .. Space - 1)
+                  else Text (Text'First .. Space - 1));
+               Mag128 : U128;
+               Fits : constant Boolean :=
+                 Parse_U128 (Num_Text, Mag128)
+                 and then Mag128 <= U128 (I128'Last);
+            begin
+               AUnit.Assertions.Assert (R.Defined = Fits,
+                  "bernfrac defined" & Positive'Image (C.Line_Number));
+               if Fits then
+                  AUnit.Assertions.Assert
+                    (Img (R.Num) & " " & Img (R.Den) = Text,
+                     "bernfrac" & Positive'Image (C.Line_Number));
+               end if;
+            end;
+         end if;
+      end loop;
+   end Check_Bernfrac;
+
+   --  Rows with a table above 5 000 000 entries (smallest generator
+   --  above that) and rows the C function rejects are skipped.
+   procedure Check_Frobenius (T : in out Test_Case'Class) is
+      Cases : constant Case_Vectors.Vector :=
+        For_Function (Load ("combinat"), "frobenius_number");
+      V : U64;
+   begin
+      AUnit.Assertions.Assert (not Cases.Is_Empty, "missing frobenius");
+      for C of Cases loop
+         if not C.Error then
+            declare
+               Len : constant Natural :=
+                 (if Natural (C.Args.Length) = 1
+                    and then Length (C.Args (1)) = 0
+                  then 0 else Natural (C.Args.Length));
+               A : Number_Array (1 .. Len);
+               Ok : Boolean := True;
+               R : Optional_I128;
+            begin
+               for I in A'Range loop
+                  Ok := Parse_U64 (To_String (C.Args (I)), V) and Ok;
+                  A (I) := V;
+               end loop;
+               if Ok and then (for all X of A => X > 0)
+                 and then Coprime_Set (A)
+               then
+                  R := Frobenius_Number (A);
+                  if C.Undef then
+                     AUnit.Assertions.Assert
+                       (not R.Defined,
+                        "frobenius undef" & Positive'Image (C.Line_Number));
+                  else
+                     AUnit.Assertions.Assert
+                       (R.Defined and then Img (R.Value) = To_String (C.Result),
+                        "frobenius" & Positive'Image (C.Line_Number));
+                  end if;
+               end if;
+            end;
+         end if;
+      end loop;
+   end Check_Frobenius;
+
+   --  Rows with a negative argument (error) are skipped.
+   procedure Check_Is_Congruent_Number (T : in out Test_Case'Class) is
+      Cases : constant Case_Vectors.Vector :=
+        For_Function (Load ("combinat"), "is_congruent_number");
+      N, Expected : U64;
+   begin
+      AUnit.Assertions.Assert (not Cases.Is_Empty, "missing congruent");
+      for C of Cases loop
+         if not C.Error and then not C.Undef
+           and then Parse_U64 (To_String (C.Args (1)), N)
+           and then Parse_U64 (To_String (C.Result), Expected)
+           and then N <= 2 ** 32 - 1
+         then
+            AUnit.Assertions.Assert
+              (Is_Congruent_Number (N) = (Expected = 1),
+               "is_congruent_number" & Positive'Image (C.Line_Number));
+         end if;
+      end loop;
+   end Check_Is_Congruent_Number;
+
+   --  Negative arguments (result 0) are skipped; hclassno (0) is
+   --  undefined here (MPU returns UV_MAX, the fixture shows -1).
+   procedure Check_Hclassno (T : in out Test_Case'Class) is
+      Cases : constant Case_Vectors.Vector :=
+        For_Function (Load ("combinat"), "hclassno");
+      N, Expected : U64;
+      R : Optional_U64;
+   begin
+      AUnit.Assertions.Assert (not Cases.Is_Empty, "missing hclassno");
+      for C of Cases loop
+         if not C.Error and then not C.Undef
+           and then Parse_U64 (To_String (C.Args (1)), N)
+           and then N <= 2 ** 36
+         then
+            R := Hclassno (N);
+            if N = 0 then
+               AUnit.Assertions.Assert
+                 (not R.Defined, "hclassno 0 undefined");
+            else
+               AUnit.Assertions.Assert
+                 (Parse_U64 (To_String (C.Result), Expected)
+                  and then R.Defined and then R.Value = Expected,
+                  "hclassno" & Positive'Image (C.Line_Number));
+            end if;
+         end if;
+      end loop;
+   end Check_Hclassno;
+
+   overriding function Name
+     (T : Combinat_Case) return AUnit.Message_String is
+   begin
+      return AUnit.Format ("Compat_Combinat");
+   end Name;
+
+   overriding procedure Register_Tests (T : in out Combinat_Case) is
+      use AUnit.Test_Cases.Registration;
+   begin
+      Register_Routine
+        (T, Check_Falling_Factorial'Access, "falling_factorial");
+      Register_Routine
+        (T, Check_Rising_Factorial'Access, "rising_factorial");
+      Register_Routine
+        (T, Check_Consecutive_Integer_Lcm'Access, "consecutive_integer_lcm");
+      Register_Routine
+        (T, Check_Fubini'Access, "fubini");
+      Register_Routine
+        (T, Check_Powersum'Access, "powersum");
+      Register_Routine (T, Check_Harmfrac'Access, "harmfrac");
+      Register_Routine
+        (T, Check_Integer_Complexity'Access, "integer_complexity");
+      Register_Routine (T, Check_Bernfrac'Access, "bernfrac");
+      Register_Routine (T, Check_Frobenius'Access, "frobenius_number");
+      Register_Routine
+        (T, Check_Is_Congruent_Number'Access, "is_congruent_number");
+      Register_Routine (T, Check_Hclassno'Access, "hclassno");
+      Register_Routine (T, Check_Factorial'Access, "factorial");
+      Register_Routine (T, Check_Subfactorial'Access, "subfactorial");
+      Register_Routine (T, Check_Multifactorial'Access, "multifactorial");
+      Register_Routine (T, Check_Binomial'Access, "binomial");
+      Register_Routine (T, Check_Catalan_Number'Access, "catalan_number");
+      Register_Routine (T, Check_Bell_Number'Access, "bell_number");
+      Register_Routine (T, Check_Primorial'Access, "primorial");
+      Register_Routine (T, Check_Pn_Primorial'Access, "pn_primorial");
+      Register_Routine (T, Check_Is_Happy'Access, "is_happy");
+      Register_Routine (T, Check_Is_Polygonal'Access, "is_polygonal");
+      Register_Routine (T, Check_Is_Pillai'Access, "is_pillai");
+      Register_Routine (T, Check_Stirling'Access, "stirling");
+      Register_Routine (T, Check_Partitions'Access, "partitions");
+      Register_Routine (T, Check_Partitionsq'Access, "partitionsq");
+      Register_Routine (T, Check_Numtoperm'Access, "numtoperm");
+      Register_Routine (T, Check_Permtonum'Access, "permtonum");
+   end Register_Tests;
+
+   function Suite return AUnit.Test_Suites.Access_Test_Suite is
+      Result : constant AUnit.Test_Suites.Access_Test_Suite :=
+        new AUnit.Test_Suites.Test_Suite;
+   begin
+      Result.Add_Test (new Combinat_Case);
+      return Result;
+   end Suite;
+end Compat_Combinat;
