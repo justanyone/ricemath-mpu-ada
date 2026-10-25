@@ -271,7 +271,10 @@ package body Math_Prime_Util.Count is
          Value := X / (L - 1.0 - 1.0 / L - 2.975666 / L2
                        - 13.024334 / (L * L2) + A / (L2 * L2));
       elsif High < 4_000_000_000 then
-         A := (if High < 303_000 then 5.0
+         --  prime_counts.c prime_count_lower: -3 below 300_000,
+         --  then 5 below 303_000. The 4.0 band is below this branch.
+         A := (if High < 300_000 then -3.0
+               elsif High < 303_000 then 5.0
                elsif High < 1_100_000 then -7.0
                elsif High < 4_500_000 then -37.0
                elsif High < 10_200_000 then -70.0
