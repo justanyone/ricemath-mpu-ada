@@ -7,6 +7,7 @@ Read plan, spec, and body. Functions are already present and use Intmont.Powmod.
 alr failed to create /run/user/1000 temp files. Retry with XDG_RUNTIME_DIR=/tmp and TMPDIR=/tmp.
 alr then tried to delete the shared aunit release and the sandbox blocks unlink outside the worktree. Set dependencies.shared=false so the build copies aunit into the local cache.
 tools/test.sh Compat_Primality: 186 tests, 0 failures (runner has no filter, so the whole suite ran). Primality compat and property tests passed. Next: tools/gate.sh. miller_rabin_random stays unimplemented; it needs the random module.
+tools/gate.sh printed == gate: green (development build, release build, 186 tests). miller_rabin_random is still not implemented: the random module is not in this task, so STATUS stays [ ] for it. Skipped fixture rows are the bigint Frobenius P,Q beyond native bounds and delicate primes with n >= 10**19 (Perl bigint fallback); both are named in compat_primality.adb.
 - 2026-10-25T04:12:07Z launcher: no commit for 61 s; 91 s elapsed. Files changed so far: docs/worker-notes/wx-mpuada-primality-a1.md.
 - 2026-10-25T04:13:07Z launcher: no commit for 60 s; 151 s elapsed. Files changed so far: docs/worker-notes/wx-mpuada-primality-a1.md.
 - 2026-10-25T04:14:07Z launcher: no commit for 60 s; 211 s elapsed. Files changed so far: docs/worker-notes/wx-mpuada-primality-a1.md.
