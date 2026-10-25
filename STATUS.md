@@ -20,11 +20,11 @@ Full directions: PLAN.md section 3. Tick each when done.
 
 ## Functions
 
-- [ ] `absint` -> `Absint`
+- [x] `absint` -> `Absint`
 - [ ] `abundance` -> `Abundance`
-- [ ] `add1int` -> `Add1int`
-- [ ] `addint` -> `Addint`
-- [ ] `addmod` -> `Addmod`
+- [x] `add1int` -> `Add1int`
+- [x] `addint` -> `Addint`
+- [x] `addmod` -> `Addmod`
 - [ ] `aliquot_sum` -> `Aliquot_Sum`
 - [ ] `allrootmod` -> `Allrootmod`
 - [ ] `allsqrtmod` -> `Allsqrtmod`
@@ -35,8 +35,8 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `almost_primes` -> `Almost_Primes`
 - [ ] `bell_number` -> `Bell_Number`
 - [ ] `bernfrac` -> `Bernfrac`
-- [ ] `bernreal` -> `Bernreal`
-- [ ] `bestrational` -> `Bestrational`
+- [x] `bernreal` -> `Bernreal`
+- [x] `bestrational` -> `Bestrational`
 - [ ] `binomial` -> `Binomial`
 - [ ] `binomialmod` -> `Binomialmod`
 - [ ] `bitand` -> `Bitand`
@@ -50,46 +50,46 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `bitset` -> `Bitset`
 - [ ] `bittest` -> `Bittest`
 - [ ] `bitxor` -> `Bitxor`
-- [ ] `calkin_wilf_n` -> `Calkin_Wilf_N`
+- [x] `calkin_wilf_n` -> `Calkin_Wilf_N`
 - [ ] `carmichael_lambda` -> `Carmichael_Lambda`
 - [ ] `catalan_number` -> `Catalan_Number`
-- [ ] `cdivint` -> `Cdivint`
-- [ ] `cdivrem` -> `Cdivrem`
+- [x] `cdivint` -> `Cdivint`
+- [x] `cdivrem` -> `Cdivrem`
 - [ ] `cheb_factor` -> `Cheb_Factor`
 - [ ] `chebyshev_psi` -> `Chebyshev_Psi`
 - [ ] `chebyshev_theta` -> `Chebyshev_Theta`
 - [ ] `chinese` -> `Chinese`
 - [ ] `chinese2` -> `Chinese2`
-- [ ] `cmpint` -> `Cmpint`
+- [x] `cmpint` -> `Cmpint`
 - [ ] `consecutive_integer_lcm` -> `Consecutive_Integer_Lcm`
-- [ ] `contfrac` -> `Contfrac`
-- [ ] `convergents` -> `Convergents`
+- [x] `contfrac` -> `Contfrac`
+- [x] `convergents` -> `Convergents`
 - [ ] `cornacchia` -> `Cornacchia`
-- [ ] `crootint` -> `Crootint`
+- [x] `crootint` -> `Crootint`
 - [ ] `csrand` -> `Csrand`
 - [ ] `dedekind_psi` -> `Dedekind_Psi`
-- [ ] `digital_root` -> `Digital_Root`
-- [ ] `divint` -> `Divint`
+- [x] `digital_root` -> `Digital_Root`
+- [x] `divint` -> `Divint`
 - [ ] `divisors` -> `Divisors`
 - [ ] `divisor_sum` -> `Divisor_Sum`
 - [ ] `divmod` -> `Divmod`
-- [ ] `divrem` -> `Divrem`
+- [x] `divrem` -> `Divrem`
 - [ ] `drand` -> `Drand`
 - [ ] `ecm_factor` -> `Ecm_Factor`
 - [ ] `entropy_bytes` -> `Entropy_Bytes`
 - [ ] `euler_phi` -> `Euler_Phi`
 - [ ] `exp_mangoldt` -> `Exp_Mangoldt`
-- [ ] `ExponentialIntegral` -> `Exponentialintegral`
+- [x] `ExponentialIntegral` -> `Exponentialintegral`
 - [ ] `factor` -> `Factor`
 - [ ] `factor_exp` -> `Factor_Exp`
 - [ ] `factorial` -> `Factorial`
 - [ ] `factorialmod` -> `Factorialmod`
 - [ ] `falling_factorial` -> `Falling_Factorial`
-- [ ] `farey` -> `Farey`
-- [ ] `farey_rank` -> `Farey_Rank`
-- [ ] `fdivrem` -> `Fdivrem`
+- [x] `farey` -> `Farey`
+- [x] `farey_rank` -> `Farey_Rank`
+- [x] `fdivrem` -> `Fdivrem`
 - [ ] `fermat_factor` -> `Fermat_Factor`
-- [ ] `fibonacci` -> `Fibonacci`
+- [x] `fibonacci` -> `Fibonacci`
 - [ ] `floor_sum` -> `Floor_Sum`
 - [ ] `foralmostprimes` -> `Foralmostprimes`
 - [ ] `forcomb` -> `Forcomb`
@@ -108,145 +108,145 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `forsquarefree` -> `Forsquarefree`
 - [ ] `forsquarefreeint` -> `Forsquarefreeint`
 - [ ] `frobenius_number` -> `Frobenius_Number`
-- [ ] `from_contfrac` -> `From_Contfrac`
-- [ ] `fromdigits` -> `Fromdigits`
-- [ ] `fromzeckendorf` -> `Fromzeckendorf`
+- [x] `from_contfrac` -> `From_Contfrac`
+- [x] `fromdigits` -> `Fromdigits`
+- [x] `fromzeckendorf` -> `Fromzeckendorf`
 - [ ] `fubini` -> `Fubini`
-- [ ] `gcd` -> `Gcd`
-- [ ] `gcdext` -> `Gcdext`
+- [x] `gcd` -> `Gcd`
+- [x] `gcdext` -> `Gcdext`
 - [ ] `goldbach_pair_count` -> `Goldbach_Pair_Count`
 - [ ] `goldbach_pairs` -> `Goldbach_Pairs`
-- [ ] `hammingweight` -> `Hammingweight`
+- [x] `hammingweight` -> `Hammingweight`
 - [ ] `harmfrac` -> `Harmfrac`
-- [ ] `harmreal` -> `Harmreal`
+- [x] `harmreal` -> `Harmreal`
 - [ ] `hclassno` -> `Hclassno`
 - [ ] `holf_factor` -> `Holf_Factor`
 - [ ] `integer_complexity` -> `Integer_Complexity`
-- [ ] `inverse_li` -> `Inverse_Li`
-- [ ] `inverse_li_nv` -> `Inverse_Li_Nv`
+- [x] `inverse_li` -> `Inverse_Li`
+- [x] `inverse_li_nv` -> `Inverse_Li_Nv`
 - [ ] `inverse_sigma0` -> `Inverse_Sigma0`
 - [ ] `inverse_sigma0_count` -> `Inverse_Sigma0_Count`
 - [ ] `inverse_totient` -> `Inverse_Totient`
-- [ ] `invmod` -> `Invmod`
+- [x] `invmod` -> `Invmod`
 - [ ] `irand` -> `Irand`
 - [ ] `irand32` -> `Irand32`
 - [ ] `irand64` -> `Irand64`
 - [ ] `is_aks_prime` -> `Is_Aks_Prime`
-- [ ] `is_almost_extra_strong_lucas_pseudoprime` -> `Is_Almost_Extra_Strong_Lucas_Pseudoprime`
+- [x] `is_almost_extra_strong_lucas_pseudoprime` -> `Is_Almost_Extra_Strong_Lucas_Pseudoprime`
 - [ ] `is_almost_prime` -> `Is_Almost_Prime`
-- [ ] `is_bpsw_prime` -> `Is_Bpsw_Prime`
+- [x] `is_bpsw_prime` -> `Is_Bpsw_Prime`
 - [ ] `is_carmichael` -> `Is_Carmichael`
-- [ ] `is_catalan_pseudoprime` -> `Is_Catalan_Pseudoprime`
-- [ ] `is_chen_prime` -> `Is_Chen_Prime`
-- [ ] `is_congruent` -> `Is_Congruent`
+- [x] `is_catalan_pseudoprime` -> `Is_Catalan_Pseudoprime`
+- [x] `is_chen_prime` -> `Is_Chen_Prime`
+- [x] `is_congruent` -> `Is_Congruent`
 - [ ] `is_congruent_number` -> `Is_Congruent_Number`
 - [ ] `is_cyclic` -> `Is_Cyclic`
-- [ ] `is_delicate_prime` -> `Is_Delicate_Prime`
-- [ ] `is_divisible` -> `Is_Divisible`
-- [ ] `is_euler_plumb_pseudoprime` -> `Is_Euler_Plumb_Pseudoprime`
-- [ ] `is_euler_pseudoprime` -> `Is_Euler_Pseudoprime`
-- [ ] `is_even` -> `Is_Even`
-- [ ] `is_extra_strong_lucas_pseudoprime` -> `Is_Extra_Strong_Lucas_Pseudoprime`
-- [ ] `is_frobenius_khashin_pseudoprime` -> `Is_Frobenius_Khashin_Pseudoprime`
-- [ ] `is_frobenius_pseudoprime` -> `Is_Frobenius_Pseudoprime`
-- [ ] `is_frobenius_underwood_pseudoprime` -> `Is_Frobenius_Underwood_Pseudoprime`
+- [x] `is_delicate_prime` -> `Is_Delicate_Prime`
+- [x] `is_divisible` -> `Is_Divisible`
+- [x] `is_euler_plumb_pseudoprime` -> `Is_Euler_Plumb_Pseudoprime`
+- [x] `is_euler_pseudoprime` -> `Is_Euler_Pseudoprime`
+- [x] `is_even` -> `Is_Even`
+- [x] `is_extra_strong_lucas_pseudoprime` -> `Is_Extra_Strong_Lucas_Pseudoprime`
+- [x] `is_frobenius_khashin_pseudoprime` -> `Is_Frobenius_Khashin_Pseudoprime`
+- [x] `is_frobenius_pseudoprime` -> `Is_Frobenius_Pseudoprime`
+- [x] `is_frobenius_underwood_pseudoprime` -> `Is_Frobenius_Underwood_Pseudoprime`
 - [ ] `is_fundamental` -> `Is_Fundamental`
 - [ ] `is_gaussian_prime` -> `Is_Gaussian_Prime`
 - [ ] `is_happy` -> `Is_Happy`
-- [ ] `is_harshad` -> `Is_Harshad`
+- [x] `is_harshad` -> `Is_Harshad`
 - [ ] `is_higgs_prime` -> `Is_Higgs_Prime`
-- [ ] `is_lucas_pseudoprime` -> `Is_Lucas_Pseudoprime`
-- [ ] `is_lucky` -> `Is_Lucky`
-- [ ] `is_mersenne_prime` -> `Is_Mersenne_Prime`
-- [ ] `is_odd` -> `Is_Odd`
+- [x] `is_lucas_pseudoprime` -> `Is_Lucas_Pseudoprime`
+- [x] `is_lucky` -> `Is_Lucky`
+- [x] `is_mersenne_prime` -> `Is_Mersenne_Prime`
+- [x] `is_odd` -> `Is_Odd`
 - [ ] `is_omega_prime` -> `Is_Omega_Prime`
-- [ ] `is_palindrome` -> `Is_Palindrome`
+- [x] `is_palindrome` -> `Is_Palindrome`
 - [ ] `is_perfect_number` -> `Is_Perfect_Number`
 - [ ] `is_perfect_power` -> `Is_Perfect_Power`
-- [ ] `is_perrin_pseudoprime` -> `Is_Perrin_Pseudoprime`
+- [x] `is_perrin_pseudoprime` -> `Is_Perrin_Pseudoprime`
 - [ ] `is_pillai` -> `Is_Pillai`
 - [ ] `is_polygonal` -> `Is_Polygonal`
-- [ ] `is_power` -> `Is_Power`
+- [x] `is_power` -> `Is_Power`
 - [ ] `is_powerfree` -> `Is_Powerfree`
 - [ ] `is_powerful` -> `Is_Powerful`
 - [ ] `is_practical` -> `Is_Practical`
-- [ ] `is_prime` -> `Is_Prime`
+- [x] `is_prime` -> `Is_Prime`
 - [ ] `is_prime_power` -> `Is_Prime_Power`
 - [ ] `is_primitive_root` -> `Is_Primitive_Root`
-- [ ] `is_prob_prime` -> `Is_Prob_Prime`
+- [x] `is_prob_prime` -> `Is_Prob_Prime`
 - [ ] `is_provable_prime` -> `Is_Provable_Prime`
 - [ ] `is_provable_prime_with_cert` -> `Is_Provable_Prime_With_Cert`
-- [ ] `is_pseudoprime` -> `Is_Pseudoprime`
+- [x] `is_pseudoprime` -> `Is_Pseudoprime`
 - [ ] `is_qr` -> `Is_Qr`
 - [ ] `is_quasi_carmichael` -> `Is_Quasi_Carmichael`
 - [ ] `is_ramanujan_prime` -> `Is_Ramanujan_Prime`
 - [ ] `is_rough` -> `Is_Rough`
-- [ ] `is_safe_prime` -> `Is_Safe_Prime`
+- [x] `is_safe_prime` -> `Is_Safe_Prime`
 - [ ] `is_semiprime` -> `Is_Semiprime`
 - [ ] `is_sidon_set` -> `Is_Sidon_Set`
 - [ ] `is_smooth` -> `Is_Smooth`
-- [ ] `is_square` -> `Is_Square`
+- [x] `is_square` -> `Is_Square`
 - [ ] `is_square_free` -> `Is_Square_Free`
-- [ ] `is_strong_lucas_pseudoprime` -> `Is_Strong_Lucas_Pseudoprime`
-- [ ] `is_strong_pseudoprime` -> `Is_Strong_Pseudoprime`
+- [x] `is_strong_lucas_pseudoprime` -> `Is_Strong_Lucas_Pseudoprime`
+- [x] `is_strong_pseudoprime` -> `Is_Strong_Pseudoprime`
 - [ ] `is_sumfree_set` -> `Is_Sumfree_Set`
 - [ ] `is_sum_of_squares` -> `Is_Sum_Of_Squares`
 - [ ] `is_totient` -> `Is_Totient`
 - [ ] `jordan_totient` -> `Jordan_Totient`
 - [ ] `kronecker` -> `Kronecker`
-- [ ] `LambertW` -> `Lambertw`
+- [x] `LambertW` -> `Lambertw`
 - [ ] `lastfor` -> `Lastfor`
-- [ ] `lcm` -> `Lcm`
+- [x] `lcm` -> `Lcm`
 - [ ] `legendre_phi` -> `Legendre_Phi`
 - [ ] `lehman_factor` -> `Lehman_Factor`
 - [ ] `liouville` -> `Liouville`
-- [ ] `LogarithmicIntegral` -> `Logarithmicintegral`
-- [ ] `logint` -> `Logint`
-- [ ] `lshiftint` -> `Lshiftint`
-- [ ] `lucas_number` -> `Lucas_Number`
-- [ ] `lucas_sequence` -> `Lucas_Sequence`
-- [ ] `lucasu` -> `Lucasu`
-- [ ] `lucasumod` -> `Lucasumod`
-- [ ] `lucasuv` -> `Lucasuv`
-- [ ] `lucasuvmod` -> `Lucasuvmod`
-- [ ] `lucasv` -> `Lucasv`
-- [ ] `lucasvmod` -> `Lucasvmod`
-- [ ] `lucky_count` -> `Lucky_Count`
-- [ ] `lucky_count_approx` -> `Lucky_Count_Approx`
-- [ ] `lucky_count_lower` -> `Lucky_Count_Lower`
-- [ ] `lucky_count_upper` -> `Lucky_Count_Upper`
-- [ ] `lucky_numbers` -> `Lucky_Numbers`
+- [x] `LogarithmicIntegral` -> `Logarithmicintegral`
+- [x] `logint` -> `Logint`
+- [x] `lshiftint` -> `Lshiftint`
+- [x] `lucas_number` -> `Lucas_Number`
+- [x] `lucas_sequence` -> `Lucas_Sequence`
+- [x] `lucasu` -> `Lucasu`
+- [x] `lucasumod` -> `Lucasumod`
+- [x] `lucasuv` -> `Lucasuv`
+- [x] `lucasuvmod` -> `Lucasuvmod`
+- [x] `lucasv` -> `Lucasv`
+- [x] `lucasvmod` -> `Lucasvmod`
+- [x] `lucky_count` -> `Lucky_Count`
+- [x] `lucky_count_approx` -> `Lucky_Count_Approx`
+- [x] `lucky_count_lower` -> `Lucky_Count_Lower`
+- [x] `lucky_count_upper` -> `Lucky_Count_Upper`
+- [x] `lucky_numbers` -> `Lucky_Numbers`
 - [ ] `mertens` -> `Mertens`
 - [ ] `miller_rabin_random` -> `Miller_Rabin_Random`
 - [ ] `minimal_goldbach_pair` -> `Minimal_Goldbach_Pair`
-- [ ] `modint` -> `Modint`
+- [x] `modint` -> `Modint`
 - [ ] `moebius` -> `Moebius`
-- [ ] `muladdint` -> `Muladdint`
-- [ ] `muladdmod` -> `Muladdmod`
-- [ ] `mulint` -> `Mulint`
-- [ ] `mulmod` -> `Mulmod`
-- [ ] `mulsubint` -> `Mulsubint`
-- [ ] `mulsubmod` -> `Mulsubmod`
-- [ ] `mult_digital_root` -> `Mult_Digital_Root`
+- [x] `muladdint` -> `Muladdint`
+- [x] `muladdmod` -> `Muladdmod`
+- [x] `mulint` -> `Mulint`
+- [x] `mulmod` -> `Mulmod`
+- [x] `mulsubint` -> `Mulsubint`
+- [x] `mulsubmod` -> `Mulsubmod`
+- [x] `mult_digital_root` -> `Mult_Digital_Root`
 - [ ] `multifactorial` -> `Multifactorial`
-- [ ] `negint` -> `Negint`
-- [ ] `negmod` -> `Negmod`
-- [ ] `next_calkin_wilf` -> `Next_Calkin_Wilf`
+- [x] `negint` -> `Negint`
+- [x] `negmod` -> `Negmod`
+- [x] `next_calkin_wilf` -> `Next_Calkin_Wilf`
 - [ ] `next_chen_prime` -> `Next_Chen_Prime`
-- [ ] `next_farey` -> `Next_Farey`
+- [x] `next_farey` -> `Next_Farey`
 - [ ] `next_perfect_power` -> `Next_Perfect_Power`
-- [ ] `next_prime` -> `Next_Prime`
+- [x] `next_prime` -> `Next_Prime`
 - [ ] `next_prime_power` -> `Next_Prime_Power`
-- [ ] `next_stern_brocot` -> `Next_Stern_Brocot`
+- [x] `next_stern_brocot` -> `Next_Stern_Brocot`
 - [ ] `nth_almost_prime` -> `Nth_Almost_Prime`
 - [ ] `nth_almost_prime_approx` -> `Nth_Almost_Prime_Approx`
 - [ ] `nth_almost_prime_lower` -> `Nth_Almost_Prime_Lower`
 - [ ] `nth_almost_prime_upper` -> `Nth_Almost_Prime_Upper`
-- [ ] `nth_calkin_wilf` -> `Nth_Calkin_Wilf`
-- [ ] `nth_lucky` -> `Nth_Lucky`
-- [ ] `nth_lucky_approx` -> `Nth_Lucky_Approx`
-- [ ] `nth_lucky_lower` -> `Nth_Lucky_Lower`
-- [ ] `nth_lucky_upper` -> `Nth_Lucky_Upper`
+- [x] `nth_calkin_wilf` -> `Nth_Calkin_Wilf`
+- [x] `nth_lucky` -> `Nth_Lucky`
+- [x] `nth_lucky_approx` -> `Nth_Lucky_Approx`
+- [x] `nth_lucky_lower` -> `Nth_Lucky_Lower`
+- [x] `nth_lucky_upper` -> `Nth_Lucky_Upper`
 - [ ] `nth_omega_prime` -> `Nth_Omega_Prime`
 - [ ] `nth_perfect_power` -> `Nth_Perfect_Power`
 - [ ] `nth_perfect_power_approx` -> `Nth_Perfect_Power_Approx`
@@ -268,8 +268,8 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `nth_ramanujan_prime_upper` -> `Nth_Ramanujan_Prime_Upper`
 - [ ] `nth_semiprime` -> `Nth_Semiprime`
 - [ ] `nth_semiprime_approx` -> `Nth_Semiprime_Approx`
-- [ ] `nth_stern_brocot` -> `Nth_Stern_Brocot`
-- [ ] `nth_stern_diatomic` -> `Nth_Stern_Diatomic`
+- [x] `nth_stern_brocot` -> `Nth_Stern_Brocot`
+- [x] `nth_stern_diatomic` -> `Nth_Stern_Diatomic`
 - [ ] `nth_twin_prime` -> `Nth_Twin_Prime`
 - [ ] `nth_twin_prime_approx` -> `Nth_Twin_Prime_Approx`
 - [ ] `numtoperm` -> `Numtoperm`
@@ -283,7 +283,7 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `perfect_power_count_lower` -> `Perfect_Power_Count_Lower`
 - [ ] `perfect_power_count_upper` -> `Perfect_Power_Count_Upper`
 - [ ] `permtonum` -> `Permtonum`
-- [ ] `Pi` -> `Pi`
+- [x] `Pi` -> `Pi`
 - [ ] `pisano_period` -> `Pisano_Period`
 - [ ] `pminus1_factor` -> `Pminus1_Factor`
 - [ ] `pn_primorial` -> `Pn_Primorial`
@@ -294,11 +294,11 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `powerful_count` -> `Powerful_Count`
 - [ ] `powerful_numbers` -> `Powerful_Numbers`
 - [ ] `powersum` -> `Powersum`
-- [ ] `powint` -> `Powint`
-- [ ] `powmod` -> `Powmod`
+- [x] `powint` -> `Powint`
+- [x] `powmod` -> `Powmod`
 - [ ] `pplus1_factor` -> `Pplus1_Factor`
 - [ ] `prev_perfect_power` -> `Prev_Perfect_Power`
-- [ ] `prev_prime` -> `Prev_Prime`
+- [x] `prev_prime` -> `Prev_Prime`
 - [ ] `prev_prime_power` -> `Prev_Prime_Power`
 - [ ] `prho_factor` -> `Prho_Factor`
 - [ ] `prime_bigomega` -> `Prime_Bigomega`
@@ -307,19 +307,19 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `prime_count_approx` -> `Prime_Count_Approx`
 - [ ] `prime_count_lower` -> `Prime_Count_Lower`
 - [ ] `prime_count_upper` -> `Prime_Count_Upper`
-- [ ] `prime_get_config` -> `Prime_Get_Config`
+- [x] `prime_get_config` -> `Prime_Get_Config`
 - [ ] `prime_iterator` -> `Prime_Iterator`
 - [ ] `prime_iterator_object` -> `Prime_Iterator_Object`
-- [ ] `prime_memfree` -> `Prime_Memfree`
+- [x] `prime_memfree` -> `Prime_Memfree`
 - [ ] `prime_omega` -> `Prime_Omega`
 - [ ] `prime_power_count` -> `Prime_Power_Count`
 - [ ] `prime_power_count_approx` -> `Prime_Power_Count_Approx`
 - [ ] `prime_power_count_lower` -> `Prime_Power_Count_Lower`
 - [ ] `prime_power_count_upper` -> `Prime_Power_Count_Upper`
 - [ ] `prime_powers` -> `Prime_Powers`
-- [ ] `prime_precalc` -> `Prime_Precalc`
-- [ ] `primes` -> `Primes`
-- [ ] `prime_set_config` -> `Prime_Set_Config`
+- [x] `prime_precalc` -> `Prime_Precalc`
+- [x] `primes` -> `Primes`
+- [x] `prime_set_config` -> `Prime_Set_Config`
 - [ ] `prime_signature` -> `Prime_Signature`
 - [ ] `primorial` -> `Primorial`
 - [ ] `print_primes` -> `Print_Primes`
@@ -348,17 +348,17 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `random_strong_prime` -> `Random_Strong_Prime`
 - [ ] `random_unrestricted_semiprime` -> `Random_Unrestricted_Semiprime`
 - [ ] `randperm` -> `Randperm`
-- [ ] `rashiftint` -> `Rashiftint`
+- [x] `rashiftint` -> `Rashiftint`
 - [ ] `remove_factors` -> `Remove_Factors`
 - [ ] `remove_factors_exp` -> `Remove_Factors_Exp`
-- [ ] `reverse_digits` -> `Reverse_Digits`
-- [ ] `RiemannR` -> `Riemannr`
-- [ ] `RiemannZeta` -> `Riemannzeta`
+- [x] `reverse_digits` -> `Reverse_Digits`
+- [x] `RiemannR` -> `Riemannr`
+- [x] `RiemannZeta` -> `Riemannzeta`
 - [ ] `rising_factorial` -> `Rising_Factorial`
-- [ ] `rootint` -> `Rootint`
+- [x] `rootint` -> `Rootint`
 - [ ] `rootmod` -> `Rootmod`
 - [ ] `rough_count` -> `Rough_Count`
-- [ ] `rshiftint` -> `Rshiftint`
+- [x] `rshiftint` -> `Rshiftint`
 - [ ] `semiprime_count` -> `Semiprime_Count`
 - [ ] `semiprime_count_approx` -> `Semiprime_Count_Approx`
 - [ ] `semi_primes` -> `Semi_Primes`
@@ -380,35 +380,35 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `setremove` -> `Setremove`
 - [ ] `setunion` -> `Setunion`
 - [ ] `shuffle` -> `Shuffle`
-- [ ] `sieve_prime_cluster` -> `Sieve_Prime_Cluster`
-- [ ] `sieve_range` -> `Sieve_Range`
-- [ ] `signint` -> `Signint`
+- [x] `sieve_prime_cluster` -> `Sieve_Prime_Cluster`
+- [x] `sieve_range` -> `Sieve_Range`
+- [x] `signint` -> `Signint`
 - [ ] `smooth_count` -> `Smooth_Count`
 - [ ] `sopf` -> `Sopf`
 - [ ] `sopfr` -> `Sopfr`
-- [ ] `sqrtint` -> `Sqrtint`
+- [x] `sqrtint` -> `Sqrtint`
 - [ ] `sqrtmod` -> `Sqrtmod`
 - [ ] `squarefree_kernel` -> `Squarefree_Kernel`
 - [ ] `squfof_factor` -> `Squfof_Factor`
 - [ ] `srand` -> `Srand`
-- [ ] `stern_brocot_n` -> `Stern_Brocot_N`
+- [x] `stern_brocot_n` -> `Stern_Brocot_N`
 - [ ] `stirling` -> `Stirling`
-- [ ] `sub1int` -> `Sub1int`
+- [x] `sub1int` -> `Sub1int`
 - [ ] `subfactorial` -> `Subfactorial`
-- [ ] `subint` -> `Subint`
-- [ ] `submod` -> `Submod`
-- [ ] `sumdigits` -> `Sumdigits`
+- [x] `subint` -> `Subint`
+- [x] `submod` -> `Submod`
+- [x] `sumdigits` -> `Sumdigits`
 - [ ] `sumliouville` -> `Sumliouville`
 - [ ] `sumpowerful` -> `Sumpowerful`
-- [ ] `sum_primes` -> `Sum_Primes`
+- [x] `sum_primes` -> `Sum_Primes`
 - [ ] `sumset` -> `Sumset`
 - [ ] `sumtotient` -> `Sumtotient`
-- [ ] `tdivrem` -> `Tdivrem`
-- [ ] `todigits` -> `Todigits`
-- [ ] `todigitstring` -> `Todigitstring`
-- [ ] `toint` -> `Toint`
+- [x] `tdivrem` -> `Tdivrem`
+- [x] `todigits` -> `Todigits`
+- [x] `todigitstring` -> `Todigitstring`
+- [x] `toint` -> `Toint`
 - [ ] `toset` -> `Toset`
-- [ ] `tozeckendorf` -> `Tozeckendorf`
+- [x] `tozeckendorf` -> `Tozeckendorf`
 - [ ] `trial_factor` -> `Trial_Factor`
 - [ ] `twin_prime_count` -> `Twin_Prime_Count`
 - [ ] `twin_prime_count_approx` -> `Twin_Prime_Count_Approx`

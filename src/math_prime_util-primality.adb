@@ -161,8 +161,10 @@ package body Math_Prime_Util.Primality is
         (X = N - 1 and R in 1 | 3 | 5);
    end Is_Euler_Plumb_Pseudoprime;
 
-   function Extra_Parameter (N, Increment : U64) return Lucas.I64;
-   function Extra_Parameter (N, Increment : U64) return Lucas.I64 is
+   procedure Extra_Parameter
+     (N, Increment : U64; Found : out Boolean; Result : out Lucas.I64);
+   procedure Extra_Parameter
+     (N, Increment : U64; Found : out Boolean; Result : out Lucas.I64) is
       P : U64 := 3;
       D, G : U64;
       J : Integer;
@@ -173,19 +175,24 @@ package body Math_Prime_Util.Primality is
          if J = 0 then
             G := Int.Gcd (D, N);
             if G /= 1 and G /= N then
-               return 0;
+               Found := False;
+               Result := 0;
+               return;
             end if;
          end if;
          exit when J = -1;
          if P = 3 + 20 * Increment and then Int.Is_Square (N) then
-            return 0;
+            Found := False;
+            Result := 0;
+            return;
          end if;
          P := P + Increment;
          if P > 65_535 then
             raise Constraint_Error with "Lucas P exceeded 65535";
          end if;
       end loop;
-      return Lucas.I64 (P mod N);
+      Found := True;
+      Result := Lucas.I64 (P mod N);
    end Extra_Parameter;
 
    function Lucas_Test (N : U64; Strength : Natural) return Boolean;
@@ -196,6 +203,7 @@ package body Math_Prime_Util.Primality is
       K, Qu : U64;
       S : Natural := 0;
       J : Integer;
+      Found : Boolean;
       R : Lucas.Sequence_Result;
    begin
       if N < 5 then
@@ -204,8 +212,8 @@ package body Math_Prime_Util.Primality is
          return False;
       end if;
       if Strength = 3 then
-         P := Extra_Parameter (N, 1);
-         if P = 0 then
+         Extra_Parameter (N, 1, Found, P);
+         if not Found then
             return False;
          end if;
          Q := 1;
@@ -279,6 +287,7 @@ package body Math_Prime_Util.Primality is
       P : Lucas.I64;
       K, V : U64;
       S : Natural := 0;
+      Found : Boolean;
    begin
       if N < 13 then
          return N in 2 | 3 | 5 | 7 | 11;
@@ -290,8 +299,8 @@ package body Math_Prime_Util.Primality is
       then
          return True;
       end if;
-      P := Extra_Parameter (N, Increment);
-      if P = 0 then
+      Extra_Parameter (N, Increment, Found, P);
+      if not Found then
          return False;
       end if;
       K := N + 1;
