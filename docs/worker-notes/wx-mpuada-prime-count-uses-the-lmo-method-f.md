@@ -29,3 +29,23 @@ Gate printed green and its runner reported 188/188 successful, 0 failures and 0 
 Remaining acceptance work: replay the 18 large prime_count rows and 17 large nth_prime rows, restore the missing baseline API as needed, and prove the arithmetic packages in SPARK. This port uses sqrt(N) storage and recursive Lehmer counts; the large native range still needs practical validation.
 Launcher commit citation: MPU 0.75 lehmer.c:lehmer_prime_count and prime_count_tables.h:NSTEP_SEARCH/APPLY_TABLES. Benchmark 10^13 = 346065536839 in 18.086292 checked-Ada seconds; all powers 10^1 through 10^13 matched. No same-host C comparison was run.
 Added a bounded local prefix count cache for MPU Lehmer stage 3. It avoids repeated binary searches for small counts while keeping memory bounded independently of the full U64 square-root sieve. Rerun the gate to validate this final library change.
+Final gate after the bounded count cache and concurrent/input tests: development and release builds pass; tests pass; == gate: green.
+Lehmer 10^ 1 seconds 0.000001000
+Lehmer 10^ 2 seconds 0.000001000
+Lehmer 10^ 3 seconds 0.000001000
+Lehmer 10^ 4 seconds 0.000003000
+Lehmer 10^ 5 seconds 0.000004000
+Lehmer 10^ 6 seconds 0.000012000
+Lehmer 10^ 7 seconds 0.000029000
+Lehmer 10^ 8 seconds 0.003705000
+Lehmer 10^ 9 seconds 0.006182000
+Lehmer 10^ 10 seconds 0.018099000
+Lehmer 10^ 11 seconds 0.091565000
+Lehmer 10^ 12 seconds 0.516600000
+Lehmer 10^ 13 seconds 3.316049000
+Total Tests Run:   188
+Successful Tests:  188
+Failed Assertions: 0
+Unexpected Errors: 0
+Use the final benchmark above in the launcher commit message: 10^13 = 346065536839 in 3.316049 checked-Ada seconds. The earlier 18.086292 result predates the prefix cache.
+Final result is partial. The absent prior Count implementation prevents a minimal limit-change diff. Large native fixture replay (18 count and 17 nth rows), practical full-range validation, and SPARK proof remain. No git writes or pushes were run.
