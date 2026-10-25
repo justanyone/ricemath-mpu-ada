@@ -26,7 +26,29 @@ package body Compat_Count is
    procedure Test_Count (T : in out Test_Case'Class) is
       N, Expected : U64;
       Rows : Natural := 0;
+      --  Local count workspaces must not interfere across concurrent calls.
+      task type Counter is
+         entry Finish (Passed : out Boolean);
+      end Counter;
+      task body Counter is
+         Valid : Boolean := True;
+      begin
+         for I in 1 .. 3 loop
+            Valid := Valid and then Prime_Count (100_000_000) = 5_761_455;
+         end loop;
+         accept Finish (Passed : out Boolean) do
+            Passed := Valid;
+         end Finish;
+      end Counter;
+      Workers : array (1 .. 2) of Counter;
+      Passed : Boolean;
    begin
+      for Worker of Workers loop
+         Worker.Finish (Passed);
+         AUnit.Assertions.Assert (Passed, "concurrent repeated counts");
+      end loop;
+      --  This checkout lacks the prior count suite. Keep this replay bounded
+      --  until the large native fixtures have a measured gate time budget.
       for C of For_Function (Load ("count"), "prime_count") loop
          if C.Args.Length = 1
            and then Parse_U64 (To_String (C.Args (1)), N)
