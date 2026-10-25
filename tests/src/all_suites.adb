@@ -1,3 +1,4 @@
+with Compat_Count;
 with Compat_Primality;
 with Prop_Primality;
 with Compat_Families;
@@ -26,6 +27,7 @@ package body All_Suites is
         Version_Suite.Suite;
    begin
       Result.Add_Test (Test_Fixture_Support.Suite);
+      Result.Add_Test (Compat_Count.Suite);
       Result.Add_Test (Compat_Int.Suite);
       Result.Add_Test (Prop_Int.Suite);
       Result.Add_Test (Compat_Combinat.Suite);
