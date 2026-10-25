@@ -26,3 +26,5 @@ Lehmer 10^ 11 seconds 0.459200000
 Lehmer 10^ 12 seconds 2.868139000
 Lehmer 10^ 13 seconds 18.086292000
 Gate printed green and its runner reported 188/188 successful, 0 failures and 0 errors. The 10^13 count took 18.086292 seconds. Expanded fixture replay through the prior 2e13 range and added concurrent repeated calls plus rejection of overflowing nth indices; revalidate these final tests.
+Remaining acceptance work: replay the 18 large prime_count rows and 17 large nth_prime rows, restore the missing baseline API as needed, and prove the arithmetic packages in SPARK. This port uses sqrt(N) storage and recursive Lehmer counts; the large native range still needs practical validation.
+Launcher commit citation: MPU 0.75 lehmer.c:lehmer_prime_count and prime_count_tables.h:NSTEP_SEARCH/APPLY_TABLES. Benchmark 10^13 = 346065536839 in 18.086292 checked-Ada seconds; all powers 10^1 through 10^13 matched. No same-host C comparison was run.
