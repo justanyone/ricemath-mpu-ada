@@ -8,6 +8,7 @@ Next: size the named docs and open the current combinat units.
 Library development build succeeded. Tests alr sync cannot unlink the shared Alire cache (sandbox). Set tests dependencies.shared=false (gitignored settings) and TMPDIR=/tmp so the suite can build.
 Next: build and run Combinat tests.
 tools/test.sh: 186 tests, 0 failures (combinat included). Next: tools/gate.sh.
+tools/gate.sh printed == gate: green (development build, release build, tests). Combinat package and both test units were already in the tree and match the fixture. No source change. Skips: bigint rows, one stirling kind 4. STATUS.md left for tools/status.py. About 5 minutes left at gate time; stopping.
 - 2026-10-25T04:13:48Z launcher: no commit for 61 s; 91 s elapsed. Files changed so far: docs/worker-notes/wx-mpuada-combinat-a1.md.
 - 2026-10-25T04:14:48Z launcher: no commit for 60 s; 151 s elapsed. Files changed so far: docs/worker-notes/wx-mpuada-combinat-a1.md.
 - 2026-10-25T04:16:19Z launcher: no commit for 61 s; 242 s elapsed. Files changed so far: docs/worker-notes/wx-mpuada-combinat-a1.md.
