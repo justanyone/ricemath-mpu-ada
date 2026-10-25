@@ -9,3 +9,4 @@ XDG_RUNTIME_DIR fixed temporary-file creation, but Alire then attempted to initi
 The required gate also stops in build-development at the missing offline Alire index. No runner count or benchmark timing is available. Fixed Phi(0,a) in static review; remaining time is for source review and clear scope notes.
 Found installed GNAT/GPRbuild and cached AUnit. Created an ignored obj-only local index to avoid network and external writes. Alire now reaches dependency resolution but reports an unknown math_prime_util build profile; resolve workspace state next.
 Offline Alire now builds with installed tools and a local cached AUnit origin. Compilation reaches the new packages; inspect their diagnostics next. Existing units emit many GNAT 16 style warnings.
+About five minutes remain in the work budget. The offline toolchain compiles the new units after operator visibility fixes. Full U64 fixture replay and SPARK proof are still incomplete; do not treat this head as accepted.

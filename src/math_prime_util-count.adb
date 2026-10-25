@@ -4,6 +4,7 @@ with Math_Prime_Util.Sieve;
 with Math_Prime_Util.Count_Tables;
 
 package body Math_Prime_Util.Count is
+   use type Ada.Containers.Count_Type;
    package Counts is new Ada.Containers.Vectors (Natural, U64);
 
    function Prime_Count (N : U64) return U64 is

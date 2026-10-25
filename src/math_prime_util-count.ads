@@ -1,4 +1,5 @@
 package Math_Prime_Util.Count is
+   use type U64;
    --  MPU 0.75 lehmer.c: lehmer_prime_count; prime_count_tables.h:
    --  APPLY_TABLES. Count primes <= N. Local storage grows as sqrt(N);
    --  Storage_Error may propagate when the sieve cannot fit in memory.

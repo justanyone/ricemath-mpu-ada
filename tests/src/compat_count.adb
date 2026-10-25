@@ -13,6 +13,7 @@ package body Compat_Count is
    use Ada.Strings.Unbounded;
    use Fixture_Support;
    use Math_Prime_Util;
+   use type U64;
    use Math_Prime_Util.Count;
    type Count_Case is new Test_Case with null record;
    overriding function Name (T : Count_Case) return AUnit.Message_String;
