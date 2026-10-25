@@ -12,3 +12,8 @@ All requested deterministic public functions already exist; random Miller-Rabin 
 Fixed validation checks so they cannot catch their own AUnit assertion failures.
 Added invalid bases 0 and 1, invalid increments 0, 257 and U64 Last, and valid endpoints.
 The runner ignores its filter argument; no whole-suite execution has occurred because builds fail first.
+Gate attempted: stopped at build-development because Alire cannot write its runtime temporary file.
+Changing the runtime path reaches a missing Alire index, which needs network; do not retry offline.
+NOTES: miller_rabin_random is intentionally unimplemented pending the random module.
+STATUS.md and fixtures remain unchanged. Existing suites cover all deterministic public functions.
+Finished: validation tests strengthened; compilation, fixture replay and a green gate remain unverified on this host.

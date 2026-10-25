@@ -79,7 +79,7 @@ package body Prop_Primality is
         (0, 1, 2, 2 ** 32 - 1, 2 ** 32 + 1,
          2 ** 63 - 1, 2 ** 63 + 1, U64'Last);
       Rejected : Boolean := False;
-      Value : Boolean;
+      Value : Boolean := False;
       procedure Check_Base (A : U64) is
       begin
          Rejected := False;
@@ -91,10 +91,8 @@ package body Prop_Primality is
          end;
          --  Keep assertions outside the handler for the call under test.
          --  Otherwise the test can catch its own failure and pass.
-         AUnit.Assertions.Assert (Rejected, "base precondition");
-         if not Rejected then
-            AUnit.Assertions.Assert (not Value, "invalid base accepted");
-         end if;
+         AUnit.Assertions.Assert
+           (Rejected, "invalid base returned " & Value'Image);
       end Check_Base;
 
       procedure Check_Increment (Increment : U64) is
@@ -107,11 +105,8 @@ package body Prop_Primality is
             when Ada.Assertions.Assertion_Error | Constraint_Error =>
                Rejected := True;
          end;
-         AUnit.Assertions.Assert (Rejected, "increment precondition");
-         if not Rejected then
-            AUnit.Assertions.Assert
-              (not Value, "invalid increment accepted");
-         end if;
+         AUnit.Assertions.Assert
+           (Rejected, "invalid increment returned " & Value'Image);
       end Check_Increment;
    begin
       for N of Edges loop
