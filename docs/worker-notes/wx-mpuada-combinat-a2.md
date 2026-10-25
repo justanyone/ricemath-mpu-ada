@@ -11,3 +11,4 @@ Fixed rank wrapping and contracts. Replaced unchecked frees with controlled vect
 Added visibility for optional-value equality in the new regression. Toolchain now builds; resolving compiler diagnostics before the gate.
 Container instantiations need signed indices. Converted vector indices to Natural within the existing memory bounds.
 Permutation regression and container changes are ready for focused validation. Full SPARK conversion and broad API-domain review remain outside this small repair.
+Changed sources compile successfully. The runner appears to ignore filters; the requested focused invocation is running the aggregate suite.
