@@ -6,6 +6,8 @@ with Version_Suite;
 with Test_Fixture_Support;
 with Compat_Int;
 with Prop_Int;
+with Compat_Combinat;
+with Prop_Combinat;
 with Compat_Sieve;
 with Prop_Sieve;
 with Compat_Digits;
@@ -26,6 +28,8 @@ package body All_Suites is
       Result.Add_Test (Test_Fixture_Support.Suite);
       Result.Add_Test (Compat_Int.Suite);
       Result.Add_Test (Prop_Int.Suite);
+      Result.Add_Test (Compat_Combinat.Suite);
+      Result.Add_Test (Prop_Combinat.Suite);
       Result.Add_Test (Compat_Sieve.Suite);
       Result.Add_Test (Prop_Sieve.Suite);
       Result.Add_Test (Compat_Digits.Suite);
