@@ -167,4 +167,49 @@ package Math_Prime_Util.Combinat with SPARK_Mode => On is
           Post => (if P'Length <= 1 and then P'Length = 0 then
                      Permtonum'Result = (True, 0));
 
+   --  intcomplexity.c: integer_complexity (A005245), the fewest ones
+   --  needed to write N with + and *. Table method of Martin N. Fuller
+   --  with a shared protected cache. N is capped by memory: one byte
+   --  per integer up to N.
+   Integer_Complexity_Limit : constant U64 := 50_000_000;
+   function Integer_Complexity (N : U64) return U64
+     with Pre => N >= 1 and then N <= Integer_Complexity_Limit,
+          Post => Integer_Complexity'Result >= 1;
+
+   --  real.c: bernfrac. Bernoulli number B_N as a reduced fraction with
+   --  B_1 = +1/2, by von Staudt-Clausen and the tangent numbers of
+   --  Brent and Harvey. Undefined when the numerator leaves I128
+   --  (even N above 62).
+   function Bernfrac (N : U64) return Optional_Fraction
+     with Pre => True,
+          Post => (if Bernfrac'Result.Defined then
+                     Bernfrac'Result.Den > 0);
+
+   type Number_Array is array (Natural range <>) of U64;
+
+   --  True when the gcd of all entries is 1 (fewer than two entries are
+   --  taken as coprime).
+   function Coprime_Set (A : Number_Array) return Boolean;
+
+   --  util.c: frobenius_number. Largest integer that is no non-negative
+   --  combination of A: closed form for two entries, the Round Robin
+   --  method of Boecker and Liptak for more. A set with a 1 gives -1;
+   --  fewer than two entries give an undefined result, as does a result
+   --  that leaves I128 or a smallest entry above 5 000 000 (table size).
+   function Frobenius_Number (A : Number_Array) return Optional_I128
+     with Pre => (for all X of A => X > 0) and then Coprime_Set (A);
+
+   --  congruent_numbers.c: is_congruent_number. Tunnell's counting of
+   --  ternary quadratic solutions on the square-free part of N (weak
+   --  BSD, proven below 10**6); the MPU pre-filters are only shortcuts.
+   --  N = 0 gives False.
+   function Is_Congruent_Number (N : U64) return Boolean
+     with Pre => N <= 2 ** 32 - 1;
+
+   --  util.c: hclassno. 12 * H(N), the Hurwitz class number times 12.
+   --  Undefined for N = 0 (MPU returns UV_MAX) and on overflow.
+   function Hclassno (N : U64) return Optional_U64
+     with Pre => N <= 2 ** 36,
+          Post => (if N mod 4 in 1 | 2 then Hclassno'Result = (True, 0));
+
 end Math_Prime_Util.Combinat;

@@ -1,6 +1,7 @@
 with AUnit.Assertions;
 with AUnit.Test_Cases;
 with Math_Prime_Util.Combinat;
+with Math_Prime_Util.Int;
 
 package body Prop_Combinat is
    use AUnit.Test_Cases;
@@ -94,6 +95,42 @@ package body Prop_Combinat is
                "repeat calls and bounds");
          end loop;
       end loop;
+      for A in U64 range 1 .. 40 loop
+         for B in U64 range 1 .. 40 loop
+            AUnit.Assertions.Assert
+              (Integer_Complexity (A + B)
+                 <= Integer_Complexity (A) + Integer_Complexity (B)
+               and Integer_Complexity (A * B)
+                 <= Integer_Complexity (A) + Integer_Complexity (B),
+               "integer complexity sub-additive and sub-multiplicative");
+         end loop;
+      end loop;
+      for A in U64 range 2 .. 12 loop
+         for B in A + 1 .. 13 loop
+            if Math_Prime_Util.Int.Gcd (A, B) = 1 then
+               AUnit.Assertions.Assert
+                 (Frobenius_Number ([A, B]).Value = I128 (A * B - A - B)
+                  and Frobenius_Number ([A, B, A + B]).Value
+                    <= I128 (A * B - A - B),
+                  "frobenius two-term formula");
+            end if;
+         end loop;
+      end loop;
+      AUnit.Assertions.Assert
+        (Is_Congruent_Number (5) and Is_Congruent_Number (6)
+           and Is_Congruent_Number (7) and not Is_Congruent_Number (1)
+           and not Is_Congruent_Number (0)
+           and Is_Congruent_Number (20) = Is_Congruent_Number (5),
+         "congruent number basics");
+      AUnit.Assertions.Assert
+        (Bernfrac (2) = (True, 1, 6) and Bernfrac (4) = (True, -1, 30)
+           and Bernfrac (1) = (True, 1, 2) and Bernfrac (7) = (True, 0, 1)
+           and not Bernfrac (64).Defined,
+         "bernoulli values");
+      AUnit.Assertions.Assert
+        (Hclassno (3).Value = 4 and Hclassno (4).Value = 6
+           and Hclassno (5).Value = 0 and not Hclassno (0).Defined,
+         "class number values");
    end Check_Laws;
 
    overriding function Name

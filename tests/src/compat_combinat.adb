@@ -384,6 +384,158 @@ package body Compat_Combinat is
       end loop;
    end Check_Harmfrac;
 
+   function Img (V : I128) return String is
+     (Ada.Strings.Fixed.Trim (I128'Image (V), Ada.Strings.Left));
+   function Img (V : U128) return String is
+     (Ada.Strings.Fixed.Trim (U128'Image (V), Ada.Strings.Left));
+
+   --  Rows with N = 0 (undef: the C function clears its cache) are
+   --  skipped; the port bounds N by Integer_Complexity_Limit.
+   procedure Check_Integer_Complexity (T : in out Test_Case'Class) is
+      Cases : constant Case_Vectors.Vector :=
+        For_Function (Load ("combinat"), "integer_complexity");
+      N, Expected : U64;
+   begin
+      AUnit.Assertions.Assert (not Cases.Is_Empty, "missing complexity");
+      for C of Cases loop
+         if not C.Undef and then not C.Error
+           and then Parse_U64 (To_String (C.Args (1)), N)
+           and then Parse_U64 (To_String (C.Result), Expected)
+           and then N >= 1 and then N <= Integer_Complexity_Limit
+         then
+            AUnit.Assertions.Assert
+              (Integer_Complexity (N) = Expected,
+               "integer_complexity" & Positive'Image (C.Line_Number));
+         end if;
+      end loop;
+   end Check_Integer_Complexity;
+
+   --  Results past I128 numerators (B_60 and up) must be undefined.
+   procedure Check_Bernfrac (T : in out Test_Case'Class) is
+      Cases : constant Case_Vectors.Vector :=
+        For_Function (Load ("combinat"), "bernfrac");
+      N : U64;
+      R : Optional_Fraction;
+   begin
+      AUnit.Assertions.Assert (not Cases.Is_Empty, "missing bernfrac");
+      for C of Cases loop
+         if Parse_U64 (To_String (C.Args (1)), N) then
+            R := Bernfrac (N);
+            declare
+               Text : constant String := To_String (C.Result);
+               Space : constant Natural :=
+                 Ada.Strings.Fixed.Index (Text, " ");
+               Num_Text : constant String :=
+                 (if Text (Text'First) = '-'
+                  then Text (Text'First + 1 .. Space - 1)
+                  else Text (Text'First .. Space - 1));
+               Mag128 : U128;
+               Fits : constant Boolean :=
+                 Parse_U128 (Num_Text, Mag128)
+                 and then Mag128 <= U128 (I128'Last);
+            begin
+               AUnit.Assertions.Assert (R.Defined = Fits,
+                  "bernfrac defined" & Positive'Image (C.Line_Number));
+               if Fits then
+                  AUnit.Assertions.Assert
+                    (Img (R.Num) & " " & Img (R.Den) = Text,
+                     "bernfrac" & Positive'Image (C.Line_Number));
+               end if;
+            end;
+         end if;
+      end loop;
+   end Check_Bernfrac;
+
+   --  Rows with a table above 5 000 000 entries (smallest generator
+   --  above that) and rows the C function rejects are skipped.
+   procedure Check_Frobenius (T : in out Test_Case'Class) is
+      Cases : constant Case_Vectors.Vector :=
+        For_Function (Load ("combinat"), "frobenius_number");
+      V : U64;
+   begin
+      AUnit.Assertions.Assert (not Cases.Is_Empty, "missing frobenius");
+      for C of Cases loop
+         if not C.Error then
+            declare
+               Len : constant Natural :=
+                 (if Natural (C.Args.Length) = 1
+                    and then Length (C.Args (1)) = 0
+                  then 0 else Natural (C.Args.Length));
+               A : Number_Array (1 .. Len);
+               Ok : Boolean := True;
+               R : Optional_I128;
+            begin
+               for I in A'Range loop
+                  Ok := Parse_U64 (To_String (C.Args (I)), V) and Ok;
+                  A (I) := V;
+               end loop;
+               if Ok and then (for all X of A => X > 0)
+                 and then Coprime_Set (A)
+               then
+                  R := Frobenius_Number (A);
+                  if C.Undef then
+                     AUnit.Assertions.Assert
+                       (not R.Defined,
+                        "frobenius undef" & Positive'Image (C.Line_Number));
+                  else
+                     AUnit.Assertions.Assert
+                       (R.Defined and then Img (R.Value) = To_String (C.Result),
+                        "frobenius" & Positive'Image (C.Line_Number));
+                  end if;
+               end if;
+            end;
+         end if;
+      end loop;
+   end Check_Frobenius;
+
+   --  Rows with a negative argument (error) are skipped.
+   procedure Check_Is_Congruent_Number (T : in out Test_Case'Class) is
+      Cases : constant Case_Vectors.Vector :=
+        For_Function (Load ("combinat"), "is_congruent_number");
+      N, Expected : U64;
+   begin
+      AUnit.Assertions.Assert (not Cases.Is_Empty, "missing congruent");
+      for C of Cases loop
+         if not C.Error and then not C.Undef
+           and then Parse_U64 (To_String (C.Args (1)), N)
+           and then Parse_U64 (To_String (C.Result), Expected)
+           and then N <= 2 ** 32 - 1
+         then
+            AUnit.Assertions.Assert
+              (Is_Congruent_Number (N) = (Expected = 1),
+               "is_congruent_number" & Positive'Image (C.Line_Number));
+         end if;
+      end loop;
+   end Check_Is_Congruent_Number;
+
+   --  Negative arguments (result 0) are skipped; hclassno (0) is
+   --  undefined here (MPU returns UV_MAX, the fixture shows -1).
+   procedure Check_Hclassno (T : in out Test_Case'Class) is
+      Cases : constant Case_Vectors.Vector :=
+        For_Function (Load ("combinat"), "hclassno");
+      N, Expected : U64;
+      R : Optional_U64;
+   begin
+      AUnit.Assertions.Assert (not Cases.Is_Empty, "missing hclassno");
+      for C of Cases loop
+         if not C.Error and then not C.Undef
+           and then Parse_U64 (To_String (C.Args (1)), N)
+           and then N <= 2 ** 36
+         then
+            R := Hclassno (N);
+            if N = 0 then
+               AUnit.Assertions.Assert
+                 (not R.Defined, "hclassno 0 undefined");
+            else
+               AUnit.Assertions.Assert
+                 (Parse_U64 (To_String (C.Result), Expected)
+                  and then R.Defined and then R.Value = Expected,
+                  "hclassno" & Positive'Image (C.Line_Number));
+            end if;
+         end if;
+      end loop;
+   end Check_Hclassno;
+
    overriding function Name
      (T : Combinat_Case) return AUnit.Message_String is
    begin
@@ -404,6 +556,13 @@ package body Compat_Combinat is
       Register_Routine
         (T, Check_Powersum'Access, "powersum");
       Register_Routine (T, Check_Harmfrac'Access, "harmfrac");
+      Register_Routine
+        (T, Check_Integer_Complexity'Access, "integer_complexity");
+      Register_Routine (T, Check_Bernfrac'Access, "bernfrac");
+      Register_Routine (T, Check_Frobenius'Access, "frobenius_number");
+      Register_Routine
+        (T, Check_Is_Congruent_Number'Access, "is_congruent_number");
+      Register_Routine (T, Check_Hclassno'Access, "hclassno");
       Register_Routine (T, Check_Factorial'Access, "factorial");
       Register_Routine (T, Check_Subfactorial'Access, "subfactorial");
       Register_Routine (T, Check_Multifactorial'Access, "multifactorial");
