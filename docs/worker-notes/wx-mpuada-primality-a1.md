@@ -6,6 +6,7 @@ Next: read AGENTS.md, PLAN.md §§2,5,7, existing primality/lucas/intmont units,
 Read plan, spec, and body. Functions are already present and use Intmont.Powmod. miller_rabin_random is absent on purpose. Running tools/test.sh Compat_Primality (runner ignores the filter and runs the suite).
 alr failed to create /run/user/1000 temp files. Retry with XDG_RUNTIME_DIR=/tmp and TMPDIR=/tmp.
 alr then tried to delete the shared aunit release and the sandbox blocks unlink outside the worktree. Set dependencies.shared=false so the build copies aunit into the local cache.
+tools/test.sh Compat_Primality: 186 tests, 0 failures (runner has no filter, so the whole suite ran). Primality compat and property tests passed. Next: tools/gate.sh. miller_rabin_random stays unimplemented; it needs the random module.
 - 2026-10-25T04:12:07Z launcher: no commit for 61 s; 91 s elapsed. Files changed so far: docs/worker-notes/wx-mpuada-primality-a1.md.
 - 2026-10-25T04:13:07Z launcher: no commit for 60 s; 151 s elapsed. Files changed so far: docs/worker-notes/wx-mpuada-primality-a1.md.
 - 2026-10-25T04:14:07Z launcher: no commit for 60 s; 211 s elapsed. Files changed so far: docs/worker-notes/wx-mpuada-primality-a1.md.
