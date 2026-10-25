@@ -9,3 +9,5 @@ Added regression assertions for wrapped permutation ranks, repeated round trips,
 Reference XS.xs:numtoperm explicitly reduces K modulo N!. Regression test is in place; waiting for offline build.
 Fixed rank wrapping and contracts. Replaced unchecked frees with controlled vectors. Alire tried to deploy the toolchain; offline validation remains blocked.
 Added visibility for optional-value equality in the new regression. Toolchain now builds; resolving compiler diagnostics before the gate.
+Container instantiations need signed indices. Converted vector indices to Natural within the existing memory bounds.
+Permutation regression and container changes are ready for focused validation. Full SPARK conversion and broad API-domain review remain outside this small repair.

@@ -688,7 +688,7 @@ package body Math_Prime_Util.Combinat with SPARK_Mode => Off is
    ---------------------------------------------------------------------
 
    package Byte_Vectors is new Ada.Containers.Vectors
-     (Index_Type => U64, Element_Type => Interfaces.Unsigned_8);
+     (Index_Type => Natural, Element_Type => Interfaces.Unsigned_8);
 
    --  intcomplexity.c: _calcg (A000792).
    function Calc_G (N_In : U64) return U64
@@ -731,18 +731,18 @@ package body Math_Prime_Util.Combinat with SPARK_Mode => Off is
          A.Set_Length (Ada.Containers.Count_Type (To + 1));
          if not Data.Is_Empty then
             for I in U64 range 0 .. Size loop
-               A (I) := Data (I);
+               A (Natural (I)) := Data (Natural (I));
             end loop;
          end if;
          if Size < 2 then
-            A (0) := 0;
-            A (1) := 1;
+            A (Natural (0)) := 0;
+            A (Natural (1)) := 1;
             First := 2;
          else
             First := Size + 1;
          end if;
          for I in First .. To loop
-            A (I) := 127;
+            A (Natural (I)) := 127;
          end loop;
          for I in G'Range loop
             G (I) := Calc_G (I);
@@ -754,10 +754,10 @@ package body Math_Prime_Util.Combinat with SPARK_Mode => Off is
             IJ := 2 * I;
             while J <= I and then IJ <= To loop
                if IJ >= First
-                 and then Natural (A (I)) + Natural (A (J))
-                          < Natural (A (IJ))
+                 and then Natural (A (Natural (I))) + Natural (A (Natural (J)))
+                          < Natural (A (Natural (IJ)))
                then
-                  A (IJ) := A (I) + A (J);
+                  A (Natural (IJ)) := A (Natural (I)) + A (Natural (J));
                end if;
                J := J + 1;
                IJ := IJ + I;
@@ -765,10 +765,10 @@ package body Math_Prime_Util.Combinat with SPARK_Mode => Off is
          end loop;
          --  Fill in the rest.
          for I in First .. To loop
-            T := U64 (A (I - 1));
+            T := U64 (A (Natural (I - 1)));
             K := 1;
-            if T + 1 < U64 (A (I)) then
-               A (I) := Interfaces.Unsigned_8 (T + 1);
+            if T + 1 < U64 (A (Natural (I))) then
+               A (Natural (I)) := Interfaces.Unsigned_8 (T + 1);
             end if;
             while K < T / 2 and then G (K + 1) + G (T - K - 1) >= I loop
                K := K + 1;
@@ -776,9 +776,9 @@ package body Math_Prime_Util.Combinat with SPARK_Mode => Off is
             --  Additions.
             J := 6;
             while J <= G (K) and then J < I loop
-               if Natural (A (J)) + Natural (A (I - J)) < Natural (A (I))
+               if Natural (A (Natural (J))) + Natural (A (Natural (I - J))) < Natural (A (Natural (I)))
                then
-                  A (I) := A (J) + A (I - J);
+                  A (Natural (I)) := A (Natural (J)) + A (Natural (I - J));
                end if;
                J := J + 1;
             end loop;
@@ -787,9 +787,9 @@ package body Math_Prime_Util.Combinat with SPARK_Mode => Off is
                J := 2;
                IJ := 2 * I;
                while J <= I and then IJ <= To loop
-                  if Natural (A (I)) + Natural (A (J)) < Natural (A (IJ))
+                  if Natural (A (Natural (I))) + Natural (A (Natural (J))) < Natural (A (Natural (IJ)))
                   then
-                     A (IJ) := A (I) + A (J);
+                     A (Natural (IJ)) := A (Natural (I)) + A (Natural (J));
                   end if;
                   J := J + 1;
                   IJ := IJ + I;
@@ -807,7 +807,7 @@ package body Math_Prime_Util.Combinat with SPARK_Mode => Off is
          if Size < N then
             Expand (N);
          end if;
-         Result := U64 (Data (N));
+         Result := U64 (Data (Natural (N)));
       end Lookup;
    end IC_Cache;
 
@@ -966,7 +966,7 @@ package body Math_Prime_Util.Combinat with SPARK_Mode => Off is
    end Coprime_Set;
 
    package Word_Vectors is new Ada.Containers.Vectors
-     (Index_Type => U64, Element_Type => U128);
+     (Index_Type => Natural, Element_Type => U128);
 
    function Frobenius_Number (A : Number_Array) return Optional_I128
      with SPARK_Mode => Off
@@ -1017,14 +1017,14 @@ package body Math_Prime_Util.Combinat with SPARK_Mode => Off is
          return (Defined => False);
       end if;
       N.Set_Length (Ada.Containers.Count_Type (Nlen + 1));
-      N (0) := 0;
+      N (Natural (0)) := 0;
       for J in U64 range 1 .. Nlen - 1 loop
-         N (J) := Max;
+         N (Natural (J)) := Max;
       end loop;
       for I in Sorted'First + 1 .. Sorted'Last loop
          declare
             Ai : constant U64 := Sorted (I);
-            Np : constant U128 := N (Ai mod Nlen);
+            Np : constant U128 := N (Natural (Ai mod Nlen));
             D : U64;
          begin
             if Np = Max or else Np > U128 (Ai) then
@@ -1039,8 +1039,8 @@ package body Math_Prime_Util.Combinat with SPARK_Mode => Off is
                      if R > 0 then
                         Nn := Max;
                         while Q < Nlen loop
-                           if N (Q) < Nn then
-                              Nn := N (Q);
+                           if N (Natural (Q)) < Nn then
+                              Nn := N (Natural (Q));
                            end if;
                            Q := Q + D;
                         end loop;
@@ -1053,10 +1053,10 @@ package body Math_Prime_Util.Combinat with SPARK_Mode => Off is
                            end if;
                            Nn := Nn + U128 (Ai);
                            P := U64 (Nn mod U128 (Nlen));
-                           if N (P) >= Nn then
-                              N (P) := Nn;
+                           if N (Natural (P)) >= Nn then
+                              N (Natural (P)) := Nn;
                            else
-                              Nn := N (P);
+                              Nn := N (Natural (P));
                            end if;
                            R_Len := R_Len + 1;
                         end loop;
@@ -1067,10 +1067,10 @@ package body Math_Prime_Util.Combinat with SPARK_Mode => Off is
          end;
       end loop;
       for I in U64 range 0 .. Nlen - 1 loop
-         if N (I) = Max then
+         if N (Natural (I)) = Max then
             return (Defined => False);
-         elsif N (I) > Big_Max then
-            Big_Max := N (I);
+         elsif N (Natural (I)) > Big_Max then
+            Big_Max := N (Natural (I));
          end if;
       end loop;
       Big_Max := Big_Max - U128 (Nlen);
