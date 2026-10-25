@@ -12,6 +12,8 @@ package body Math_Prime_Util.Count is
       Root : constant U64 := Int.Rootint (N, 2);
       Primes : Vector;
       Phi_Table : Counts.Vector;
+      Small_Counts : Counts.Vector;
+      Cache_Limit : constant U64 := U64'Min (Root, 1_000_000);
       Width : constant := 32_768;
       Layers : constant := 64;
 
@@ -20,6 +22,9 @@ package body Math_Prime_Util.Count is
          High : Natural := Natural (Primes.Length);
          Mid : Natural;
       begin
+         if X <= Cache_Limit then
+            return Small_Counts (Natural (X));
+         end if;
          while Low < High loop
             Mid := Low + (High - Low) / 2;
             if Primes (Mid) <= X then
@@ -77,6 +82,7 @@ package body Math_Prime_Util.Count is
       end Lehmer;
 
       Base, Total : U64;
+      Index : Natural := 0;
    begin
       if N < 2 then
          return 0;
@@ -85,6 +91,18 @@ package body Math_Prime_Util.Count is
          return Total + U64 (Sieve.Primes (Base + 1, N).Length);
       end if;
       Primes := Sieve.Primes (Root);
+      --  lehmer.c stage 3: prime_count_cache_lookup. Bound the direct
+      --  prefix cache; larger arguments use binary search in the primes.
+      Small_Counts.Set_Length
+        (Ada.Containers.Count_Type (Cache_Limit + 1));
+      for X in 0 .. Natural (Cache_Limit) loop
+         if Index < Natural (Primes.Length)
+           and then Primes (Index) = U64 (X)
+         then
+            Index := Index + 1;
+         end if;
+         Small_Counts (X) := U64 (Index);
+      end loop;
       Phi_Table.Set_Length (Layers * Width);
       for X in 0 .. Width - 1 loop
          Phi_Table (X) := U64 (X);
