@@ -3,6 +3,7 @@
 Port primality.c (Miller-Rabin, BPSW, Lucas, Frobenius, is_prime) into Math_Prime_Util.Primality. Dependencies are on origin/dev-mpuada-001. miller_rabin_random stays unimplemented (needs the random module). Fixture family primality.tsv drives compat tests; algebraic laws go in prop_primality.adb.
 
 Next: read AGENTS.md, PLAN.md §§2,5,7, existing primality/lucas/intmont units, then implement the missing functions and tests.
+Read plan, spec, and body. Functions are already present and use Intmont.Powmod. miller_rabin_random is absent on purpose. Running tools/test.sh Compat_Primality (runner ignores the filter and runs the suite).
 - 2026-10-25T04:12:07Z launcher: no commit for 61 s; 91 s elapsed. Files changed so far: docs/worker-notes/wx-mpuada-primality-a1.md.
 - 2026-10-25T04:13:07Z launcher: no commit for 60 s; 151 s elapsed. Files changed so far: docs/worker-notes/wx-mpuada-primality-a1.md.
 - 2026-10-25T04:14:07Z launcher: no commit for 60 s; 211 s elapsed. Files changed so far: docs/worker-notes/wx-mpuada-primality-a1.md.
