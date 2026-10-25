@@ -1,3 +1,4 @@
+with Ada.Assertions;
 with Ada.Calendar;
 with Ada.Containers;
 with Ada.Text_IO;
@@ -26,6 +27,7 @@ package body Compat_Count is
    procedure Test_Count (T : in out Test_Case'Class) is
       N, Expected : U64;
       Rows : Natural := 0;
+      Rejected : Boolean := False;
       --  Local count workspaces must not interfere across concurrent calls.
       task type Counter is
          entry Finish (Passed : out Boolean);
@@ -43,6 +45,12 @@ package body Compat_Count is
       Workers : array (1 .. 2) of Counter;
       Passed : Boolean;
    begin
+      begin
+         Expected := Nth_Prime (U64'Last);
+      exception
+         when Ada.Assertions.Assertion_Error => Rejected := True;
+      end;
+      AUnit.Assertions.Assert (Rejected, "reject overflowing prime index");
       for Worker of Workers loop
          Worker.Finish (Passed);
          AUnit.Assertions.Assert (Passed, "concurrent repeated counts");
@@ -52,7 +60,7 @@ package body Compat_Count is
       for C of For_Function (Load ("count"), "prime_count") loop
          if C.Args.Length = 1
            and then Parse_U64 (To_String (C.Args (1)), N)
-           and then N <= 100_000_000_000
+           and then N <= 20_000_000_000_000
            and then Parse_U64 (To_String (C.Result), Expected)
          then
             AUnit.Assertions.Assert

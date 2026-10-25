@@ -11,3 +11,18 @@ Found installed GNAT/GPRbuild and cached AUnit. Created an ignored obj-only loca
 Offline Alire now builds with installed tools and a local cached AUnit origin. Compilation reaches the new packages; inspect their diagnostics next. Existing units emit many GNAT 16 style warnings.
 About five minutes remain in the work budget. The offline toolchain compiles the new units after operator visibility fixes. Full U64 fixture replay and SPARK proof are still incomplete; do not treat this head as accepted.
 The test command's filter arguments are ignored by this checkout's runner: it ran all 188 tests, with 188 successful, 0 failed assertions, and 0 unexpected errors. The gate is running offline. Add concurrent repeated-count checks before the final gate test build.
+Gate and benchmark evidence (checked Ada build, seconds; no C comparison):
+Lehmer 10^ 1 seconds 0.000001000
+Lehmer 10^ 2 seconds 0.000000000
+Lehmer 10^ 3 seconds 0.000002000
+Lehmer 10^ 4 seconds 0.000003000
+Lehmer 10^ 5 seconds 0.000004000
+Lehmer 10^ 6 seconds 0.000013000
+Lehmer 10^ 7 seconds 0.000029000
+Lehmer 10^ 8 seconds 0.005827000
+Lehmer 10^ 9 seconds 0.017259000
+Lehmer 10^ 10 seconds 0.080331000
+Lehmer 10^ 11 seconds 0.459200000
+Lehmer 10^ 12 seconds 2.868139000
+Lehmer 10^ 13 seconds 18.086292000
+Gate printed green and its runner reported 188/188 successful, 0 failures and 0 errors. The 10^13 count took 18.086292 seconds. Expanded fixture replay through the prior 2e13 range and added concurrent repeated calls plus rejection of overflowing nth indices; revalidate these final tests.
