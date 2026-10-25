@@ -6,6 +6,10 @@ Port prime_counts.c, lmo.c, lehmer.c, legendre_phi.c, prime_count_cache.c, prime
 - t1: Count package, compat tests, and suite wiring are already on the merged head. Fixed prime_count_lower coefficient -3.0 for 300071 .. 299999 (C branch). Next: time Prime_Count and run tools/test.sh.
 - t2: spot checks match fixtures (pi(10^10)=455052511 in 0.03s, nth, bounds, phi(2^32,20), sum). No tools/bench_vs_perl.pl. Next: tools/test.sh.
 - t3: tools/test.sh passed, 201 tests, 0 failures. Named the skipped count rows in compat_count.adb. Next: time pi(10^k) and tools/gate.sh.
+- t4: Ada Prime_Count(10^k) seconds: k=9 0.007, k=10 0.033, k=11 0.122, k=12 0.646, k=13 3.344. Values match the count fixture (pi(10^13)=346065536839). No tools/bench_vs_perl.pl, so no Perl/C timing on this host.
+- t5: tools/gate.sh printed `== gate: green` (development, release, tests, 201/201). About 5 minutes left at the gate. Stop here.
+- Remaining: rows above Prime_Count_Limit and N > 10^14 are still skipped (named in compat_count.adb). Full LMO word-sieve tables from prime_count_tables.h are not copied; the body uses the Lucy hedgehog form cited from lmo.c / prime_counts.c. STATUS.md is left for tools/status.py.
+
 
 
 
