@@ -80,29 +80,54 @@ package body Prop_Primality is
          2 ** 63 - 1, 2 ** 63 + 1, U64'Last);
       Rejected : Boolean := False;
       Value : Boolean;
+      procedure Check_Base (A : U64) is
+      begin
+         Rejected := False;
+         begin
+            Value := Is_Strong_Pseudoprime (17, A);
+         exception
+            when Ada.Assertions.Assertion_Error | Constraint_Error =>
+               Rejected := True;
+         end;
+         --  Keep assertions outside the handler for the call under test.
+         --  Otherwise the test can catch its own failure and pass.
+         AUnit.Assertions.Assert (Rejected, "base precondition");
+         if not Rejected then
+            AUnit.Assertions.Assert (not Value, "invalid base accepted");
+         end if;
+      end Check_Base;
+
+      procedure Check_Increment (Increment : U64) is
+      begin
+         Rejected := False;
+         begin
+            Value := Is_Almost_Extra_Strong_Lucas_Pseudoprime
+              (17, Increment);
+         exception
+            when Ada.Assertions.Assertion_Error | Constraint_Error =>
+               Rejected := True;
+         end;
+         AUnit.Assertions.Assert (Rejected, "increment precondition");
+         if not Rejected then
+            AUnit.Assertions.Assert
+              (not Value, "invalid increment accepted");
+         end if;
+      end Check_Increment;
    begin
       for N of Edges loop
          AUnit.Assertions.Assert
            (Is_Prime (N) = (if N = 2 then 2 else 0),
             "native boundary primality");
       end loop;
-      begin
-         Value := Is_Strong_Pseudoprime (17, 1);
-         AUnit.Assertions.Assert (not Value, "invalid base accepted");
-      exception
-         when Ada.Assertions.Assertion_Error | Constraint_Error =>
-            Rejected := True;
-      end;
-      AUnit.Assertions.Assert (Rejected, "base precondition");
-      Rejected := False;
-      begin
-         Value := Is_Almost_Extra_Strong_Lucas_Pseudoprime (17, 0);
-         AUnit.Assertions.Assert (not Value, "invalid increment accepted");
-      exception
-         when Ada.Assertions.Assertion_Error | Constraint_Error =>
-            Rejected := True;
-      end;
-      AUnit.Assertions.Assert (Rejected, "increment precondition");
+      Check_Base (0);
+      Check_Base (1);
+      Check_Increment (0);
+      Check_Increment (257);
+      Check_Increment (U64'Last);
+      AUnit.Assertions.Assert
+        (Is_Almost_Extra_Strong_Lucas_Pseudoprime (17, 1)
+         and Is_Almost_Extra_Strong_Lucas_Pseudoprime (17, 256),
+         "valid increment endpoints");
    end Boundaries;
 
    procedure Concurrent (T : in out Test_Case'Class);

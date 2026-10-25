@@ -9,3 +9,6 @@ TMPDIR alone did not move Alire runtime files; set XDG_RUNTIME_DIR inside obj to
 Found validation tests that catch their own assertion; tighten them before finishing.
 Alire then tried to initialize an unavailable community index; offline build is blocked.
 All requested deterministic public functions already exist; random Miller-Rabin remains deferred.
+Fixed validation checks so they cannot catch their own AUnit assertion failures.
+Added invalid bases 0 and 1, invalid increments 0, 257 and U64 Last, and valid endpoints.
+The runner ignores its filter argument; no whole-suite execution has occurred because builds fail first.
