@@ -35,8 +35,13 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `almost_primes` -> `Almost_Primes`
 - [x] `bell_number` -> `Bell_Number`
 - [x] `bernfrac` -> `Bernfrac`
+<<<<<<< HEAD
 - [x] `bernreal` -> `Bernreal`
 - [x] `bestrational` -> `Bestrational`
+=======
+- [ ] `bernreal` -> `Bernreal`
+- [ ] `bestrational` -> `Bestrational`
+>>>>>>> origin/dev-mpuada-001
 - [x] `binomial` -> `Binomial`
 - [ ] `binomialmod` -> `Binomialmod`
 - [ ] `bitand` -> `Bitand`
@@ -85,9 +90,15 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [x] `factorial` -> `Factorial`
 - [ ] `factorialmod` -> `Factorialmod`
 - [x] `falling_factorial` -> `Falling_Factorial`
+<<<<<<< HEAD
 - [x] `farey` -> `Farey`
 - [x] `farey_rank` -> `Farey_Rank`
 - [x] `fdivrem` -> `Fdivrem`
+=======
+- [ ] `farey` -> `Farey`
+- [ ] `farey_rank` -> `Farey_Rank`
+- [ ] `fdivrem` -> `Fdivrem`
+>>>>>>> origin/dev-mpuada-001
 - [ ] `fermat_factor` -> `Fermat_Factor`
 - [x] `fibonacci` -> `Fibonacci`
 - [ ] `floor_sum` -> `Floor_Sum`
@@ -221,6 +232,7 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `minimal_goldbach_pair` -> `Minimal_Goldbach_Pair`
 - [x] `modint` -> `Modint`
 - [ ] `moebius` -> `Moebius`
+<<<<<<< HEAD
 - [x] `muladdint` -> `Muladdint`
 - [x] `muladdmod` -> `Muladdmod`
 - [x] `mulint` -> `Mulint`
@@ -232,6 +244,19 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [x] `negint` -> `Negint`
 - [x] `negmod` -> `Negmod`
 - [x] `next_calkin_wilf` -> `Next_Calkin_Wilf`
+=======
+- [ ] `muladdint` -> `Muladdint`
+- [ ] `muladdmod` -> `Muladdmod`
+- [ ] `mulint` -> `Mulint`
+- [ ] `mulmod` -> `Mulmod`
+- [ ] `mulsubint` -> `Mulsubint`
+- [ ] `mulsubmod` -> `Mulsubmod`
+- [ ] `mult_digital_root` -> `Mult_Digital_Root`
+- [x] `multifactorial` -> `Multifactorial`
+- [ ] `negint` -> `Negint`
+- [ ] `negmod` -> `Negmod`
+- [ ] `next_calkin_wilf` -> `Next_Calkin_Wilf`
+>>>>>>> origin/dev-mpuada-001
 - [ ] `next_chen_prime` -> `Next_Chen_Prime`
 - [x] `next_farey` -> `Next_Farey`
 - [ ] `next_perfect_power` -> `Next_Perfect_Power`
@@ -282,5 +307,174 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `perfect_power_count_approx` -> `Perfect_Power_Count_Approx`
 - [ ] `perfect_power_count_lower` -> `Perfect_Power_Count_Lower`
 - [ ] `perfect_power_count_upper` -> `Perfect_Power_Count_Upper`
+<<<<<<< HEAD
 - [x] `permtonum` -> `Per
 KIT NOTE, NOT FILE CONTENT: this output was shortened by the kit; the file on disk is whole; show a part with sed -n A,Bp FILE (kit removed 6589 bytes)
+=======
+- [ ] `permtonum` -> `Permtonum`
+- [ ] `Pi` -> `Pi`
+- [ ] `pisano_period` -> `Pisano_Period`
+- [ ] `pminus1_factor` -> `Pminus1_Factor`
+- [ ] `pn_primorial` -> `Pn_Primorial`
+- [ ] `powerfree_count` -> `Powerfree_Count`
+- [ ] `powerfree_part` -> `Powerfree_Part`
+- [ ] `powerfree_part_sum` -> `Powerfree_Part_Sum`
+- [ ] `powerfree_sum` -> `Powerfree_Sum`
+- [ ] `powerful_count` -> `Powerful_Count`
+- [ ] `powerful_numbers` -> `Powerful_Numbers`
+- [x] `powersum` -> `Powersum`
+- [ ] `powint` -> `Powint`
+- [ ] `powmod` -> `Powmod`
+- [ ] `pplus1_factor` -> `Pplus1_Factor`
+- [ ] `prev_perfect_power` -> `Prev_Perfect_Power`
+- [ ] `prev_prime` -> `Prev_Prime`
+- [ ] `prev_prime_power` -> `Prev_Prime_Power`
+- [ ] `prho_factor` -> `Prho_Factor`
+- [ ] `prime_bigomega` -> `Prime_Bigomega`
+- [ ] `prime_certificate` -> `Prime_Certificate`
+- [ ] `prime_count` -> `Prime_Count`
+- [ ] `prime_count_approx` -> `Prime_Count_Approx`
+- [ ] `prime_count_lower` -> `Prime_Count_Lower`
+- [ ] `prime_count_upper` -> `Prime_Count_Upper`
+- [ ] `prime_get_config` -> `Prime_Get_Config`
+- [ ] `prime_iterator` -> `Prime_Iterator`
+- [ ] `prime_iterator_object` -> `Prime_Iterator_Object`
+- [ ] `prime_memfree` -> `Prime_Memfree`
+- [ ] `prime_omega` -> `Prime_Omega`
+- [ ] `prime_power_count` -> `Prime_Power_Count`
+- [ ] `prime_power_count_approx` -> `Prime_Power_Count_Approx`
+- [ ] `prime_power_count_lower` -> `Prime_Power_Count_Lower`
+- [ ] `prime_power_count_upper` -> `Prime_Power_Count_Upper`
+- [ ] `prime_powers` -> `Prime_Powers`
+- [ ] `prime_precalc` -> `Prime_Precalc`
+- [ ] `primes` -> `Primes`
+- [ ] `prime_set_config` -> `Prime_Set_Config`
+- [ ] `prime_signature` -> `Prime_Signature`
+- [ ] `primorial` -> `Primorial`
+- [ ] `print_primes` -> `Print_Primes`
+- [ ] `qnr` -> `Qnr`
+- [ ] `ramanujan_prime_count` -> `Ramanujan_Prime_Count`
+- [ ] `ramanujan_prime_count_approx` -> `Ramanujan_Prime_Count_Approx`
+- [ ] `ramanujan_prime_count_lower` -> `Ramanujan_Prime_Count_Lower`
+- [ ] `ramanujan_prime_count_upper` -> `Ramanujan_Prime_Count_Upper`
+- [ ] `ramanujan_primes` -> `Ramanujan_Primes`
+- [ ] `ramanujan_sum` -> `Ramanujan_Sum`
+- [ ] `ramanujan_tau` -> `Ramanujan_Tau`
+- [ ] `rand` -> `Rand`
+- [ ] `random_bytes` -> `Random_Bytes`
+- [ ] `random_factored_integer` -> `Random_Factored_Integer`
+- [ ] `random_maurer_prime` -> `Random_Maurer_Prime`
+- [ ] `random_maurer_prime_with_cert` -> `Random_Maurer_Prime_With_Cert`
+- [ ] `random_nbit_prime` -> `Random_Nbit_Prime`
+- [ ] `random_ndigit_prime` -> `Random_Ndigit_Prime`
+- [ ] `random_prime` -> `Random_Prime`
+- [ ] `random_proven_prime` -> `Random_Proven_Prime`
+- [ ] `random_proven_prime_with_cert` -> `Random_Proven_Prime_With_Cert`
+- [ ] `random_safe_prime` -> `Random_Safe_Prime`
+- [ ] `random_semiprime` -> `Random_Semiprime`
+- [ ] `random_shawe_taylor_prime` -> `Random_Shawe_Taylor_Prime`
+- [ ] `random_shawe_taylor_prime_with_cert` -> `Random_Shawe_Taylor_Prime_With_Cert`
+- [ ] `random_strong_prime` -> `Random_Strong_Prime`
+- [ ] `random_unrestricted_semiprime` -> `Random_Unrestricted_Semiprime`
+- [ ] `randperm` -> `Randperm`
+- [ ] `rashiftint` -> `Rashiftint`
+- [ ] `remove_factors` -> `Remove_Factors`
+- [ ] `remove_factors_exp` -> `Remove_Factors_Exp`
+- [ ] `reverse_digits` -> `Reverse_Digits`
+- [ ] `RiemannR` -> `Riemannr`
+- [ ] `RiemannZeta` -> `Riemannzeta`
+- [x] `rising_factorial` -> `Rising_Factorial`
+- [ ] `rootint` -> `Rootint`
+- [ ] `rootmod` -> `Rootmod`
+- [ ] `rough_count` -> `Rough_Count`
+- [ ] `rshiftint` -> `Rshiftint`
+- [ ] `semiprime_count` -> `Semiprime_Count`
+- [ ] `semiprime_count_approx` -> `Semiprime_Count_Approx`
+- [ ] `semi_primes` -> `Semi_Primes`
+- [ ] `setbinop` -> `Setbinop`
+- [ ] `setcontains` -> `Setcontains`
+- [ ] `setcontainsany` -> `Setcontainsany`
+- [ ] `setdelta` -> `Setdelta`
+- [ ] `setinsert` -> `Setinsert`
+- [ ] `setintersect` -> `Setintersect`
+- [ ] `setinvert` -> `Setinvert`
+- [ ] `set_is_disjoint` -> `Set_Is_Disjoint`
+- [ ] `set_is_equal` -> `Set_Is_Equal`
+- [ ] `set_is_proper_intersection` -> `Set_Is_Proper_Intersection`
+- [ ] `set_is_proper_subset` -> `Set_Is_Proper_Subset`
+- [ ] `set_is_proper_superset` -> `Set_Is_Proper_Superset`
+- [ ] `set_is_subset` -> `Set_Is_Subset`
+- [ ] `set_is_superset` -> `Set_Is_Superset`
+- [ ] `setminus` -> `Setminus`
+- [ ] `setremove` -> `Setremove`
+- [ ] `setunion` -> `Setunion`
+- [ ] `shuffle` -> `Shuffle`
+- [ ] `sieve_prime_cluster` -> `Sieve_Prime_Cluster`
+- [ ] `sieve_range` -> `Sieve_Range`
+- [ ] `signint` -> `Signint`
+- [ ] `smooth_count` -> `Smooth_Count`
+- [ ] `sopf` -> `Sopf`
+- [ ] `sopfr` -> `Sopfr`
+- [ ] `sqrtint` -> `Sqrtint`
+- [ ] `sqrtmod` -> `Sqrtmod`
+- [ ] `squarefree_kernel` -> `Squarefree_Kernel`
+- [ ] `squfof_factor` -> `Squfof_Factor`
+- [ ] `srand` -> `Srand`
+- [ ] `stern_brocot_n` -> `Stern_Brocot_N`
+- [x] `stirling` -> `Stirling`
+- [ ] `sub1int` -> `Sub1int`
+- [x] `subfactorial` -> `Subfactorial`
+- [ ] `subint` -> `Subint`
+- [ ] `submod` -> `Submod`
+- [ ] `sumdigits` -> `Sumdigits`
+- [ ] `sumliouville` -> `Sumliouville`
+- [ ] `sumpowerful` -> `Sumpowerful`
+- [ ] `sum_primes` -> `Sum_Primes`
+- [ ] `sumset` -> `Sumset`
+- [ ] `sumtotient` -> `Sumtotient`
+- [ ] `tdivrem` -> `Tdivrem`
+- [ ] `todigits` -> `Todigits`
+- [ ] `todigitstring` -> `Todigitstring`
+- [ ] `toint` -> `Toint`
+- [ ] `toset` -> `Toset`
+- [ ] `tozeckendorf` -> `Tozeckendorf`
+- [ ] `trial_factor` -> `Trial_Factor`
+- [ ] `twin_prime_count` -> `Twin_Prime_Count`
+- [ ] `twin_prime_count_approx` -> `Twin_Prime_Count_Approx`
+- [ ] `twin_primes` -> `Twin_Primes`
+- [ ] `urandomb` -> `Urandomb`
+- [ ] `urandomm` -> `Urandomm`
+- [ ] `urandomr` -> `Urandomr`
+- [ ] `valuation` -> `Valuation`
+- [ ] `vecall` -> `Vecall`
+- [ ] `vecany` -> `Vecany`
+- [ ] `vecequal` -> `Vecequal`
+- [ ] `vecextract` -> `Vecextract`
+- [ ] `vecfirst` -> `Vecfirst`
+- [ ] `vecfirstidx` -> `Vecfirstidx`
+- [ ] `vecfreq` -> `Vecfreq`
+- [ ] `vecmax` -> `Vecmax`
+- [ ] `vecmex` -> `Vecmex`
+- [ ] `vecmin` -> `Vecmin`
+- [ ] `vecnone` -> `Vecnone`
+- [ ] `vecnotall` -> `Vecnotall`
+- [ ] `vecpairwise` -> `Vecpairwise`
+- [ ] `vecpmex` -> `Vecpmex`
+- [ ] `vecprefixsum` -> `Vecprefixsum`
+- [ ] `vecprod` -> `Vecprod`
+- [ ] `vecreduce` -> `Vecreduce`
+- [ ] `vecrsort` -> `Vecrsort`
+- [ ] `vecrsorti` -> `Vecrsorti`
+- [ ] `vecsample` -> `Vecsample`
+- [ ] `vecsingleton` -> `Vecsingleton`
+- [ ] `vecslide` -> `Vecslide`
+- [ ] `vecsort` -> `Vecsort`
+- [ ] `vecsorti` -> `Vecsorti`
+- [ ] `vecsum` -> `Vecsum`
+- [ ] `vecuniq` -> `Vecuniq`
+- [ ] `vecwindow` -> `Vecwindow`
+- [ ] `verify_prime` -> `Verify_Prime`
+- [ ] `znlog` -> `Znlog`
+- [ ] `znorder` -> `Znorder`
+- [ ] `znprimroot` -> `Znprimroot`
+>>>>>>> origin/dev-mpuada-001
