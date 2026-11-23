@@ -5,6 +5,7 @@ with Compat_Factor;
 with Prop_Factor;
 
 procedure Factor_Counts_Runner is
+   use type AUnit.Status;
    function Suite return AUnit.Test_Suites.Access_Test_Suite;
    function Suite return AUnit.Test_Suites.Access_Test_Suite is
       Result : constant AUnit.Test_Suites.Access_Test_Suite :=

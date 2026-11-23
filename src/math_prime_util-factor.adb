@@ -1179,6 +1179,8 @@ package body Math_Prime_Util.Factor is
    end Is_Semiprime;
 
    --  Compare with p**k without overflowing (ipowsafe in util.c).
+   function Below_Power (N, P, K : U64) return Boolean;
+
    function Below_Power (N, P, K : U64) return Boolean is
       Power : U64 := 1;
    begin
