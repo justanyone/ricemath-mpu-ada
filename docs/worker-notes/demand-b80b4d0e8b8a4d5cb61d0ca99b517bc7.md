@@ -11,3 +11,4 @@ Development/release builds passed; gate is running the full Ada suite.
 Kept GNAT previous-spec style and replaced handwritten multiset sorting with the standard array sort.
 Focused runner rebuild avoids the running full-suite executable; pyright remains clean.
 Link failure traced to an implicit vector reference in the new for-of test loop; restored indexed access.
+First gate passed all 346 tests; final source edits are rebuilding before focused checks and a final gate.

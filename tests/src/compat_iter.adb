@@ -160,11 +160,9 @@ package body Compat_Iter is
             Fits := (for all Arg of C.Args => Arg = "|" or else
                        Parse_U64 (To_String (Arg), B));
          end if;
-         --  iter.tsv 468,471: text multisets; 484,488: text products.
-         --  iter.tsv 475,490: Perl array-reference errors are unrepresentable.
-         --  iter.tsv 372,374,376,378: invalid typed composition options.
-         --  iter.tsv 537,540,543: object streams exceed U64.
-         --  iter.tsv 546,549,552: invalid typed object starts.
+         --  iter.tsv 468,471/484,488: text multisets/products are not U64.
+         --  475,490: Perl reference errors; 372,374,376,378: invalid options.
+         --  537,540,543: beyond U64; 546,549,552: invalid typed object starts.
          if Fits and then not C.Error then
             if Func = "forprimes" then
                if Natural (C.Args.Length) = 1 then
@@ -253,10 +251,9 @@ package body Compat_Iter is
 
    procedure Check_Fixtures (T : in out Test_Case'Class) is
    begin
-      --  iter.tsv 494,497,500,503,506,509,512,515,518,521,524,527,
-      --  530,533,536,539,542: Perl object address strings have no Ada value.
-      --  Their numeric companions are replayed below. 545,548,551 are
-      --  invalid typed starts. Other families are outside this task.
+      --  iter.tsv 494,497,500,503,506,509,512,515,518,521,524,527,530,533,
+      --  536,539,542: Perl object addresses; numeric companions run below.
+      --  545,548,551: invalid typed starts. Other families are out of scope.
       Replay ("forprimes");
       Replay ("forcomposites");
       Replay ("forfactored");
