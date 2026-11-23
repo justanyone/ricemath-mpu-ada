@@ -6,6 +6,7 @@ package Math_Prime_Util.Goldbach is
    use type U64;
    package Pair_Vectors is new Ada.Containers.Vectors
      (Index_Type => Natural, Element_Type => U64);
+   pragma Elaborate_Body (Pair_Vectors);
 
    --  Return the least prime p such that N-p is prime; undefined if absent.
    function Minimal_Goldbach_Pair (N : U64) return Int.Optional_U64
