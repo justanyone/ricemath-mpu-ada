@@ -32,10 +32,23 @@ package body Math_Prime_Util.Factor with SPARK_Mode => On is
       Values : Factor_List (1 .. 64);
       Count : Natural := 0;
       Rest : U64 := N;
-      D : U64 := 2;
+      D : U64 := 7;
    begin
       if N < 2 then
          return (if N = 0 then [1 => 0] else []);
+      end if;
+      --  XS.xs removes these primes before applying the trial limit.
+      for P of Factor_List'[2, 3, 5] loop
+         while Rest mod P = 0 loop
+            Count := Count + 1;
+            Values (Count) := P;
+            Rest := Rest / P;
+         end loop;
+      end loop;
+      if Rest > 1 and then Primality.Is_Prime (Rest) /= 0 then
+         Count := Count + 1;
+         Values (Count) := Rest;
+         return Values (1 .. Count);
       end if;
       while D <= Rest / D and then
         (Max_Factor = 0 or else D <= Max_Factor)
@@ -45,7 +58,7 @@ package body Math_Prime_Util.Factor with SPARK_Mode => On is
             Values (Count) := D;
             Rest := Rest / D;
          end loop;
-         D := (if D = 2 then 3 else D + 2);
+         D := D + 2;
       end loop;
       if Rest > 1 then
          Count := Count + 1;
@@ -151,16 +164,16 @@ package body Math_Prime_Util.Factor with SPARK_Mode => On is
    --  factor.c: fermat_factor; wide squares avoid signed overflow.
    function Fermat (N, Rounds : U64) return U64 is
       Root : U64 := Int.Sqrtint (N);
-      Delta : U128;
+      Square_Gap : U128;
       B : U64;
    begin
       for I in 0 .. Rounds loop
-         Delta := U128 (Root) ** 2;
-         if Delta >= U128 (N) then
-            Delta := Delta - U128 (N);
-            if Delta <= U128 (U64'Last) then
-               B := Int.Sqrtint (U64 (Delta));
-               if U128 (B) ** 2 = Delta then
+         Square_Gap := U128 (Root) ** 2;
+         if Square_Gap >= U128 (N) then
+            Square_Gap := Square_Gap - U128 (N);
+            if Square_Gap <= U128 (U64'Last) then
+               B := Int.Sqrtint (U64 (Square_Gap));
+               if U128 (B) ** 2 = Square_Gap then
                   return Root - B;
                end if;
             end if;

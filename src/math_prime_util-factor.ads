@@ -8,7 +8,7 @@ package Math_Prime_Util.Factor with SPARK_Mode => On is
    function Factor (N : U64) return Factor_List
      with Pre => True, Post => Factor'Result'Length <= 64;
 
-   --  Trial division through Max_Factor (0 means unlimited), followed by
+   --  Remove 2, 3, 5, then trial through Max_Factor (0 is unlimited), with
    --  the remaining cofactor. Integer units; no invalid inputs.
    function Trial_Factor (N : U64; Max_Factor : U64 := 0)
       return Factor_List
