@@ -66,7 +66,7 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [x] `convergents` -> `Convergents`
 - [ ] `cornacchia` -> `Cornacchia`
 - [x] `crootint` -> `Crootint`
-- [x] `csrand` -> `Csrand`
+- [ ] `csrand` -> `Csrand`
 - [ ] `dedekind_psi` -> `Dedekind_Psi`
 - [x] `digital_root` -> `Digital_Root`
 - [x] `divint` -> `Divint`
@@ -128,7 +128,7 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `inverse_sigma0_count` -> `Inverse_Sigma0_Count`
 - [ ] `inverse_totient` -> `Inverse_Totient`
 - [x] `invmod` -> `Invmod`
-- [x] `irand` -> `Irand`
+- [ ] `irand` -> `Irand`
 - [ ] `irand32` -> `Irand32`
 - [ ] `irand64` -> `Irand64`
 - [ ] `is_aks_prime` -> `Is_Aks_Prime`
@@ -332,7 +332,7 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `ramanujan_sum` -> `Ramanujan_Sum`
 - [ ] `ramanujan_tau` -> `Ramanujan_Tau`
 - [ ] `rand` -> `Rand`
-- [x] `random_bytes` -> `Random_Bytes`
+- [ ] `random_bytes` -> `Random_Bytes`
 - [ ] `random_factored_integer` -> `Random_Factored_Integer`
 - [ ] `random_maurer_prime` -> `Random_Maurer_Prime`
 - [ ] `random_maurer_prime_with_cert` -> `Random_Maurer_Prime_With_Cert`
@@ -413,9 +413,9 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `twin_prime_count` -> `Twin_Prime_Count`
 - [ ] `twin_prime_count_approx` -> `Twin_Prime_Count_Approx`
 - [ ] `twin_primes` -> `Twin_Primes`
-- [x] `urandomb` -> `Urandomb`
-- [x] `urandomm` -> `Urandomm`
-- [x] `urandomr` -> `Urandomr`
+- [ ] `urandomb` -> `Urandomb`
+- [ ] `urandomm` -> `Urandomm`
+- [ ] `urandomr` -> `Urandomr`
 - [ ] `valuation` -> `Valuation`
 - [ ] `vecall` -> `Vecall`
 - [ ] `vecany` -> `Vecany`
