@@ -2,6 +2,9 @@ with Math_Prime_Util.Int;
 with Math_Prime_Util.Sieve;
 
 --  Ramanujan primes from MPU 0.75 ramanujan_primes.c.
+--  Integer arguments and results are dimensionless. Bound violations raise
+--  Assertion_Error with contracts enabled. Exact sieves may raise Storage_Error.
+--  Nth bounds return zero when the bound exceeds the native prime range.
 package Math_Prime_Util.Ramanujan with SPARK_Mode => On is
    use type U64;
    --  Exact operations are bounded by the prime-count backend.
