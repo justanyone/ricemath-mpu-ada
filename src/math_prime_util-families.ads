@@ -51,18 +51,6 @@ package Math_Prime_Util.Families with SPARK_Mode => On is
    --  lucky_numbers.c: nth_lucky_upper. Empirical upper value bound.
    function Nth_Lucky_Upper (N : U64) return Int.Optional_U64
      with Pre => True, Post => Nth_Lucky_Upper'Result.Defined = (N /= 0);
-<<<<<<< HEAD
-   --  prime_powers.c: prime_power_sieve. Sorted inclusive prime powers.
-   --  Reversed ranges are empty; Storage_Error may propagate.
-   function Prime_Powers (Low, High : U64) return Lucky_Vectors.Vector
-     with Pre => True,
-          Post => (for all V of Prime_Powers'Result =>
-                     V >= Low and then V <= High);
-   --  prime_powers.c: prime_power_sieve. Prime powers through High.
-   function Prime_Powers (High : U64) return Lucky_Vectors.Vector
-     with Pre => True,
-          Post => (for all V of Prime_Powers'Result => V <= High);
-=======
    --  Ramanujan arguments/results are dimensionless; exact operations are
    --  bounded by the prime-count backend. Contract violations raise
    --  Assertion_Error; nth bounds return zero beyond the native prime range.
@@ -189,5 +177,14 @@ package Math_Prime_Util.Families with SPARK_Mode => On is
    function Nth_Semiprime_Approx (N : U64) return Int.Optional_U64
      with SPARK_Mode => On, Pre => True,
           Post => (if N = 0 then not Nth_Semiprime_Approx'Result.Defined);
->>>>>>> origin/dev-mpuada-001
+   --  prime_powers.c: prime_power_sieve. Sorted inclusive prime powers.
+   --  Reversed ranges are empty; Storage_Error may propagate.
+   function Prime_Powers (Low, High : U64) return Lucky_Vectors.Vector
+     with Pre => True,
+          Post => (for all V of Prime_Powers'Result =>
+                     V >= Low and then V <= High);
+   --  prime_powers.c: prime_power_sieve. Prime powers through High.
+   function Prime_Powers (High : U64) return Lucky_Vectors.Vector
+     with Pre => True,
+          Post => (for all V of Prime_Powers'Result => V <= High);
 end Math_Prime_Util.Families;

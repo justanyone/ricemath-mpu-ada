@@ -1,9 +1,9 @@
 with Math_Prime_Util.Count;
+with Math_Prime_Util.Powers;
 with Math_Prime_Util.Primality;
 with Ada.Numerics.Generic_Elementary_Functions;
 with Ada.Numerics.Long_Elementary_Functions;
 with Interfaces;
-with Math_Prime_Util.Powers;
 
 package body Math_Prime_Util.Families is
    package Prime_Sieve renames Math_Prime_Util.Sieve;
@@ -676,11 +676,6 @@ package body Math_Prime_Util.Families is
          Factor := Factor + 1;
       end loop;
    end Is_Lucky;
-<<<<<<< HEAD
-   function Prime_Powers (Low, High : U64) return Vector is
-      Result : Vector;
-      P : Int.Optional_U64;
-=======
    use type Primality.Prime_Result;
    subtype Ram_Wide is Long_Long_Float;
    package Ram_Ef is new Ada.Numerics.Generic_Elementary_Functions (Ram_Wide);
@@ -944,23 +939,10 @@ package body Math_Prime_Util.Families is
      with SPARK_Mode => Off
    is
       Result : Prime_Sieve.Prime_Vectors.Vector;
->>>>>>> origin/dev-mpuada-001
    begin
       if High < 2 or else Low > High then
          return Result;
       end if;
-<<<<<<< HEAD
-      P := Powers.Next_Prime_Power (U64'Max (Low, 2) - 1);
-      while P.Defined and then P.Value <= High loop
-         Result.Append (P.Value);
-         P := Powers.Next_Prime_Power (P.Value);
-      end loop;
-      return Result;
-   end Prime_Powers;
-
-   function Prime_Powers (High : U64) return Vector is
-     (Prime_Powers (2, High));
-=======
       declare
          Ps : constant Prime_Sieve.Prime_Vectors.Vector := Index_Range
            (Ramanujan_Prime_Count_Lower (Low),
@@ -1523,5 +1505,24 @@ package body Math_Prime_Util.Families is
          end loop;
       end if;
    end Nth_Semiprime;
->>>>>>> origin/dev-mpuada-001
+
+   function Prime_Powers (Low, High : U64) return Vector
+     with SPARK_Mode => Off
+   is
+      Result : Vector;
+      P : Int.Optional_U64;
+   begin
+      if High < 2 or else Low > High then
+         return Result;
+      end if;
+      P := Powers.Next_Prime_Power (U64'Max (Low, 2) - 1);
+      while P.Defined and then P.Value <= High loop
+         Result.Append (P.Value);
+         P := Powers.Next_Prime_Power (P.Value);
+      end loop;
+      return Result;
+   end Prime_Powers;
+
+   function Prime_Powers (High : U64) return Vector is
+     (Prime_Powers (2, High)) with SPARK_Mode => Off;
 end Math_Prime_Util.Families;

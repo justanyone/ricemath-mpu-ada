@@ -4,14 +4,11 @@ with Ada.Strings;
 with Ada.Strings.Fixed;
 with Ada.Strings.Unbounded;
 with Fixture_Support;
+with Math_Prime_Util.Count;
 with Math_Prime_Util.Families;
 with Math_Prime_Util.Int;
-<<<<<<< HEAD
 with Math_Prime_Util.Powers;
-with Math_Prime_Util.Count;
-=======
 with Math_Prime_Util.Sieve;
->>>>>>> origin/dev-mpuada-001
 
 package body Compat_Families is
    use AUnit.Test_Cases;
@@ -642,7 +639,6 @@ package body Compat_Families is
       Registration.Register_Routine
         (T, Test_Nth_Lucky_Upper'Access, "nth_lucky_upper");
       Registration.Register_Routine
-<<<<<<< HEAD
         (T, Test_Prime_Powers'Access, "prime_powers");
       Registration.Register_Routine
         (T, Test_Is_Prime_Power'Access, "is_prime_power");
@@ -693,7 +689,7 @@ package body Compat_Families is
         (T, Test_Nth_Perfect_Power_Lower'Access, "nth_perfect_power_lower");
       Registration.Register_Routine
         (T, Test_Nth_Perfect_Power_Upper'Access, "nth_perfect_power_upper");
-=======
+      Registration.Register_Routine
         (T, Test_Twin_Primes'Access, "twin_primes");
       Registration.Register_Routine
         (T, Test_Twin_Prime_Count'Access, "twin_prime_count");
@@ -717,7 +713,6 @@ package body Compat_Families is
         (T, Test_Ramanujan'Access, "Ramanujan fixture family");
       Registration.Register_Routine
         (T, Ramanujan_Laws'Access, "Ramanujan laws seed 20261123");
->>>>>>> origin/dev-mpuada-001
    end Register_Tests;
 
    function Suite return AUnit.Test_Suites.Access_Test_Suite is
