@@ -1,3 +1,4 @@
+with Ada.Containers;
 with Ada.Containers.Vectors;
 with Ada.Numerics.Big_Numbers.Big_Integers;
 
@@ -9,6 +10,8 @@ package Math_Prime_Util.Vec with SPARK_Mode => Off is
    package Int_Vectors is new Ada.Containers.Vectors
      (Index_Type => Positive, Element_Type => Big_Integer);
    subtype Int_List is Int_Vectors.Vector;
+   use type Ada.Containers.Count_Type;
+   use type Int_List;
 
    --  Defined is False when MPU returns undef.
    type Value_Result is record
@@ -193,14 +196,16 @@ package Math_Prime_Util.Vec with SPARK_Mode => Off is
    --  xs_set.c: SET_REL_SUPERSET. Left is a subset of Right.
    function Set_Is_Superset (Left, Right : Int_List) return Boolean
      with Pre => True,
-          Post => Set_Is_Superset'Result = Set_Is_Subset (Right, Left);
+          Post =>
+            Set_Is_Superset'Result =
+              Set_Is_Subset (Left => Right, Right => Left);
 
    --  xs_set.c: SET_REL_PROPER_SUPERSET. Left is a proper subset of Right.
    function Set_Is_Proper_Superset (Left, Right : Int_List) return Boolean
      with Pre => True,
           Post =>
             Set_Is_Proper_Superset'Result =
-              Set_Is_Proper_Subset (Right, Left);
+              Set_Is_Proper_Subset (Left => Right, Right => Left);
 
    --  xs_set.c: SET_REL_PROPER_INTERSECTION. The overlap is nonempty
    --  and smaller than both inputs. Duplicate elements count.

@@ -2,8 +2,6 @@ with Ada.Containers.Ordered_Maps;
 with Ada.Containers.Ordered_Sets;
 
 package body Math_Prime_Util.Vec with SPARK_Mode => Off is
-   use Ada.Numerics.Big_Numbers.Big_Integers;
-
    package Int_Sets is new Ada.Containers.Ordered_Sets (Big_Integer);
    package Counts is new Ada.Containers.Ordered_Maps
      (Key_Type => Big_Integer, Element_Type => Big_Integer);
@@ -423,10 +421,10 @@ package body Math_Prime_Util.Vec with SPARK_Mode => Off is
      (Left.Length > Right.Length and then Set_Is_Subset (Left, Right));
 
    function Set_Is_Superset (Left, Right : Int_List) return Boolean is
-     (Set_Is_Subset (Right, Left));
+     (Set_Is_Subset (Left => Right, Right => Left));
 
    function Set_Is_Proper_Superset (Left, Right : Int_List) return Boolean is
-     (Set_Is_Proper_Subset (Right, Left));
+     (Set_Is_Proper_Subset (Left => Right, Right => Left));
 
    function Set_Is_Proper_Intersection
      (Left, Right : Int_List) return Boolean
