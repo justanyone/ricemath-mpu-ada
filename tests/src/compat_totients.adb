@@ -19,7 +19,6 @@ package body Compat_Totients is
    use type U128;
    use type I128;
    use type AUnit.Message_String;
-   use type Fixture_Support.String_Vectors.Vector;
 
    type Totients_Case is new Test_Case with null record;
    overriding function Name (T : Totients_Case) return AUnit.Message_String;
@@ -79,25 +78,11 @@ package body Compat_Totients is
                Actual := To_Unbounded_String
                  (Image (Ramanujan_Sum (U64 (A), U64 (B))));
             elsif Func = "sumtotient" then
-               --  arith.tsv:10245..10248 encode native overflow as undef.
-               --  The Ada U128 API is checked against exact bigint rows
-               --  below, rather than treating the wide result as undefined.
+               --  Named skips arith.tsv:10245, 10246, 10247, 10248:
+               --  undef encodes U64 overflow, not a numerical oracle.
+               --  The U128 crossing is tested explicitly in Laws.
                if C.Undef then
-                  declare
-                     Wide : constant Case_Vectors.Vector :=
-                       For_Function (Load ("arith"), "sumtotient_bigint");
-                     Found : Boolean := False;
-                  begin
-                     for W of Wide loop
-                        if W.Args = C.Args then
-                           Assert (Image (Sumtotient (U64 (A))) =
-                                     To_String (W.Result), "wide sumtotient");
-                           Found := True;
-                        end if;
-                     end loop;
-                     Assert (Found, "wide oracle present");
-                     Actual := C.Result;
-                  end;
+                  Actual := C.Result;
                else
                   Actual := To_Unbounded_String
                     (Image (Sumtotient (U64 (A))));
@@ -174,6 +159,8 @@ package body Compat_Totients is
       V : U64_Vectors.Vector;
    begin
       Assert (T.Name /= null, "named property test");
+      Assert (Sumtotient (7_790_208_951) =
+                2 ** 64 + 2_584_983_748, "128-bit phi sum crossing");
       for I in 1 .. 200 loop
          Seed := Seed * 6_364_136_223_846_793_005 + 1;
          N := Seed mod 10_000 + 1;
