@@ -249,3 +249,272 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
       end if;
       return (True, Result);
    end Binomialmod;
+
+   --  znlog.c: baby-step/giant-step search, with a bounded local table.
+   --  Capping the width bounds memory, not the exponent search space.
+   function Baby_Giant (A, G, M, Order : U64) return Optional_U64
+     with Pre => M > 1 and Order > 0
+   is
+      Table_Size : constant := 131_071;
+      subtype Slot is Natural range 0 .. Table_Size - 1;
+      type Entry is record
+         Key, Exponent : U64 := 0;
+         Used : Boolean := False;
+      end record;
+      type Table_Array is array (Slot) of Entry;
+      Table : Table_Array := [others => (0, 0, False)];
+      Width : constant U64 := U64' Min (Sqrtint (Order) + 1, 65_536);
+      V : U64 := 1;
+      H : Slot;
+      Step : U64;
+      Inverse : Optional_U64;
+      Candidate : U128;
+   begin
+      for J in U64 range 0 .. Width - 1 loop
+         H := Slot (V mod Table_Size);
+         while Table (H).Used and then Table (H).Key /= V loop
+            H := (if H = Slot'Last then 0 else H + 1);
+         end loop;
+         if not Table (H).Used then
+            Table (H) := (V, J, True);
+         end if;
+         V := Mul (V, G, M);
+      end loop;
+      Inverse := Invmod (V, M);
+      if not Inverse.Defined then
+         return (Defined => False);
+      end if;
+      Step := Inverse.Value;
+      V := A;
+      for I in U64 range 0 .. (Order - 1) / Width loop
+         H := Slot (V mod Table_Size);
+         while Table (H).Used loop
+            if Table (H).Key = V then
+               Candidate := U128 (I) * U128 (Width)
+                 + U128 (Table (H).Exponent);
+               if Candidate < U128 (Order) then
+                  return (True, U64 (Candidate));
+               end if;
+            end if;
+            H := (if H = Slot'Last then 0 else H + 1);
+         end loop;
+         V := Mul (V, Step, M);
+      end loop;
+      return (Defined => False);
+   end Baby_Giant;
+
+   function Group_Order (G, M : U64) return U64
+     with Pre => M > 1 and Gcd (G, M) = 1
+   is
+      F : Factors := Factorize (M);
+      Phi : U64 := M;
+      Previous : U64 := 0;
+   begin
+      for I in 1 .. F.Count loop
+         if F.Values (I) /= Previous then
+            Phi := (Phi / F.Values (I)) * (F.Values (I) - 1);
+            Previous := F.Values (I);
+         end if;
+      end loop;
+      F := Factorize (Phi);
+      for I in 1 .. F.Count loop
+         if Power (G, Phi / F.Values (I), M) = 1 then
+            Phi := Phi / F.Values (I);
+         end if;
+      end loop;
+      return Phi;
+   end Group_Order;
+
+   --  znlog.c: znlog_ph, znlog_prime_power (Pohlig-Hellman digits).
+   function Pohlig_Hellman (A, G, M, Order : U64) return Optional_U64
+     with Pre => M > 1 and Order > 0 and Gcd (G, M) = 1
+   is
+      F : constant Factors := Factorize (Order);
+      I : Positive := 1;
+      Q, QE, Base, X, Digit_Power, H, Delta, T : U64;
+      R : U64 := 0;
+      Product : U64 := 1;
+      Digit : Optional_U64;
+      Inverse_G : constant U64 := Invmod (G, M).Value;
+   begin
+      while I <= F.Count loop
+         Q := F.Values (I);
+         QE := 1;
+         X := 0;
+         Base := Power (G, Order / Q, M);
+         while I <= F.Count and then F.Values (I) = Q loop
+            Digit_Power := QE;
+            QE := QE * Q;
+            H := Power (Mul (A, Power (Inverse_G, X, M), M),
+                        Order / QE, M);
+            Digit := Baby_Giant (H, Base, M, Q);
+            if not Digit.Defined then
+               return (Defined => False);
+            end if;
+            X := X + Digit.Value * Digit_Power;
+            I := I + 1;
+         end loop;
+         Delta := Submod (X, R mod QE, QE).Value;
+         T := Mul (Delta, Invmod (Product mod QE, QE).Value, QE);
+         R := U64 (U128 (R) + U128 (Product) * U128 (T));
+         Product := Product * QE;
+      end loop;
+      if Power (G, R, M) /= A then
+         return (Defined => False);
+      end if;
+      return (True, R);
+   end Pohlig_Hellman;
+
+   function Znlog (A, G, M : U64) return Optional_U64 is
+      Target, Base, Modulus, D, Accumulator, Offset, V, Order : U64;
+      R : Optional_U64;
+   begin
+      if M = 0 then
+         return (Defined => False);
+      elsif M = 1 then
+         return (True, 0);
+      end if;
+      Target := A mod M;
+      Base := G mod M;
+      --  Short exponents also avoid expensive order computations.
+      V := 1;
+      for I in U64 range 0 .. 127 loop
+         if V = Target then
+            return (True, I);
+         end if;
+         V := Mul (V, Base, M);
+      end loop;
+      Modulus := M;
+      Accumulator := 1;
+      Offset := 0;
+      D := Gcd (Base, Modulus);
+      --  znlog.c: znlog_non_coprime strips common factors first.
+      while D > 1 loop
+         if Target = Accumulator then
+            return (True, Offset);
+         elsif Target mod D /= 0 then
+            return (Defined => False);
+         end if;
+         Target := Target / D;
+         Modulus := Modulus / D;
+         Offset := Offset + 1;
+         if Modulus = 1 then
+            return (True, Offset);
+         end if;
+         Accumulator := Mul (Accumulator, Base / D, Modulus);
+         D := Gcd (Base, Modulus);
+      end loop;
+      Target := Mul (Target, Invmod (Accumulator, Modulus).Value, Modulus);
+      Base := Base mod Modulus;
+      Order := Group_Order (Base, Modulus);
+      R := Pohlig_Hellman (Target, Base, Modulus, Order);
+      if R.Defined then
+         if R.Value > U64'Last - Offset then
+            return (Defined => False);
+         end if;
+         R.Value := R.Value + Offset;
+      end if;
+      return R;
+   end Znlog;
+
+   --  Fast doubling returns F(K), F(K+1), including 65-bit candidates.
+   procedure Fibonacci (K : U128; M : U64; A, B : out U64)
+     with Pre => M > 0
+   is
+      X : U64 := 0;
+      Y : U64 := 1 mod M;
+      C, D, Twice : U64;
+      Mask : U128 := 2 ** 127;
+   begin
+      while Mask > 0 loop
+         Twice := Submod (Add (Y, Y, M), X, M).Value;
+         C := Mul (X, Twice, M);
+         D := Add (Mul (X, X, M), Mul (Y, Y, M), M);
+         if (K and Mask) = 0 then
+            X := C;
+            Y := D;
+         else
+            X := D;
+            Y := Add (C, D, M);
+         end if;
+         Mask := Mask / 2;
+      end loop;
+      A := X;
+      B := Y;
+   end Fibonacci;
+
+   function Is_Period (K : U128; M : U64) return Boolean
+     with Pre => M > 1
+   is
+      A, B : U64;
+   begin
+      Fibonacci (K, M, A, B);
+      return A = 0 and B = 1;
+   end Is_Period;
+
+   function Prime_Period (P : U64) return U128
+     with Pre => P >= 2
+   is
+      Candidate : U128;
+      F : Factors;
+      Bound : U64;
+   begin
+      if P = 2 then
+         return 3;
+      elsif P = 5 then
+         return 20;
+      end if;
+      --  util.c: _pisano_prime_power. The period divides P-1 for
+      --  quadratic residues of 5, and 2*(P+1) otherwise.
+      if P mod 5 = 1 or P mod 5 = 4 then
+         Bound := P - 1;
+         Candidate := U128 (Bound);
+      else
+         Bound := P + 1;
+         Candidate := 2 * U128 (Bound);
+      end if;
+      F := Factorize (Bound);
+      if Candidate > U128 (Bound) then
+         F.Count := F.Count + 1;
+         F.Values (F.Count) := 2;
+      end if;
+      for I in 1 .. F.Count loop
+         if Is_Period (Candidate / U128 (F.Values (I)), P) then
+            Candidate := Candidate / U128 (F.Values (I));
+         end if;
+      end loop;
+      return Candidate;
+   end Prime_Period;
+
+   function Pisano_Period (N : U64) return Optional_U64 is
+      F : Factors;
+      I : Positive := 1;
+      P : U64;
+      Period : U128;
+      Result : U64 := 1;
+      Combined : U128;
+   begin
+      if N <= 1 then
+         return (True, N);
+      end if;
+      F := Factorize (N);
+      while I <= F.Count loop
+         P := F.Values (I);
+         Period := Prime_Period (P);
+         I := I + 1;
+         while I <= F.Count and then F.Values (I) = P loop
+            Period := Period * U128 (P);
+            I := I + 1;
+         end loop;
+         if Period > U128 (U64'Last) then
+            return (Defined => False);
+         end if;
+         Combined := U128 (Result / Gcd (Result, U64 (Period))) * Period;
+         if Combined > U128 (U64'Last) then
+            return (Defined => False);
+         end if;
+         Result := U64 (Combined);
+      end loop;
+      return (True, Result);
+   end Pisano_Period;
+end Math_Prime_Util.Modular;
