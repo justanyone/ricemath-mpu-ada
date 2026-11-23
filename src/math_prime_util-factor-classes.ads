@@ -1,6 +1,5 @@
 --  Factor classes from Math::Prime::Util 0.75 util.c.
 package Math_Prime_Util.Factor.Classes with SPARK_Mode => On is
-   use type U64;
 
    --  util.c: is_carmichael, Korselt's criterion. No errors.
    function Is_Carmichael (N : U64) return Boolean
