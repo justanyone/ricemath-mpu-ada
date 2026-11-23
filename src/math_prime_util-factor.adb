@@ -1,4 +1,5 @@
 with Ada.Containers;
+with Ada.Containers.Generic_Array_Sort;
 with Ada.Numerics.Long_Elementary_Functions;
 with Math_Prime_Util.Int;
 with Math_Prime_Util.Primality;
@@ -7,6 +8,7 @@ with Math_Prime_Util.Sieve;
 package body Math_Prime_Util.Factor is
    use type U128;
    use type Int.I128;
+   use type Primality.Prime_Result;
 
    type U32 is mod 2 ** 32;
    subtype Lf is Long_Float;
@@ -727,7 +729,7 @@ package body Math_Prime_Util.Factor is
       Valid : Integer := -1;
       P, Bn, Qn, Q0, B0, It, Imax, Mult : U32 := 0;
    end record;
-   Multipliers : constant array (1 .. 37) of U64 :=
+   Multipliers : constant array (1 .. 38) of U64 :=
      [3 * 5 * 7 * 11, 3 * 5 * 7, 3 * 5 * 7 * 11 * 13,
       3 * 5 * 7 * 13, 3 * 5 * 7 * 11 * 17, 3 * 5 * 11,
       3 * 5 * 7 * 17, 3 * 5, 3 * 5 * 7 * 11 * 19,
@@ -1190,7 +1192,9 @@ package body Math_Prime_Util.Factor is
       Idx : Natural;
       type Buf is array (Positive range <>) of U64;
       procedure Sort_Buf is new Ada.Containers.Generic_Array_Sort
-        (Positive, U64, Buf);
+        (Index_Type => Positive,
+         Element_Type => U64,
+         Array_Type => Buf);
    begin
       if N = 0 or else Cap = 0 then
          return Acc;
