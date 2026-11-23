@@ -1,12 +1,17 @@
 with AUnit.Assertions;
 with AUnit.Test_Cases;
 with Math_Prime_Util.Families;
+with Math_Prime_Util.Int;
+with Math_Prime_Util.Powers;
 
 package body Prop_Families is
    use AUnit.Test_Cases;
    use Math_Prime_Util;
    use type U64;
    use Math_Prime_Util.Families;
+   use type U128;
+   use type Int.I128;
+   package Powers renames Math_Prime_Util.Powers;
    use type Lucky_Vectors.Vector;
    type Families_Case is new Test_Case with null record;
    overriding function Name (T : Families_Case)
@@ -196,6 +201,69 @@ package body Prop_Families is
          "first twin pair has lower member three");
    end Twin_Empty_Prefix;
 
+   procedure Power_Edges (T : in out Test_Case'Class) is
+      type U64_Array is array (Positive range <>) of U64;
+      Edges : constant U64_Array :=
+        [0, 1, 2, 2 ** 32 - 1, 2 ** 32, 2 ** 32 + 1,
+         2 ** 63 - 1, 2 ** 63, 2 ** 63 + 1, U64'Last];
+   begin
+      for E of Edges loop
+         AUnit.Assertions.Assert
+           (Powers.Is_Prime_Power (E) = Powers.Prime_Power (E).Exponent
+            and then Powers.Next_Prime_Power (E) > U128 (E)
+            and then Powers.Prime_Power_Count_Lower (E)
+              <= Powers.Prime_Power_Count_Upper (E),
+            "prime-power edges" & E'Image);
+         if E > 2 then
+            AUnit.Assertions.Assert
+              (Powers.Prev_Prime_Power (E).Defined
+               and then Powers.Prev_Prime_Power (E).Value < E,
+               "previous prime power" & E'Image);
+         end if;
+         AUnit.Assertions.Assert
+           (Powers.Is_Perfect_Power (Int.I128 (E))
+              = (E <= 1 or else Powers.Is_Perfect_Power (Int.I128 (E)))
+            and then Powers.Perfect_Power_Count_Lower (U128 (E))
+              = Powers.Perfect_Power_Count (U128 (E)),
+            "perfect-power edges" & E'Image);
+      end loop;
+      AUnit.Assertions.Assert
+        (not Powers.Prev_Prime_Power (0).Defined
+         and then not Powers.Prev_Prime_Power (2).Defined
+         and then not Powers.Nth_Prime_Power (0).Defined
+         and then Powers.Nth_Prime_Power (1).Value = 2
+         and then Powers.Prime_Powers (1).Is_Empty
+         and then Powers.Prime_Powers (10, 0).Is_Empty
+         and then Powers.Is_Perfect_Power (-1)
+         and then not Powers.Is_Perfect_Power (-4)
+         and then Powers.Is_Perfect_Power (-8)
+         and then Powers.Next_Perfect_Power (0) = 1
+         and then Powers.Prev_Perfect_Power (0) = -1
+         and then Powers.Next_Perfect_Power (-100) = -64
+         and then Powers.Prev_Perfect_Power (-100) = -125
+         and then Powers.Perfect_Power_Count (1, 0) = 0
+         and then Powers.Nth_Perfect_Power (0).Defined = False
+         and then Powers.Nth_Perfect_Power (2).Value = 4
+         and then Powers.Nth_Perfect_Power_Lower (2).Value = 3,
+         "signed, empty, and zero power edges");
+      for N in U64 range 1 .. 40 loop
+         declare
+            P : constant U64 := Powers.Nth_Prime_Power (N).Value;
+            Q : constant U128 := Powers.Nth_Perfect_Power (N).Value;
+         begin
+            AUnit.Assertions.Assert
+              (Powers.Prime_Power_Count (P) = N
+               and then Powers.Is_Prime_Power (P) /= 0
+               and then Powers.Prime_Power_Count (P - 1) = N - 1,
+               "prime-power inverse" & N'Image);
+            AUnit.Assertions.Assert
+              (Powers.Perfect_Power_Count (Q) = N
+               and then Powers.Is_Perfect_Power (Int.I128 (Q)),
+               "perfect-power inverse" & N'Image);
+         end;
+      end loop;
+   end Power_Edges;
+
    overriding procedure Register_Tests (T : in out Families_Case) is
    begin
       Registration.Register_Routine
@@ -203,6 +271,8 @@ package body Prop_Families is
       Registration.Register_Routine
         (T, Twin_Semi_Laws'Access, "twin and semiprime laws");
       Registration.Register_Routine (T, Laws'Access, "lucky laws");
+      Registration.Register_Routine
+        (T, Power_Edges'Access, "prime and perfect power edges");
       Registration.Register_Routine
         (T, Concurrent_Calls'Access, "concurrent repeated sieves");
    end Register_Tests;
