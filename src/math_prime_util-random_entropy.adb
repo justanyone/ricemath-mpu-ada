@@ -24,6 +24,7 @@ package body Math_Prime_Util.Random_Entropy is
          if IO.Is_Open (File) then
             IO.Close (File);
          end if;
-         raise Random.Entropy_Error with "operating-system entropy unavailable";
+         raise Random.Entropy_Error with
+           "operating-system entropy unavailable";
    end Fill;
 end Math_Prime_Util.Random_Entropy;

@@ -7,7 +7,8 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
 
    function Load (Data : Byte_Array; Offset : Natural) return Word
      with Pre => Offset <= Data'Length and then Data'Length - Offset >= 4
-   is
+;
+   function Load (Data : Byte_Array; Offset : Natural) return Word is
       Result : Word := 0;
    begin
       for I in 0 .. 3 loop
@@ -19,7 +20,8 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
 
    procedure Store (Data : in out Byte_Array; Offset : Natural; V : Word)
      with Pre => Offset <= Data'Length and then Data'Length - Offset >= 4
-   is
+;
+   procedure Store (Data : in out Byte_Array; Offset : Natural; V : Word) is
    begin
       for I in 0 .. 3 loop
          Data (Data'First + Offset + I) :=
@@ -29,18 +31,21 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
 
    --  csprng.c: prng_new/prng_next and csprng_seed.
    procedure Csrand (G : out Generator; Seed : Byte_Array) is
-      Key : Byte_Array (0 .. 39) := [others => 0];
+      Key : Byte_Array (0 .. 39) := [others => 0] with Volatile;
       State, Increment : Word;
-      function Next return Word is
-         Old : constant Word := State;
-         Mixed : Word;
+      procedure Advance;
+      procedure Advance is
       begin
          State := State * 747_796_405 + Increment;
-         Mixed := (Shift_Right (Old, Natural (Shift_Right (Old, 28)) + 4)
-                   xor Old) * 277_803_737;
+      end Advance;
+      function Output return Word;
+      function Output return Word is
+         Mixed : constant Word :=
+           (Shift_Right (State, Natural (Shift_Right (State, 28)) + 4)
+            xor State) * 277_803_737;
+      begin
          return Shift_Right (Mixed, 22) xor Mixed;
-      end Next;
-      Ignored : Word;
+      end Output;
    begin
       for I in Seed'Range loop
          exit when I - Seed'First >= 40;
@@ -49,15 +54,16 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
       if Seed'Length < 40 then
          State := 0;
          Increment := Shift_Left (Load (Key, 4), 1) or 1;
-         Ignored := Next;
+         Advance;
          State := State + Load (Key, 0);
-         Ignored := Next;
+         Advance;
          State := State xor Load (Key, 8);
-         Ignored := Next;
+         Advance;
          State := State xor Load (Key, 12);
-         Ignored := Next;
+         Advance;
          for I in (Seed'Length + 3) / 4 .. 9 loop
-            Store (Key, 4 * I, Next);
+            Store (Key, 4 * I, Output);
+            Advance;
          end loop;
       end if;
       G.State := [16#6170_7865#, 16#3320_646E#,
@@ -74,7 +80,7 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
    end Csrand;
 
    procedure Csrand (G : out Generator) is
-      Seed : Byte_Array (0 .. 39);
+      Seed : Byte_Array (0 .. 39) with Volatile;
    begin
       Random_Entropy.Fill (Seed);
       Csrand (G, Seed);
@@ -82,8 +88,10 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
    end Csrand;
 
    --  chacha.c: QUARTERROUND, chacha_core, increment_chacha_counter.
+   procedure Refill (G : in out Generator);
    procedure Refill (G : in out Generator) is
       X : State_Array;
+      procedure Quarter (A, B, C, D : Natural);
       procedure Quarter (A, B, C, D : Natural) is
       begin
          X (A) := X (A) + X (B);
@@ -138,6 +146,7 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
    end Irand;
 
    --  chacha_irand64 places the first 32-bit draw in the HIGH word.
+   procedure Draw_64 (G : in out Generator; Value : out U64);
    procedure Draw_64 (G : in out Generator; Value : out U64) is
       A, B : U64;
    begin
