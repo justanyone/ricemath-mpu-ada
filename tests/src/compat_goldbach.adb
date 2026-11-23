@@ -97,11 +97,7 @@ package body Compat_Goldbach is
       Result : constant AUnit.Test_Suites.Access_Test_Suite :=
         new AUnit.Test_Suites.Test_Suite;
    begin
-      declare
-         Item : aliased Goldbach_Case;
-      begin
-         Result.Add_Test (Item'Access);
-      end;
+      Result.Add_Test (new Goldbach_Case);
       return Result;
    end Suite;
 end Compat_Goldbach;
