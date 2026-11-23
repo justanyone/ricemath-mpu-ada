@@ -5,6 +5,7 @@ with Math_Prime_Util.Sieve;
 --  Number-family sieves and estimates from MPU 0.75.
 package Math_Prime_Util.Families with SPARK_Mode => On is
    use type U64;
+   use type U128;
    package Lucky_Vectors is new Ada.Containers.Vectors
      (Index_Type => Natural, Element_Type => U64);
 
@@ -177,4 +178,79 @@ package Math_Prime_Util.Families with SPARK_Mode => On is
    function Nth_Semiprime_Approx (N : U64) return Int.Optional_U64
      with SPARK_Mode => On, Pre => True,
           Post => (if N = 0 then not Nth_Semiprime_Approx'Result.Defined);
+   --  powerful.c: is_powerful. Every prime exponent is at least K.
+   --  Zero is false; one is true; K <= 1 accepts every positive N.
+   function Is_Powerful (N : U64; K : U64 := 2) return Boolean
+     with Pre => True,
+          Post => (if N = 0 then not Is_Powerful'Result
+                   elsif N = 1 then Is_Powerful'Result);
+   --  powerful.c: powerful_count. Count positive K-powerful values <= N.
+   --  Storage_Error propagates from the squarefree sieve.
+   function Powerful_Count (N : U64; K : U64 := 2) return U64
+     with Pre => True, Post => Powerful_Count'Result <= N;
+   --  powerful.c: nth_powerful. One-based; zero or native overflow undefined.
+   --  K = 0 follows the MPU Perl fallback and means K = 2.
+   function Nth_Powerful (N : U64; K : U64 := 2) return Int.Optional_U64
+     with Pre => True,
+          Post => (if N = 0 then not Nth_Powerful'Result.Defined);
+   --  powerful.c: sumpowerful. Exact sum through N, in integer units.
+   --  U128 holds every native-input sum; Storage_Error may propagate.
+   function Sumpowerful (N : U64; K : U64 := 2) return U128
+     with Pre => True,
+          Post => (if N = 0 then Sumpowerful'Result = 0);
+   --  powerful.c: powerful_numbers_range. Sorted inclusive positive values.
+   --  Reversed ranges are empty; Storage_Error may propagate.
+   function Powerful_Numbers (Low, High : U64; K : U64 := 2)
+      return Family_Vectors.Vector
+     with Pre => True,
+          Post => (for all V of Powerful_Numbers'Result =>
+                     V >= U64'Max (1, Low) and then V <= High);
+   --  List positive powerful values through High, with K = 2.
+   function Powerful_Numbers (High : U64) return Family_Vectors.Vector
+     with Pre => True,
+          Post => (for all V of Powerful_Numbers'Result => V <= High);
+
+   --  powerfree.c uses 32-bit exponents. Invalid exponents fail the subtype
+   --  constraint with Constraint_Error. All other inputs use native units.
+   subtype Powerfree_Exponent is U64 range 0 .. 2 ** 32 - 1;
+   --  powerfree.c: is_powerfree. Every prime exponent is less than K.
+   --  K < 2 accepts only one; zero is always false. No errors.
+   function Is_Powerfree (N : U64; K : Powerfree_Exponent := 2)
+      return Boolean
+     with Pre => True,
+          Post => (if N = 0 then not Is_Powerfree'Result
+                   elsif N = 1 then Is_Powerfree'Result);
+   --  powerfree.c: powerfree_count. Count positive values through N.
+   --  Storage_Error propagates from the Mobius sieve.
+   function Powerfree_Count (N : U64; K : Powerfree_Exponent := 2)
+      return U64
+     with Pre => True, Post => Powerfree_Count'Result <= N;
+   --  powerfree.c: powerfree_sum. Exact sum through N. U128 cannot overflow.
+   --  Storage_Error propagates from the Mobius sieve.
+   function Powerfree_Sum (N : U64; K : Powerfree_Exponent := 2)
+      return U128
+     with Pre => True,
+          Post => (if N = 0 then Powerfree_Sum'Result = 0);
+   --  powerfree.c: powerfree_part. Remove K-th powers from N's factors.
+   --  Zero gives zero; K < 2 gives one only for N = 1. No errors.
+   function Powerfree_Part (N : U64; K : Powerfree_Exponent := 2)
+      return U64
+     with Pre => True, Post => Powerfree_Part'Result <= N;
+   --  powerfree.c: powerfree_part_sum. Sum parts of 1 .. N, exactly in U128.
+   --  Storage_Error propagates from the Mobius sieve.
+   function Powerfree_Part_Sum (N : U64; K : Powerfree_Exponent := 2)
+      return U128
+     with Pre => True,
+          Post => (if N = 0 then Powerfree_Part_Sum'Result = 0);
+   --  powerfree.c: nth_powerfree. One-based; zero, K < 2, or native overflow
+   --  is undefined. Storage_Error propagates from the Mobius sieve.
+   function Nth_Powerfree (N : U64; K : Powerfree_Exponent := 2)
+      return Int.Optional_U64
+     with Pre => True,
+          Post => (if N = 0 or K < 2 then
+                     not Nth_Powerfree'Result.Defined);
+   --  powerfree.c: squarefree_kernel. Product of distinct prime factors.
+   --  Zero gives zero; one gives one. No errors.
+   function Squarefree_Kernel (N : U64) return U64
+     with Pre => True, Post => Squarefree_Kernel'Result <= N;
 end Math_Prime_Util.Families;
