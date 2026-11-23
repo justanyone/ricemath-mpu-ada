@@ -31,10 +31,10 @@ def run_modular_suite(runner):
     )
 
 
-# Justification: require both a successful process and the expected six AUnit checks.
+# Justification: require both a successful process and the expected AUnit checks.
 @then("all native fixtures and exhaustive root laws pass")
 def check_modular_suite(result):
     assert result.returncode == 0, result.stdout + result.stderr
-    assert "Successful Tests:  6" in result.stdout
+    assert "Successful Tests:  12" in result.stdout
     assert "Failed Assertions: 0" in result.stdout
     assert "Unexpected Errors: 0" in result.stdout

@@ -1,9 +1,9 @@
-<<<<<<< HEAD
 with Math_Prime_Util.Errors;
 with Math_Prime_Util.Primality;
 
 package body Math_Prime_Util.Modular with SPARK_Mode => On is
    use Int;
+   use type U128;
    use type Primality.Prime_Result;
    Empty : constant Root_List (1 .. 0) := [others => 0];
    Max_Roots : constant := 600_000_000;
@@ -727,16 +727,6 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
       end loop;
       return (Defined => False);
    end Cornacchia;
-=======
-with Math_Prime_Util.Primality;
-
-package body Math_Prime_Util.Modular with SPARK_Mode => On is
-   use type U128;
-   use type Primality.Prime_Result;
-
-   function Mul (A, B, M : U64) return U64
-     is (U64 ((U128 (A) * U128 (B)) mod U128 (M)))
-     with Pre => M > 0, Post => Mul'Result < M;
 
    function Add (A, B, M : U64) return U64
      is (U64 ((U128 (A) + U128 (B)) mod U128 (M)))
@@ -1291,5 +1281,4 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
       end loop;
       return (True, Result);
    end Pisano_Period;
->>>>>>> origin/dev-mpuada-001
 end Math_Prime_Util.Modular;

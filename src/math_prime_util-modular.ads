@@ -1,8 +1,11 @@
 with Math_Prime_Util.Int;
 
-<<<<<<< HEAD
---  Native modular roots from MPU 0.75 rootmod.c and util.c: cornacchia.
+--  Native modular helpers from Math::Prime::Util 0.75.
+--  Roots and Cornacchia come from rootmod.c and util.c.
+--  Znlog, factorialmod, binomialmod, and the Pisano period come from
+--  znlog.c, factmod.c, and util.c.
 package Math_Prime_Util.Modular with SPARK_Mode => On is
+   use Math_Prime_Util.Int;
    use type U64;
    use type U128;
    subtype I128 is Int.I128;
@@ -68,11 +71,6 @@ package Math_Prime_Util.Modular with SPARK_Mode => On is
                U128 (N) / U128 (D)) and then
             U128 (Cornacchia'Result.X) ** 2 + U128 (D) *
               U128 (Cornacchia'Result.Y) ** 2 = U128 (N));
-=======
---  Native modular helpers translated from Math::Prime::Util 0.75.
-package Math_Prime_Util.Modular with SPARK_Mode => On is
-   use Math_Prime_Util.Int;
-   use type U64;
 
    --  znlog.c: znlog. Smallest exponent X with G**X = A modulo M.
    --  Undefined for M = 0 or when no exponent exists; M = 1 returns 0.
@@ -102,5 +100,4 @@ package Math_Prime_Util.Modular with SPARK_Mode => On is
      with Pre => True,
           Post => (if N <= 1 then Pisano_Period'Result.Defined and then
                      Pisano_Period'Result.Value = N);
->>>>>>> origin/dev-mpuada-001
 end Math_Prime_Util.Modular;
