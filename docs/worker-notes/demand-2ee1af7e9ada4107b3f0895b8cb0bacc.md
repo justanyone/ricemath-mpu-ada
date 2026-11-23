@@ -18,3 +18,4 @@ Focused runner compilation is active; gate is still in the full existing test su
 Dedicated package runner built successfully and is running with a 60-second timeout. Line-length and git whitespace checks passed.
 Full gate tests and bounded focused run remain active; no additional implementation changes while collecting results.
 Awaiting the focused timeout verdict before deciding whether the exact upstream square-free sieve meets the owner runtime guardrail.
+Focused suite timed out at 60.02 seconds. Added named-routine selection to the dedicated runner to isolate runtime instead of weakening fixture coverage.

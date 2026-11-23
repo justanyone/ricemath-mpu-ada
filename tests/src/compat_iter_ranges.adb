@@ -14,7 +14,9 @@ package body Compat_Iter_Ranges is
    use Math_Prime_Util.Iter.Ranges;
    use type U64;
 
-   type Range_Case is new Test_Case with null record;
+   type Range_Case is new Test_Case with record
+      Routine : Unbounded_String;
+   end record;
    overriding function Name (T : Range_Case) return AUnit.Message_String;
    overriding procedure Register_Tests (T : in out Range_Case);
 
@@ -238,22 +240,68 @@ package body Compat_Iter_Ranges is
 
    overriding procedure Register_Tests (T : in out Range_Case) is
    begin
-      Registration.Register_Routine (T, Check_Odd'Access, "odd composites");
-      Registration.Register_Routine (T, Check_Semi'Access, "semiprimes");
-      Registration.Register_Routine (T, Check_Almost'Access, "almost primes");
-      Registration.Register_Routine (T, Check_Square'Access, "squarefree");
-      Registration.Register_Routine
-        (T, Check_Square_Int'Access, "squarefree integers");
-      Registration.Register_Routine (T, Check_Divisors'Access, "divisors");
-      Registration.Register_Routine (T, Check_Lastfor'Access, "lastfor");
-      Registration.Register_Routine (T, Check_Edges'Access, "edges");
+      if Length (T.Routine) = 0 or else
+        T.Routine = "odd composites"
+      then
+         Registration.Register_Routine
+           (T, Check_Odd'Access, "odd composites");
+      end if;
+      if Length (T.Routine) = 0 or else
+        T.Routine = "semiprimes"
+      then
+         Registration.Register_Routine
+           (T, Check_Semi'Access, "semiprimes");
+      end if;
+      if Length (T.Routine) = 0 or else
+        T.Routine = "almost primes"
+      then
+         Registration.Register_Routine
+           (T, Check_Almost'Access, "almost primes");
+      end if;
+      if Length (T.Routine) = 0 or else
+        T.Routine = "squarefree"
+      then
+         Registration.Register_Routine
+           (T, Check_Square'Access, "squarefree");
+      end if;
+      if Length (T.Routine) = 0 or else
+        T.Routine = "squarefree integers"
+      then
+         Registration.Register_Routine
+           (T, Check_Square_Int'Access, "squarefree integers");
+      end if;
+      if Length (T.Routine) = 0 or else
+        T.Routine = "divisors"
+      then
+         Registration.Register_Routine
+           (T, Check_Divisors'Access, "divisors");
+      end if;
+      if Length (T.Routine) = 0 or else
+        T.Routine = "lastfor"
+      then
+         Registration.Register_Routine
+           (T, Check_Lastfor'Access, "lastfor");
+      end if;
+      if Length (T.Routine) = 0 or else
+        T.Routine = "edges"
+      then
+         Registration.Register_Routine
+           (T, Check_Edges'Access, "edges");
+      end if;
    end Register_Tests;
 
    function Suite return AUnit.Test_Suites.Access_Test_Suite is
+     (Suite (""));
+
+   function Suite (Routine : String)
+      return AUnit.Test_Suites.Access_Test_Suite
+   is
       Result : constant AUnit.Test_Suites.Access_Test_Suite :=
         new AUnit.Test_Suites.Test_Suite;
+      C : constant access Range_Case := new Range_Case;
    begin
-      Result.Add_Test (new Range_Case);
+      C.Routine := To_Unbounded_String (Routine);
+      Result.Add_Test (C);
       return Result;
    end Suite;
 end Compat_Iter_Ranges;
