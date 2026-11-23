@@ -9,3 +9,4 @@ Correction: All_Suites already registers Compat_Iter. Reusing powers_runner with
 All nine focused iterator tests passed. Sharing multiset multiplicity traversal with ordinary/derangement permutations to reduce the remaining budget excess.
 Focused iterator tests passed before the final multiplicity refactor; gate is running. Python BDD remains blocked by missing pytest-bdd, while Ruff/Vulture checks pass.
 Final review: Ruff/Vulture and whitespace checks pass. Added helper specs for GNAT style. Change reduction is substantial but still exceeds the requested 400-line budget; pytest-bdd and gnatcheck are unavailable here.
+Latest focused run: 9/9 pass, and reused powers_runner selection passes one forcomp case. Full gate reached tests-run but has not completed; final remaining work is the line-budget reduction and environment-dependent BDD/gnatcheck validation.
