@@ -32,12 +32,10 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
    procedure Csrand (G : out Generator; Seed : Byte_Array) is
       Key : Byte_Array (0 .. 39) := [others => 0];
       State, Increment : Word;
-      procedure Advance;
       procedure Advance is
       begin
          State := State * 747_796_405 + Increment;
       end Advance;
-      function Output return Word;
       function Output return Word is
          Mixed : constant Word :=
            (Shift_Right (State, Natural (Shift_Right (State, 28)) + 4)
@@ -122,10 +120,8 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
    end Csrand;
 
    --  chacha.c: QUARTERROUND, chacha_core, increment_chacha_counter.
-   procedure Refill (G : in out Generator);
    procedure Refill (G : in out Generator) is
       X : State_Array;
-      procedure Quarter (A, B, C, D : State_Index);
       procedure Quarter (A, B, C, D : State_Index) is
       begin
          X (A) := X (A) + X (B);
@@ -179,19 +175,9 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
       Value := U64 (Load (Data, 0));
    end Irand;
 
-   --  chacha_irand64 places the first 32-bit draw in the HIGH word.
-   procedure Draw_64 (G : in out Generator; Value : out U64)
-     with Pre => Is_Seeded (G);
-   procedure Draw_64 (G : in out Generator; Value : out U64) is
-      A, B : U64;
-   begin
-      Irand (G, A);
-      Irand (G, B);
-      Value := Shift_Left (A, 32) or B;
-   end Draw_64;
-
    procedure Urandomb
      (G : in out Generator; Bits : Natural; Value : out U64) is
+      Low : U64;
    begin
       if Bits = 0 then
          Value := 0;
@@ -199,8 +185,10 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
          Irand (G, Value);
          Value := Shift_Right (Value, 32 - Bits);
       else
-         Draw_64 (G, Value);
-         Value := Shift_Right (Value, 64 - Bits);
+         --  chacha_irand64 puts the first draw in the high word.
+         Irand (G, Value);
+         Irand (G, Low);
+         Value := Shift_Right (Shift_Left (Value, 32) or Low, 64 - Bits);
       end if;
    end Urandomb;
 
@@ -225,7 +213,7 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
          if Modulus <= 16#FFFF_FFFF# then
             Irand (G, Value);
          else
-            Draw_64 (G, Value);
+            Urandomb (G, 64, Value);
          end if;
          exit when Value >= Minimum;
       end loop;
@@ -236,7 +224,7 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
      (G : in out Generator; Low, High : U64; Value : out U64) is
    begin
       if Low = 0 and then High = U64'Last then
-         Draw_64 (G, Value);
+         Urandomb (G, 64, Value);
       else
          Urandomm (G, High - Low + 1, Value);
          Value := Low + Value;
