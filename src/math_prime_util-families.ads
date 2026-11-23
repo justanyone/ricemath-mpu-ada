@@ -247,7 +247,7 @@ package Math_Prime_Util.Families with SPARK_Mode => On is
    function Nth_Powerfree (N : U64; K : Powerfree_Exponent := 2)
       return Int.Optional_U64
      with Pre => True,
-          Post => (if N = 0 or K < 2 then
+          Post => (if N = 0 or else K < 2 then
                      not Nth_Powerfree'Result.Defined);
    --  powerfree.c: squarefree_kernel. Product of distinct prime factors.
    --  Zero gives zero; one gives one. No errors.

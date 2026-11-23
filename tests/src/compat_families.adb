@@ -252,14 +252,17 @@ package body Compat_Families is
                K := (if Natural (C.Args.Length) < 3 then 2 else
                      U64'Value (To_String (C.Args (3))));
                Got := Null_Unbounded_String;
-               for V of Powerful_Numbers
-                 ((if Natural (C.Args.Length) = 1 then 1 else N), High, K)
-               loop
-                  if Length (Got) > 0 then
-                     Append (Got, " ");
-                  end if;
-                  Append (Got, Image (V));
-               end loop;
+               declare
+                  Values : constant Family_Vectors.Vector := Powerful_Numbers
+                    ((if Natural (C.Args.Length) = 1 then 1 else N), High, K);
+               begin
+                  for I in Values.First_Index .. Values.Last_Index loop
+                     if Length (Got) > 0 then
+                        Append (Got, " ");
+                     end if;
+                     Append (Got, Image (Values.Element (I)));
+                  end loop;
+               end;
                if Length (Got) = 0 then
                   Got := To_Unbounded_String ("undef");
                end if;
