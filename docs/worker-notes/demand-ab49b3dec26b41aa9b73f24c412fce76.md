@@ -10,3 +10,4 @@ Development build passes after visibility fixes. Running the complete Families f
 Cached toolchain now compiles the implementation. Tests currently fail at the linker; inspecting the exact missing libraries before retrying focused replay.
 Resolved a GNAT vector iterator link failure by using the established indexed iteration style; focused Families replay is building and running.
 Added seeded membership/count/nth/neighbor laws and two pytest-bdd scenarios. pytest-bdd is absent on this offline worker; Ada assertions are run directly through the same runner.
+The existing AUnit runner ignored CLI filters and began the whole suite. Added its standard name filter so BDD and focused power checks select the intended assertions; no-argument gate behavior is unchanged.

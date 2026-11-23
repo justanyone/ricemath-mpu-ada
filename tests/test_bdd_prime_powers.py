@@ -19,14 +19,14 @@ def runner():
 # The existing Ada compat suite owns fixture parsing and row diagnostics.
 @when("the power family fixtures are replayed", target_fixture="result")
 def replay(runner):
-    return subprocess.run([str(runner), "-r", "Compat_Families"],
+    return subprocess.run([str(runner), "Compat_Families"],
                           cwd=ROOT, capture_output=True, text=True, timeout=55)
 
 
 # The seeded Ada properties verify arithmetic independently of the oracle.
 @when("the seeded power properties are checked", target_fixture="result")
 def properties(runner):
-    return subprocess.run([str(runner), "-r", "Prop_Families", "-t", "power laws"],
+    return subprocess.run([str(runner), "Prop_Families seed 20261020 : power laws"],
                           cwd=ROOT, capture_output=True, text=True, timeout=55)
 
 
@@ -34,6 +34,6 @@ def properties(runner):
 @then("all selected Ada assertions pass")
 def passed(result):
     assert result.returncode == 0, result.stdout + result.stderr
-    assert "Failed Tests: 0" in result.stdout, result.stdout
+    assert "Failed Assertions: 0" in result.stdout, result.stdout
     assert "Unexpected Errors: 0" in result.stdout, result.stdout
     assert "Total Tests Run: 0" not in result.stdout, result.stdout
