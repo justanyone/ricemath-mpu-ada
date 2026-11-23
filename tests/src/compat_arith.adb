@@ -6,7 +6,6 @@ with AUnit.Assertions;
 with AUnit.Test_Cases;
 with Fixture_Support;
 with Math_Prime_Util.Arith;
-with Math_Prime_Util.Int;
 
 package body Compat_Arith is
    use AUnit.Test_Cases;
@@ -15,7 +14,6 @@ package body Compat_Arith is
    use Fixture_Support;
    use Math_Prime_Util;
    use Math_Prime_Util.Arith;
-   use Math_Prime_Util.Int;
    use type U64;
    use type I128;
    use type AUnit.Message_String;
