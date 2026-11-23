@@ -20,3 +20,4 @@ Progress: full gate passed development build and is compiling release; focused n
 Progress: gate release compilation is continuing; source whitespace checks pass and the latest inverse shortcut changes remain queued for validation rebuild.
 Progress: removed the artificial tau class-number argument limit using U128 intermediates; the algorithm now retains native input bounds without argument wrapping.
 Progress: final native-domain refinements are complete; reran the focused checked suite and restart the declared gate against the final source.
+Progress: final focused runner reports 9/9 successful tests, zero failures/errors; final source passes whitespace and 79-column checks. Source ports: totients.c carmichael_lambda, dedekind_psi, inverse_totient_list/count, is_totient, sumtotient128; moebius.c sumliouville; util.c ramanujan_tau/hclassno; PP.pm ramanujan_sum/_tauprime/_taupower.
