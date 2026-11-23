@@ -289,6 +289,8 @@ package body Prop_Families is
             and then Is_Powerfree (X, 64) = (X /= 0)
             and then Powerfree_Part (X, 64) = X
             and then Powerfree_Count (X, 64) = X
+            and then Powerful_Count (X, 64) = (if X = 0 then 0 else 1)
+            and then Sumpowerful (X, 64) = (if X = 0 then 0 else 1)
             and then Powerfree_Sum (X, 64) = U128 (X) * (U128 (X) + 1) / 2,
             "native power boundaries");
       end loop;
@@ -299,7 +301,13 @@ package body Prop_Families is
          and then not Nth_Powerful (2, 64).Defined
          and then Powerful_Numbers (10, 1).Is_Empty
          and then Powerful_Numbers (0, 0).Is_Empty
-         and then Sumpowerful (100, 0) = Sumpowerful (100, 1),
+         and then Sumpowerful (100, 0) = Sumpowerful (100, 1)
+         and then Powerful_Numbers (1_000) = Powerful_Numbers (1, 1_000, 2)
+         and then Is_Powerful (2 ** 32, 32)
+         and then not Is_Powerful (2 ** 32, 33)
+         and then Is_Powerful (2 ** 63, 63)
+         and then not Is_Powerfree (2 ** 63, 63)
+         and then Powerfree_Part (2 ** 63, 3) = 1,
          "empty ranges and undefined indices");
    end Power_Laws;
 
