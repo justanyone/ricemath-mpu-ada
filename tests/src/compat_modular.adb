@@ -137,12 +137,17 @@ package body Compat_Modular is
             end loop;
          end loop;
       end loop;
-      for N of Root_List'(2 ** 32 - 1, 2 ** 32 + 1, 2 ** 63 - 1,
-                          2 ** 63 + 1, U64'Last) loop
+      for N of Root_List'[2 ** 32 - 1, 2 ** 32, 2 ** 32 + 1,
+                          2 ** 63 - 1, 2 ** 63, 2 ** 63 + 1, U64'Last] loop
          Single := Sqrtmod (1, N);
          AUnit.Assertions.Assert (Single.Defined and then Single.Value = 1,
                                   "native boundary square root");
       end loop;
+      AUnit.Assertions.Assert
+        (Sqrtmod (I128'First, 1).Value = 0 and then
+         Sqrtmod (I128'Last, 1).Value = 0 and then
+         Sqrtmod (I128 (2) ** 64, 1).Value = 0,
+         "wide signed input reduction");
       AUnit.Assertions.Assert
         (Allrootmod (2, -1, 4)'Length = 0, "noninvertible negative exponent");
       begin
