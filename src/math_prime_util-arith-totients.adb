@@ -199,7 +199,7 @@ package body Math_Prime_Util.Arith.Totients is
       return (if Set.Contains (N) then Set.Element (N) else 0);
    end Inverse_Totient_Count;
 
-   function Is_Totient (N : U64) return Boolean is
+   function Is_Totient (N : Signed_Input) return Boolean is
       function Predicate (X, Maximum : U64) return Boolean;
       function Predicate (X, Maximum : U64) return Boolean is
          Half : constant U64 := X / 2;
@@ -240,7 +240,8 @@ package body Math_Prime_Util.Arith.Totients is
          return False;
       end Predicate;
    begin
-      return N > 0 and then (N = 1 or else Predicate (N, N));
+      return N > 0 and then (N = 1 or else
+        Predicate (U64 (N), U64 (N)));
    end Is_Totient;
 
    function Ramanujan_Sum (K, N : U64) return I128 is
@@ -263,8 +264,8 @@ package body Math_Prime_Util.Arith.Totients is
       Root : constant U64 := Int.Rootint (N, 3);
       Limit : constant U64 := U64'Min
         (N, U64'Max (1, U64'Min (400_000_000, 3 * Root * Root / 5)));
-      type Prefix_Array is array (U64 range <>) of U64;
-      Prefix : Prefix_Array (0 .. Limit);
+      package Prefix_Vectors is new Ada.Containers.Vectors (Natural, U64);
+      Prefix : Prefix_Vectors.Vector;
       package Caches is new Ada.Containers.Ordered_Maps (U64, U128);
       Cache : Caches.Map;
       J : U64;
@@ -275,7 +276,7 @@ package body Math_Prime_Util.Arith.Totients is
          Last : constant U64 := X / (R + 1);
       begin
          if X <= Limit then
-            return U128 (Prefix (X));
+            return U128 (Prefix (Natural (X)));
          elsif Cache.Contains (X) then
             return Cache.Element (X);
          end if;
@@ -292,21 +293,22 @@ package body Math_Prime_Util.Arith.Totients is
          return S;
       end Evaluate;
    begin
+      Prefix.Set_Length (Ada.Containers.Count_Type (Limit + 1));
       for I in U64 range 0 .. Limit loop
-         Prefix (I) := I;
+         Prefix (Natural (I)) := I;
       end loop;
       for P in U64 range 2 .. Limit loop
-         if Prefix (P) = P then
+         if Prefix (Natural (P)) = P then
             J := P;
             loop
-               Prefix (J) := Prefix (J) / P * (P - 1);
+               Prefix (Natural (J)) := Prefix (Natural (J)) / P * (P - 1);
                exit when J > Limit - P;
                J := J + P;
             end loop;
          end if;
       end loop;
       for I in U64 range 2 .. Limit loop
-         Prefix (I) := Prefix (I) + Prefix (I - 1);
+         Prefix (Natural (I)) := Prefix (Natural (I)) + Prefix (Natural (I - 1));
       end loop;
       return Evaluate (N);
    end Sumtotient;
@@ -371,7 +373,8 @@ package body Math_Prime_Util.Arith.Totients is
       return Sum;
    end Sumliouville;
 
-   function Ramanujan_Tau (N : U64) return Optional_I128 is
+   function Ramanujan_Tau (N : Signed_Input) return Optional_I128 is
+      Native : constant U64 := (if N <= 0 then 0 else U64 (N));
       package Big renames Ada.Numerics.Big_Numbers.Big_Integers;
       use Big;
       package Conversion is new Signed_Conversions (I128);
@@ -502,14 +505,14 @@ package body Math_Prime_Util.Arith.Totients is
            35 * BP ** 3 - 1 - 32 * (Sum / 3);
       end Tau_Prime;
 
-      F : constant Factor.Factor_List := Factor.Factor (N);
+      F : constant Factor.Factor_List := Factor.Factor (Native);
       Result : Big_Integer := To_Big_Integer (1);
       Current, Previous, Next, TP, P11 : Big_Integer;
       I : Natural := 1;
       P : U64;
    begin
-      if N < U64 (Table'Length) then
-         return (True, Table (Natural (N)));
+      if Native < U64 (Table'Length) then
+         return (True, Table (Natural (Native)));
       end if;
       while I <= F.Count loop
          P := F.Value (I);

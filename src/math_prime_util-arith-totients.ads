@@ -34,8 +34,8 @@ package Math_Prime_Util.Arith.Totients with SPARK_Mode => On is
           Post => (if N = 1 then Inverse_Totient_Count'Result = 2);
 
    --  totients.c: is_totient, _totpred. Is N a positive totient value?
-   --  Zero returns False; no error cases.
-   function Is_Totient (N : U64) return Boolean
+   --  Nonpositive inputs return False; no error cases.
+   function Is_Totient (N : Signed_Input) return Boolean
      with SPARK_Mode => Off, Pre => True,
           Post => (if N = 0 then not Is_Totient'Result);
 
@@ -57,8 +57,8 @@ package Math_Prime_Util.Arith.Totients with SPARK_Mode => On is
           Post => abs Sumliouville'Result <= I128 (N);
 
    --  util.c: ramanujan_tau; PP.pm: _tauprime, _taupower fallback.
-   --  Signed native coefficient, undefined outside -2**63..2**63-1.
-   function Ramanujan_Tau (N : U64) return Optional_I128
+   --  Nonpositive inputs return zero. Undefined outside -2**63..2**63-1.
+   function Ramanujan_Tau (N : Signed_Input) return Optional_I128
      with SPARK_Mode => Off, Pre => True,
           Post => (if Ramanujan_Tau'Result.Defined then
                      Ramanujan_Tau'Result.Value in -2 ** 63 .. 2 ** 63 - 1);

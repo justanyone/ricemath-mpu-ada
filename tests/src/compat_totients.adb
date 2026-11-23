@@ -48,6 +48,12 @@ package body Compat_Totients is
                R := Dedekind_Psi (A);
                Actual := To_Unbounded_String
                  ((if R.Defined then Image (I128 (R.Value)) else "undef"));
+            elsif Func = "is_totient" and then A < 0 then
+               Actual := To_Unbounded_String ("0");
+               Assert (not Is_Totient (A), "negative totient predicate");
+            elsif Func = "ramanujan_tau" and then A < 0 then
+               Tau := Ramanujan_Tau (A);
+               Actual := To_Unbounded_String (Image (Tau.Value));
             elsif A < 0 or else B < 0 then
                raise Constraint_Error;
             elsif Func = "carmichael_lambda" then
@@ -73,7 +79,7 @@ package body Compat_Totients is
                end;
             elsif Func = "is_totient" then
                Actual := To_Unbounded_String
-                 ((if Is_Totient (U64 (A)) then "1" else "0"));
+                 ((if Is_Totient (A) then "1" else "0"));
             elsif Func = "ramanujan_sum" then
                Actual := To_Unbounded_String
                  (Image (Ramanujan_Sum (U64 (A), U64 (B))));
@@ -91,7 +97,7 @@ package body Compat_Totients is
                Actual := To_Unbounded_String
                  (Image (Sumliouville (U64 (A))));
             else
-               Tau := Ramanujan_Tau (U64 (A));
+               Tau := Ramanujan_Tau (A);
                Actual := To_Unbounded_String
                  ((if Tau.Defined then Image (Tau.Value) else "undef"));
             end if;
@@ -187,7 +193,7 @@ package body Compat_Totients is
          Seed := Seed * 6_364_136_223_846_793_005 + 1;
          N := Seed mod 10_000 + 1;
          V := Inverse_Totient (N);
-         Assert (Is_Totient (N) = not V.Is_Empty,
+         Assert (Is_Totient (I128 (N)) = not V.Is_Empty,
                  "is_totient iff inverse nonempty seed 20261123");
          for J in V.First_Index .. V.Last_Index loop
             Assert (Euler_Phi (I128 (V.Element (J))) = N,

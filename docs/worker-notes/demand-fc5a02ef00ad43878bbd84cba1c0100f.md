@@ -12,3 +12,5 @@ Progress: aligned inverse list/count implementations with the reference divisor-
 Progress: library and test builds pass sequentially; added dedicated native runner because the shared runner does not apply the requested filter.
 Progress: added explicit native boundaries for lambda, psi overflow, and signed Ramanujan sums; focused runner build and first execution are underway.
 Progress: focused test executable links successfully; running fixtures, native boundaries, and BDD before the full declared gate.
+Progress: focused tests found negative predicate/tau semantics and stack exhaustion at the U128 sum boundary; fixed signed inputs and moved the large prefix cache into a controlled vector.
+Progress: rerunning focused tests after signed-boundary and cache-allocation fixes; all other six fixture groups passed in the first run.
