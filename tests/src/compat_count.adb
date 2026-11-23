@@ -51,9 +51,9 @@ package body Compat_Count is
       end loop;
    end Check_Sums;
 
-   --  Rows above the limits of Count (Prime_Count_Limit 2 * 10**13,
-   --  Nth_Prime_Limit, Legendre_Index_Limit) are skipped: the full LMO
-   --  method for arguments up to 2**64 needs tables not ported yet.
+   --  Prime-count rows include narrow intervals across the native range.
+   --  Nth-prime and phi rows above Nth_Prime_Limit and
+   --  Legendre_Index_Limit remain skipped pending the full LMO port.
    --  Rows with undef results are skipped: a Pre check rejects them.
    procedure Check_Prime_Count (T : in out Test_Case'Class) is
       Cases : constant Case_Vectors.Vector :=
