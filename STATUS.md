@@ -33,11 +33,11 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `almost_prime_count_lower` -> `Almost_Prime_Count_Lower`
 - [ ] `almost_prime_count_upper` -> `Almost_Prime_Count_Upper`
 - [ ] `almost_primes` -> `Almost_Primes`
-- [ ] `bell_number` -> `Bell_Number`
-- [ ] `bernfrac` -> `Bernfrac`
+- [x] `bell_number` -> `Bell_Number`
+- [x] `bernfrac` -> `Bernfrac`
 - [ ] `bernreal` -> `Bernreal`
 - [ ] `bestrational` -> `Bestrational`
-- [ ] `binomial` -> `Binomial`
+- [x] `binomial` -> `Binomial`
 - [ ] `binomialmod` -> `Binomialmod`
 - [ ] `bitand` -> `Bitand`
 - [ ] `bitandnot` -> `Bitandnot`
@@ -82,9 +82,9 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `ExponentialIntegral` -> `Exponentialintegral`
 - [ ] `factor` -> `Factor`
 - [ ] `factor_exp` -> `Factor_Exp`
-- [ ] `factorial` -> `Factorial`
+- [x] `factorial` -> `Factorial`
 - [ ] `factorialmod` -> `Factorialmod`
-- [ ] `falling_factorial` -> `Falling_Factorial`
+- [x] `falling_factorial` -> `Falling_Factorial`
 - [ ] `farey` -> `Farey`
 - [ ] `farey_rank` -> `Farey_Rank`
 - [ ] `fdivrem` -> `Fdivrem`
@@ -228,7 +228,7 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `mulsubint` -> `Mulsubint`
 - [ ] `mulsubmod` -> `Mulsubmod`
 - [ ] `mult_digital_root` -> `Mult_Digital_Root`
-- [ ] `multifactorial` -> `Multifactorial`
+- [x] `multifactorial` -> `Multifactorial`
 - [ ] `negint` -> `Negint`
 - [ ] `negmod` -> `Negmod`
 - [ ] `next_calkin_wilf` -> `Next_Calkin_Wilf`
@@ -275,8 +275,8 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `numtoperm` -> `Numtoperm`
 - [ ] `omega_prime_count` -> `Omega_Prime_Count`
 - [ ] `omega_primes` -> `Omega_Primes`
-- [ ] `partitions` -> `Partitions`
-- [ ] `partitionsq` -> `Partitionsq`
+- [x] `partitions` -> `Partitions`
+- [x] `partitionsq` -> `Partitionsq`
 - [ ] `pbrent_factor` -> `Pbrent_Factor`
 - [ ] `perfect_power_count` -> `Perfect_Power_Count`
 - [ ] `perfect_power_count_approx` -> `Perfect_Power_Count_Approx`
@@ -293,7 +293,7 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `powerfree_sum` -> `Powerfree_Sum`
 - [ ] `powerful_count` -> `Powerful_Count`
 - [ ] `powerful_numbers` -> `Powerful_Numbers`
-- [ ] `powersum` -> `Powersum`
+- [x] `powersum` -> `Powersum`
 - [ ] `powint` -> `Powint`
 - [ ] `powmod` -> `Powmod`
 - [ ] `pplus1_factor` -> `Pplus1_Factor`
@@ -354,7 +354,7 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `reverse_digits` -> `Reverse_Digits`
 - [ ] `RiemannR` -> `Riemannr`
 - [ ] `RiemannZeta` -> `Riemannzeta`
-- [ ] `rising_factorial` -> `Rising_Factorial`
+- [x] `rising_factorial` -> `Rising_Factorial`
 - [ ] `rootint` -> `Rootint`
 - [ ] `rootmod` -> `Rootmod`
 - [ ] `rough_count` -> `Rough_Count`
@@ -392,9 +392,9 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `squfof_factor` -> `Squfof_Factor`
 - [ ] `srand` -> `Srand`
 - [ ] `stern_brocot_n` -> `Stern_Brocot_N`
-- [ ] `stirling` -> `Stirling`
+- [x] `stirling` -> `Stirling`
 - [ ] `sub1int` -> `Sub1int`
-- [ ] `subfactorial` -> `Subfactorial`
+- [x] `subfactorial` -> `Subfactorial`
 - [ ] `subint` -> `Subint`
 - [ ] `submod` -> `Submod`
 - [ ] `sumdigits` -> `Sumdigits`
