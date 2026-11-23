@@ -84,12 +84,6 @@ package body Math_Prime_Util.Iter is
       Forprimes (Low, High, Write_Prime'Access);
    end Print_Primes;
 
-   procedure Print_Primes (Low, High : U64) is
-      pragma SPARK_Mode (Off);
-   begin
-      Print_Primes (Low, High, Ada.Text_IO.Standard_Output);
-   end Print_Primes;
-
    procedure Forprimes
      (Low, High : U64;
       Process : not null access procedure
@@ -473,15 +467,12 @@ package body Math_Prime_Util.Iter is
       Indices : array (Values'Range) of Positive;
       I : Natural;
    begin
-      if Snapshot.Is_Empty then
+      if Snapshot.Is_Empty or else
+        (for some List of Snapshot => List'Length = 0)
+      then
          return;
       end if;
-      for J in Values'Range loop
-         if Snapshot.Element (J)'Length = 0 then
-            return;
-         end if;
-         Indices (J) := Snapshot.Element (J)'First;
-      end loop;
+      Indices := [for J in Values'Range => Snapshot.Element (J)'First];
       loop
          for J in Values'Range loop
             Values (J) := Snapshot.Element (J) (Indices (J));

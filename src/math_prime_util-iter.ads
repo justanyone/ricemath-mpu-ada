@@ -161,10 +161,8 @@ package Math_Prime_Util.Iter with SPARK_Mode => On is
    --  util.c: print_primes. Inclusive range, decimal prime per line.
    --  Text_IO exceptions propagate; reversed bounds write nothing.
    procedure Print_Primes
-     (Low, High : U64; File : Ada.Text_IO.File_Type)
-     with SPARK_Mode => Off, Pre => True, Post => True;
-   --  Write to standard output; same bounds and errors as above.
-   procedure Print_Primes (Low, High : U64)
+     (Low, High : U64;
+      File : Ada.Text_IO.File_Type := Ada.Text_IO.Standard_Output)
      with SPARK_Mode => Off, Pre => True, Post => True;
    type Prime_Cursor is private;
    --  PrimeIterator.pm: prime_iterator. Construct an independent cursor

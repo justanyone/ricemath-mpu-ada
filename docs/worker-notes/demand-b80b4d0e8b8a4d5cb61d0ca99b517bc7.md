@@ -12,3 +12,4 @@ Kept GNAT previous-spec style and replaced handwritten multiset sorting with the
 Focused runner rebuild avoids the running full-suite executable; pyright remains clean.
 Link failure traced to an implicit vector reference in the new for-of test loop; restored indexed access.
 First gate passed all 346 tests; final source edits are rebuilding before focused checks and a final gate.
+All nine focused iterator cases pass (0.033–0.397 seconds each); use a default File argument to remove the stdout wrapper.
