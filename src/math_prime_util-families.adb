@@ -1512,10 +1512,9 @@ package body Math_Prime_Util.Families is
      (Index_Type => Natural, Element_Type => Mu_Value);
    package Mertens_Vectors is new Ada.Containers.Vectors
      (Index_Type => Natural, Element_Type => Integer);
+   use type Int.I128;
    package Wide_Vectors is new Ada.Containers.Vectors
      (Index_Type => Natural, Element_Type => Int.I128);
-   use type Int.I128;
-   use type U128;
 
    function Mobius_Table (Limit : U64) return Mu_Vectors.Vector;
    function Mobius_Table (Limit : U64) return Mu_Vectors.Vector is
