@@ -28,3 +28,4 @@ Writing Math_Prime_Util.Vec (exact Big_Integer lists) and Compat_Vec. Canonical 
 - 2026-11-23T15:39:26Z launcher: no commit for 60 s; 1114 s elapsed. Files changed so far: docs/worker-notes/demand-b5990fbab4b34ea6994ec590f6349fbf.md.
 - 2026-11-23T15:40:26Z launcher: no commit for 60 s; 1174 s elapsed. Files changed so far: docs/worker-notes/demand-b5990fbab4b34ea6994ec590f6349fbf.md.
 - 2026-11-23T15:42:56Z launcher: no commit for 60 s; 1324 s elapsed. Files changed so far: docs/worker-notes/demand-b5990fbab4b34ea6994ec590f6349fbf.md, src/math_prime_util-vec.adb, src/math_prime_util-vec.ads.
+- 2026-11-23T15:43:56Z launcher: no commit for 60 s; 1385 s elapsed. Files changed so far: docs/worker-notes/demand-b5990fbab4b34ea6994ec590f6349fbf.md, src/math_prime_util-vec.adb, src/math_prime_util-vec.ads.
