@@ -46,9 +46,9 @@ package body Compat_Vec is
          First := First + 1;
       end loop;
       declare
-         Digits : constant String :=
+         Spell : constant String :=
            (if First > Text'Last then "0" else Text (First .. Text'Last));
-         Value : constant Big_Integer := From_String (Digits);
+         Value : constant Big_Integer := From_String (Spell);
       begin
          return (if Negative then -Value else Value);
       end;
