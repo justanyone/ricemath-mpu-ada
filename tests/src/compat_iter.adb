@@ -78,7 +78,11 @@ package body Compat_Iter is
       for C of Cases loop
          Got := Null_Unbounded_String;
          Count := 0;
-         Fits := Parse_U64 (To_String (C.Args (1)), A);
+         A := 2;
+         Fits := True;
+         if not C.Args.Is_Empty then
+            Fits := Parse_U64 (To_String (C.Args (1)), A);
+         end if;
          B := A;
          Options := (others => <>);
          if Func = "forpart" then
