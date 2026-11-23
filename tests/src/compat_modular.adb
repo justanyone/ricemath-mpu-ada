@@ -13,7 +13,6 @@ package body Compat_Modular is
    use Math_Prime_Util.Int;
    use Math_Prime_Util.Modular;
    use type U64;
-   use type I128;
 
    type Modular_Case is new Test_Case with null record;
    overriding function Name (T : Modular_Case) return AUnit.Message_String;
@@ -47,11 +46,11 @@ package body Compat_Modular is
          Fits := True;
          if Func = "binomialmod" then
             Fits := Signed_Input (To_String (C.Args (1)), N)
-              and Signed_Input (To_String (C.Args (2)), K)
-              and Parse_U64 (To_String (C.Args (3)), A (3));
+              and then Signed_Input (To_String (C.Args (2)), K)
+              and then Parse_U64 (To_String (C.Args (3)), A (3));
          else
             for I in 1 .. Natural (C.Args.Length) loop
-               Fits := Parse_U64 (To_String (C.Args (I)), A (I)) and Fits;
+               Fits := Parse_U64 (To_String (C.Args (I)), A (I)) and then Fits;
             end loop;
          end if;
          --  Native-tier skip: znlog modulus 1000000000000000000117;
@@ -132,6 +131,58 @@ package body Compat_Modular is
       end loop;
    end Check_Edges;
 
+   procedure Check_Properties (T : in out Test_Case'Class) is
+      R : Optional_U64;
+      V, Least : U64;
+      Found : Boolean;
+      F0, F1, Next, Period : U64;
+   begin
+      --  Exhaustive small semigroups check absence and least exponents.
+      for M in U64 range 1 .. 24 loop
+         for G in U64 range 0 .. M - 1 loop
+            for A in U64 range 0 .. M - 1 loop
+               V := 1 mod M;
+               Found := False;
+               Least := 0;
+               for X in U64 range 0 .. M loop
+                  if V = A then
+                     Found := True;
+                     Least := X;
+                     exit;
+                  end if;
+                  V := (V * G) mod M;
+               end loop;
+               R := Znlog (A, G, M);
+               AUnit.Assertions.Assert
+                 (R.Defined = Found and then
+                  (not Found or else R.Value = Least),
+                  "least log small semigroup");
+            end loop;
+         end loop;
+      end loop;
+      for M in U64 range 2 .. 100 loop
+         F0 := 0;
+         F1 := 1;
+         Period := 0;
+         loop
+            Next := (F0 + F1) mod M;
+            F0 := F1;
+            F1 := Next;
+            Period := Period + 1;
+            exit when F0 = 0 and then F1 = 1;
+         end loop;
+         R := Pisano_Period (M);
+         AUnit.Assertions.Assert
+           (R.Defined and then R.Value = Period, "least Fibonacci period");
+      end loop;
+      R := Binomialmod (-1, 7, 13);
+      AUnit.Assertions.Assert
+        (R.Defined and then R.Value = 12, "negative binomial sign");
+      R := Binomialmod (-1, 8, 13);
+      AUnit.Assertions.Assert
+        (R.Defined and then R.Value = 1, "even negative binomial sign");
+   end Check_Properties;
+
    overriding function Name (T : Modular_Case) return AUnit.Message_String is
    begin
       return AUnit.Format ("Compat_Modular");
@@ -146,6 +197,8 @@ package body Compat_Modular is
         (T, Check_Binomialmod'Access, "binomialmod");
       Registration.Register_Routine (T, Check_Pisano'Access, "pisano_period");
       Registration.Register_Routine (T, Check_Edges'Access, "modular edges");
+      Registration.Register_Routine
+        (T, Check_Properties'Access, "modular properties");
    end Register_Tests;
 
    function Suite return AUnit.Test_Suites.Access_Test_Suite is

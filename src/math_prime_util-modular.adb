@@ -236,7 +236,7 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
       if KK > NN then
          return (True, 0);
       elsif KK = 0 or else KK = NN then
-         return (True, 1);
+         return (True, (if Negative then M - 1 else 1));
       end if;
       F := Factorize (M);
       while I <= F.Count loop
