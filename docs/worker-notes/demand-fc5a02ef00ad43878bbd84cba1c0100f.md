@@ -16,3 +16,4 @@ Progress: focused tests found negative predicate/tau semantics and stack exhaust
 Progress: rerunning focused tests after signed-boundary and cache-allocation fixes; all other six fixture groups passed in the first run.
 Progress: BDD collection is blocked by missing pytest_bdd on this offline host; the native checked suite remains the executable validation path.
 Progress: all nine focused tests pass within the 59-second timeout; full gate launched. Restored reference Coleman shortcuts before list-overflow bounds and fixed one style diagnostic.
+Progress: full gate passed development build and is compiling release; focused native suite already passed all nine cases. pytest-bdd and gnatprove are absent on this host.
