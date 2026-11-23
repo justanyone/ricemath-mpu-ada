@@ -1,3 +1,4 @@
+with Ada.Containers;
 with Ada.Containers.Ordered_Maps;
 with Ada.Containers.Ordered_Sets;
 
@@ -206,8 +207,9 @@ package body Math_Prime_Util.Vec is
    end Vecrsort;
 
    function Missing
-     (Items : Integer_Vectors.Vector; Start : Big_Integer; Positive_Only : Boolean)
-      return Big_Integer
+     (Items : Integer_Vectors.Vector;
+      Start : Big_Integer;
+      Positive_Only : Boolean) return Big_Integer
    is
       Limit : constant Natural := Natural (Items.Length);
    begin
@@ -299,8 +301,8 @@ package body Math_Prime_Util.Vec is
 
    function Vecequal (Left, Right : Integer_Vectors.Vector) return Boolean is
    begin
-      if Left.Length /= Right.Length then
-         return False;
+      if Left.Length /= Right.Length or else Left.Is_Empty then
+         return Left.Is_Empty and then Right.Is_Empty;
       end if;
       for Index in Left.First_Index .. Left.Last_Index loop
          if Left (Index) /= Right (Index) then
@@ -450,6 +452,9 @@ package body Math_Prime_Util.Vec is
       Ordered : constant Integer_Vectors.Vector := Toset (Items);
       Sums : Big_Sets.Set;
    begin
+      if Ordered.Is_Empty then
+         return True;
+      end if;
       for Value of Ordered loop
          if Value < 0 then
             return False;
@@ -474,6 +479,9 @@ package body Math_Prime_Util.Vec is
       Members : constant Big_Sets.Set := As_Set (Items);
       Ordered : constant Integer_Vectors.Vector := Toset (Items);
    begin
+      if Ordered.Is_Empty then
+         return True;
+      end if;
       for I in Ordered.First_Index .. Ordered.Last_Index loop
          for J in Ordered.First_Index .. I loop
             if Members.Contains (Ordered (I) + Ordered (J)) then
