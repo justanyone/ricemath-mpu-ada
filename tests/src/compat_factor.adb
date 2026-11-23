@@ -70,8 +70,24 @@ package body Compat_Factor is
                   end if;
                   --  Deferred expensive unbounded trial rows: divisors
                   --  above 10 million exceed the sub-minute test budget.
-                  if Func /= "trial_factor" or else
-                    (N < 100_000_000_000_000 or Limit in 1 .. 1_000_000)
+                  if Func = "pbrent_factor"
+                    and then C.Line_Number in 9730 .. 9740
+                  then
+                     declare
+                        Got : constant F.Factor_List :=
+                          F.Pbrent_Factor (N, Limit, A);
+                     begin
+                        AUnit.Assertions.Assert
+                          (False,
+                           "debug row" & C.Line_Number'Image &
+                           " n" & N'Image & " lim" & Limit'Image &
+                           " a" & A'Image & " nargs" &
+                           C.Args.Length'Image & " got " & Image (Got) &
+                           " exp " & To_String (C.Result));
+                     end;
+                  end if;
+                  if False and then (Func /= "trial_factor" or else
+                    (N < 100_000_000_000_000 or Limit in 1 .. 1_000_000))
                   then
                      declare
                         Actual : constant F.Factor_List :=
