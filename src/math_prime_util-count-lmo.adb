@@ -151,6 +151,8 @@ package body Math_Prime_Util.Count.Lmo with SPARK_Mode => On is
             end;
          end if;
       end loop;
+      --  Sentinel so pi (M) stops if the next prime lies past the table.
+      Ps (Last + 1) := U64'Last;
       End_Factor := Natural ((M + 1) / 2);
       while Ft (End_Factor) <= 13 loop
          End_Factor := End_Factor + 1;
