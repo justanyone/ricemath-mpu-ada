@@ -5,7 +5,7 @@ with Math_Prime_Util.Int;
 with Math_Prime_Util.Count.Tables;
 with Math_Prime_Util.Sieve;
 
-package body Math_Prime_Util.Count.Lmo is
+package body Math_Prime_Util.Count.Lmo with SPARK_Mode => On is
    --  Controlled holders own variable-sized scratch arrays. No package state
    --  and no unchecked deallocation: exceptions also release the storage.
    use Ada.Numerics.Long_Elementary_Functions;
@@ -14,10 +14,10 @@ package body Math_Prime_Util.Count.Lmo is
    type Words is array (Natural range <>) of U64;
    type Factors is array (Natural range <>) of Factor;
    type Naturals is array (Natural range <>) of Natural;
-   package Word_Holders is new Ada.Containers.Indefinite_Holders (Words)
-     with SPARK_Mode => Off;
-   package Factor_Holders is new Ada.Containers.Indefinite_Holders (Factors)
-     with SPARK_Mode => Off;
+   pragma SPARK_Mode (Off);
+   package Word_Holders is new Ada.Containers.Indefinite_Holders (Words);
+   package Factor_Holders is new Ada.Containers.Indefinite_Holders (Factors);
+   pragma SPARK_Mode (On);
    C : constant := 6;
    Wheel : constant := 30_030;
    Segment_Words : constant := 1155 * 13;
