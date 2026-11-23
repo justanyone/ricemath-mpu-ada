@@ -48,6 +48,9 @@ package body Math_Prime_Util.Arith is
       return Result;
    end Inverse_Sigma0;
 
+   function Inverse_Sigma0 (K, High : U64) return U64_Vectors.Vector is
+     (Inverse_Sigma0 (K, 1, High));
+
    function Inverse_Sigma0_Count (K, Low, High : U64) return U64 is
       Result : U64 := 0;
       N : U64 := Low;
@@ -80,4 +83,7 @@ package body Math_Prime_Util.Arith is
       end loop;
       return Result;
    end Inverse_Sigma0_Count;
+
+   function Inverse_Sigma0_Count (K, High : U64) return U64 is
+     (Inverse_Sigma0_Count (K, 1, High));
 end Math_Prime_Util.Arith;
