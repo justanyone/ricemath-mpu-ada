@@ -2,6 +2,7 @@ pragma Style_Checks (Off);
 --  prime_count_tables.h from Math::Prime::Util 0.75.
 --  Step counts are data, copied so APPLY_TABLES can run unchanged.
 package body Math_Prime_Util.Count.Tables is
+   use Math_Prime_Util;
 
    type Step_Array is array (Natural range <>) of Natural;
    Steps_0 : constant Step_Array (0 .. 99) := [
