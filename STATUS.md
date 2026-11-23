@@ -77,8 +77,8 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `drand` -> `Drand`
 - [ ] `ecm_factor` -> `Ecm_Factor`
 - [ ] `entropy_bytes` -> `Entropy_Bytes`
-- [ ] `euler_phi` -> `Euler_Phi`
-- [ ] `exp_mangoldt` -> `Exp_Mangoldt`
+- [x] `euler_phi` -> `Euler_Phi`
+- [x] `exp_mangoldt` -> `Exp_Mangoldt`
 - [ ] `ExponentialIntegral` -> `Exponentialintegral`
 - [ ] `factor` -> `Factor`
 - [ ] `factor_exp` -> `Factor_Exp`
@@ -192,14 +192,14 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `is_sumfree_set` -> `Is_Sumfree_Set`
 - [ ] `is_sum_of_squares` -> `Is_Sum_Of_Squares`
 - [ ] `is_totient` -> `Is_Totient`
-- [ ] `jordan_totient` -> `Jordan_Totient`
+- [x] `jordan_totient` -> `Jordan_Totient`
 - [ ] `kronecker` -> `Kronecker`
 - [ ] `LambertW` -> `Lambertw`
 - [ ] `lastfor` -> `Lastfor`
 - [ ] `lcm` -> `Lcm`
 - [ ] `legendre_phi` -> `Legendre_Phi`
 - [ ] `lehman_factor` -> `Lehman_Factor`
-- [ ] `liouville` -> `Liouville`
+- [x] `liouville` -> `Liouville`
 - [ ] `LogarithmicIntegral` -> `Logarithmicintegral`
 - [ ] `logint` -> `Logint`
 - [ ] `lshiftint` -> `Lshiftint`
@@ -216,11 +216,11 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `lucky_count_lower` -> `Lucky_Count_Lower`
 - [ ] `lucky_count_upper` -> `Lucky_Count_Upper`
 - [ ] `lucky_numbers` -> `Lucky_Numbers`
-- [ ] `mertens` -> `Mertens`
+- [x] `mertens` -> `Mertens`
 - [ ] `miller_rabin_random` -> `Miller_Rabin_Random`
 - [ ] `minimal_goldbach_pair` -> `Minimal_Goldbach_Pair`
 - [ ] `modint` -> `Modint`
-- [ ] `moebius` -> `Moebius`
+- [x] `moebius` -> `Moebius`
 - [ ] `muladdint` -> `Muladdint`
 - [ ] `muladdmod` -> `Muladdmod`
 - [ ] `mulint` -> `Mulint`
