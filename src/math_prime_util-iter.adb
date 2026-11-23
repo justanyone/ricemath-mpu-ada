@@ -386,7 +386,7 @@ package body Math_Prime_Util.Iter is
       Min_Length : constant Natural := Natural'Max (1, Options.Nmin);
       Max_Length : constant Natural := Natural'Min (N, Options.Nmax);
       Max_Part : constant Natural := Natural'Min (N, Options.Amax);
-      Accept : Boolean;
+      Selected : Boolean;
    begin
       if N = 0 then
          if Options.Nmin <= 1 then
@@ -415,17 +415,17 @@ package body Math_Prime_Util.Iter is
             K := K - 1;
          end loop;
          exit when Parts (1) > U64 (Max_Part);
-         Accept := K + 1 >= Min_Length;
+         Selected := K + 1 >= Min_Length;
          for I in 1 .. K + 1 loop
-            Accept := Accept and then Parts (I) >= U64 (Min_Part)
+            Selected := Selected and then Parts (I) >= U64 (Min_Part)
               and then Parts (I) <= U64 (Max_Part);
             if Options.Prime /= Any_Part then
-               Accept := Accept and then
+               Selected := Selected and then
                  ((Primality.Is_Prime (Parts (I)) /= 0) =
                   (Options.Prime = Prime_Part));
             end if;
          end loop;
-         if Accept then
+         if Selected then
             Process (Parts (1 .. K + 1), Context);
          end if;
          exit when Context.Stop;

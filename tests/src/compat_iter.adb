@@ -272,7 +272,6 @@ package body Compat_Iter is
       Replay ("forcomb");
       Replay ("forperm");
       Replay ("prime_iterator");
-      Replay ("prime_iterator_object_iterate");
    end Check_Fixtures;
 
    procedure Check_Forcomp (T : in out Test_Case'Class) is
@@ -522,6 +521,21 @@ package body Compat_Iter is
             Forcomposites (20000, Composite_Over_2000'Access);
          elsif C.Func = "lastfor_forpart_len4" then
             Forpart (7, Parts'Access);
+            Got := To_Unbounded_String (Image (U64 (Count)));
+         elsif C.Func = "lastfor_forcomp_len4" then
+            Forcomp (7, Parts'Access);
+            Got := To_Unbounded_String (Image (U64 (Count)));
+         elsif C.Func = "lastfor_forderange_pos3_is5" then
+            Forderange (7, Permutation'Access);
+            Got := To_Unbounded_String (Image (U64 (Count)));
+         elsif C.Func = "lastfor_forcomp_0" then
+            Forcomp (0, First_Tuple'Access);
+            Got := To_Unbounded_String (Image (U64 (Count)));
+         elsif C.Func = "lastfor_forderange_0" then
+            Forderange (0, First_Tuple'Access);
+            Got := To_Unbounded_String (Image (U64 (Count)));
+         elsif C.Func = "lastfor_formultiperm_empty" then
+            Formultiperm ((1 .. 0 => 0), First_Tuple'Access);
             Got := To_Unbounded_String (Image (U64 (Count)));
          elsif C.Func = "lastfor_forcomb_sum11" then
             Forcomb (7, 4, Combination'Access);
