@@ -75,7 +75,7 @@ package body Compat_Real is
                   Actual := Number (S);
                end;
             elsif Func = "bernreal" or else Func = "harmreal" then
-               --  Natural conversion does not raise when checks are suppressed.
+               --  Suppressed checks skip the Natural constraint.
                if X < 0.0 then
                   raise Constraint_Error;
                end if;
