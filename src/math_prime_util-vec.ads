@@ -57,9 +57,10 @@ package Math_Prime_Util.Vec with SPARK_Mode => On is
           Post => Vecpmex'Result in 1 .. I128 (A'Length) + 1;
    --  Elementwise integer equality, independent of array lower bounds.
    function Vecequal (A, B : Integer_Array) return Boolean;
-   --  Extract positions whose zero-based bit is set; negative mask raises.
+   --  Extract set bits of a 128-bit mask, in increasing position order.
+   --  Bits beyond A produce undefined values; use unsigned masks.
    function Vecextract (A : Integer_Array; Mask : U128)
-      return Integer_Array with Post => Vecextract'Result'Length <= A'Length;
+      return Optional_Array with Post => Vecextract'Result'Length <= 128;
    --  Extract zero-based indices; negative indices count from the end.
    --  Out-of-range positions produce undefined values.
    function Vecextract (A, Indices : Integer_Array) return Optional_Array
@@ -157,7 +158,7 @@ package Math_Prime_Util.Vec with SPARK_Mode => On is
       with function Operation (A, B : I128) return I128;
    function Vecslide (A : Integer_Array) return Integer_Array;
 
-   --  Flatten callback results for corresponding pairs. Ignore unmatched tails.
+   --  Flatten results for corresponding pairs. Ignore unmatched tails.
    generic
       with function Operation (A, B : I128) return Integer_Array;
    function Vecpairwise (A, B : Integer_Array) return Integer_Array;

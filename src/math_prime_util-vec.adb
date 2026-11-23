@@ -185,18 +185,23 @@ package body Math_Prime_Util.Vec with SPARK_Mode => On is
    function Vecequal (A, B : Integer_Array) return Boolean is (A = B);
 
    function Vecextract (A : Integer_Array; Mask : U128)
-      return Integer_Array
+      return Optional_Array
    is
-      R : Integer_Array (1 .. A'Length) := [others => 0];
+      R : Optional_Array (1 .. 128);
       Bits : U128 := Mask;
-      N : Natural := 0;
+      N, Position : Natural := 0;
    begin
-      for V of A loop
+      while Bits > 0 loop
          if Bits mod 2 = 1 then
             N := N + 1;
-            R (N) := V;
+            if Position < A'Length then
+               R (N) := (True, A (A'First + Position));
+            else
+               R (N) := (Defined => False);
+            end if;
          end if;
          Bits := Bits / 2;
+         Position := Position + 1;
       end loop;
       return R (1 .. N);
    end Vecextract;

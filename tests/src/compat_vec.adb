@@ -299,7 +299,7 @@ package body Compat_Vec is
                         Actual := To_Unbounded_String (Image (A (1 .. NA)));
                      elsif Func = "vecextract" or else Func = "vecextract_idx" then
                         declare
-                           Values : Optional_Array (1 .. NA + NB);
+                           Values : Optional_Array (1 .. NA + NB + 128);
                            N : Natural := 0;
                         begin
                            if Func = "vecextract" then
@@ -308,7 +308,7 @@ package body Compat_Vec is
                               end if;
                               for V of Vecextract (X, U128 (Y (1))) loop
                                  N := N + 1;
-                                 Values (N) := (True, V);
+                                 Values (N) := V;
                               end loop;
                            else
                               for V of Vecextract (X, Y) loop
