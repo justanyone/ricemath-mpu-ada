@@ -552,6 +552,27 @@ package body Compat_Modular is
             end loop;
          end;
       end loop;
+      for Edge of Root_List'[0, 1, 2, 2 ** 32 - 1, 2 ** 32 + 1,
+                            2 ** 63 - 1, 2 ** 63 + 1, U64'Last] loop
+         AUnit.Assertions.Assert
+           (Kronecker (I128 (Edge), 1) = 1 and then
+            Kronecker (-1, I128 (Edge)) =
+              (if Edge mod 4 in 0 | 1 then 1 else -1),
+            "symbol native boundaries");
+         R := Divmod (I128 (Edge), -1, U64'Last);
+         AUnit.Assertions.Assert
+           (R.Defined and then R.Value =
+              U64 ((-I128 (Edge)) mod I128 (U64'Last)),
+            "signed division native boundaries");
+         R := Znorder (I128 (Edge), 1);
+         AUnit.Assertions.Assert
+           (R.Defined and then R.Value = 1, "order modulo one");
+      end loop;
+      AUnit.Assertions.Assert
+        (Divmod (I128'First, I128'Last, 1).Value = 0 and then
+         Znorder (I128'First, 1).Value = 1 and then
+         Is_Qr (I128'Last, 1) and then
+         Is_Primitive_Root (I128'First, 1), "128-bit reductions");
       AUnit.Assertions.Assert
         (not Chinese2 ([(1, U64'Last), (1, 2)]).Defined, "LCM overflow");
       AUnit.Assertions.Assert
