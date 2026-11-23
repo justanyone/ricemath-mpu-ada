@@ -6,6 +6,10 @@ with AUnit.Assertions;
 with AUnit.Test_Cases;
 with Fixture_Support;
 with Math_Prime_Util.Random;
+with Math_Prime_Util.Random_Primes;
+with Math_Prime_Util.Primality;
+with Math_Prime_Util.Int;
+with Math_Prime_Util.Factor;
 --  Replay the deterministic ChaCha fixtures and exercise public contracts.
 procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
    use AUnit.Test_Cases;
@@ -14,6 +18,7 @@ procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
    use Math_Prime_Util;
    use Math_Prime_Util.Random;
    use type Byte;
+   use type U64;
    function Image (V : U64) return String is
      (Ada.Strings.Fixed.Trim (U64'Image (V), Ada.Strings.Both));
    function Decode (S : String) return Byte_Array is
@@ -31,6 +36,7 @@ procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
       end loop;
       return Result;
    end Hex;
+   type U64_Array is array (Positive range <>) of U64;
    type Natural_Array is array (Positive range <>) of Natural;
    procedure Replay is
       Mixed_Bits : constant Natural_Array := [32, 64, 0, 32, 5, 32];
@@ -125,6 +131,180 @@ procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
       end loop;
       AUnit.Assertions.Assert (Count = 731, "CSPRNG fixture count changed");
    end Replay;
+   --  Given random.tsv and a seeded generator, replay every native row.
+   procedure Prime_Replay is
+      use Math_Prime_Util.Random_Primes;
+      Count : Natural := 0;
+   begin
+      for C of Load ("random") loop
+         declare
+            F : constant String := To_String (C.Func);
+            G : Generator;
+            A, B, V : U64 := 0;
+            R : Math_Prime_Util.Int.Optional_U64;
+            Actual : Unbounded_String;
+            Fits : Boolean := True;
+            function Arg (I : Positive) return String is
+              (To_String (C.Args (I)));
+         begin
+            if F in "random_prime" | "random_prime_seq" |
+              "random_nbit_prime" | "random_nbit_prime_seq" |
+              "random_ndigit_prime" | "random_safe_prime" |
+              "random_semiprime" | "random_semiprime_seq" |
+              "random_unrestricted_semiprime"
+            then
+               --  Typed_Arguments: Perl undef, negative and nonnumeric bounds
+               --  have no U64 representation; test Ada contracts separately.
+               Fits := Parse_U64 (Arg (2), A);
+               if F in "random_prime" | "random_prime_seq" then
+                  if Natural (C.Args.Length) = 3 then
+                     Fits := Parse_U64 (Arg (3), B) and then Fits;
+                  else
+                     B := A;
+                     A := 2;
+                  end if;
+               elsif F = "random_ndigit_prime" then
+                  --  Bigint_Digits: 20..30 digits use the Perl bigint path.
+                  Fits := Fits and then A <= 19;
+               else
+                  --  Bigint_Bits: 65..128-bit primes and semiprimes belong
+                  --  to PLAN phase 9. random_strong_prime starts at 128 bits
+                  --  and has no native entry point, so its rows are deferred.
+                  Fits := Fits and then A <= 64;
+               end if;
+               if Fits then
+                  Csrand (G, Decode (Arg (1)));
+                  begin
+                     for I in 1 .. (if F = "random_semiprime_seq" then 10
+                       elsif F in "random_prime_seq" | "random_nbit_prime_seq"
+                         then 20 else 1)
+                     loop
+                        if F in "random_prime" | "random_prime_seq" then
+                           Random_Prime (G, A, B, R);
+                           if R.Defined then
+                              V := R.Value;
+                           else
+                              Actual := To_Unbounded_String ("undef");
+                              exit;
+                           end if;
+                        elsif F in "random_nbit_prime" |
+                          "random_nbit_prime_seq"
+                        then
+                           Random_Nbit_Prime (G, Natural (A), V);
+                        elsif F = "random_ndigit_prime" then
+                           Random_Ndigit_Prime (G, Natural (A), V);
+                        elsif F = "random_safe_prime" then
+                           Random_Safe_Prime (G, Natural (A), V);
+                        elsif F in "random_semiprime" | "random_semiprime_seq"
+                        then
+                           Random_Semiprime (G, Natural (A), V);
+                        else
+                           Random_Unrestricted_Semiprime (G, Natural (A), V);
+                        end if;
+                        Append (Actual,
+                          (if Length (Actual) > 0 then " " else "") &
+                          Image (V));
+                     end loop;
+                  exception
+                     when Ada.Assertions.Assertion_Error =>
+                        AUnit.Assertions.Assert (C.Error,
+                          "unexpected prime contract error: " & F);
+                        Actual := C.Result;
+                  end;
+                  Count := Count + 1;
+                  AUnit.Assertions.Assert (Actual = C.Result,
+                    F & " line" & Positive'Image (C.Line_Number) &
+                    " actual " & To_String (Actual) &
+                    " expected " & To_String (C.Result));
+               end if;
+            end if;
+         end;
+      end loop;
+      AUnit.Assertions.Assert (Count = 1_420, "prime fixture coverage");
+   end Prime_Replay;
+
+   procedure Prime_Properties is
+      use Math_Prime_Util.Random_Primes;
+      G, H : Generator;
+      Seed : constant Byte_Array (0 .. 39) := [others => 0];
+      A, B : U64;
+      C : Prime_Certificate;
+      R : Math_Prime_Util.Int.Optional_U64;
+      Raised : Boolean;
+   begin
+      Csrand (G, Seed);
+      for Bits in 2 .. 64 loop
+         Csrand (G, Seed);
+         Csrand (H, Seed);
+         Random_Maurer_Prime (G, Bits, A);
+         Random_Nbit_Prime (H, Bits, B);
+         AUnit.Assertions.Assert (A = B, "native Maurer seed 0");
+         Csrand (G, Seed);
+         Random_Proven_Prime (G, Bits, A);
+         AUnit.Assertions.Assert (A = B, "native proven seed 0");
+         Csrand (G, Seed);
+         Random_Shawe_Taylor_Prime (G, Bits, A);
+         AUnit.Assertions.Assert (A = B, "native Shawe-Taylor seed 0");
+         Random_Maurer_Prime_With_Cert (G, Bits, A, C);
+         AUnit.Assertions.Assert (C.N = A and then Verify_Certificate (C),
+           "Maurer certificate seed 0");
+         Random_Proven_Prime_With_Cert (G, Bits, A, C);
+         AUnit.Assertions.Assert (C.N = A and then Verify_Certificate (C),
+           "proven certificate seed 0");
+         Random_Shawe_Taylor_Prime_With_Cert (G, Bits, A, C);
+         AUnit.Assertions.Assert (C.N = A and then Verify_Certificate (C)
+           and then A >= 2 ** (Bits - 1)
+           and then (if Bits < 64 then A < 2 ** Bits),
+           "Shawe-Taylor certificate seed 0 bits" & Natural'Image (Bits));
+         if Bits >= 4 then
+            Random_Semiprime (G, Bits, A);
+            AUnit.Assertions.Assert
+              (Math_Prime_Util.Factor.Factor (A).Count = 2,
+              "balanced semiprime seed 0");
+         end if;
+      end loop;
+      --  Independent Python hashlib SHA-256 plus integer Pocklington
+      --  calculation, starting from the ChaCha20 zero-key first block.
+      declare
+         Bits : constant Natural_Array := [2, 3, 16, 32, 33, 48, 63, 64];
+         Expected : constant U64_Array :=
+           [3, 5, 61_153, 3_212_153_221, 7_674_027_583,
+            166_985_117_868_383, 8_565_169_370_267_104_537,
+            13_176_855_219_435_377_117];
+      begin
+         for I in Bits'Range loop
+            Csrand (G, Seed);
+            Random_Shawe_Taylor_Prime_With_Cert (G, Bits (I), A, C);
+            AUnit.Assertions.Assert (A = Expected (I),
+              "independent Shawe-Taylor vector bits" &
+              Natural'Image (Bits (I)));
+         end loop;
+      end;
+      for N of U64_Array'[0, 1, 4, 9, U64'Last] loop
+         AUnit.Assertions.Assert (not Verify_Certificate ((N => N)),
+           "composite certificate accepted");
+      end loop;
+      Random_Prime (G, U64'Last, U64'Last, R);
+      AUnit.Assertions.Assert (not R.Defined, "empty upper interval");
+      for N of U64_Array'[2 ** 32 - 1, 2 ** 32 + 1,
+        2 ** 63 - 1, 2 ** 63 + 1]
+      loop
+         Random_Prime (G, N, N + 256, R);
+         AUnit.Assertions.Assert (R.Defined and then
+           Math_Prime_Util.Primality.Is_Prime (R.Value) = 2,
+           "boundary interval");
+      end loop;
+      for Bits of Natural_Array'[0, 1, 65, 128] loop
+         Raised := False;
+         begin
+            Random_Nbit_Prime (G, Bits, A);
+         exception
+            when Ada.Assertions.Assertion_Error => Raised := True;
+         end;
+         AUnit.Assertions.Assert (Raised, "invalid prime bit size accepted");
+      end loop;
+   end Prime_Properties;
+
    procedure Contracts is
       G, H : Generator;
       A, B : Byte_Array (17 .. 80);
@@ -169,4 +349,6 @@ begin
    AUnit.Assertions.Assert (T.Name.all'Length > 0, "random test has a name");
    Replay;
    Contracts;
+   Prime_Replay;
+   Prime_Properties;
 end Compat_Random;
