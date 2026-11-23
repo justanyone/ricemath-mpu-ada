@@ -5,6 +5,7 @@ with AUnit.Test_Cases;
 with Ada.Strings.Unbounded;
 with Fixture_Support;
 with Math_Prime_Util.Primality;
+with Math_Prime_Util.Proving;
 
 package body Compat_Primality is
    use AUnit.Test_Cases;
@@ -38,7 +39,11 @@ package body Compat_Primality is
          end if;
          raise Constraint_Error with "non-native fixture input";
       end if;
-      if F = "is_prime" then
+      if F = "is_aks_prime" then
+         return Boolean'Pos (Proving.Is_Aks_Prime (N));
+      elsif F = "is_provable_prime" then
+         return Integer (Proving.Is_Provable_Prime (N));
+      elsif F = "is_prime" then
          return Integer (Is_Prime (N));
       elsif F = "is_prob_prime" then
          return Integer (Is_Prob_Prime (N));
@@ -272,8 +277,16 @@ package body Compat_Primality is
    begin
       Replay ("is_delicate_prime");
    end Test_19;
+   procedure Test_Proving (T : in out Test_Case'Class);
+   procedure Test_Proving (T : in out Test_Case'Class) is
+   begin
+      Replay ("is_aks_prime");
+      Replay ("is_provable_prime");
+   end Test_Proving;
    overriding procedure Register_Tests (T : in out Primality_Case) is
    begin
+      Registration.Register_Routine
+        (T, Test_Proving'Access, "AKS and native proving fixtures");
       Registration.Register_Routine
         (T, Test_0'Access, "is_prime");
       Registration.Register_Routine
