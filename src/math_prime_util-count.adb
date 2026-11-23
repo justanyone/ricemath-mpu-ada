@@ -101,7 +101,7 @@ package body Math_Prime_Util.Count is
      with SPARK_Mode => Off
    is
    begin
-      if Low > High or High < 2 then
+      if Low > High or else High < 2 then
          return 0;
       elsif High - Low <= 100_000 then
          --  prime_counts.c: prime_count_range selects a direct prime walk

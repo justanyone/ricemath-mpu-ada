@@ -44,7 +44,7 @@ package Math_Prime_Util.Count with SPARK_Mode => On is
    function Prime_Count (Low, High : U64) return U64
      with Pre => Low > High or else High <= Prime_Count_Limit
                    or else High - Low <= 100_000,
-          Post => (if Low > High or High < 2 then
+          Post => (if Low > High or else High < 2 then
                      Prime_Count'Result = 0
                    else Prime_Count'Result <= High - U64'Max (Low, 2) + 1);
 
