@@ -9,3 +9,5 @@ Focused build remains pending with no compiler output; checking Alire verbose di
 Implemented the dedicated MARKSEMI range sieve and moved square-free flags to heap-backed bounded storage; compiler/test diagnostics pending.
 Development library build succeeded. Fixed fixture diagnostic typo, segment-end odd-composite handling, and added XS almost-prime power-of-two reduction.
 Corrected vector initialization and reran the focused suite; retaining upstream segmented algorithms and all native boundary rows.
+Gate development build passed; release build is running. Added empty/reversed ranges, K=63 reduction, and a factor-segment boundary test.
+Square-free integer loop now visits one before allocation, matching XS Lastfor behavior; waiting for focused results and gate.

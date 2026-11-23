@@ -346,6 +346,17 @@ package body Math_Prime_Util.Iter.Ranges is
       Context : Loop_Context := (Active => True, Stop => False);
       First : U64 := U64'Max (1, Low);
    begin
+      if First > High then
+         return;
+      end if;
+      --  XS.xs visits one before allocating or sieving the remaining range.
+      if First = 1 then
+         Process (1, Context);
+         First := 2;
+      end if;
+      if Context.Stop then
+         return;
+      end if;
       while First <= High loop
          declare
             Last : constant U64 :=
