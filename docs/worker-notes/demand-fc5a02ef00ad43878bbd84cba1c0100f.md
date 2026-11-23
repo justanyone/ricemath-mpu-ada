@@ -14,3 +14,5 @@ Progress: added explicit native boundaries for lambda, psi overflow, and signed 
 Progress: focused test executable links successfully; running fixtures, native boundaries, and BDD before the full declared gate.
 Progress: focused tests found negative predicate/tau semantics and stack exhaustion at the U128 sum boundary; fixed signed inputs and moved the large prefix cache into a controlled vector.
 Progress: rerunning focused tests after signed-boundary and cache-allocation fixes; all other six fixture groups passed in the first run.
+Progress: BDD collection is blocked by missing pytest_bdd on this offline host; the native checked suite remains the executable validation path.
+Progress: all nine focused tests pass within the 59-second timeout; full gate launched. Restored reference Coleman shortcuts before list-overflow bounds and fixed one style diagnostic.

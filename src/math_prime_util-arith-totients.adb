@@ -71,6 +71,18 @@ package body Math_Prime_Util.Arith.Totients is
          Result.Append (2);
          return Result;
       end if;
+      --  Coleman Remark 3.3 / Proposition 6.2, before the list bound.
+      if Primality.Is_Prime (N / 2) /= 0 then
+         if Primality.Is_Prime (N + 1) = 0 then
+            return Result;
+         elsif N >= U64'Last / 2 then
+            raise Constraint_Error with "inverse totient preimage overflow";
+         elsif N >= 10 then
+            Result.Append (N + 1);
+            Result.Append (2 * N + 2);
+            return Result;
+         end if;
+      end if;
       --  totients.c refuses the list when products can exceed U64.
       if N >= 2_459_565_884_898_017_280 then
          raise Constraint_Error with "inverse totient list overflow";
@@ -163,6 +175,13 @@ package body Math_Prime_Util.Arith.Totients is
          return 2;
       elsif N = 0 or else N mod 2 = 1 then
          return 0;
+      end if;
+      if Primality.Is_Prime (N / 2) /= 0 then
+         if Primality.Is_Prime (N + 1) = 0 then
+            return 0;
+         elsif N >= 10 then
+            return 2;
+         end if;
       end if;
       Divs := Factor.Divisors (N);
       Set.Insert (1, 1);
@@ -308,7 +327,8 @@ package body Math_Prime_Util.Arith.Totients is
          end if;
       end loop;
       for I in U64 range 2 .. Limit loop
-         Prefix (Natural (I)) := Prefix (Natural (I)) + Prefix (Natural (I - 1));
+         Prefix (Natural (I)) :=
+           Prefix (Natural (I)) + Prefix (Natural (I - 1));
       end loop;
       return Evaluate (N);
    end Sumtotient;
