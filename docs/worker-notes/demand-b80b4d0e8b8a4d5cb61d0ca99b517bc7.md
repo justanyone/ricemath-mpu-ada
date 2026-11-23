@@ -7,3 +7,5 @@ Reused the powers BDD Given/Then steps and runner; removed the direct unresolved
 Consolidated repeated lastfor count formatting while retaining all fixture branches.
 Pyright now passes; BDD collection explicitly skips because pytest-bdd is unavailable.
 Print_Primes now uses Forprimes; removed redundant internal forward declarations and tracked bytecode.
+Development/release builds passed; gate is running the full Ada suite.
+Kept GNAT previous-spec style and replaced handwritten multiset sorting with the standard array sort.

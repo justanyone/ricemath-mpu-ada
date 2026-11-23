@@ -1,3 +1,4 @@
+with Ada.Containers.Generic_Array_Sort;
 with Math_Prime_Util.Primality;
 with Math_Prime_Util.Sieve;
 
@@ -72,6 +73,8 @@ package body Math_Prime_Util.Iter is
    is
       pragma SPARK_Mode (Off);
       package Number_IO is new Ada.Text_IO.Modular_IO (U64);
+      procedure Write_Prime (Value : U64; Context : in out Loop_Context)
+        with Pre => Context.Active;
       procedure Write_Prime (Value : U64; Context : in out Loop_Context) is
       begin
          Number_IO.Put (File, Value, Width => 0);
@@ -245,6 +248,12 @@ package body Math_Prime_Util.Iter is
      (N : Natural; Ordered : Boolean;
       Process : not null access procedure
         (Parts : Value_Array; Context : in out Loop_Context);
+      Options : Partition_Options := (others => <>));
+
+   procedure Partitions
+     (N : Natural; Ordered : Boolean;
+      Process : not null access procedure
+        (Parts : Value_Array; Context : in out Loop_Context);
       Options : Partition_Options := (others => <>))
    is
       Context : Loop_Context := (Active => True, Stop => False);
@@ -375,6 +384,12 @@ package body Math_Prime_Util.Iter is
      (Keys : Value_Array; Counts : in out Multiplicities;
       N : Natural; Derange : Boolean;
       Process : not null access procedure
+        (Values : Value_Array; Context : in out Loop_Context));
+
+   procedure Permutations
+     (Keys : Value_Array; Counts : in out Multiplicities;
+      N : Natural; Derange : Boolean;
+      Process : not null access procedure
         (Values : Value_Array; Context : in out Loop_Context))
    is
       Context : Loop_Context := (Active => True, Stop => False);
@@ -430,20 +445,13 @@ package body Math_Prime_Util.Iter is
       Keys : Value_Array (1 .. Items'Length) := Items;
       Counts : Multiplicities (Keys'Range) := (others => 0);
       Distinct : Natural := 0;
-      Temp : U64;
-      J : Positive;
-   begin
       --  Perl sorts hash keys as strings, including numeric values.
-      for I in 2 .. Keys'Last loop
-         Temp := Keys (I);
-         J := I;
-         while J > 1 and then U64'Image (Keys (J - 1)) > U64'Image (Temp)
-         loop
-            Keys (J) := Keys (J - 1);
-            J := J - 1;
-         end loop;
-         Keys (J) := Temp;
-      end loop;
+      function Less (Left, Right : U64) return Boolean is
+        (U64'Image (Left) < U64'Image (Right));
+      procedure Sort is new Ada.Containers.Generic_Array_Sort
+        (Positive, U64, Value_Array, Less);
+   begin
+      Sort (Keys);
       for I in Keys'Range loop
          if Distinct = 0 or else Keys (I) /= Keys (Distinct) then
             Distinct := Distinct + 1;
