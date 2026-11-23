@@ -9,3 +9,4 @@ Focused build remains pending with no terminal output; reviewed contracts to avo
 Compilation succeeded but linking exposed the known GNAT 16 cross-profile vector-reference finalizer issue. Replaced element iteration in generic bodies with indexed Element copies, matching prop_sieve's existing workaround; rerunning focused tests.
 Added explicit no-callback assertions for every empty-input operation. The indexed-copy rebuild is running; the next validation is the project gate.
 Reviewed the final generic loops and tests; no callback is invoked by a contract, and not-found first values are initialized to zero. Waiting for focused command completion before the gate.
+Indexed-copy bodies linked successfully; focused command reached test execution. Started declared gate with temporary directories redirected inside obj; diff whitespace check passed.
