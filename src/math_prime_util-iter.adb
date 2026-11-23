@@ -49,10 +49,10 @@ package body Math_Prime_Util.Iter is
 
    procedure Prev (Cursor : in out Prime_Object) is
    begin
-      if not Cursor.Current.Defined then
-         Cursor.Current := Sieve.Prev_Prime (U64'Last);
-      elsif Cursor.Current.Value > 2 then
-         Cursor.Current := Sieve.Prev_Prime (Cursor.Current.Value);
+      if not Cursor.Current.Defined or else Cursor.Current.Value > 2 then
+         Cursor.Current := Sieve.Prev_Prime
+           ((if Cursor.Current.Defined then Cursor.Current.Value
+             else U64'Last));
       end if;
    end Prev;
 
@@ -264,7 +264,6 @@ package body Math_Prime_Util.Iter is
       Min_Length : constant Natural := Natural'Max (1, Options.Nmin);
       Max_Length : constant Natural := Natural'Min (N, Options.Nmax);
       Max_Part : constant Natural := Natural'Min (N, Options.Amax);
-      Selected : Boolean;
    begin
       if N = 0 then
          if Options.Nmin <= 1 then
@@ -294,14 +293,14 @@ package body Math_Prime_Util.Iter is
             K := K - 1;
          end loop;
          exit when Parts (1) > U64 (Max_Part);
-         Selected := K + 1 >= Min_Length and then
+         if K + 1 >= Min_Length and then
            (for all I in 1 .. K + 1 =>
               Parts (I) >= U64 (Min_Part) and then
               Parts (I) <= U64 (Max_Part) and then
               (Options.Prime = Any_Part or else
                  ((Primality.Is_Prime (Parts (I)) /= 0) =
-                  (Options.Prime = Prime_Part))));
-         if Selected then
+                  (Options.Prime = Prime_Part))))
+         then
             Process (Parts (1 .. K + 1), Context);
          end if;
          exit when Context.Stop;

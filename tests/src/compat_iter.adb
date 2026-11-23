@@ -157,20 +157,15 @@ package body Compat_Iter is
             end;
          end if;
          if Func = "formultiperm" or else Func = "forsetproduct" then
-            Fits := True;
-            for Arg of C.Args loop
-               if Arg /= "|" then
-                  Fits := Parse_U64 (To_String (Arg), B) and then Fits;
-               end if;
-            end loop;
+            Fits := (for all Arg of C.Args => Arg = "|" or else
+                       Parse_U64 (To_String (Arg), B));
          end if;
          --  iter.tsv 468,471: text multisets; 484,488: text products.
          --  iter.tsv 475,490: Perl array-reference errors are unrepresentable.
          --  iter.tsv 372,374,376,378: invalid typed composition options.
          --  iter.tsv 537,540,543: object streams exceed U64.
          --  iter.tsv 546,549,552: invalid typed object starts.
-         if Fits and then not C.Error
-         then
+         if Fits and then not C.Error then
             if Func = "forprimes" then
                if Natural (C.Args.Length) = 1 then
                   Forprimes (A, Scalar'Access);
