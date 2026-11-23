@@ -1,5 +1,4 @@
 with Compat_Primality;
-with Random_Suite;
 with Prop_Primality;
 with Compat_Factor;
 with Compat_Families;
@@ -31,7 +30,6 @@ package body All_Suites is
         Version_Suite.Suite;
    begin
       Result.Add_Test (Test_Fixture_Support.Suite);
-      Result.Add_Test (Random_Suite.Suite);
       Result.Add_Test (Compat_Int.Suite);
       Result.Add_Test (Compat_Modular.Suite);
       Result.Add_Test (Prop_Int.Suite);

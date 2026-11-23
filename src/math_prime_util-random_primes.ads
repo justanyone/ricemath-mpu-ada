@@ -59,7 +59,7 @@ package Math_Prime_Util.Random_Primes with SPARK_Mode => On is
      with Pre => Is_Seeded (G) and then Bits in 2 .. 64,
           Post => Value >= 2 ** (Bits - 1);
    --  XS.xs native Shawe-Taylor entry point: deterministic n-bit generation.
-   --  Bits in 2 .. 64. Generation_Error means the MPU retry limit expired.
+   --  Bits in 2 .. 64; invalid sizes fail the precondition.
    procedure Random_Shawe_Taylor_Prime
      (G : in out Generator; Bits : Natural; Value : out U64)
      with Pre => Is_Seeded (G) and then Bits in 2 .. 64,

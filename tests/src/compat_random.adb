@@ -202,7 +202,8 @@ procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
                            Random_Unrestricted_Semiprime (G, Natural (A), V);
                         end if;
                         Append (Actual,
-                          (if Length (Actual) > 0 then " " else "") & Image (V));
+                          (if Length (Actual) > 0 then " " else "") &
+                          Image (V));
                      end loop;
                   exception
                      when Ada.Assertions.Assertion_Error =>
@@ -224,7 +225,6 @@ procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
 
    procedure Prime_Properties is
       use Math_Prime_Util.Random_Primes;
-      use type Math_Prime_Util.Primality.Prime_Result;
       G, H : Generator;
       Seed : constant Byte_Array (0 .. 39) := [others => 0];
       A, B : U64;
@@ -258,7 +258,8 @@ procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
            "Shawe-Taylor certificate seed 0 bits" & Natural'Image (Bits));
          if Bits >= 4 then
             Random_Semiprime (G, Bits, A);
-            AUnit.Assertions.Assert (Math_Prime_Util.Factor.Factor (A).Count = 2,
+            AUnit.Assertions.Assert
+              (Math_Prime_Util.Factor.Factor (A).Count = 2,
               "balanced semiprime seed 0");
          end if;
       end loop;
