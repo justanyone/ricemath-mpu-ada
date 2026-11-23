@@ -101,7 +101,7 @@ package body Math_Prime_Util.Count is
      with SPARK_Mode => Off
    is
    begin
-      if Low > High or High < 2 then
+      if Low > High or else High < 2 then
          return 0;
       elsif Low <= 2 then
          --  Extended LMO accepts every native prefix, so a start at or
