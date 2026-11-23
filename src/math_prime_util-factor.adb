@@ -186,7 +186,10 @@ package body Math_Prime_Util.Factor with SPARK_Mode => On is
                Failures := Failures - 1;
                X := One;
                Anchor := One;
-               C := Add_Mod (C, U64 ((U128 (11) * U128 (One)) mod U128 (N)), N);
+               C := Add_Mod
+                 (C,
+                  U64 ((U128 (11) * U128 (One)) mod U128 (N)),
+                  N);
             else
                return D;
             end if;
