@@ -481,6 +481,10 @@ package body Math_Prime_Util.Combinat with SPARK_Mode => Off is
          return (True, 1);
       elsif N = 0 or else K = 0 or else K > N then
          return (True, 0);
+      elsif Kind = 2 and then K = 1 then
+         --  util.c: stirling2 returns one for a single block, regardless
+         --  of N. Handle this before the recurrence's resource bound.
+         return (True, 1);
       elsif N > 130 then
          return (Defined => False);
       end if;
