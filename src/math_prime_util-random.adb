@@ -1,11 +1,8 @@
-with Ada.Streams;
-with Ada.Streams.Stream_IO;
-
+with Interfaces.C;
+with System;
 package body Math_Prime_Util.Random with SPARK_Mode => On is
    use Interfaces;
-
    function Is_Seeded (G : Generator) return Boolean is (G.Seeded);
-
    function Load (Data : Byte_Array; Offset : Natural) return Word
      with Pre => Offset <= Data'Length and then Data'Length - Offset >= 4;
    function Load (Data : Byte_Array; Offset : Natural) return Word is
@@ -13,7 +10,6 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
       or Shift_Left (Word (Data (Data'First + Offset + 1)), 8)
       or Shift_Left (Word (Data (Data'First + Offset + 2)), 16)
       or Shift_Left (Word (Data (Data'First + Offset + 3)), 24));
-
    procedure Store (Data : in out Byte_Array; Offset : Natural; V : Word)
      with Pre => Offset <= Data'Length and then Data'Length - Offset >= 4
    is
@@ -23,7 +19,6 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
            Byte (Shift_Right (V, 8 * I) and 255);
       end loop;
    end Store;
-
    --  csprng.c: prng_new/prng_next and csprng_seed.
    procedure Csrand (G : out Generator; Seed : Byte_Array) is
       Key : Byte_Array (0 .. 39) := [others => 0];
@@ -64,37 +59,22 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
          Key (I) := 0;
       end loop;
    end Csrand;
-
-   --  entropy.c: get_entropy_bytes, using the operating-system source.
+   --  entropy.c: get_entropy_bytes; libc getentropy fills all 40 bytes.
    procedure Csrand (G : out Generator) with SPARK_Mode => Off is
-      use Ada.Streams;
-      package IO renames Ada.Streams.Stream_IO;
-      File : IO.File_Type;
-      Buffer : Stream_Element_Array (1 .. 40);
-      Seed : Byte_Array (1 .. 40);
-      Last : Stream_Element_Offset;
+      use type Interfaces.C.int;
+      function Getentropy (Buffer : System.Address; Size : Interfaces.C.size_t)
+        return Interfaces.C.int
+        with Import, Convention => C, External_Name => "getentropy";
+      Seed : aliased Byte_Array (0 .. 39);
    begin
-      IO.Open (File, IO.In_File, "/dev/urandom");
-      IO.Read (File, Buffer, Last);
-      IO.Close (File);
-      if Last /= Buffer'Last then
-         raise Entropy_Error with "short operating-system entropy read";
+      if Getentropy (Seed'Address, 40) /= 0 then
+         raise Entropy_Error with "operating-system entropy unavailable";
       end if;
-      for I in Seed'Range loop
-         Seed (I) := Byte (Buffer (Stream_Element_Offset (I)));
-      end loop;
       Csrand (G, Seed);
       for I in Seed'Range loop
          Seed (I) := 0;
       end loop;
-   exception
-      when IO.Name_Error | IO.Use_Error | IO.Device_Error | IO.End_Error =>
-         if IO.Is_Open (File) then
-            IO.Close (File);
-         end if;
-         raise Entropy_Error with "operating-system entropy unavailable";
    end Csrand;
-
    --  chacha.c: QUARTERROUND, chacha_core, increment_chacha_counter.
    procedure Refill (G : in out Generator) is
       X : State_Array;
@@ -132,7 +112,6 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
       end loop;
       G.Position := 0;
    end Refill;
-
    procedure Random_Bytes (G : in out Generator; Data : out Byte_Array) is
    begin
       for I in Data'Range loop
@@ -143,14 +122,12 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
          G.Position := G.Position + 1;
       end loop;
    end Random_Bytes;
-
    procedure Irand (G : in out Generator; Value : out U64) is
       Data : Byte_Array (0 .. 3);
    begin
       Random_Bytes (G, Data);
       Value := U64 (Load (Data, 0));
    end Irand;
-
    procedure Urandomb
      (G : in out Generator; Bits : Natural; Value : out U64) is
       Low : U64;
@@ -167,7 +144,6 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
          Value := Shift_Right (Shift_Left (Value, 32) or Low, 64 - Bits);
       end if;
    end Urandomb;
-
    --  csprng.c: urandomm32/64 (PREFER_LEMIRE = 0).
    procedure Urandomm
      (G : in out Generator; Modulus : U64; Value : out U64)
@@ -187,7 +163,6 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
       end loop;
       Value := Value mod Modulus;
    end Urandomm;
-
    procedure Urandomr
      (G : in out Generator; Low, High : U64; Value : out U64) is
    begin

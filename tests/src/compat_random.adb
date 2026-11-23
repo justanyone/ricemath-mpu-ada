@@ -6,7 +6,6 @@ with AUnit.Assertions;
 with AUnit.Test_Cases;
 with Fixture_Support;
 with Math_Prime_Util.Random;
-
 --  Replay the deterministic ChaCha fixtures and exercise public contracts.
 procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
    use AUnit.Test_Cases;
@@ -18,17 +17,9 @@ procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
    use type Byte;
    function Image (V : U64) return String is
      (Ada.Strings.Fixed.Trim (U64'Image (V), Ada.Strings.Both));
-
    function Decode (S : String) return Byte_Array is
-      Result : Byte_Array (0 .. S'Length / 2 - 1);
-   begin
-      for I in Result'Range loop
-         Result (I) := Byte'Value
-           ("16#" & S (S'First + 2 * I .. S'First + 2 * I + 1) & "#");
-      end loop;
-      return Result;
-   end Decode;
-
+     ([for I in 1 .. S'Length / 2 => Byte'Value
+       ("16#" & S (S'First + 2 * (I - 1) .. S'First + 2 * I - 1) & "#")]);
    function Hex (Data : Byte_Array) return String is
       Hex_Alphabet : constant String := "0123456789abcdef";
       Result : String (1 .. 2 * Data'Length);
@@ -41,7 +32,6 @@ procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
       end loop;
       return Result;
    end Hex;
-
    type Natural_Array is array (Positive range <>) of Natural;
    procedure Replay is
       Mixed_Bits : constant Natural_Array := [32, 64, 0, 32, 5, 32];
@@ -50,6 +40,8 @@ procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
       for C of Load ("random") loop
          declare
             F : constant String := To_String (C.Func);
+            function Has (S : String) return Boolean is
+              (Ada.Strings.Fixed.Index (F, S) > 0);
             G : Generator;
             V, A, B : U64 := 0;
             Actual : Unbounded_String;
@@ -70,14 +62,11 @@ procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
          begin
             --  Other_Families: primes, shuffle, randperm, vecsample,
             --  floating rand/drand and cipher XOR belong to separate ports.
-            if F in "irand" | "irand32" | "irand64" | "irand_seq" |
-              "irand32_seq" | "irand64_seq" | "srand42_irand" |
-              "blake_irand" | "tag_irand64" | "random_bytes" |
-              "random_bytes_seq" | "srand15_random_bytes4" |
-              "blake_random_bytes7" | "irand32_after_bytes" |
-              "irand64_after_bytes" | "random_bytes_len_tail" |
-              "blake_irand_after7" | "tag_irand_irand64" | "mixed_seq" |
-              "urandomb" | "urandomm" | "urandomm_seq" | "urandomr"
+            if ((Has ("irand") and then F not in
+                 "tag_irand_irand32_rand" | "blake_drand_after_irand")
+              or else Has ("random_bytes")
+              or else F in "urandomb" | "urandomm" | "urandomm_seq" |
+                "urandomr" | "mixed_seq")
               and then not
                 ((F = "urandomb" and then Natural'Value (Arg (2)) > 64)
                  or else (F in "urandomm" | "urandomm_seq" | "urandomr"
@@ -98,7 +87,7 @@ procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
                begin
                   for I in 1 .. (if F = "mixed_seq" then 6
                     elsif F /= "random_bytes_seq" and then
-                      Ada.Strings.Fixed.Index (F, "_seq") > 0 then 20 else 1)
+                      Has ("_seq") then 20 else 1)
                   loop
                      if F in "random_bytes" | "random_bytes_seq" |
                        "srand15_random_bytes4" | "blake_random_bytes7" |
@@ -117,7 +106,7 @@ procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
                            Urandomb (G,
                              (if F = "mixed_seq" then Mixed_Bits (I)
                              elsif F = "urandomb" then Natural'Value (Arg (2))
-                             elsif Ada.Strings.Fixed.Index (F, "64") > 0
+                             elsif Has ("64")
                                then 64 else 32), V);
                         end if;
                         Add (Image (V));
@@ -175,7 +164,6 @@ procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
          end;
       end loop;
    end Contracts;
-
 begin
    AUnit.Assertions.Assert (T.Name.all'Length > 0, "random test has a name");
    Replay;
