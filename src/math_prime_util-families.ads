@@ -27,7 +27,8 @@ package Math_Prime_Util.Families with SPARK_Mode => On is
 
    --  PP.pm: is_sum_of_squares. Represent abs N by K nonnegative squares
    --  (zero terms allowed). Native magnitudes only; no errors.
-   function Is_Sum_Of_Squares (N : Int.Native_I128; K : U64 := 2) return Boolean
+   function Is_Sum_Of_Squares (N : Int.Native_I128; K : U64 := 2)
+      return Boolean
      with Pre => True,
           Post => (if K >= 4 then Is_Sum_Of_Squares'Result);
 
