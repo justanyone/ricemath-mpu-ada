@@ -124,7 +124,7 @@ package body Compat_Iter is
                end;
             end loop;
          elsif Natural (C.Args.Length) > 1 then
-            Fits := Parse_U64 (To_String (C.Args (2)), B) and Fits;
+            Fits := Parse_U64 (To_String (C.Args (2)), B) and then Fits;
          end if;
          --  Skipped ERROR rows: undef, negative, fractional and text inputs
          --  cannot reach these typed Ada APIs. Bigint inputs require the
@@ -138,12 +138,12 @@ package body Compat_Iter is
                for I in Tokens'Range loop
                   if Tokens (I) = ' ' then
                      Fits := Parse_U64 (Tokens (Start .. I - 1), Dummy)
-                       and Fits;
+                       and then Fits;
                      Start := I + 1;
                   end if;
                end loop;
                Fits := Parse_U64 (Tokens (Start .. Tokens'Last), Dummy)
-                 and Fits;
+                 and then Fits;
             end;
          end if;
          if Fits and then not C.Error then
@@ -393,6 +393,90 @@ package body Compat_Iter is
       end;
    end Check_Control;
 
+   procedure Check_Properties (T : in out Test_Case'Class) is
+      use type U128;
+      Seed : U64 := 16#4954_4552#;
+      Expected_N : U64;
+      Expected_Length : Natural;
+      Count : Natural;
+      procedure Factors_Check
+        (Value : U64; Factors : Value_Array;
+         Context : in out Loop_Context)
+      is
+         Product : U128 := 1;
+      begin
+         for I in Factors'Range loop
+            Product := Product * U128 (Factors (I));
+            AUnit.Assertions.Assert
+              (I = Factors'First or else Factors (I - 1) <= Factors (I),
+               "sorted factors, seed 0x49544552");
+         end loop;
+         AUnit.Assertions.Assert
+           (Product = U128 (Value), "factor product, seed 0x49544552");
+         Count := Count + 1;
+      end Factors_Check;
+      procedure Partition_Check
+        (Values : Value_Array; Context : in out Loop_Context)
+      is
+         Sum : U64 := 0;
+      begin
+         for I in Values'Range loop
+            Sum := Sum + Values (I);
+            AUnit.Assertions.Assert
+              (Values (I) > 0 and then
+               (I = Values'First or else Values (I - 1) <= Values (I)),
+               "ordered partition, seed 0x49544552");
+         end loop;
+         AUnit.Assertions.Assert (Sum = Expected_N, "partition sum");
+         Count := Count + 1;
+      end Partition_Check;
+      procedure Combination_Check
+        (Values : Value_Array; Context : in out Loop_Context) is
+      begin
+         AUnit.Assertions.Assert
+           (Values'Length = Expected_Length, "combination length");
+         for I in Values'Range loop
+            AUnit.Assertions.Assert
+              (Values (I) < Expected_N and then
+               (I = Values'First or else Values (I - 1) < Values (I)),
+               "combination order, seed 0x49544552");
+         end loop;
+         Count := Count + 1;
+      end Combination_Check;
+      procedure No_Value (Value : U64; Context : in out Loop_Context) is
+      begin
+         Count := Count + 1;
+      end No_Value;
+   begin
+      for I in 1 .. 32 loop
+         Seed := Seed * 6364136223846793005 + 1;
+         Expected_N := Seed mod 100000 + 1;
+         Count := 0;
+         Forfactored (Expected_N, Expected_N, Factors_Check'Access);
+         AUnit.Assertions.Assert (Count = 1, "single factored value");
+      end loop;
+      for N in 0 .. 12 loop
+         Expected_N := U64 (N);
+         Count := 0;
+         Forpart (N, Partition_Check'Access);
+         AUnit.Assertions.Assert (Count > 0, "missing partitions");
+         for K in 0 .. N loop
+            Expected_Length := K;
+            Count := 0;
+            Forcomb (N, K, Combination_Check'Access);
+            AUnit.Assertions.Assert (Count > 0, "missing combinations");
+         end loop;
+      end loop;
+      Count := 0;
+      Forprimes (0, No_Value'Access);
+      Forprimes (U64'Last, 0, No_Value'Access);
+      Forcomposites (3, No_Value'Access);
+      Forcomposites (U64'Last, 0, No_Value'Access);
+      Forfactored (0, Factors_Check'Access);
+      Forfactored (2, 1, Factors_Check'Access);
+      AUnit.Assertions.Assert (Count = 0, "empty ranges visited");
+   end Check_Properties;
+
    overriding function Name (T : Iter_Case) return AUnit.Message_String is
      (AUnit.Format ("Compat_Iter"));
 
@@ -400,6 +484,8 @@ package body Compat_Iter is
    begin
       Registration.Register_Routine (T, Check_Fixtures'Access, "fixtures");
       Registration.Register_Routine (T, Check_Control'Access, "control");
+      Registration.Register_Routine
+        (T, Check_Properties'Access, "properties");
    end Register_Tests;
 
    function Suite return AUnit.Test_Suites.Access_Test_Suite is
