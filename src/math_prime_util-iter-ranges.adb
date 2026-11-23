@@ -171,7 +171,8 @@ package body Math_Prime_Util.Iter.Ranges is
                end loop;
             end Mark;
          begin
-            Counts.Set_Length (Ada.Containers.Count_Type (Last - First + 1));
+            Counts.Append
+              (0, Ada.Containers.Count_Type (Last - First + 1));
             --  semi_primes.c: range_semiprime_sieve / MARKSEMI. A number
             --  marked exactly once is semiprime; prime squares start at p*p.
             for P of Sieve.Primes (Root) loop
@@ -258,11 +259,11 @@ package body Math_Prime_Util.Iter.Ranges is
                Data : Entry_Vectors.Vector;
                Root : constant U64 := Int.Sqrtint (Last);
                Full : constant Boolean := Root < 10_000_000
-                 or else (Root < 35_000_000 and Last - First > 900)
-                 or else (Root < 100_000_000 and Last - First > 1700)
-                 or else (Root < 350_000_000 and Last - First > 3400)
-                 or else (Root < 1_000_000_000 and Last - First > 5500)
-                 or else (Root < 3_500_000_000 and Last - First > 17000)
+                 or else (Root < 35_000_000 and then Last - First > 900)
+                 or else (Root < 100_000_000 and then Last - First > 1700)
+                 or else (Root < 350_000_000 and then Last - First > 3400)
+                 or else (Root < 1_000_000_000 and then Last - First > 5500)
+                 or else (Root < 3_500_000_000 and then Last - First > 17000)
                  or else Last - First > 19000;
                Limit : constant U64 :=
                  (if Full then Root else Int.Rootint (Last, 3));
@@ -356,8 +357,8 @@ package body Math_Prime_Util.Iter.Ranges is
             Prime_Low : U64 := 2;
             Prime_High, Q, Offset : U64;
          begin
-            Flags.Set_Length
-              (Ada.Containers.Count_Type (Last - First + 1), True);
+            Flags.Append
+              (True, Ada.Containers.Count_Type (Last - First + 1));
             --  util.c: range_issquarefree. Mark prime-square multiples,
             --  consuming the sieving primes in bounded segments.
             while Prime_Low <= Root loop
