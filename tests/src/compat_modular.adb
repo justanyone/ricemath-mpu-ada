@@ -393,7 +393,8 @@ package body Compat_Modular is
                                       U64 (abs Args (2 * I)));
                      end loop;
                      if Func = "chinese" then
-                        Actual := To_Unbounded_String (Image (Chinese (Pairs)));
+                        Actual := To_Unbounded_String
+                          (Image (Chinese (Pairs)));
                      else
                         CRT := Chinese2 (Pairs);
                         Actual := To_Unbounded_String
