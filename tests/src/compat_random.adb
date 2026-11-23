@@ -157,7 +157,7 @@ procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
                --  have no U64 representation; test Ada contracts separately.
                Fits := Parse_U64 (Arg (2), A);
                if F in "random_prime" | "random_prime_seq" then
-                  if Natural (C.Args.Length) = 4 then
+                  if Natural (C.Args.Length) = 3 then
                      Fits := Parse_U64 (Arg (3), B) and then Fits;
                   else
                      B := A;
