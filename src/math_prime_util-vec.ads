@@ -28,6 +28,51 @@ package Math_Prime_Util.Vec with SPARK_Mode => Off is
    package Extract_Vectors is new Ada.Containers.Vectors
      (Index_Type => Positive, Element_Type => Extract_Element);
 
+   --  Predicates are called in input order, stopping at the first decisive
+   --  element. Exceptions from the predicate propagate to the caller.
+
+   --  reference/mpu/XS.xs vecnone, alias vecany. True if any match.
+   generic
+      with function Predicate (Value : BI.Big_Integer) return Boolean;
+   function Vecany (Items : Int_Vector) return Boolean
+     with Post => (if Items.Is_Empty then not Vecany'Result);
+
+   --  reference/mpu/XS.xs vecnone, alias vecall. True if all match.
+   generic
+      with function Predicate (Value : BI.Big_Integer) return Boolean;
+   function Vecall (Items : Int_Vector) return Boolean
+     with Post => (if Items.Is_Empty then Vecall'Result);
+
+   --  reference/mpu/XS.xs vecnone. True if no element matches.
+   generic
+      with function Predicate (Value : BI.Big_Integer) return Boolean;
+   function Vecnone (Items : Int_Vector) return Boolean
+     with Post => (if Items.Is_Empty then Vecnone'Result);
+
+   --  reference/mpu/XS.xs vecnone, alias vecnotall. True if any fail.
+   generic
+      with function Predicate (Value : BI.Big_Integer) return Boolean;
+   function Vecnotall (Items : Int_Vector) return Boolean
+     with Post => (if Items.Is_Empty then not Vecnotall'Result);
+
+   --  reference/mpu/XS.xs vecnone, alias vecfirst. First matching value.
+   --  Found is False for MPU undef; Value is then set to zero.
+   generic
+      with function Predicate (Value : BI.Big_Integer) return Boolean;
+   procedure Vecfirst
+     (Items : Int_Vector; Value : out BI.Big_Integer; Found : out Boolean)
+     with Post => (if Items.Is_Empty then not Found)
+       and then (if not Found then Value = 0);
+
+   --  reference/mpu/XS.xs vecnone, alias vecfirstidx. Zero-based first
+   --  matching index, or -1 if no element matches (including empty input).
+   generic
+      with function Predicate (Value : BI.Big_Integer) return Boolean;
+   function Vecfirstidx (Items : Int_Vector) return Integer
+     with Post => Vecfirstidx'Result >= -1
+       and then (if Items.Is_Empty then Vecfirstidx'Result = -1
+                 else Vecfirstidx'Result < Integer (Items.Length));
+
    --  XS.xs vecsum. Sum of the integers. Empty sum is 0.
    function Vecsum (Items : Int_Vector) return BI.Big_Integer
      with Pre => True,
