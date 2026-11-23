@@ -83,7 +83,9 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
    procedure Fill (Data : out Byte_Array)
      with SPARK_Mode => Off;
    --  entropy.c: get_entropy_bytes, using the operating-system source.
-   procedure Fill (Data : out Byte_Array) is
+   procedure Fill (Data : out Byte_Array)
+     with SPARK_Mode => Off
+   is
       use Ada.Streams;
       package IO renames Ada.Streams.Stream_IO;
       File : IO.File_Type;
