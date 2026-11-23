@@ -1,0 +1,3 @@
+# Worker notes: demand-638cad56fe5b44d3b9eee24e7e51fde0
+
+- 2026-11-23T12:17:08Z launcher: no commit for 60 s; 90 s elapsed. Files changed so far: src/math_prime_util-families.adb, src/math_prime_util-families.ads, src/math_prime_util-random.adb, src/math_prime_util-random.ads, tests/src/compat_families.adb, tests/src/compat_random.adb, tests/src/families_runner.adb, tests/src/prop_families.adb, tests/src/test_fixture_support.adb.
