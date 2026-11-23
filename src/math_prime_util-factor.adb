@@ -307,6 +307,9 @@ package body Math_Prime_Util.Factor is
    begin
       Rest := N;
       if N = 0 then
+         --  The single 0 is the whole result. Rest = 1 tells callers
+         --  not to run an algorithm on 0 (that divides by zero or loops).
+         Rest := 1;
          return One (0);
       end if;
       Strip_235 (Rest, L);
