@@ -1,8 +1,17 @@
+with Ada.Numerics.Generic_Elementary_Functions;
+with Interfaces;
 with Math_Prime_Util.Count;
 with Math_Prime_Util.Primality;
 with Math_Prime_Util.Sieve;
 
 package body Math_Prime_Util.Powers with SPARK_Mode => Off is
+   package Lf is new Ada.Numerics.Generic_Elementary_Functions
+     (Long_Float);
+   use type Primality.Prime_Result;
+   use type Interfaces.Unsigned_32;
+
+   function Fpow (Base, Exponent : Long_Float) return Long_Float is
+     (Lf.Exp (Exponent * Lf.Log (Base)));
 
    --  perfect_powers.c: _moebius, exponents 0 .. 64.
    Moebius : constant array (Natural range 0 .. 64) of Integer :=
@@ -124,7 +133,11 @@ package body Math_Prime_Util.Powers with SPARK_Mode => Off is
    end Largest_Exponent;
 
    function Odd_Power (Exponent : Natural) return Boolean is
-     (Exponent > 2 and then (Exponent and (Exponent - 1)) /= 0);
+      Bits : constant Interfaces.Unsigned_32 :=
+        Interfaces.Unsigned_32 (Exponent);
+   begin
+      return Exponent > 2 and then (Bits and (Bits - 1)) /= 0;
+   end Odd_Power;
 
    function Magnitude (N : Int.I128) return U128 is
      (if N >= 0 then U128 (N) else U128 (-N));
@@ -543,32 +556,32 @@ package body Math_Prime_Util.Powers with SPARK_Mode => Off is
          return Max_Perfect_Power;
       end if;
       Pp := X * X
-        + (13.0 / 3.0) * X ** (4.0 / 3.0)
-        + (32.0 / 15.0) * X ** (16.0 / 15.0);
+        + (13.0 / 3.0) * Fpow (X, 4.0 / 3.0)
+        + (32.0 / 15.0) * Fpow (X, 16.0 / 15.0);
       case Kind is
          when Approx_Est =>
-            Pp := Pp - 2.0 * X ** (5.0 / 3.0)
-              - 2.0 * X ** (7.0 / 5.0)
-              - 2.0 * X ** (9.0 / 7.0)
-              + 2.0 * X ** (12.0 / 10.0);
-            Pp := Pp - 2.0 * X ** (13.0 / 11.0)
-              - 2.0 * X ** (15.0 / 13.0)
-              + 2.0 * X ** (16.0 / 14.0)
-              + 2.0 * X ** (17.0 / 15.0);
-            Pp := Pp - 0.48 * X ** (19.0 / 17.0) - 1.5;
+            Pp := Pp - 2.0 * Fpow (X, 5.0 / 3.0)
+              - 2.0 * Fpow (X, 7.0 / 5.0)
+              - 2.0 * Fpow (X, 9.0 / 7.0)
+              + 2.0 * Fpow (X, 12.0 / 10.0);
+            Pp := Pp - 2.0 * Fpow (X, 13.0 / 11.0)
+              - 2.0 * Fpow (X, 15.0 / 13.0)
+              + 2.0 * Fpow (X, 16.0 / 14.0)
+              + 2.0 * Fpow (X, 17.0 / 15.0);
+            Pp := Pp - 0.48 * Fpow (X, 19.0 / 17.0) - 1.5;
          when Lower_Est =>
-            Pp := Pp - 2.0 * X ** (5.0 / 3.0)
-              - 2.0 * X ** (7.0 / 5.0)
-              - 2.0 * X ** (9.0 / 7.0)
-              + 2.0 * X ** (12.0 / 10.0);
-            Pp := Pp - 2.0 * X ** (13.0 / 11.0)
-              - 2.0 * X ** (15.0 / 13.0) + 5.5;
+            Pp := Pp - 2.0 * Fpow (X, 5.0 / 3.0)
+              - 2.0 * Fpow (X, 7.0 / 5.0)
+              - 2.0 * Fpow (X, 9.0 / 7.0)
+              + 2.0 * Fpow (X, 12.0 / 10.0);
+            Pp := Pp - 2.0 * Fpow (X, 13.0 / 11.0)
+              - 2.0 * Fpow (X, 15.0 / 13.0) + 5.5;
          when Upper_Est =>
-            Pp := Pp - 2.0 * X ** (5.0 / 3.0)
-              - 2.0 * X ** (7.0 / 5.0)
-              - 2.0 * X ** (9.0 / 7.0)
-              + 2.0 * X ** (12.0 / 10.0)
-              + 2.0 * X ** (16.0 / 14.0) - 3.5;
+            Pp := Pp - 2.0 * Fpow (X, 5.0 / 3.0)
+              - 2.0 * Fpow (X, 7.0 / 5.0)
+              - 2.0 * Fpow (X, 9.0 / 7.0)
+              + 2.0 * Fpow (X, 12.0 / 10.0)
+              + 2.0 * Fpow (X, 16.0 / 14.0) - 3.5;
       end case;
       if Pp >= 2.0 ** 64 then
          return U64'Last;
