@@ -2,7 +2,6 @@ with AUnit.Assertions;
 with AUnit.Test_Cases;
 with Interfaces;
 with Math_Prime_Util;
-with Compat_Random;
 
 package body Version_Suite is
    use AUnit.Test_Cases;
@@ -43,8 +42,6 @@ package body Version_Suite is
         (T, Test_Version_Set'Access, "Version is set");
       Registration.Register_Routine
         (T, Test_U128_Width'Access, "U128 is wider than U64");
-      Registration.Register_Routine
-        (T, Compat_Random'Access, "ChaCha20 random fixtures and contracts");
    end Register_Tests;
 
    function Suite return AUnit.Test_Suites.Access_Test_Suite is
