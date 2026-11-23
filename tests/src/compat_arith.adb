@@ -13,6 +13,7 @@ package body Compat_Arith is
    use Math_Prime_Util.Arith;
    use type U64;
    use type I128;
+   use type AUnit.Message_String;
 
    type Arith_Case is new Test_Case with null record;
    overriding function Name (T : Arith_Case) return AUnit.Message_String;
@@ -29,14 +30,15 @@ package body Compat_Arith is
       N, K, Expected : U64;
       Actual : Optional_U64;
    begin
+      Assert (T.Name /= null, "named arithmetic test case");
       for C of Cases loop
          declare
             Func : constant String := To_String (C.Func);
             Context : constant String := Func & " row" &
               Positive'Image (C.Line_Number);
          begin
-            if Func = "divisor_sum" or Func = "aliquot_sum"
-              or Func = "abundance" or Func = "sopf" or Func = "sopfr"
+            if Func = "divisor_sum" or else Func = "aliquot_sum"
+              or else Func = "abundance" or else Func = "sopf" or else Func = "sopfr"
             then
                Count := Count + 1;
                Assert (Parse_U64 (To_String (C.Args (1)), N), Context);
@@ -86,15 +88,16 @@ package body Compat_Arith is
          2 ** 63 - 1, 2 ** 63, 2 ** 63 + 1, U64'Last];
       A, D : Optional_U64;
    begin
+      Assert (T.Name /= null, "named arithmetic test case");
       for N of Inputs loop
          A := Aliquot_Sum (N);
          D := Divisor_Sum (N);
-         Assert (Sopf (N) <= Sopfr (N) and Sopfr (N) <= N,
+         Assert (Sopf (N) <= Sopfr (N) and then Sopfr (N) <= N,
                  "prime sums at" & U64'Image (N));
          if A.Defined then
             Assert (Abundance (N) = I128 (A.Value) - I128 (N),
                     "abundance identity");
-            if D.Defined and N > 0 then
+            if D.Defined and then N > 0 then
                Assert (D.Value - N = A.Value, "aliquot identity");
             end if;
          end if;
@@ -120,6 +123,7 @@ package body Compat_Arith is
       Seed : U64 := 16#D1_7150#;
       N, Sum, Count, Square_Sum : U64;
    begin
+      Assert (T.Name /= null, "named arithmetic test case");
       for Trial in 1 .. 150 loop
          Seed := Seed * 6_364_136_223_846_793_005 + 1;
          N := Seed mod 2_000 + 1;
@@ -135,10 +139,10 @@ package body Compat_Arith is
          end loop;
          Assert
            (Divisor_Sum (N).Value = Sum
-            and Divisor_Sum (N, 0).Value = Count
-            and Divisor_Sum (N, 2).Value = Square_Sum
-            and Aliquot_Sum (N).Value = Sum - N
-            and Abundance (N) = I128 (Sum) - 2 * I128 (N),
+            and then Divisor_Sum (N, 0).Value = Count
+            and then Divisor_Sum (N, 2).Value = Square_Sum
+            and then Aliquot_Sum (N).Value = Sum - N
+            and then Abundance (N) = I128 (Sum) - 2 * I128 (N),
             "divisor laws seed=16#D1_7150# trial" & Integer'Image (Trial));
       end loop;
    end Properties;
