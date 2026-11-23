@@ -10,6 +10,7 @@ with Ada.Numerics.Big_Numbers.Big_Integers;
 --  A negative extract mask raises Constraint_Error (MPU croak).
 package Math_Prime_Util.Vec with SPARK_Mode => Off is
    use Ada.Numerics.Big_Numbers.Big_Integers;
+   use type Ada.Containers.Count_Type;
 
    package Int_Vectors is new Ada.Containers.Vectors
      (Index_Type => Positive, Element_Type => Big_Integer);
@@ -74,7 +75,7 @@ package Math_Prime_Util.Vec with SPARK_Mode => Off is
    --  Pairs are in increasing numeric order.
    function Vecfreq (Items : Int_Vector) return Int_Vector
      with Pre => True,
-          Post => Vecfreq'Result.Length mod 2 = 0;
+          Post => Natural (Vecfreq'Result.Length) mod 2 = 0;
 
    --  sort.c: sort_iv_array / sort_uv_array. Nondecreasing copy.
    function Vecsort (Items : Int_Vector) return Int_Vector

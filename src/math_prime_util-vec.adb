@@ -4,6 +4,7 @@ with Ada.Containers.Ordered_Sets;
 package body Math_Prime_Util.Vec is
    package Int_Sets is new Ada.Containers.Ordered_Sets
      (Element_Type => Big_Integer);
+   use type Int_Sets.Set;
    package Count_Maps is new Ada.Containers.Ordered_Maps
      (Key_Type => Big_Integer, Element_Type => Natural);
    package Vec_Sort is new Int_Vectors.Generic_Sorting;
@@ -417,11 +418,20 @@ package body Math_Prime_Util.Vec is
         and then Set_Is_Subset (Left, Right));
 
    function Set_Is_Superset (Left, Right : Int_Vector) return Boolean is
-     (Set_Is_Subset (Right, Left));
+      R : constant Int_Sets.Set := As_Set (Right);
+   begin
+      for V of Left loop
+         if not R.Contains (V) then
+            return False;
+         end if;
+      end loop;
+      return True;
+   end Set_Is_Superset;
 
    function Set_Is_Proper_Superset (Left, Right : Int_Vector)
       return Boolean is
-     (Set_Is_Proper_Subset (Right, Left));
+     (Right.Length > Left.Length
+        and then Set_Is_Superset (Left, Right));
 
    function Set_Is_Proper_Intersection (Left, Right : Int_Vector)
       return Boolean
