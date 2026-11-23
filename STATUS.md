@@ -26,8 +26,8 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `addint` -> `Addint`
 - [ ] `addmod` -> `Addmod`
 - [ ] `aliquot_sum` -> `Aliquot_Sum`
-- [ ] `allrootmod` -> `Allrootmod`
-- [ ] `allsqrtmod` -> `Allsqrtmod`
+- [x] `allrootmod` -> `Allrootmod`
+- [x] `allsqrtmod` -> `Allsqrtmod`
 - [ ] `almost_prime_count` -> `Almost_Prime_Count`
 - [ ] `almost_prime_count_approx` -> `Almost_Prime_Count_Approx`
 - [ ] `almost_prime_count_lower` -> `Almost_Prime_Count_Lower`
@@ -64,7 +64,7 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `consecutive_integer_lcm` -> `Consecutive_Integer_Lcm`
 - [ ] `contfrac` -> `Contfrac`
 - [ ] `convergents` -> `Convergents`
-- [ ] `cornacchia` -> `Cornacchia`
+- [x] `cornacchia` -> `Cornacchia`
 - [ ] `crootint` -> `Crootint`
 - [ ] `csrand` -> `Csrand`
 - [ ] `dedekind_psi` -> `Dedekind_Psi`
@@ -356,7 +356,7 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `RiemannZeta` -> `Riemannzeta`
 - [ ] `rising_factorial` -> `Rising_Factorial`
 - [ ] `rootint` -> `Rootint`
-- [ ] `rootmod` -> `Rootmod`
+- [x] `rootmod` -> `Rootmod`
 - [ ] `rough_count` -> `Rough_Count`
 - [ ] `rshiftint` -> `Rshiftint`
 - [ ] `semiprime_count` -> `Semiprime_Count`
@@ -387,7 +387,7 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `sopf` -> `Sopf`
 - [ ] `sopfr` -> `Sopfr`
 - [ ] `sqrtint` -> `Sqrtint`
-- [ ] `sqrtmod` -> `Sqrtmod`
+- [x] `sqrtmod` -> `Sqrtmod`
 - [ ] `squarefree_kernel` -> `Squarefree_Kernel`
 - [ ] `squfof_factor` -> `Squfof_Factor`
 - [ ] `srand` -> `Srand`
