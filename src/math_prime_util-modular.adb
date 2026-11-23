@@ -26,8 +26,9 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
    --  Local factorization support until the factor package is available.
    --  Deterministic rho restarts have no shared random or mutable state.
    function Split (N : U64) return U64
-     with Pre => N > 1
-   is
+     with Pre => N > 1;
+
+   function Split (N : U64) return U64 is
       X, Y, D, C : U64;
    begin
       if N mod 2 = 0 then
@@ -45,7 +46,7 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
             D := Gcd ((if X > Y then X - Y else Y - X), N);
             exit when D /= 1;
          end loop;
-         if D > 1 and D < N then
+         if D > 1 and then D < N then
             return D;
          end if;
          C := (if C = N - 1 then 1 else C + 1);
@@ -53,7 +54,9 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
    end Split;
 
    procedure Factor_Into (N : U64; F : in out Factors)
-     with Pre => N > 0
+     with Pre => N > 0;
+
+   procedure Factor_Into (N : U64; F : in out Factors)
    is
       D : U64;
    begin
@@ -70,7 +73,9 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
    end Factor_Into;
 
    function Factorize (N : U64) return Factors
-     with Pre => N > 0
+     with Pre => N > 0;
+
+   function Factorize (N : U64) return Factors
    is
       F : Factors;
       V : U64;
@@ -96,7 +101,7 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
    begin
       if M = 0 then
          return (Defined => False);
-      elsif M = 1 or N >= M then
+      elsif M = 1 or else N >= M then
          return (True, 0);
       elsif N <= 1 then
          return (True, 1);
@@ -123,7 +128,9 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
    --  _factorialmod_without_prime_powers. N may be a transformed signed
    --  binomial input with 65 bits; residues remain native.
    function Valuation (N : U128; P : U64) return U128
-     with Pre => P >= 2
+     with Pre => P >= 2;
+
+   function Valuation (N : U128; P : U64) return U128
    is
       T : U128 := N;
       R : U128 := 0;
@@ -136,14 +143,16 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
    end Valuation;
 
    function Unit_Factorial (N : U128; P, M : U64) return U64
-     with Pre => P >= 2 and M >= P
+     with Pre => P >= 2 and then M >= P;
+
+   function Unit_Factorial (N : U128; P, M : U64) return U64
    is
       T : U128 := N;
       R : U64 := 1;
       Tail : U64;
    begin
       while T > 1 loop
-         if (T / U128 (M)) mod 2 = 1 and (P > 2 or M = 4) then
+         if (T / U128 (M)) mod 2 = 1 and then (P > 2 or else M = 4) then
             R := M - R;
          end if;
          Tail := U64 (T mod U128 (M));
@@ -159,7 +168,10 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
 
    function Binomial_Prime_Power
      (N, K : U128; P, M : U64; E : Positive) return U64
-     with Pre => K <= N and P >= 2 and M >= P
+     with Pre => K <= N and then P >= 2 and then M >= P;
+
+   function Binomial_Prime_Power
+     (N, K : U128; P, M : U64; E : Positive) return U64
    is
       B : constant U128 := Valuation (N, P) - Valuation (K, P)
         - Valuation (N - K, P);
@@ -212,7 +224,7 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
       end if;
       --  MPU's signed binomial convention reflects negative K first.
       if KK < 0 then
-         if NN >= 0 or KK > NN then
+         if NN >= 0 or else KK > NN then
             return (True, 0);
          end if;
          KK := NN - KK;
@@ -223,7 +235,7 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
       end if;
       if KK > NN then
          return (True, 0);
-      elsif KK = 0 or KK = NN then
+      elsif KK = 0 or else KK = NN then
          return (True, 1);
       end if;
       F := Factorize (M);
@@ -244,7 +256,7 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
          Result := U64 (U128 (Result) + U128 (Product) * U128 (X));
          Product := Product * Q;
       end loop;
-      if Negative and Result /= 0 then
+      if Negative and then Result /= 0 then
          Result := M - Result;
       end if;
       return (True, Result);
@@ -253,7 +265,9 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
    --  znlog.c: baby-step/giant-step search, with a bounded local table.
    --  Capping the width bounds memory, not the exponent search space.
    function Baby_Giant (A, G, M, Order : U64) return Optional_U64
-     with Pre => M > 1 and Order > 0
+     with Pre => M > 1 and then Order > 0;
+
+   function Baby_Giant (A, G, M, Order : U64) return Optional_U64
    is
       Table_Size : constant := 131_071;
       subtype Slot is Natural range 0 .. Table_Size - 1;
@@ -304,7 +318,9 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
    end Baby_Giant;
 
    function Group_Order (G, M : U64) return U64
-     with Pre => M > 1 and Gcd (G, M) = 1
+     with Pre => M > 1 and then Gcd (G, M) = 1;
+
+   function Group_Order (G, M : U64) return U64
    is
       F : Factors := Factorize (M);
       Phi : U64 := M;
@@ -327,7 +343,9 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
 
    --  znlog.c: znlog_ph, znlog_prime_power (Pohlig-Hellman digits).
    function Pohlig_Hellman (A, G, M, Order : U64) return Optional_U64
-     with Pre => M > 1 and Order > 0 and Gcd (G, M) = 1
+     with Pre => M > 1 and then Order > 0 and then Gcd (G, M) = 1;
+
+   function Pohlig_Hellman (A, G, M, Order : U64) return Optional_U64
    is
       F : constant Factors := Factorize (Order);
       I : Positive := 1;
@@ -419,7 +437,9 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
 
    --  Fast doubling returns F(K), F(K+1), including 65-bit candidates.
    procedure Fibonacci (K : U128; M : U64; A, B : out U64)
-     with Pre => M > 0
+     with Pre => M > 0;
+
+   procedure Fibonacci (K : U128; M : U64; A, B : out U64)
    is
       X : U64 := 0;
       Y : U64 := 1 mod M;
@@ -444,16 +464,20 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
    end Fibonacci;
 
    function Is_Period (K : U128; M : U64) return Boolean
-     with Pre => M > 1
+     with Pre => M > 1;
+
+   function Is_Period (K : U128; M : U64) return Boolean
    is
       A, B : U64;
    begin
       Fibonacci (K, M, A, B);
-      return A = 0 and B = 1;
+      return A = 0 and then B = 1;
    end Is_Period;
 
    function Prime_Period (P : U64) return U128
-     with Pre => P >= 2
+     with Pre => P >= 2;
+
+   function Prime_Period (P : U64) return U128
    is
       Candidate : U128;
       F : Factors;
@@ -465,8 +489,8 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
          return 20;
       end if;
       --  util.c: _pisano_prime_power. The period divides P-1 for
-      --  quadratic residues of 5, and 2*(P+1) otherwise.
-      if P mod 5 = 1 or P mod 5 = 4 then
+      --  quadratic residues of 5, and then 2*(P+1) otherwise.
+      if P mod 5 = 1 or else P mod 5 = 4 then
          Bound := P - 1;
          Candidate := U128 (Bound);
       else

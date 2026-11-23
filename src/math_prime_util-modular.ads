@@ -4,7 +4,6 @@ with Math_Prime_Util.Int;
 package Math_Prime_Util.Modular with SPARK_Mode => On is
    use Math_Prime_Util.Int;
    use type U64;
-   use type I128;
 
    --  znlog.c: znlog. Smallest exponent X with G**X = A modulo M.
    --  Undefined for M = 0 or when no exponent exists; M = 1 returns 0.
@@ -24,7 +23,7 @@ package Math_Prime_Util.Modular with SPARK_Mode => On is
    --  Inputs have at most 64 magnitude bits. Undefined for M = 0.
    function Binomialmod (N, K : I128; M : U64) return Optional_U64
      with Pre => N in -I128 (U64'Last) .. I128 (U64'Last)
-       and K in -I128 (U64'Last) .. I128 (U64'Last),
+       and then K in -I128 (U64'Last) .. I128 (U64'Last),
           Post => (if Binomialmod'Result.Defined then M > 0 and then
                      Binomialmod'Result.Value < M);
 
