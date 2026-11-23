@@ -6,7 +6,6 @@ with Ada.Strings.Unbounded;
 with AUnit.Test_Cases;
 with Fixture_Support;
 with Math_Prime_Util.Factor;
-with Math_Prime_Util.Int;
 with Math_Prime_Util.Primality;
 
 package body Compat_Factor is
@@ -110,19 +109,9 @@ package body Compat_Factor is
       return Least > 1_000_000 and then (Last = 0 or else Last >= Least);
    end Slow_Trial;
 
-   --  Skipped: line 9700, trial_factor of 553402322211286548450.
-   --  That argument is above U64. The native API has no bigint tier.
-   function Above_U64 (C : Case_Record) return Boolean is
-   begin
-      if C.Error or else C.Args.Is_Empty then
-         return False;
-      end if;
-      return not Parse_U64 (To_String (C.Args (1)), Arg (C, 1)'Machine);
-   exception
-      when Constraint_Error =>
-         return not C.Error;
-   end Above_U64;
-
+   --  Skipped: line 9700, trial_factor of 553402322211286548450,
+   --  and any other row whose argument does not fit U64.
+   --  The native API has no bigint tier. ERROR rows still run.
    function Above_Native (C : Case_Record) return Boolean is
       Dummy : U64;
    begin
