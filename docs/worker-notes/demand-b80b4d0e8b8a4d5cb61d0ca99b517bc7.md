@@ -9,3 +9,5 @@ Pyright now passes; BDD collection explicitly skips because pytest-bdd is unavai
 Print_Primes now uses Forprimes; removed redundant internal forward declarations and tracked bytecode.
 Development/release builds passed; gate is running the full Ada suite.
 Kept GNAT previous-spec style and replaced handwritten multiset sorting with the standard array sort.
+Focused runner rebuild avoids the running full-suite executable; pyright remains clean.
+Link failure traced to an implicit vector reference in the new for-of test loop; restored indexed access.

@@ -335,10 +335,10 @@ package body Compat_Iter is
          Print_Primes (Low, High, File);
          Ada.Text_IO.Close (File);
          Ada.Text_IO.Open (File, Ada.Text_IO.In_File, Path);
-         for P of Expected loop
+         for I in Expected.First_Index .. Expected.Last_Index loop
             Assert
               (not Ada.Text_IO.End_Of_File (File), "missing printed prime");
-            Assert (Ada.Text_IO.Get_Line (File) = Image (P),
+            Assert (Ada.Text_IO.Get_Line (File) = Image (Expected.Element (I)),
                "printed prime");
          end loop;
          Assert (Ada.Text_IO.End_Of_File (File), "extra printed prime");
