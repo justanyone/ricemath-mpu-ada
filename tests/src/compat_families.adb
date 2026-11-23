@@ -5,6 +5,7 @@ with Ada.Strings.Fixed;
 with Ada.Strings.Unbounded;
 with Fixture_Support;
 with Math_Prime_Util.Families;
+with Math_Prime_Util.Goldbach;
 with Math_Prime_Util.Int;
 
 package body Compat_Families is
@@ -14,6 +15,7 @@ package body Compat_Families is
    use Math_Prime_Util;
    use type U64;
    use Math_Prime_Util.Families;
+   use Math_Prime_Util.Goldbach;
    type Families_Case is new Test_Case with null record;
    overriding function Name (T : Families_Case)
       return AUnit.Message_String;
@@ -58,6 +60,24 @@ package body Compat_Families is
             end;
          elsif Func = "is_lucky" then
             Got := To_Unbounded_String ((if Is_Lucky (N) then "1" else "0"));
+         elsif Func = "minimal_goldbach_pair" then
+            Got := To_Unbounded_String (Image (Minimal_Goldbach_Pair (N)));
+         elsif Func = "goldbach_pair_count" then
+            Got := To_Unbounded_String (Image (Goldbach_Pair_Count (N)));
+         elsif Func = "goldbach_pairs" then
+            declare
+               Pairs : constant Pair_Vectors.Vector := Goldbach_Pairs (N);
+            begin
+               for P of Pairs loop
+                  if Length (Got) > 0 then
+                     Append (Got, " ");
+                  end if;
+                  Append (Got, Image (P));
+               end loop;
+               if Pairs.Is_Empty then
+                  Got := To_Unbounded_String ("undef");
+               end if;
+            end;
          elsif Func = "lucky_count" then
             Got := To_Unbounded_String
               (Image ((if Natural (C.Args.Length) = 1 then Lucky_Count (N)
@@ -93,6 +113,21 @@ package body Compat_Families is
    begin
       Replay ("is_lucky");
    end Test_Is_Lucky;
+
+   procedure Test_Minimal_Goldbach (T : in out Test_Case'Class) is
+   begin
+      Replay ("minimal_goldbach_pair");
+   end Test_Minimal_Goldbach;
+
+   procedure Test_Goldbach_Count (T : in out Test_Case'Class) is
+   begin
+      Replay ("goldbach_pair_count");
+   end Test_Goldbach_Count;
+
+   procedure Test_Goldbach_Pairs (T : in out Test_Case'Class) is
+   begin
+      Replay ("goldbach_pairs");
+   end Test_Goldbach_Pairs;
 
    procedure Test_Lucky_Count (T : in out Test_Case'Class) is
    begin
@@ -140,6 +175,12 @@ package body Compat_Families is
         (T, Test_Lucky_Numbers'Access, "lucky_numbers");
       Registration.Register_Routine
         (T, Test_Is_Lucky'Access, "is_lucky");
+      Registration.Register_Routine
+        (T, Test_Minimal_Goldbach'Access, "minimal_goldbach_pair");
+      Registration.Register_Routine
+        (T, Test_Goldbach_Count'Access, "goldbach_pair_count");
+      Registration.Register_Routine
+        (T, Test_Goldbach_Pairs'Access, "goldbach_pairs");
       Registration.Register_Routine
         (T, Test_Lucky_Count'Access, "lucky_count");
       Registration.Register_Routine
