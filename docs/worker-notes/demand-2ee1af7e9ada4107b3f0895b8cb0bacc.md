@@ -11,3 +11,4 @@ Development library build succeeded. Fixed fixture diagnostic typo, segment-end 
 Corrected vector initialization and reran the focused suite; retaining upstream segmented algorithms and all native boundary rows.
 Gate development build passed; release build is running. Added empty/reversed ranges, K=63 reduction, and a factor-segment boundary test.
 Square-free integer loop now visits one before allocation, matching XS Lastfor behavior; waiting for focused results and gate.
+Gate release and tests builds passed. Native square-free U64 fixture is still running and may conflict with the owner one-minute test limit; checking isolated execution controls.
