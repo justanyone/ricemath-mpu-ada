@@ -66,7 +66,7 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [x] `convergents` -> `Convergents`
 - [ ] `cornacchia` -> `Cornacchia`
 - [x] `crootint` -> `Crootint`
-- [ ] `csrand` -> `Csrand`
+- [x] `csrand` -> `Csrand`
 - [ ] `dedekind_psi` -> `Dedekind_Psi`
 - [x] `digital_root` -> `Digital_Root`
 - [x] `divint` -> `Divint`
@@ -128,7 +128,7 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `inverse_sigma0_count` -> `Inverse_Sigma0_Count`
 - [ ] `inverse_totient` -> `Inverse_Totient`
 - [x] `invmod` -> `Invmod`
-- [ ] `irand` -> `Irand`
+- [x] `irand` -> `Irand`
 - [ ] `irand32` -> `Irand32`
 - [ ] `irand64` -> `Irand64`
 - [ ] `is_aks_prime` -> `Is_Aks_Prime`
@@ -183,13 +183,13 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `is_rough` -> `Is_Rough`
 - [x] `is_safe_prime` -> `Is_Safe_Prime`
 - [ ] `is_semiprime` -> `Is_Semiprime`
-- [ ] `is_sidon_set` -> `Is_Sidon_Set`
+- [x] `is_sidon_set` -> `Is_Sidon_Set`
 - [ ] `is_smooth` -> `Is_Smooth`
 - [x] `is_square` -> `Is_Square`
 - [ ] `is_square_free` -> `Is_Square_Free`
 - [x] `is_strong_lucas_pseudoprime` -> `Is_Strong_Lucas_Pseudoprime`
 - [x] `is_strong_pseudoprime` -> `Is_Strong_Pseudoprime`
-- [ ] `is_sumfree_set` -> `Is_Sumfree_Set`
+- [x] `is_sumfree_set` -> `Is_Sumfree_Set`
 - [ ] `is_sum_of_squares` -> `Is_Sum_Of_Squares`
 - [ ] `is_totient` -> `Is_Totient`
 - [ ] `jordan_totient` -> `Jordan_Totient`
@@ -266,12 +266,12 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [x] `nth_ramanujan_prime_approx` -> `Nth_Ramanujan_Prime_Approx`
 - [x] `nth_ramanujan_prime_lower` -> `Nth_Ramanujan_Prime_Lower`
 - [x] `nth_ramanujan_prime_upper` -> `Nth_Ramanujan_Prime_Upper`
-- [ ] `nth_semiprime` -> `Nth_Semiprime`
-- [ ] `nth_semiprime_approx` -> `Nth_Semiprime_Approx`
+- [x] `nth_semiprime` -> `Nth_Semiprime`
+- [x] `nth_semiprime_approx` -> `Nth_Semiprime_Approx`
 - [x] `nth_stern_brocot` -> `Nth_Stern_Brocot`
 - [x] `nth_stern_diatomic` -> `Nth_Stern_Diatomic`
-- [ ] `nth_twin_prime` -> `Nth_Twin_Prime`
-- [ ] `nth_twin_prime_approx` -> `Nth_Twin_Prime_Approx`
+- [x] `nth_twin_prime` -> `Nth_Twin_Prime`
+- [x] `nth_twin_prime_approx` -> `Nth_Twin_Prime_Approx`
 - [x] `numtoperm` -> `Numtoperm`
 - [ ] `omega_prime_count` -> `Omega_Prime_Count`
 - [ ] `omega_primes` -> `Omega_Primes`
@@ -332,7 +332,7 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `ramanujan_sum` -> `Ramanujan_Sum`
 - [ ] `ramanujan_tau` -> `Ramanujan_Tau`
 - [ ] `rand` -> `Rand`
-- [ ] `random_bytes` -> `Random_Bytes`
+- [x] `random_bytes` -> `Random_Bytes`
 - [ ] `random_factored_integer` -> `Random_Factored_Integer`
 - [ ] `random_maurer_prime` -> `Random_Maurer_Prime`
 - [ ] `random_maurer_prime_with_cert` -> `Random_Maurer_Prime_With_Cert`
@@ -359,26 +359,26 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `rootmod` -> `Rootmod`
 - [ ] `rough_count` -> `Rough_Count`
 - [x] `rshiftint` -> `Rshiftint`
-- [ ] `semiprime_count` -> `Semiprime_Count`
-- [ ] `semiprime_count_approx` -> `Semiprime_Count_Approx`
-- [ ] `semi_primes` -> `Semi_Primes`
+- [x] `semiprime_count` -> `Semiprime_Count`
+- [x] `semiprime_count_approx` -> `Semiprime_Count_Approx`
+- [x] `semi_primes` -> `Semi_Primes`
 - [ ] `setbinop` -> `Setbinop`
-- [ ] `setcontains` -> `Setcontains`
-- [ ] `setcontainsany` -> `Setcontainsany`
-- [ ] `setdelta` -> `Setdelta`
-- [ ] `setinsert` -> `Setinsert`
-- [ ] `setintersect` -> `Setintersect`
-- [ ] `setinvert` -> `Setinvert`
-- [ ] `set_is_disjoint` -> `Set_Is_Disjoint`
-- [ ] `set_is_equal` -> `Set_Is_Equal`
-- [ ] `set_is_proper_intersection` -> `Set_Is_Proper_Intersection`
-- [ ] `set_is_proper_subset` -> `Set_Is_Proper_Subset`
-- [ ] `set_is_proper_superset` -> `Set_Is_Proper_Superset`
-- [ ] `set_is_subset` -> `Set_Is_Subset`
-- [ ] `set_is_superset` -> `Set_Is_Superset`
-- [ ] `setminus` -> `Setminus`
-- [ ] `setremove` -> `Setremove`
-- [ ] `setunion` -> `Setunion`
+- [x] `setcontains` -> `Setcontains`
+- [x] `setcontainsany` -> `Setcontainsany`
+- [x] `setdelta` -> `Setdelta`
+- [x] `setinsert` -> `Setinsert`
+- [x] `setintersect` -> `Setintersect`
+- [x] `setinvert` -> `Setinvert`
+- [x] `set_is_disjoint` -> `Set_Is_Disjoint`
+- [x] `set_is_equal` -> `Set_Is_Equal`
+- [x] `set_is_proper_intersection` -> `Set_Is_Proper_Intersection`
+- [x] `set_is_proper_subset` -> `Set_Is_Proper_Subset`
+- [x] `set_is_proper_superset` -> `Set_Is_Proper_Superset`
+- [x] `set_is_subset` -> `Set_Is_Subset`
+- [x] `set_is_superset` -> `Set_Is_Superset`
+- [x] `setminus` -> `Setminus`
+- [x] `setremove` -> `Setremove`
+- [x] `setunion` -> `Setunion`
 - [ ] `shuffle` -> `Shuffle`
 - [x] `sieve_prime_cluster` -> `Sieve_Prime_Cluster`
 - [x] `sieve_range` -> `Sieve_Range`
@@ -401,48 +401,48 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `sumliouville` -> `Sumliouville`
 - [ ] `sumpowerful` -> `Sumpowerful`
 - [x] `sum_primes` -> `Sum_Primes`
-- [ ] `sumset` -> `Sumset`
+- [x] `sumset` -> `Sumset`
 - [ ] `sumtotient` -> `Sumtotient`
 - [x] `tdivrem` -> `Tdivrem`
 - [x] `todigits` -> `Todigits`
 - [x] `todigitstring` -> `Todigitstring`
 - [x] `toint` -> `Toint`
-- [ ] `toset` -> `Toset`
+- [x] `toset` -> `Toset`
 - [x] `tozeckendorf` -> `Tozeckendorf`
 - [ ] `trial_factor` -> `Trial_Factor`
-- [ ] `twin_prime_count` -> `Twin_Prime_Count`
-- [ ] `twin_prime_count_approx` -> `Twin_Prime_Count_Approx`
-- [ ] `twin_primes` -> `Twin_Primes`
-- [ ] `urandomb` -> `Urandomb`
-- [ ] `urandomm` -> `Urandomm`
-- [ ] `urandomr` -> `Urandomr`
+- [x] `twin_prime_count` -> `Twin_Prime_Count`
+- [x] `twin_prime_count_approx` -> `Twin_Prime_Count_Approx`
+- [x] `twin_primes` -> `Twin_Primes`
+- [x] `urandomb` -> `Urandomb`
+- [x] `urandomm` -> `Urandomm`
+- [x] `urandomr` -> `Urandomr`
 - [ ] `valuation` -> `Valuation`
 - [ ] `vecall` -> `Vecall`
 - [ ] `vecany` -> `Vecany`
-- [ ] `vecequal` -> `Vecequal`
-- [ ] `vecextract` -> `Vecextract`
+- [x] `vecequal` -> `Vecequal`
+- [x] `vecextract` -> `Vecextract`
 - [ ] `vecfirst` -> `Vecfirst`
 - [ ] `vecfirstidx` -> `Vecfirstidx`
-- [ ] `vecfreq` -> `Vecfreq`
-- [ ] `vecmax` -> `Vecmax`
-- [ ] `vecmex` -> `Vecmex`
-- [ ] `vecmin` -> `Vecmin`
+- [x] `vecfreq` -> `Vecfreq`
+- [x] `vecmax` -> `Vecmax`
+- [x] `vecmex` -> `Vecmex`
+- [x] `vecmin` -> `Vecmin`
 - [ ] `vecnone` -> `Vecnone`
 - [ ] `vecnotall` -> `Vecnotall`
 - [ ] `vecpairwise` -> `Vecpairwise`
-- [ ] `vecpmex` -> `Vecpmex`
-- [ ] `vecprefixsum` -> `Vecprefixsum`
-- [ ] `vecprod` -> `Vecprod`
+- [x] `vecpmex` -> `Vecpmex`
+- [x] `vecprefixsum` -> `Vecprefixsum`
+- [x] `vecprod` -> `Vecprod`
 - [ ] `vecreduce` -> `Vecreduce`
-- [ ] `vecrsort` -> `Vecrsort`
-- [ ] `vecrsorti` -> `Vecrsorti`
+- [x] `vecrsort` -> `Vecrsort`
+- [x] `vecrsorti` -> `Vecrsorti`
 - [ ] `vecsample` -> `Vecsample`
-- [ ] `vecsingleton` -> `Vecsingleton`
+- [x] `vecsingleton` -> `Vecsingleton`
 - [ ] `vecslide` -> `Vecslide`
-- [ ] `vecsort` -> `Vecsort`
-- [ ] `vecsorti` -> `Vecsorti`
-- [ ] `vecsum` -> `Vecsum`
-- [ ] `vecuniq` -> `Vecuniq`
+- [x] `vecsort` -> `Vecsort`
+- [x] `vecsorti` -> `Vecsorti`
+- [x] `vecsum` -> `Vecsum`
+- [x] `vecuniq` -> `Vecuniq`
 - [ ] `vecwindow` -> `Vecwindow`
 - [ ] `verify_prime` -> `Verify_Prime`
 - [ ] `znlog` -> `Znlog`
