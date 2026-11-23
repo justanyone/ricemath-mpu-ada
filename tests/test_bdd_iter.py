@@ -51,3 +51,31 @@ def callback_control(iterator_run):
     assert "OK Compat_Iter : control" in output, output
     assert "Failed Assertions: 0" in output, output
     assert "Unexpected Errors: 0" in output, output
+
+
+# The existing runner step is reused; these assertions cover the new APIs.
+@then("compositions, derangements, multisets, and products match fixtures")
+def combinatorial_compatibility(iterator_run):
+    output, _ = iterator_run
+    for name in ("forcomp", "forderange", "formultiperm", "forsetproduct"):
+        assert f"OK Compat_Iter : {name}" in output, output
+    assert "Failed Assertions: 0" in output, output
+    assert "Unexpected Errors: 0" in output, output
+
+
+# Object navigation needs a distinct observable result from callback loops.
+@then("prime object iteration and navigation pass")
+def prime_object_compatibility(iterator_run):
+    output, _ = iterator_run
+    assert "OK Compat_Iter : object" in output, output
+    assert "Failed Assertions: 0" in output, output
+    assert "Unexpected Errors: 0" in output, output
+
+
+# File output is checked line by line inside the Ada harness.
+@then("printed prime lines match the sieve")
+def printed_primes(iterator_run):
+    output, _ = iterator_run
+    assert "OK Compat_Iter : print_primes" in output, output
+    assert "Failed Assertions: 0" in output, output
+    assert "Unexpected Errors: 0" in output, output
