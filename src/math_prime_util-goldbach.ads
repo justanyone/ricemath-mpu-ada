@@ -1,6 +1,5 @@
 with Ada.Containers.Vectors;
 with Math_Prime_Util.Int;
-pragma Elaborate_Body (Ada.Containers.Vectors);
 
 --  Goldbach partitions from MPU 0.75 goldbach.c.
 package Math_Prime_Util.Goldbach is
