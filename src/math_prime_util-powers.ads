@@ -5,6 +5,7 @@ with Math_Prime_Util.Int;
 --  Prime powers and perfect powers from MPU 0.75 prime_powers.c and
 --  perfect_powers.c. Results are dimensionless integers.
 package Math_Prime_Util.Powers is
+   package Count renames Math_Prime_Util.Count;
    use type U64;
    use type Int.I128;
 
