@@ -374,8 +374,9 @@ package body Compat_Vec is
            (Name, C, Bit (Set_Is_Proper_Intersection (Left, Right)), False);
       elsif Name = "vecextract" then
          declare
-            Value : constant Text_Result :=
-              Vecextract (Left_Text, Parse_Integer (To_String (Right_Text (1))));
+            Mask : constant Big_Integer :=
+              Parse_Integer (To_String (Right_Text (1)));
+            Value : constant Text_Result := Vecextract (Left_Text, Mask);
          begin
             if not Value.Defined then
                Match_Undef (Name, C, True);
