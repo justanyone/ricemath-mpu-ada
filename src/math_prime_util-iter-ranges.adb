@@ -148,13 +148,13 @@ package body Math_Prime_Util.Iter.Ranges is
                Last : constant U64 :=
                  First + U64'Min (High - First, 256 * 1024 - 1);
                subtype Index is Natural range 0 .. Natural (Last - First);
-               type Entry is record
+               type Factor_Entry is record
                   Product : U64 := 1;
                   Count : Natural range 0 .. 15 := 0;
                   Factors : Value_Array (1 .. 15) := [others => 0];
                end record;
                package Entry_Vectors is new Ada.Containers.Vectors
-                 (Index_Type => Natural, Element_Type => Entry);
+                 (Index_Type => Natural, Element_Type => Factor_Entry);
                Data : Entry_Vectors.Vector;
                Root : constant U64 := Int.Sqrtint (Last);
                Full : constant Boolean := Root < 10_000_000
@@ -182,7 +182,7 @@ package body Math_Prime_Util.Iter.Ranges is
                              else P - First mod P);
                   while Offset <= Last - First loop
                      declare
-                        E : Entry renames Data (Natural (Offset));
+                        E : Factor_Entry renames Data (Natural (Offset));
                      begin
                         if E.Product > 0 then
                            E.Count := E.Count + 1;
@@ -196,7 +196,7 @@ package body Math_Prime_Util.Iter.Ranges is
                end loop;
                for I in Index loop
                   declare
-                     E : Entry renames Data (I);
+                     E : Factor_Entry renames Data (I);
                      N : constant U64 := First + U64 (I);
                      Remain : U64;
                   begin
