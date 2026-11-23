@@ -86,11 +86,14 @@ package body Compat_Families is
                        else Ramanujan_Prime_Count
                          (N, U64'Value (To_String (C.Args (2)))))));
          elsif Func = "ramanujan_prime_count_lower" then
-            Got := To_Unbounded_String (Image (Ramanujan_Prime_Count_Lower (N)));
+            Got := To_Unbounded_String
+              (Image (Ramanujan_Prime_Count_Lower (N)));
          elsif Func = "ramanujan_prime_count_upper" then
-            Got := To_Unbounded_String (Image (Ramanujan_Prime_Count_Upper (N)));
+            Got := To_Unbounded_String
+              (Image (Ramanujan_Prime_Count_Upper (N)));
          elsif Func = "ramanujan_prime_count_approx" then
-            Got := To_Unbounded_String (Image (Ramanujan_Prime_Count_Approx (N)));
+            Got := To_Unbounded_String
+              (Image (Ramanujan_Prime_Count_Approx (N)));
          elsif Func = "nth_ramanujan_prime" then
             Got := To_Unbounded_String (Image (Nth_Ramanujan_Prime (N)));
          elsif Func = "nth_ramanujan_prime_lower" then
@@ -98,7 +101,8 @@ package body Compat_Families is
          elsif Func = "nth_ramanujan_prime_upper" then
             Got := To_Unbounded_String (Image (Nth_Ramanujan_Prime_Upper (N)));
          elsif Func = "nth_ramanujan_prime_approx" then
-            Got := To_Unbounded_String (Image (Nth_Ramanujan_Prime_Approx (N)));
+            Got := To_Unbounded_String
+              (Image (Nth_Ramanujan_Prime_Approx (N)));
          elsif Func = "is_lucky" then
             Got := To_Unbounded_String ((if Is_Lucky (N) then "1" else "0"));
          elsif Func = "lucky_count" then
@@ -256,19 +260,25 @@ package body Compat_Families is
       Registration.Register_Routine
         (T, Test_Ramanujan_Prime_Count'Access, "ramanujan_prime_count");
       Registration.Register_Routine
-        (T, Test_Ramanujan_Prime_Count_Lower'Access, "ramanujan_prime_count_lower");
+        (T, Test_Ramanujan_Prime_Count_Lower'Access,
+         "ramanujan_prime_count_lower");
       Registration.Register_Routine
-        (T, Test_Ramanujan_Prime_Count_Upper'Access, "ramanujan_prime_count_upper");
+        (T, Test_Ramanujan_Prime_Count_Upper'Access,
+         "ramanujan_prime_count_upper");
       Registration.Register_Routine
-        (T, Test_Ramanujan_Prime_Count_Approx'Access, "ramanujan_prime_count_approx");
+        (T, Test_Ramanujan_Prime_Count_Approx'Access,
+         "ramanujan_prime_count_approx");
       Registration.Register_Routine
         (T, Test_Nth_Ramanujan_Prime'Access, "nth_ramanujan_prime");
       Registration.Register_Routine
-        (T, Test_Nth_Ramanujan_Prime_Lower'Access, "nth_ramanujan_prime_lower");
+        (T, Test_Nth_Ramanujan_Prime_Lower'Access,
+         "nth_ramanujan_prime_lower");
       Registration.Register_Routine
-        (T, Test_Nth_Ramanujan_Prime_Upper'Access, "nth_ramanujan_prime_upper");
+        (T, Test_Nth_Ramanujan_Prime_Upper'Access,
+         "nth_ramanujan_prime_upper");
       Registration.Register_Routine
-        (T, Test_Nth_Ramanujan_Prime_Approx'Access, "nth_ramanujan_prime_approx");
+        (T, Test_Nth_Ramanujan_Prime_Approx'Access,
+         "nth_ramanujan_prime_approx");
    end Register_Tests;
 
    function Suite return AUnit.Test_Suites.Access_Test_Suite is
