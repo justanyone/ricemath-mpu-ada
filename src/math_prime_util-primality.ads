@@ -35,25 +35,28 @@ package Math_Prime_Util.Primality with SPARK_Mode => On is
 
    --  primality.c: is_pseudoprime.
    --  Tests the supplied integer; no mutable shared state.
-   --  A must be at least 2; invalid bases fail the precondition.
+   --  A defaults to 2 and must be at least 2; invalid bases fail
+   --  the precondition.
    function Is_Pseudoprime
-     (N, A : U64) return Boolean
+     (N : U64; A : U64 := 2) return Boolean
      with Pre => A >= 2,
           Post => (if N < 2 then not Is_Pseudoprime'Result);
 
    --  primality.c: is_euler_pseudoprime.
    --  Tests the supplied integer; no mutable shared state.
-   --  A must be at least 2; invalid bases fail the precondition.
+   --  A defaults to 2 and must be at least 2; invalid bases fail
+   --  the precondition.
    function Is_Euler_Pseudoprime
-     (N, A : U64) return Boolean
+     (N : U64; A : U64 := 2) return Boolean
      with Pre => A >= 2,
           Post => (if N < 2 then not Is_Euler_Pseudoprime'Result);
 
    --  primality.c: is_strong_pseudoprime.
    --  Tests the supplied integer; no mutable shared state.
-   --  A must be at least 2; invalid bases fail the precondition.
+   --  A defaults to 2 and must be at least 2; invalid bases fail
+   --  the precondition.
    function Is_Strong_Pseudoprime
-     (N, A : U64) return Boolean
+     (N : U64; A : U64 := 2) return Boolean
      with Pre => A >= 2,
           Post => (if N < 2 then not Is_Strong_Pseudoprime'Result);
 
