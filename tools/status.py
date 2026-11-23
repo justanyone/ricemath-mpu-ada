@@ -12,6 +12,7 @@ ROOT = Path(__file__).resolve().parent.parent
 STATUS = ROOT / "STATUS.md"
 SOURCE = ROOT / "src"
 FUNCTIONS_HEADING = "## Functions"
+FUNCTION_COUNT = 428
 STATUS_ROW = re.compile(
     r"^(?P<prefix>- \[)(?P<tick>[ x-])(?P<middle>\] `[^`]+` -> `)"
     r"(?P<name>[^`]+)(?P<suffix>`.*)$"
@@ -34,20 +35,28 @@ def public_subprograms(source: Path) -> set[str]:
 
 
 def regenerate(status: Path = STATUS, source: Path = SOURCE) -> bool:
-    """Update function ticks. Return True if the status file changed."""
+    """Update ticks; reject malformed lists. Return whether the file changed."""
     original = status.read_text(encoding="utf-8")
     lines = original.splitlines(keepends=True)
-    declared = public_subprograms(source)
-    if source.exists():
-        declared = public_subprograms(source)
-    else:
-        declared = set()
     try:
         start = next(i for i, line in enumerate(lines)
                      if line.rstrip("\r\n") == FUNCTIONS_HEADING) + 1
     except StopIteration:
         raise ValueError(f"missing {FUNCTIONS_HEADING!r} heading") from None
 
+    count = 0
+    for index in range(start, len(lines)):
+        content = lines[index].rstrip("\r\n")
+        if not content.strip():
+            continue
+        if STATUS_ROW.fullmatch(content) is None:
+            raise ValueError(f"invalid function row at line {index + 1}")
+        count += 1
+    if count != FUNCTION_COUNT:
+        raise ValueError(
+            f"expected {FUNCTION_COUNT} function rows, found {count}")
+
+    declared = public_subprograms(source)
     changed = False
     for index in range(start, len(lines)):
         line = lines[index]
