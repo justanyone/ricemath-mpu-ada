@@ -1,9 +1,9 @@
 """BDD entry point for the native Ada random compatibility suite."""
-from pathlib import Path
-import subprocess
 import re
+import subprocess
+from pathlib import Path
 
-from pytest_bdd import given, when, then, scenarios
+from pytest_bdd import given, scenarios, then, when
 
 scenarios("features/random.feature")
 ROOT = Path(__file__).resolve().parent
@@ -27,8 +27,8 @@ def run_random_suite(runner):
 
 # Justification: AUnit's text runner reports assertion failures in its summary.
 @then("all native random fixture rows and boundary properties pass")
-def random_suite_passes(result):
+def random_suite_passes(result, expected=1):
     assert result.returncode == 0, result.stdout + result.stderr
     assert "Failed Assertions: 0" in result.stdout, result.stdout
     assert "Unexpected Errors: 0" in result.stdout, result.stdout
-    assert re.search(r"Total Tests Run:\s+1\b", result.stdout), result.stdout
+    assert re.search(rf"Total Tests Run:\s+{expected}\b", result.stdout), result.stdout
