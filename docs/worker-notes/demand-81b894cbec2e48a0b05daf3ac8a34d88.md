@@ -5,3 +5,4 @@ Port prime-power and perfect-power functions from reference/mpu/prime_powers.c a
 Why: STATUS.md still has those functions unticked, and families.ads has lucky, Ramanujan, twin, and semiprime only. The launcher note says the base already contains origin/dev-mpuada-001, so I will verify what is already present and fill only the missing port and its tests.
 
 Next: list the fixture function names, read the C entry points, and match the twin/semiprime port style.
+- 2026-11-23T13:39:20Z launcher: no commit for 60 s; 120 s elapsed. Files changed so far: docs/worker-notes/demand-81b894cbec2e48a0b05daf3ac8a34d88.md.
