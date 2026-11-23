@@ -61,6 +61,12 @@ package body Math_Prime_Util.Arith.Totients is
      (N : U64; Values : out U64_Vectors.Vector; Count : out U64;
       Count_Only : Boolean)
      with SPARK_Mode => Off
+;
+
+   procedure Inverse_Search
+     (N : U64; Values : out U64_Vectors.Vector; Count : out U64;
+      Count_Only : Boolean)
+     with SPARK_Mode => Off
    is
       Divs : constant Factor.U64_Vectors.Vector := Factor.Divisors (N);
       procedure Visit (Remaining, Product, Minimum : U64);
@@ -360,6 +366,7 @@ package body Math_Prime_Util.Arith.Totients is
          -447438528];
 
       --  util.c: hclassno and _count_class_div; 12 times H(X).
+      function Class_Number (X : U64) return U64;
       function Class_Number (X : U64) return U64 is
          H, D, B2, Bound, Corr : U64;
          Square : Boolean;
@@ -404,6 +411,7 @@ package body Math_Prime_Util.Arith.Totients is
          return 12 * H + Corr;
       end Class_Number;
 
+      function Tau_Prime (P : U64) return Big_Integer;
       function Tau_Prime (P : U64) return Big_Integer is
          Sum : Big_Integer := To_Big_Integer (0);
          BP : constant Big_Integer := B (P);
