@@ -742,7 +742,7 @@ package body Math_Prime_Util.Families is
                Step := Step + 1;
                Lo := M * Base;
             end loop;
-            exit when Last < Base or E = 11;
+            exit when Last < Base or else E = 11;
             Base := Base * 10;
          end loop;
       end if;
@@ -998,8 +998,7 @@ package body Math_Prime_Util.Families is
       if Low > Last or else Lo > Last then
          return 0;
       end if;
-      if High <= 40_000_000_000_000 and then
-         Low <= 4 then
+      if High <= 40_000_000_000_000 and then Low <= 4 then
          return Semiprime_Count (High);
       end if;
       loop
