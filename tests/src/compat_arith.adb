@@ -108,7 +108,7 @@ package body Compat_Arith is
       Assert (Divisor_Sum (2 ** 63).Defined,
               "prime power sigma fits");
       Assert (Divisor_Sum (2 ** 63).Value = U64'Last, "sigma at limit");
-      Assert (Aliquot_Sum (U64'Last).Value = 12_981_875_720_361_790_209,
+      Assert (Aliquot_Sum (U64'Last).Value = 12_975_236_915_480_337_153,
               "aliquot fits although sigma overflows");
       Assert (Abundance (18_446_744_073_709_551_557) =
                 -18_446_744_073_709_551_556, "signed wide boundary");
