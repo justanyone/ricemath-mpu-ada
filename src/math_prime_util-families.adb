@@ -854,20 +854,19 @@ package body Math_Prime_Util.Families is
            Prime_Sieve.Primes ((Start + 1) / 2, (Stop + 1) / 2);
          Qi : Natural := 0;
       begin
-         --  Noe's count falls at twice a prime. The next prime is the
-         --  candidate for each index crossed by that fall; later falls
-         --  overwrite it. Skip all odd positions with no count change.
+         --  Noe's count falls at twice a prime and rises at a prime.
+         --  The last rise to each index is its Ramanujan prime.
          for P of Prime_Sieve.Primes (Start, Stop) loop
             while Qi < Natural (Half.Length) and then
               Half.Element (Qi) * 2 < P
             loop
-               if S >= Lo and then S <= Last then
-                  Result.Replace_Element (Natural (S - Lo), P);
-               end if;
                S := S - 1;
                Qi := Qi + 1;
             end loop;
             S := S + 1;
+            if S >= Lo and then S <= Last then
+               Result.Replace_Element (Natural (S - Lo), P);
+            end if;
          end loop;
       end;
       return Result;
