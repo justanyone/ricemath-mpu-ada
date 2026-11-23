@@ -23,3 +23,4 @@ Next: add the subprograms to Math_Prime_Util.Families and replay them from compa
 - 2026-11-23T13:52:22Z launcher: no commit for 60 s; 903 s elapsed. Files changed so far: docs/worker-notes/demand-81b894cbec2e48a0b05daf3ac8a34d88.md.
 - 2026-11-23T13:53:22Z launcher: no commit for 60 s; 963 s elapsed. Files changed so far: docs/worker-notes/demand-81b894cbec2e48a0b05daf3ac8a34d88.md.
 - 2026-11-23T13:54:23Z launcher: no commit for 60 s; 1023 s elapsed. Files changed so far: docs/worker-notes/demand-81b894cbec2e48a0b05daf3ac8a34d88.md.
+- 2026-11-23T13:56:23Z launcher: no commit for 60 s; 1143 s elapsed. Files changed so far: docs/worker-notes/demand-81b894cbec2e48a0b05daf3ac8a34d88.md, src/math_prime_util-families.ads.
