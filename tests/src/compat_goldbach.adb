@@ -1,5 +1,6 @@
 with AUnit.Assertions;
 with AUnit.Test_Cases;
+with AUnit.Test_Suites;
 with Ada.Strings.Fixed;
 with Ada.Strings.Unbounded;
 with Fixture_Support;
@@ -97,7 +98,7 @@ package body Compat_Goldbach is
       Result : constant AUnit.Test_Suites.Access_Test_Suite :=
         new AUnit.Test_Suites.Test_Suite;
    begin
-      Result.Add_Test (Goldbach_Case' (null record));
+      AUnit.Test_Suites.Add_Test (Result.all, new Goldbach_Case);
       return Result;
    end Suite;
 end Compat_Goldbach;
