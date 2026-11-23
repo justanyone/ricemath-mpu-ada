@@ -187,15 +187,9 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `is_smooth` -> `Is_Smooth`
 - [x] `is_square` -> `Is_Square`
 - [ ] `is_square_free` -> `Is_Square_Free`
-<<<<<<< HEAD
-- [ ] `is_strong_lucas_pseudoprime` -> `Is_Strong_Lucas_Pseudoprime`
-- [ ] `is_strong_pseudoprime` -> `Is_Strong_Pseudoprime`
-- [x] `is_sumfree_set` -> `Is_Sumfree_Set`
-=======
 - [x] `is_strong_lucas_pseudoprime` -> `Is_Strong_Lucas_Pseudoprime`
 - [x] `is_strong_pseudoprime` -> `Is_Strong_Pseudoprime`
-- [ ] `is_sumfree_set` -> `Is_Sumfree_Set`
->>>>>>> origin/dev-mpuada-001
+- [x] `is_sumfree_set` -> `Is_Sumfree_Set`
 - [ ] `is_sum_of_squares` -> `Is_Sum_Of_Squares`
 - [ ] `is_totient` -> `Is_Totient`
 - [ ] `jordan_totient` -> `Jordan_Totient`
@@ -406,27 +400,15 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [x] `sumdigits` -> `Sumdigits`
 - [ ] `sumliouville` -> `Sumliouville`
 - [ ] `sumpowerful` -> `Sumpowerful`
-<<<<<<< HEAD
-- [ ] `sum_primes` -> `Sum_Primes`
-- [x] `sumset` -> `Sumset`
-- [ ] `sumtotient` -> `Sumtotient`
-- [ ] `tdivrem` -> `Tdivrem`
-- [ ] `todigits` -> `Todigits`
-- [ ] `todigitstring` -> `Todigitstring`
-- [ ] `toint` -> `Toint`
-- [x] `toset` -> `Toset`
-- [ ] `tozeckendorf` -> `Tozeckendorf`
-=======
 - [x] `sum_primes` -> `Sum_Primes`
-- [ ] `sumset` -> `Sumset`
+- [x] `sumset` -> `Sumset`
 - [ ] `sumtotient` -> `Sumtotient`
 - [x] `tdivrem` -> `Tdivrem`
 - [x] `todigits` -> `Todigits`
 - [x] `todigitstring` -> `Todigitstring`
 - [x] `toint` -> `Toint`
-- [ ] `toset` -> `Toset`
+- [x] `toset` -> `Toset`
 - [x] `tozeckendorf` -> `Tozeckendorf`
->>>>>>> origin/dev-mpuada-001
 - [ ] `trial_factor` -> `Trial_Factor`
 - [ ] `twin_prime_count` -> `Twin_Prime_Count`
 - [ ] `twin_prime_count_approx` -> `Twin_Prime_Count_Approx`
