@@ -46,9 +46,13 @@ package Math_Prime_Util.Vec with SPARK_Mode => On is
    function Vecrsort (A : Integer_Array) return Integer_Array
      with Post => Vecrsort'Result'Length = A'Length;
    --  Sort A in ascending order in place.
-   procedure Vecsorti (A : in out Integer_Array);
+   procedure Vecsorti (A : in out Integer_Array)
+     with Post => (for all I in A'Range =>
+       (if I > A'First then A (I - 1) <= A (I)));
    --  Sort A in descending order in place.
-   procedure Vecrsorti (A : in out Integer_Array);
+   procedure Vecrsorti (A : in out Integer_Array)
+     with Post => (for all I in A'Range =>
+       (if I > A'First then A (I - 1) >= A (I)));
    --  Least excluded nonnegative integer; negative inputs raise.
    function Vecmex (A : Integer_Array) return I128
      with Pre => (for all V of A => V >= 0),
@@ -58,7 +62,8 @@ package Math_Prime_Util.Vec with SPARK_Mode => On is
      with Pre => (for all V of A => V > 0),
           Post => Vecpmex'Result in 1 .. I128 (A'Length) + 1;
    --  Elementwise integer equality, independent of array lower bounds.
-   function Vecequal (A, B : Integer_Array) return Boolean;
+   function Vecequal (A, B : Integer_Array) return Boolean
+     with Post => (if A'Length /= B'Length then not Vecequal'Result);
    --  Extract set bits of a 128-bit mask, in increasing position order.
    --  Bits beyond A produce undefined values; use unsigned masks.
    function Vecextract (A : Integer_Array; Mask : U128)
@@ -74,16 +79,22 @@ package Math_Prime_Util.Vec with SPARK_Mode => On is
    function Setunion (A, B : Integer_Array) return Integer_Array
      with Pre => A'Length <= Natural'Last - B'Length;
    --  Intersection of arbitrary integer lists, in set form.
-   function Setintersect (A, B : Integer_Array) return Integer_Array;
+   function Setintersect (A, B : Integer_Array) return Integer_Array
+     with Post => Setintersect'Result'Length <=
+       Natural'Min (A'Length, B'Length);
    --  A minus B, in set form.
-   function Setminus (A, B : Integer_Array) return Integer_Array;
+   function Setminus (A, B : Integer_Array) return Integer_Array
+     with Post => Setminus'Result'Length <= A'Length;
    --  Symmetric difference, in set form.
    function Setdelta (A, B : Integer_Array) return Integer_Array
      with Pre => A'Length <= Natural'Last - B'Length;
    --  Whether every value in B belongs to A; empty B is contained.
-   function Setcontains (A, B : Integer_Array) return Boolean;
+   function Setcontains (A, B : Integer_Array) return Boolean
+     with Post => (if B'Length = 0 then Setcontains'Result);
    --  Whether at least one value in B belongs to A.
-   function Setcontainsany (A, B : Integer_Array) return Boolean;
+   function Setcontainsany (A, B : Integer_Array) return Boolean
+     with Post => (if A'Length = 0 or else B'Length = 0 then
+                     not Setcontainsany'Result);
    --  Whether the intersection is empty.
    function Set_Is_Disjoint (A, B : Integer_Array) return Boolean;
    --  Whether the sets contain the same values.
@@ -100,13 +111,16 @@ package Math_Prime_Util.Vec with SPARK_Mode => On is
    function Set_Is_Proper_Intersection (A, B : Integer_Array) return Boolean;
    --  Insert B into A; use union for the resulting set.
    --  Returns the number of newly inserted values.
-   function Setinsert (A, B : Integer_Array) return Natural;
+   function Setinsert (A, B : Integer_Array) return Natural
+     with Post => Setinsert'Result <= B'Length;
    --  Remove B from A; use minus for the resulting set.
    --  Returns the number of removed values.
-   function Setremove (A, B : Integer_Array) return Natural;
+   function Setremove (A, B : Integer_Array) return Natural
+     with Post => Setremove'Result <= Natural'Min (A'Length, B'Length);
    --  Toggle B in A; use delta for the resulting set.
    --  Returns inserted count minus removed count.
-   function Setinvert (A, B : Integer_Array) return Integer;
+   function Setinvert (A, B : Integer_Array) return Integer
+     with Post => Setinvert'Result in -A'Length .. B'Length;
    --  Insert into a capacity buffer whose first Last elements form A.
    --  Count is the inserted count; insufficient capacity raises before
    --  writing.
@@ -135,7 +149,11 @@ package Math_Prime_Util.Vec with SPARK_Mode => On is
      with Pre => (A'Length = 0 or else
                     A'Length <= Natural'Last / A'Length);
    --  Unique nonnegative pair sums (including equal pairs); negatives fail.
-   function Is_Sidon_Set (A : Integer_Array) return Boolean;
+   function Is_Sidon_Set (A : Integer_Array) return Boolean
+     with Pre => A'Length = 0 or else
+       A'Length <= Natural'Last / A'Length,
+          Post => (if (for some V of A => V < 0) then
+                      not Is_Sidon_Set'Result);
    --  Whether no pair sum belongs to A; signed inputs are permitted.
    function Is_Sumfree_Set (A : Integer_Array) return Boolean;
 
@@ -162,33 +180,41 @@ package Math_Prime_Util.Vec with SPARK_Mode => On is
    --  First matching value, undefined if no value matches.
    generic
       with function Predicate (V : I128) return Boolean;
-   function Vecfirst (A : Integer_Array) return Optional_Value;
+   function Vecfirst (A : Integer_Array) return Optional_Value
+     with Post => (if A'Length = 0 then not Vecfirst'Result.Defined);
 
    --  Zero-based index of the first match, or minus one.
    generic
       with function Predicate (V : I128) return Boolean;
-   function Vecfirstidx (A : Integer_Array) return I128;
+   function Vecfirstidx (A : Integer_Array) return I128
+     with Post => Vecfirstidx'Result in -1 .. I128 (A'Length) - 1;
 
    --  Left fold; empty input is undefined; callback exceptions propagate.
    generic
       with function Operation (A, B : I128) return I128;
-   function Vecreduce (A : Integer_Array) return Optional_Value;
+   function Vecreduce (A : Integer_Array) return Optional_Value
+     with Post => Vecreduce'Result.Defined = (A'Length > 0);
 
    --  Scalar callback for consecutive overlapping pairs; empty for <2 items.
    generic
       with function Operation (A, B : I128) return I128;
-   function Vecslide (A : Integer_Array) return Integer_Array;
+   function Vecslide (A : Integer_Array) return Integer_Array
+     with Post => Vecslide'Result'Length =
+       Natural'Max (1, A'Length) - 1;
 
    --  Flatten results for corresponding pairs. Ignore unmatched tails.
    generic
       with function Operation (A, B : I128) return Integer_Array;
-   function Vecpairwise (A, B : Integer_Array) return Integer_Array;
+   function Vecpairwise (A, B : Integer_Array) return Integer_Array
+     with Post => (if A'Length = 0 or else B'Length = 0 then
+                     Vecpairwise'Result'Length = 0);
 
    --  Flatten complete windows; step and size are positive element counts.
    generic
       with function Operation (A : Integer_Array) return Integer_Array;
    function Vecwindow (A : Integer_Array; Step, Size : Positive)
-      return Integer_Array;
+      return Integer_Array
+     with Post => (if Size > A'Length then Vecwindow'Result'Length = 0);
 
    --  Sorted distinct callback results over the Cartesian product.
    --  With Self True, ignore B and evaluate pairs i<=j of sorted A.
