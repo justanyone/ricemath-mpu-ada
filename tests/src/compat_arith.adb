@@ -65,7 +65,7 @@ package body Compat_Arith is
                         if I > Values.First_Index then
                            Append (Actual, " ");
                         end if;
-                        Append (Actual, Image (Values (I)));
+                        Append (Actual, Image (Values.Element (I)));
                      end loop;
                   end if;
                end;
