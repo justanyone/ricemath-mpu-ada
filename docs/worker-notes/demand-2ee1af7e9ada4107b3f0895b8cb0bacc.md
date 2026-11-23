@@ -33,3 +33,4 @@ Final focused run passed all eight tests in 31.12 seconds with no failed asserti
 Final source-fidelity review restored the C semiprime small-value table and bounded prime segments (including the initial 30000 cut), with a Lastfor test for the table path.
 Restarted focused and full gate validation after restoring semiprime source details; whitespace and 79-column checks remain clean.
 - 2026-11-23T22:57:54Z launcher: no commit for 60 s; 1155 s elapsed. Files changed so far: docs/worker-notes/demand-2ee1af7e9ada4107b3f0895b8cb0bacc.md, src/math_prime_util-iter-ranges.adb, src/math_prime_util-iter-ranges.ads, tests/src/all_suites.adb, tests/src/compat_iter_ranges.adb, tests/src/compat_iter_ranges.ads, tests/src/iter_ranges_runner.adb.
+Final semiprime table/segment version passed all eight focused tests in 33.14 seconds. All three gate build stages passed; the full repository test stage is running.
