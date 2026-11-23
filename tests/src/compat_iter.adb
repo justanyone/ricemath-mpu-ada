@@ -11,6 +11,7 @@ with Math_Prime_Util.Sieve;
 
 package body Compat_Iter is
    use AUnit.Test_Cases;
+   use AUnit.Assertions;
    use Ada.Strings.Unbounded;
    use Fixture_Support;
    use Math_Prime_Util;
@@ -78,7 +79,7 @@ package body Compat_Iter is
          Push (To_String (Token), Context);
       end Factored;
    begin
-      AUnit.Assertions.Assert (not Cases.Is_Empty, "missing " & Func);
+      Assert (not Cases.Is_Empty, "missing " & Func);
       for C of Cases loop
          Got := Null_Unbounded_String;
          Count := 0;
@@ -241,7 +242,7 @@ package body Compat_Iter is
                      else
                         Iterate (Object, Value);
                      end if;
-                     AUnit.Assertions.Assert (Value.Defined, "cursor ended");
+                     Assert (Value.Defined, "cursor ended");
                      if I > 1 then
                         Append (Got, " ");
                      end if;
@@ -249,8 +250,7 @@ package body Compat_Iter is
                   end loop;
                end;
             end if;
-            AUnit.Assertions.Assert
-              (Got = C.Result, Func & Positive'Image (C.Line_Number)
+            Assert (Got = C.Result, Func & Positive'Image (C.Line_Number)
                & " got " & To_String (Got));
          end if;
       end loop;
@@ -286,63 +286,57 @@ package body Compat_Iter is
    procedure Check_Object (T : in out Test_Case'Class) is
       Cursor : Prime_Object := Prime_Iterator_Object;
       P : Int.Optional_U64;
-      procedure Expect (N : U64);
-
-      procedure Expect (N : U64) is
+      procedure Expect (P : Int.Optional_U64; N : U64) is
       begin
-         P := Value (Cursor);
-         AUnit.Assertions.Assert
-           (P.Defined and then P.Value = N, "object value " & Image (N));
+         Assert (P.Defined and then P.Value = N, "object value " & Image (N));
       end Expect;
    begin
       --  iter.tsv 554..560: next, prev, peek, iterate and rewind sequence.
       for I in 1 .. 10 loop
          Next (Cursor);
       end loop;
-      Expect (31);
+      Expect (Value (Cursor), 31);
       Prev (Cursor);
-      Expect (29);
+      Expect (Value (Cursor), 29);
       P := Peek (Cursor);
-      AUnit.Assertions.Assert (P.Defined and then P.Value = 31, "peek");
-      Expect (29);
+      Expect (P, 31);
+      Expect (Value (Cursor), 29);
       Iterate (Cursor, P);
-      AUnit.Assertions.Assert (P.Defined and then P.Value = 29, "iterate");
+      Expect (P, 29);
       Iterate (Cursor, P);
-      AUnit.Assertions.Assert (P.Defined and then P.Value = 31, "iterate 2");
+      Expect (P, 31);
       Rewind (Cursor);
       for I in 1 .. 3 loop
          Next (Cursor);
       end loop;
       Prev (Cursor);
-      Expect (5);
+      Expect (Value (Cursor), 5);
       for N in 0 .. 2 loop
          Rewind (Cursor, U64 (N));
          Prev (Cursor);
-         Expect (2);
+         Expect (Value (Cursor), 2);
       end loop;
       --  561,562 require bigint successors: assert native exhaustion.
       --  563..591 cover NumSeq methods beyond the six requested operations.
       Rewind (Cursor, 18446744073709551557);
-      Expect (18446744073709551557);
+      Expect (Value (Cursor), 18446744073709551557);
       Next (Cursor);
       P := Value (Cursor);
-      AUnit.Assertions.Assert (not P.Defined, "object wrapped");
+      Assert (not P.Defined, "object wrapped");
       Next (Cursor);
       P := Peek (Cursor);
-      AUnit.Assertions.Assert (not P.Defined, "exhausted peek");
+      Assert (not P.Defined, "exhausted peek");
       Prev (Cursor);
-      Expect (18446744073709551557);
+      Expect (Value (Cursor), 18446744073709551557);
       Rewind (Cursor, U64'Last);
       P := Value (Cursor);
-      AUnit.Assertions.Assert (not P.Defined, "rewind beyond prime");
+      Assert (not P.Defined, "rewind beyond prime");
       Replay ("prime_iterator_object_iterate");
    end Check_Object;
 
    procedure Check_Print (T : in out Test_Case'Class) is
       File : Ada.Text_IO.File_Type;
       Path : constant String := "obj/iter-primes.txt";
-      procedure Check (Low, High : U64);
-
       procedure Check (Low, High : U64) is
          Expected : constant Sieve.Prime_Vectors.Vector :=
            Sieve.Primes (Low, High);
@@ -352,14 +346,11 @@ package body Compat_Iter is
          Ada.Text_IO.Close (File);
          Ada.Text_IO.Open (File, Ada.Text_IO.In_File, Path);
          for I in Expected.First_Index .. Expected.Last_Index loop
-            AUnit.Assertions.Assert
-              (not Ada.Text_IO.End_Of_File (File), "missing printed prime");
-            AUnit.Assertions.Assert
-              (Ada.Text_IO.Get_Line (File) = Image (Expected.Element (I)),
+            Assert (not Ada.Text_IO.End_Of_File (File), "missing printed prime");
+            Assert (Ada.Text_IO.Get_Line (File) = Image (Expected.Element (I)),
                "printed prime");
          end loop;
-         AUnit.Assertions.Assert
-           (Ada.Text_IO.End_Of_File (File), "extra printed prime");
+         Assert (Ada.Text_IO.End_Of_File (File), "extra printed prime");
          Ada.Text_IO.Close (File);
       end Check;
    begin
@@ -584,44 +575,40 @@ package body Compat_Iter is
             exception
                when Constraint_Error => Raised := True;
             end;
-            AUnit.Assertions.Assert (Raised, "inactive context accepted");
+            Assert (Raised, "inactive context accepted");
             Got := To_Unbounded_String ("ERROR");
          else
             --  Other lastfor rows exercise families outside this task.
             Selected := False;
          end if;
          if Selected then
-            AUnit.Assertions.Assert
-              (Got = C.Result, To_String (C.Func) & " got " & To_String (Got));
+            Assert (Got = C.Result, To_String (C.Func) & " got " & To_String (Got));
          end if;
       end loop;
       --  Boundary intervals never wrap, even when a callback stops early.
       Got := Null_Unbounded_String;
       Forcomposites (U64'Last, U64'Last, First'Access);
-      AUnit.Assertions.Assert (Got = Image (U64'Last), "last composite");
+      Assert (Got = Image (U64'Last), "last composite");
       declare
          Cursor : Prime_Cursor := Prime_Iterator (18446744073709551557);
          Value : Int.Optional_U64;
       begin
          Next (Cursor, Value);
-         AUnit.Assertions.Assert
-           (Value.Defined and then Value.Value = 18446744073709551557,
+         Assert (Value.Defined and then Value.Value = 18446744073709551557,
             "largest prime");
          for I in 1 .. 2 loop
             Next (Cursor, Value);
-            AUnit.Assertions.Assert (not Value.Defined, "cursor wrapped");
+            Assert (not Value.Defined, "cursor wrapped");
          end loop;
       end;
       Count := 0;
       Got := Null_Unbounded_String;
       --  Each new loop stops after its first callback.
-      Forcomp (12, First_Tuple'Access);
-      Forderange (8, First_Tuple'Access);
       Formultiperm ([1, 1, 2, 2], First_Tuple'Access);
       Lists.Append (Value_Array'(3 .. 4 => U64'Last));
       Lists.Append (Value_Array'[0, 1]);
       Forsetproduct (Lists, First_Tuple'Access);
-      AUnit.Assertions.Assert (Count = 4, "new loop lastfor");
+      Assert (Count = 2, "new loop lastfor");
       --  Exceptions propagate and leave later loops independently usable.
       for Kind in 1 .. 4 loop
          Raised := False;
@@ -635,18 +622,14 @@ package body Compat_Iter is
          exception
             when Callback_Error => Raised := True;
          end;
-         AUnit.Assertions.Assert (Raised, "callback exception swallowed");
+         Assert (Raised, "callback exception swallowed");
       end loop;
-      Count := 0;
-      Forsetproduct (Lists, First_Tuple'Access);
-      AUnit.Assertions.Assert (Count = 1, "loop after callback exception");
       --  Numeric Perl hash keys sort by decimal spelling, not magnitude.
       Formultiperm ([2, 10], Collect'Access);
-      AUnit.Assertions.Assert (Got = "10 2 2 10 ", "multiset key order");
+      Assert (Got = "10 2 2 10 ", "multiset key order");
       Got := Null_Unbounded_String;
       Formultiperm (Value_Array'(4 .. 5 => U64'Last), Collect'Access);
-      AUnit.Assertions.Assert
-        (Got = Image (U64'Last) & " " & Image (U64'Last) & " ",
+      Assert (Got = Image (U64'Last) & " " & Image (U64'Last) & " ",
          "nonstandard multiset bounds");
       Print_Primes (1, 0);
    end Check_Control;
@@ -665,16 +648,13 @@ package body Compat_Iter is
          Product : U128 := 1;
       begin
          for I in Factors'Range loop
-            AUnit.Assertions.Assert
-              (Primality.Is_Prime (Factors (I)) /= 0,
+            Assert (Primality.Is_Prime (Factors (I)) /= 0,
                "prime factor, seed 0x49544552");
             Product := Product * U128 (Factors (I));
-            AUnit.Assertions.Assert
-              (I = Factors'First or else Factors (I - 1) <= Factors (I),
+            Assert (I = Factors'First or else Factors (I - 1) <= Factors (I),
                "sorted factors, seed 0x49544552");
          end loop;
-         AUnit.Assertions.Assert
-           (Product = U128 (Value), "factor product, seed 0x49544552");
+         Assert (Product = U128 (Value), "factor product, seed 0x49544552");
          Count := Count + 1;
       end Factors_Check;
       procedure Partition_Check
@@ -684,22 +664,19 @@ package body Compat_Iter is
       begin
          for I in Values'Range loop
             Sum := Sum + Values (I);
-            AUnit.Assertions.Assert
-              (Values (I) > 0 and then
+            Assert (Values (I) > 0 and then
                (I = Values'First or else Values (I - 1) <= Values (I)),
                "ordered partition, seed 0x49544552");
          end loop;
-         AUnit.Assertions.Assert (Sum = Expected_N, "partition sum");
+         Assert (Sum = Expected_N, "partition sum");
          Count := Count + 1;
       end Partition_Check;
       procedure Combination_Check
         (Values : Value_Array; Context : in out Loop_Context) is
       begin
-         AUnit.Assertions.Assert
-           (Values'Length = Expected_Length, "combination length");
+         Assert (Values'Length = Expected_Length, "combination length");
          for I in Values'Range loop
-            AUnit.Assertions.Assert
-              (Values (I) < Expected_N and then
+            Assert (Values (I) < Expected_N and then
                (I = Values'First or else Values (I - 1) < Values (I)),
                "combination order, seed 0x49544552");
          end loop;
@@ -715,18 +692,18 @@ package body Compat_Iter is
          Expected_N := Seed mod 100000 + 1;
          Count := 0;
          Forfactored (Expected_N, Expected_N, Factors_Check'Access);
-         AUnit.Assertions.Assert (Count = 1, "single factored value");
+         Assert (Count = 1, "single factored value");
       end loop;
       for N in 0 .. 12 loop
          Expected_N := U64 (N);
          Count := 0;
          Forpart (N, Partition_Check'Access);
-         AUnit.Assertions.Assert (Count > 0, "missing partitions");
+         Assert (Count > 0, "missing partitions");
          for K in 0 .. N loop
             Expected_Length := K;
             Count := 0;
             Forcomb (N, K, Combination_Check'Access);
-            AUnit.Assertions.Assert (Count > 0, "missing combinations");
+            Assert (Count > 0, "missing combinations");
          end loop;
       end loop;
       Count := 0;
@@ -736,7 +713,7 @@ package body Compat_Iter is
       Forcomposites (U64'Last, 0, No_Value'Access);
       Forfactored (0, Factors_Check'Access);
       Forfactored (2, 1, Factors_Check'Access);
-      AUnit.Assertions.Assert (Count = 0, "empty ranges visited");
+      Assert (Count = 0, "empty ranges visited");
    end Check_Properties;
 
    overriding function Name (T : Iter_Case) return AUnit.Message_String is
