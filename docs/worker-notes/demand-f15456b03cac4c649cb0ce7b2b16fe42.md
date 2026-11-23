@@ -5,3 +5,5 @@ Next I will verify the reported missing gnatcheck report cause and run the focus
 Focused build attempt reached compilation after setting XDG_RUNTIME_DIR/TMPDIR into the workspace, but stopped on pre-existing style errors in primality, count, combinat, digit_operations, sieve, and families.
 Goldbach code and fixture registration are already present; I added checkable low-input Post contracts to its public spec.
 Next I will rerun the gate to capture the same baseline blocker, inspect final diff, and record the final status.
+Final verification: tools/gate.sh passes the development library build (including Goldbach) after the family spec fix, then stops while compiling the tests due to pre-existing -gnaty violations; no AUnit fixture tests ran.
+Final scope: Goldbach contract strengthening, remove duplicate Ramanujan family declaration, and add the missing Primality context clause. The reported structured gnatcheck report remains unavailable from the post-check environment.
