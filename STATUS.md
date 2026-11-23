@@ -162,7 +162,11 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `is_omega_prime` -> `Is_Omega_Prime`
 - [x] `is_palindrome` -> `Is_Palindrome`
 - [ ] `is_perfect_number` -> `Is_Perfect_Number`
+<<<<<<< HEAD
 - [x] `is_perfect_power` -> `Is_Perfect_Power`
+=======
+- [ ] `is_perfect_power` -> `Is_Perfect_Power`
+>>>>>>> origin/dev-mpuada-001
 - [x] `is_perrin_pseudoprime` -> `Is_Perrin_Pseudoprime`
 - [x] `is_pillai` -> `Is_Pillai`
 - [x] `is_polygonal` -> `Is_Polygonal`
@@ -171,7 +175,11 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `is_powerful` -> `Is_Powerful`
 - [ ] `is_practical` -> `Is_Practical`
 - [x] `is_prime` -> `Is_Prime`
+<<<<<<< HEAD
 - [x] `is_prime_power` -> `Is_Prime_Power`
+=======
+- [ ] `is_prime_power` -> `Is_Prime_Power`
+>>>>>>> origin/dev-mpuada-001
 - [ ] `is_primitive_root` -> `Is_Primitive_Root`
 - [x] `is_prob_prime` -> `Is_Prob_Prime`
 - [ ] `is_provable_prime` -> `Is_Provable_Prime`
@@ -179,7 +187,7 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [x] `is_pseudoprime` -> `Is_Pseudoprime`
 - [ ] `is_qr` -> `Is_Qr`
 - [ ] `is_quasi_carmichael` -> `Is_Quasi_Carmichael`
-- [ ] `is_ramanujan_prime` -> `Is_Ramanujan_Prime`
+- [x] `is_ramanujan_prime` -> `Is_Ramanujan_Prime`
 - [ ] `is_rough` -> `Is_Rough`
 - [x] `is_safe_prime` -> `Is_Safe_Prime`
 - [ ] `is_semiprime` -> `Is_Semiprime`
@@ -234,9 +242,15 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [x] `next_calkin_wilf` -> `Next_Calkin_Wilf`
 - [ ] `next_chen_prime` -> `Next_Chen_Prime`
 - [x] `next_farey` -> `Next_Farey`
+<<<<<<< HEAD
 - [x] `next_perfect_power` -> `Next_Perfect_Power`
 - [x] `next_prime` -> `Next_Prime`
 - [x] `next_prime_power` -> `Next_Prime_Power`
+=======
+- [ ] `next_perfect_power` -> `Next_Perfect_Power`
+- [x] `next_prime` -> `Next_Prime`
+- [ ] `next_prime_power` -> `Next_Prime_Power`
+>>>>>>> origin/dev-mpuada-001
 - [x] `next_stern_brocot` -> `Next_Stern_Brocot`
 - [ ] `nth_almost_prime` -> `Nth_Almost_Prime`
 - [ ] `nth_almost_prime_approx` -> `Nth_Almost_Prime_Approx`
@@ -257,6 +271,7 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [x] `nth_prime` -> `Nth_Prime`
 - [x] `nth_prime_approx` -> `Nth_Prime_Approx`
 - [x] `nth_prime_lower` -> `Nth_Prime_Lower`
+<<<<<<< HEAD
 - [x] `nth_prime_power` -> `Nth_Prime_Power`
 - [x] `nth_prime_power_approx` -> `Nth_Prime_Power_Approx`
 - [x] `nth_prime_power_lower` -> `Nth_Prime_Power_Lower`
@@ -266,6 +281,17 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `nth_ramanujan_prime_approx` -> `Nth_Ramanujan_Prime_Approx`
 - [ ] `nth_ramanujan_prime_lower` -> `Nth_Ramanujan_Prime_Lower`
 - [ ] `nth_ramanujan_prime_upper` -> `Nth_Ramanujan_Prime_Upper`
+=======
+- [ ] `nth_prime_power` -> `Nth_Prime_Power`
+- [ ] `nth_prime_power_approx` -> `Nth_Prime_Power_Approx`
+- [ ] `nth_prime_power_lower` -> `Nth_Prime_Power_Lower`
+- [ ] `nth_prime_power_upper` -> `Nth_Prime_Power_Upper`
+- [x] `nth_prime_upper` -> `Nth_Prime_Upper`
+- [x] `nth_ramanujan_prime` -> `Nth_Ramanujan_Prime`
+- [x] `nth_ramanujan_prime_approx` -> `Nth_Ramanujan_Prime_Approx`
+- [x] `nth_ramanujan_prime_lower` -> `Nth_Ramanujan_Prime_Lower`
+- [x] `nth_ramanujan_prime_upper` -> `Nth_Ramanujan_Prime_Upper`
+>>>>>>> origin/dev-mpuada-001
 - [ ] `nth_semiprime` -> `Nth_Semiprime`
 - [ ] `nth_semiprime_approx` -> `Nth_Semiprime_Approx`
 - [x] `nth_stern_brocot` -> `Nth_Stern_Brocot`
@@ -278,10 +304,17 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [x] `partitions` -> `Partitions`
 - [x] `partitionsq` -> `Partitionsq`
 - [ ] `pbrent_factor` -> `Pbrent_Factor`
+<<<<<<< HEAD
 - [x] `perfect_power_count` -> `Perfect_Power_Count`
 - [x] `perfect_power_count_approx` -> `Perfect_Power_Count_Approx`
 - [x] `perfect_power_count_lower` -> `Perfect_Power_Count_Lower`
 - [x] `perfect_power_count_upper` -> `Perfect_Power_Count_Upper`
+=======
+- [ ] `perfect_power_count` -> `Perfect_Power_Count`
+- [ ] `perfect_power_count_approx` -> `Perfect_Power_Count_Approx`
+- [ ] `perfect_power_count_lower` -> `Perfect_Power_Count_Lower`
+- [ ] `perfect_power_count_upper` -> `Perfect_Power_Count_Upper`
+>>>>>>> origin/dev-mpuada-001
 - [x] `permtonum` -> `Permtonum`
 - [x] `Pi` -> `Pi`
 - [ ] `pisano_period` -> `Pisano_Period`
@@ -297,9 +330,15 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [x] `powint` -> `Powint`
 - [x] `powmod` -> `Powmod`
 - [ ] `pplus1_factor` -> `Pplus1_Factor`
+<<<<<<< HEAD
 - [x] `prev_perfect_power` -> `Prev_Perfect_Power`
 - [x] `prev_prime` -> `Prev_Prime`
 - [x] `prev_prime_power` -> `Prev_Prime_Power`
+=======
+- [ ] `prev_perfect_power` -> `Prev_Perfect_Power`
+- [x] `prev_prime` -> `Prev_Prime`
+- [ ] `prev_prime_power` -> `Prev_Prime_Power`
+>>>>>>> origin/dev-mpuada-001
 - [ ] `prho_factor` -> `Prho_Factor`
 - [ ] `prime_bigomega` -> `Prime_Bigomega`
 - [ ] `prime_certificate` -> `Prime_Certificate`
@@ -312,11 +351,19 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `prime_iterator_object` -> `Prime_Iterator_Object`
 - [x] `prime_memfree` -> `Prime_Memfree`
 - [ ] `prime_omega` -> `Prime_Omega`
+<<<<<<< HEAD
 - [x] `prime_power_count` -> `Prime_Power_Count`
 - [x] `prime_power_count_approx` -> `Prime_Power_Count_Approx`
 - [x] `prime_power_count_lower` -> `Prime_Power_Count_Lower`
 - [x] `prime_power_count_upper` -> `Prime_Power_Count_Upper`
 - [x] `prime_powers` -> `Prime_Powers`
+=======
+- [ ] `prime_power_count` -> `Prime_Power_Count`
+- [ ] `prime_power_count_approx` -> `Prime_Power_Count_Approx`
+- [ ] `prime_power_count_lower` -> `Prime_Power_Count_Lower`
+- [ ] `prime_power_count_upper` -> `Prime_Power_Count_Upper`
+- [ ] `prime_powers` -> `Prime_Powers`
+>>>>>>> origin/dev-mpuada-001
 - [x] `prime_precalc` -> `Prime_Precalc`
 - [x] `primes` -> `Primes`
 - [x] `prime_set_config` -> `Prime_Set_Config`
@@ -324,11 +371,11 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [x] `primorial` -> `Primorial`
 - [ ] `print_primes` -> `Print_Primes`
 - [ ] `qnr` -> `Qnr`
-- [ ] `ramanujan_prime_count` -> `Ramanujan_Prime_Count`
-- [ ] `ramanujan_prime_count_approx` -> `Ramanujan_Prime_Count_Approx`
-- [ ] `ramanujan_prime_count_lower` -> `Ramanujan_Prime_Count_Lower`
-- [ ] `ramanujan_prime_count_upper` -> `Ramanujan_Prime_Count_Upper`
-- [ ] `ramanujan_primes` -> `Ramanujan_Primes`
+- [x] `ramanujan_prime_count` -> `Ramanujan_Prime_Count`
+- [x] `ramanujan_prime_count_approx` -> `Ramanujan_Prime_Count_Approx`
+- [x] `ramanujan_prime_count_lower` -> `Ramanujan_Prime_Count_Lower`
+- [x] `ramanujan_prime_count_upper` -> `Ramanujan_Prime_Count_Upper`
+- [x] `ramanujan_primes` -> `Ramanujan_Primes`
 - [ ] `ramanujan_sum` -> `Ramanujan_Sum`
 - [ ] `ramanujan_tau` -> `Ramanujan_Tau`
 - [ ] `rand` -> `Rand`

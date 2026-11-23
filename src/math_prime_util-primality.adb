@@ -69,7 +69,9 @@ package body Math_Prime_Util.Primality is
      (if N mod 2 = 1 then Intmont.Powmod (A, K, N)
       else Int.Powmod (A, K, N).Value);
 
-   function Is_Pseudoprime (N, A : U64) return Boolean is
+   function Is_Pseudoprime
+     (N : U64; A : U64 := 2) return Boolean
+   is
       B : U64 := A;
    begin
       if N < 3 then
@@ -89,7 +91,9 @@ package body Math_Prime_Util.Primality is
       return Power (B, N - 1, N) = 1;
    end Is_Pseudoprime;
 
-   function Is_Euler_Pseudoprime (N, A : U64) return Boolean is
+   function Is_Euler_Pseudoprime
+     (N : U64; A : U64 := 2) return Boolean
+   is
       B : U64 := A;
       X : U64;
    begin
@@ -113,7 +117,9 @@ package body Math_Prime_Util.Primality is
       return X = (if Jacobi (Int.I128 (B), N) >= 0 then 1 else N - 1);
    end Is_Euler_Pseudoprime;
 
-   function Is_Strong_Pseudoprime (N, A : U64) return Boolean is
+   function Is_Strong_Pseudoprime
+     (N : U64; A : U64 := 2) return Boolean
+   is
       D : U64;
       S : Natural := 0;
       B, X : U64;
