@@ -635,9 +635,9 @@ package body Compat_Vec is
          Index := First_Index (Items);
          First_Value (Items, Value, Found);
          AUnit.Assertions.Assert
-           (None_Match (Items) = not Any_Match (Items)
-            and then Not_All (Items) = not All_Match (Items)
-            and then (Index = -1) = not Any_Match (Items)
+           (None_Match (Items) = (not Any_Match (Items))
+            and then Not_All (Items) = (not All_Match (Items))
+            and then (Index = -1) = (not Any_Match (Items))
             and then Found = (Index >= 0), "laws seed 20261123");
          if Found then
             AUnit.Assertions.Assert
