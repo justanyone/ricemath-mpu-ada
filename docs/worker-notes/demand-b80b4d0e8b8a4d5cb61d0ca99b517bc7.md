@@ -5,3 +5,5 @@ Focused iterator test build started; pytest-bdd and gnatcheck are absent from PA
 Plan: reuse the existing powers BDD runner/steps and remove repeated test setup to fit 400 lines.
 Reused the powers BDD Given/Then steps and runner; removed the direct unresolved import.
 Consolidated repeated lastfor count formatting while retaining all fixture branches.
+Pyright now passes; BDD collection explicitly skips because pytest-bdd is unavailable.
+Print_Primes now uses Forprimes; removed redundant internal forward declarations and tracked bytecode.
