@@ -1,13 +1,9 @@
 with Ada.Numerics.Long_Elementary_Functions;
 with Interfaces;
-<<<<<<< HEAD
 with Math_Prime_Util.Primality;
 with Math_Prime_Util.Sieve;
-=======
 with Ada.Numerics.Generic_Elementary_Functions;
 with Math_Prime_Util.Count;
-with Math_Prime_Util.Primality;
->>>>>>> origin/dev-mpuada-001
 
 package body Math_Prime_Util.Families is
    package Prime_Sieve renames Math_Prime_Util.Sieve;
@@ -680,61 +676,6 @@ package body Math_Prime_Util.Families is
          Factor := Factor + 1;
       end loop;
    end Is_Lucky;
-<<<<<<< HEAD
-
-   function Is_Ramanujan_Prime (N : U64) return Boolean is
-      use type Math_Prime_Util.Primality.Prime_Result;
-      D : U64;
-   begin
-      if Math_Prime_Util.Primality.Is_Prime (N) = 0 then
-         return False;
-      elsif N < 17 then
-         return N = 2 or else N = 11;
-      elsif Math_Prime_Util.Primality.Is_Prime (N / 2 + 1) /= 0 then
-         return False;
-      end if;
-
-      --  ramanujan_primes.c: the prime gap gives a finite pretest window.
-      if N > U64'Last - 16 then
-         D := (U64'Last - N + 14) / 2;
-      else
-         declare
-            Next : constant Int.Optional_U64 := Math_Prime_Util.Sieve.Next_Prime (N);
-         begin
-            D := (Next.Value - N) / 2;
-         end;
-      end if;
-      if D >= 2 then
-         for I in 2 .. D loop
-            if Math_Prime_Util.Primality.Is_Prime (N / 2 + I) /= 0 then
-               return False;
-            end if;
-         end loop;
-      end if;
-
-      --  ramanujan_primes.c: compare pi(x)-pi(x/2) with prior records.
-      declare
-         Primes : constant Math_Prime_Util.Sieve.Prime_Vectors.Vector :=
-           Math_Prime_Util.Sieve.Primes (N);
-         Best : U64 := 0;
-      begin
-         for P of Primes loop
-            exit when P >= N;
-            if P mod 2 = 1 then
-               declare
-                  Difference : constant U64 :=
-                    U64 (Math_Prime_Util.Sieve.Primes (P).Length)
-                    - U64 (Math_Prime_Util.Sieve.Primes (P / 2).Length);
-               begin
-                  Best := U64' Max (Best, Difference);
-               end;
-            end if;
-         end loop;
-         return U64 (Primes.Length)
-           - U64 (Math_Prime_Util.Sieve.Primes (N / 2).Length) > Best;
-      end;
-   end Is_Ramanujan_Prime;
-=======
    use type Primality.Prime_Result;
    subtype Ram_Wide is Long_Long_Float;
    package Ram_Ef is new Ada.Numerics.Generic_Elementary_Functions (Ram_Wide);
@@ -1019,5 +960,4 @@ package body Math_Prime_Util.Families is
    function Ramanujan_Primes (High : U64)
       return Prime_Sieve.Prime_Vectors.Vector
      is (Ramanujan_Primes (0, High)) with SPARK_Mode => Off;
->>>>>>> origin/dev-mpuada-001
 end Math_Prime_Util.Families;
