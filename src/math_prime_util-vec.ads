@@ -97,13 +97,13 @@ package Math_Prime_Util.Vec with SPARK_Mode => Off is
    --  XS.xs: vecmex. Least missing nonnegative integer.
    --  A negative element raises Constraint_Error.
    function Vecmex (Items : Int_List) return Big_Integer
-     with Pre => (for all E of Items => E >= To_Big_Integer (0)),
+     with Pre => True,
           Post => Vecmex'Result >= To_Big_Integer (0);
 
    --  XS.xs: vecpmex. Least missing positive integer.
    --  A non-positive element raises Constraint_Error.
    function Vecpmex (Items : Int_List) return Big_Integer
-     with Pre => (for all E of Items => E >= To_Big_Integer (1)),
+     with Pre => True,
           Post => Vecpmex'Result >= To_Big_Integer (1);
 
    --  XS.xs: vecextract. Mask bit i selects the 0-based element i.

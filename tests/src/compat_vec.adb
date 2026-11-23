@@ -22,14 +22,18 @@ package body Compat_Vec is
    function Image (V : Big_Integer) return String is
      (Ada.Strings.Fixed.Trim (To_String (V), Ada.Strings.Both));
 
+   --  Cursor walk: "for V of" on a library vector needs a finalizer
+   --  symbol the validation build (-gnatp) does not export.
    function Image (Items : Int_List) return String is
       R : Unbounded_String;
+      C : Int_Vectors.Cursor := Items.First;
    begin
-      for V of Items loop
+      while Int_Vectors.Has_Element (C) loop
          if Length (R) > 0 then
             Append (R, ' ');
          end if;
-         Append (R, Image (V));
+         Append (R, Image (Int_Vectors.Element (C)));
+         C := Int_Vectors.Next (C);
       end loop;
       return To_String (R);
    end Image;
