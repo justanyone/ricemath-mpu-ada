@@ -20,6 +20,7 @@ with Compat_Lucas;
 with Prop_Lucas;
 
 with Compat_Vec;
+with Prop_Vec;
 with Compat_Real;
 with Prop_Real;
 
@@ -30,6 +31,7 @@ package body All_Suites is
    begin
       Result.Add_Test (Test_Fixture_Support.Suite);
       Result.Add_Test (Compat_Vec.Suite);
+      Result.Add_Test (Prop_Vec.Suite);
       Result.Add_Test (Compat_Int.Suite);
       Result.Add_Test (Prop_Int.Suite);
       Result.Add_Test (Compat_Combinat.Suite);

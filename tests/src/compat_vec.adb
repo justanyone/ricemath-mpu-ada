@@ -67,6 +67,37 @@ package body Compat_Vec is
       return To_String (R);
    end Canonical;
 
+   function Frequency_Image (S : String) return String is
+      A : Integer_Array (1 .. S'Length) := [others => 0];
+      N : Natural := 0;
+      First : Positive := S'First;
+      V, Count : I128;
+      J : Positive;
+   begin
+      for I in S'First .. S'Last + 1 loop
+         if I > S'Last or else S (I) = ' ' then
+            if First < I then
+               N := N + 1;
+               A (N) := I128'Value (S (First .. I - 1));
+            end if;
+            First := I + 1;
+         end if;
+      end loop;
+      for Pair in 1 .. N / 2 loop
+         J := 2 * Pair - 1;
+         V := A (J);
+         Count := A (J + 1);
+         while J > 1 and then A (J - 2) > V loop
+            A (J) := A (J - 2);
+            A (J + 1) := A (J - 1);
+            J := J - 2;
+         end loop;
+         A (J) := V;
+         A (J + 1) := Count;
+      end loop;
+      return Image (A (1 .. N));
+   end Frequency_Image;
+
    procedure Replay (T : in out Test_Case'Class) is
       Cases : constant Case_Vectors.Vector := Load ("vec");
       Checked, Skipped : Natural := 0;
@@ -300,6 +331,11 @@ package body Compat_Vec is
                      when Constraint_Error | Ada.Assertions.Assertion_Error =>
                         Actual := To_Unbounded_String ("ERROR");
                   end;
+                  --  Vecfreq returns a hash: pair order is unspecified.
+                  if Func = "vecfreq" then
+                     Expected := To_Unbounded_String
+                       (Frequency_Image (To_String (Expected)));
+                  end if;
                   AUnit.Assertions.Assert
                     (Actual = Expected,
                      Func & " row" & Positive'Image (C.Line_Number)
