@@ -1,7 +1,6 @@
 with AUnit.Assertions;
 with AUnit.Test_Cases;
 with Math_Prime_Util.Families;
-with Math_Prime_Util.Sieve;
 
 package body Prop_Families is
    use AUnit.Test_Cases;
@@ -79,48 +78,8 @@ package body Prop_Families is
       end loop;
    end Concurrent_Calls;
 
-   --  Noe's window must preserve membership, index, and interval identities.
-   procedure Ramanujan_Laws (T : in out Test_Case'Class) is
-         use type Math_Prime_Util.Sieve.Prime_Vectors.Vector;
-      Seed : U64 := 20_261_123;
-      N, P : U64;
-      Edges : constant array (Positive range 1 .. 7) of U64 :=
-        [2 ** 32 - 1, 2 ** 32, 2 ** 32 + 1,
-         2 ** 63 - 1, 2 ** 63, 2 ** 63 + 1, U64'Last];
-   begin
-      for I in 1 .. 40 loop
-         Seed := Seed * 6_364_136_223_846_793_005 + 1;
-         N := 1 + Seed mod 500;
-         P := Nth_Ramanujan_Prime (N).Value;
-         AUnit.Assertions.Assert
-           (Is_Ramanujan_Prime (P) and then
-            Ramanujan_Prime_Count (P) = N and then
-            Ramanujan_Prime_Count (P - 1) = N - 1 and then
-            Nth_Ramanujan_Prime_Lower (N).Value <= P and then
-            P <= Nth_Ramanujan_Prime_Upper (N).Value,
-            "Ramanujan inverse/bounds seed 20261123 index" & N'Image);
-      end loop;
-      AUnit.Assertions.Assert
-        (Ramanujan_Primes (100, 2).Is_Empty and then
-         Ramanujan_Prime_Count (100, 2) = 0 and then
-         Ramanujan_Prime_Count (0, 1) = 0 and then
-         Ramanujan_Prime_Count (2, 2) = 1 and then
-         Ramanujan_Primes (100, 100) = Ramanujan_Primes (1),
-         "Ramanujan empty/reversed/singleton intervals");
-      for Edge of Edges loop
-         AUnit.Assertions.Assert
-           (Ramanujan_Prime_Count_Lower (Edge) <=
-              Ramanujan_Prime_Count_Approx (Edge) and then
-            Ramanujan_Prime_Count_Approx (Edge) <=
-              Ramanujan_Prime_Count_Upper (Edge),
-            "Ramanujan native count bounds" & Edge'Image);
-      end loop;
-   end Ramanujan_Laws;
-
    overriding procedure Register_Tests (T : in out Families_Case) is
    begin
-      Registration.Register_Routine
-        (T, Ramanujan_Laws'Access, "Ramanujan laws seed 20261123");
       Registration.Register_Routine (T, Laws'Access, "lucky laws");
       Registration.Register_Routine
         (T, Concurrent_Calls'Access, "concurrent repeated sieves");

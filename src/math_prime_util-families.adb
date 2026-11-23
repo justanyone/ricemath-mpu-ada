@@ -401,12 +401,12 @@ package body Math_Prime_Util.Families is
          when Upper => Nth_Lucky_Upper (N).Value);
 
    generic
-         type Wide is digits <>;
-         with function Value (X : U64) return U64;
-      function Inverse (First, Last, Target : U64) return U64
-        with Pre => First <= Last,
-             Post => Inverse'Result in First .. Last;
-      function Inverse (First, Last, Target : U64) return U64 is
+      type Wide is digits <>;
+      with function Value (X : U64) return U64;
+   function Inverse (First, Last, Target : U64) return U64
+     with Pre => First <= Last,
+          Post => Inverse'Result in First .. Last;
+   function Inverse (First, Last, Target : U64) return U64 is
       package Ef is new Ada.Numerics.Generic_Elementary_Functions (Wide);
       use Ef;
       Lo : U64 := First;
@@ -825,9 +825,11 @@ package body Math_Prime_Util.Families is
 
    --  ramanujan_primes.c: n_range_ramanujan_primes, Noe's algorithm.
    --  Containers isolate allocation from the SPARK arithmetic routines.
-   function Index_Range (First, Last : U64) return Sieve.Prime_Vectors.Vector
+   function Index_Range (First, Last : U64)
+      return Sieve.Prime_Vectors.Vector
      with SPARK_Mode => Off;
-   function Index_Range (First, Last : U64) return Sieve.Prime_Vectors.Vector
+   function Index_Range (First, Last : U64)
+      return Sieve.Prime_Vectors.Vector
    is
       use Sieve.Prime_Vectors;
       Lo : constant U64 := U64'Max (1, First);
