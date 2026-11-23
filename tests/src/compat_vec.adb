@@ -1,5 +1,6 @@
 with Ada.Assertions;
 with Ada.Containers.Vectors;
+with Ada.Numerics.Big_Numbers.Big_Integers;
 with Ada.Strings;
 with Ada.Strings.Fixed;
 with Ada.Strings.Unbounded;
