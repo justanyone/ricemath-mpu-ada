@@ -737,7 +737,6 @@ package body Math_Prime_Util.Factor is
       Racing : Natural := 38;
       Done : U64 := 0;
       Mult, Nn, Root, F, Red : U64;
-      Slot : Positive;
    begin
       if N < 3 or else N mod 2 = 0 or else N > U64'Last / 4 then
          return None (N);
@@ -798,7 +797,6 @@ package body Math_Prime_Util.Factor is
                end if;
             end if;
          end loop;
-         Slot := 1;
       end loop;
       return None (N);
    end Squfof_Raw;
@@ -1092,7 +1090,7 @@ package body Math_Prime_Util.Factor is
       return Result;
    end Factor;
 
-   function Trial_Factor (N : U64; Last : U64 := 0)
+   function Trial_Factor (N : U64; Last : U64)
       return Factor_Vectors.Vector
    is
       V : Factor_Vectors.Vector;
@@ -1111,41 +1109,39 @@ package body Math_Prime_Util.Factor is
       return V;
    end Trial_Factor;
 
-   function Fermat_Factor (N : U64; Rounds : U64 := 64_000_000)
+   function Fermat_Factor (N : U64; Rounds : U64)
       return Factor_Vectors.Vector
    is (Apply (N, Do_Fermat, Rounds, 0));
 
-   function Holf_Factor (N : U64; Rounds : U64 := 8_000_000)
+   function Holf_Factor (N : U64; Rounds : U64)
       return Factor_Vectors.Vector
    is (Apply (N, Do_Holf, Rounds, 0));
 
-   function Squfof_Factor (N : U64; Rounds : U64 := 4_000_000)
+   function Squfof_Factor (N : U64; Rounds : U64)
       return Factor_Vectors.Vector
    is (Apply (N, Do_Squfof, Rounds, 0));
 
-   function Lehman_Factor (N : U64; Trial : U64 := 1)
+   function Lehman_Factor (N : U64; Trial : U64)
       return Factor_Vectors.Vector
    is (Apply (N, Do_Lehman, Trial, 0));
 
-   function Prho_Factor (N : U64; Rounds : U64 := 4_000_000)
+   function Prho_Factor (N : U64; Rounds : U64)
       return Factor_Vectors.Vector
    is (Apply (N, Do_Prho, Rounds, 0));
 
-   function Pbrent_Factor
-     (N : U64; Rounds : U64 := 4_000_000; A : U64 := 1)
+   function Pbrent_Factor (N : U64; Rounds : U64; A : U64)
       return Factor_Vectors.Vector
    is (Apply (N, Do_Pbrent, Rounds, A));
 
-   function Pminus1_Factor
-     (N : U64; B1 : U64 := 1_000_000; B2 : U64 := 0)
+   function Pminus1_Factor (N : U64; B1 : U64; B2 : U64)
       return Factor_Vectors.Vector
    is (Apply (N, Do_Pminus1, B1, B2));
 
-   function Pplus1_Factor (N : U64; B1 : U64 := 200)
+   function Pplus1_Factor (N : U64; B1 : U64)
       return Factor_Vectors.Vector
    is (Apply (N, Do_Pplus1, B1, 0));
 
-   function Divisors (N : U64; Max_D : U64 := U64'Last)
+   function Divisors (N : U64; Max_D : U64)
       return Factor_Vectors.Vector
    is
       Fac, Res : Factor_Vectors.Vector;
