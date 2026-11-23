@@ -5,6 +5,7 @@ with Math_Prime_Util.Count;
 with Math_Prime_Util.Primality;
 
 package body Math_Prime_Util.Families is
+   package Prime_Sieve renames Math_Prime_Util.Sieve;
    use Ada.Numerics.Long_Elementary_Functions;
    use Lucky_Vectors;
    subtype F64 is Long_Float;
@@ -833,71 +834,49 @@ package body Math_Prime_Util.Families is
    --  ramanujan_primes.c: n_range_ramanujan_primes, Noe's algorithm.
    --  Containers isolate allocation from the SPARK arithmetic routines.
    function Index_Range (First, Last : U64)
-      return Sieve.Prime_Vectors.Vector
+      return Prime_Sieve.Prime_Vectors.Vector
      with SPARK_Mode => Off;
    function Index_Range (First, Last : U64)
-      return Sieve.Prime_Vectors.Vector
+      return Prime_Sieve.Prime_Vectors.Vector
    is
-      use Sieve.Prime_Vectors;
+      subtype Vector is Prime_Sieve.Prime_Vectors.Vector;
       Lo : constant U64 := U64'Max (1, First);
       Result : Vector;
-      Start, Stop, S, K : U64;
+      Start, Stop, S : U64;
    begin
       if Lo > Last then
          return Result;
       end if;
       Result.Set_Length (Ada.Containers.Count_Type (Last - Lo + 1));
+      for I in Lo .. U64'Min (Last, 23) loop
+         Result.Replace_Element (Natural (I - Lo), Ram_Small (Positive (I)));
+      end loop;
       if Last <= 23 then
-         for I in Lo .. Last loop
-            Result.Replace_Element (Natural (I - Lo), Ram_Small (Positive (I)));
-         end loop;
          return Result;
       end if;
       Start := U64'Max (15, Ram_Lower_Value (Lo) - 1);
-      if Start mod 2 = 0 then
-         Start := Start - 1;
-      end if;
       Stop := Ram_Upper_Value (Last) + 1;
-      S := 1 + Count.Prime_Count (Start - 2) -
+      S := Count.Prime_Count (Start - 1) -
         Count.Prime_Count ((Start - 1) / 2);
-      if Lo = 1 then
-         Result.Replace_Element (0, 2);
-      end if;
-      if Lo <= 2 then
-         Result.Replace_Element (Natural (2 - Lo), 11);
-      end if;
       declare
-         Ps : constant Vector := Sieve.Primes (Start, Stop);
          Half : constant Vector :=
-           Sieve.Primes ((Start + 1) / 2, (Stop + 1) / 2);
-         Pi : Natural := 0;
+           Prime_Sieve.Primes ((Start + 1) / 2, (Stop + 1) / 2);
          Qi : Natural := 0;
       begin
-         K := Start;
-         while K <= Stop loop
-            if Pi < Natural (Ps.Length) and then Ps.Element (Pi) = K then
-               S := S + 1;
-               Pi := Pi + 1;
-            end if;
-            if S >= Lo and then S <= Last then
-               Result.Replace_Element (Natural (S - Lo), K + 1);
-            end if;
-            if K mod 4 = 1 then
-               while Qi < Natural (Half.Length) and then
-                 Half.Element (Qi) < (K + 1) / 2
-               loop
-                  Qi := Qi + 1;
-               end loop;
-               if Qi < Natural (Half.Length) and then
-                 Half.Element (Qi) = (K + 1) / 2
-               then
-                  S := S - 1;
+         --  Noe's count falls at twice a prime. The next prime is the
+         --  candidate for each index crossed by that fall; later falls
+         --  overwrite it. Skip all odd positions with no count change.
+         for P of Prime_Sieve.Primes (Start, Stop) loop
+            while Qi < Natural (Half.Length) and then
+              Half.Element (Qi) * 2 < P
+            loop
+               if S >= Lo and then S <= Last then
+                  Result.Replace_Element (Natural (S - Lo), P);
                end if;
-            end if;
-            if S >= Lo and then S <= Last then
-               Result.Replace_Element (Natural (S - Lo), K + 2);
-            end if;
-            K := K + 2;
+               S := S - 1;
+               Qi := Qi + 1;
+            end loop;
+            S := S + 1;
          end loop;
       end;
       return Result;
@@ -930,7 +909,7 @@ package body Math_Prime_Util.Families is
       loop
          First := (if V <= Window then 1 else V - Window);
          declare
-            Ps : constant Sieve.Prime_Vectors.Vector :=
+            Ps : constant Prime_Sieve.Prime_Vectors.Vector :=
               Index_Range (First, V + Window);
          begin
             if Ps.First_Element < N and then Ps.Last_Element > N then
@@ -965,16 +944,16 @@ package body Math_Prime_Util.Families is
    end Is_Ramanujan_Prime;
 
    function Ramanujan_Primes (Low, High : U64)
-      return Sieve.Prime_Vectors.Vector
+      return Prime_Sieve.Prime_Vectors.Vector
      with SPARK_Mode => Off
    is
-      Result : Sieve.Prime_Vectors.Vector;
+      Result : Prime_Sieve.Prime_Vectors.Vector;
    begin
       if High < 2 or else Low > High then
          return Result;
       end if;
       declare
-         Ps : constant Sieve.Prime_Vectors.Vector := Index_Range
+         Ps : constant Prime_Sieve.Prime_Vectors.Vector := Index_Range
            (Ramanujan_Prime_Count_Lower (Low),
             Ramanujan_Prime_Count_Upper (High));
       begin
@@ -987,7 +966,8 @@ package body Math_Prime_Util.Families is
       return Result;
    end Ramanujan_Primes;
 
-   function Ramanujan_Primes (High : U64) return Sieve.Prime_Vectors.Vector
+   function Ramanujan_Primes (High : U64)
+      return Prime_Sieve.Prime_Vectors.Vector
      with SPARK_Mode => Off
    is
    begin

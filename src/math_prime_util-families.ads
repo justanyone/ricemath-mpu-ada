@@ -3,7 +3,7 @@ with Math_Prime_Util.Int;
 with Math_Prime_Util.Sieve;
 
 --  Lucky-number sieves and estimates from MPU 0.75.
-package Math_Prime_Util.Families is
+package Math_Prime_Util.Families with SPARK_Mode => On is
    use type U64;
    package Lucky_Vectors is new Ada.Containers.Vectors
      (Index_Type => Natural, Element_Type => U64);
