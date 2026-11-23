@@ -6,3 +6,4 @@ Initial Alire invocation could not use /run/user/1000; setting XDG_RUNTIME_DIR a
 Reproduced missing Inverse placeholder, invisible Unsigned_8 comparisons, and illegal Integer bitwise operation in Powers. Replaced the placeholder with bracket inversion and repaired visibility/type errors; next add focused executable regression coverage.
 Development library build passes. Added Compat_Powers regression tests and BDD scenarios for classification, inverse bounds, negative perfect powers, and U64/wide boundaries; building the test crate next.
 Test build is compiling the full checked Ada suite; local Python lacks pytest-bdd, so the same BDD-selected Ada checks will be run directly if no installed environment is available.
+The checked test build has compiled Compat_Powers without errors; focused runner invocation was too early (binary not linked yet). The declared gate has passed development and is building release; waiting for test linking before retrying focused checks.
