@@ -180,11 +180,11 @@ package body Compat_Families is
                      V := (if F = "almost_primes" then
                              Almost_Primes (K, Low, High)
                            else Omega_Primes (K, Low, High));
-                     for X of V loop
+                     for J in V.First_Index .. V.Last_Index loop
                         if Length (Actual) > 0 then
                            Append (Actual, " ");
                         end if;
-                        Append (Actual, Image (X));
+                        Append (Actual, Image (V.Element (J)));
                      end loop;
                      if V.Is_Empty then
                         Actual := To_Unbounded_String ("undef");

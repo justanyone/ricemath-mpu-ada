@@ -113,4 +113,43 @@ package Math_Prime_Util.Families is
       return Int.Optional_U64
      with Pre => True,
           Post => (if N = 0 then not Nth_Omega_Prime'Result.Defined);
+
+   --  almost_primes.c: almost_prime_count_lower. Native count estimate or bound.
+   --  K counts factors with multiplicity; no errors for native inputs.
+   function Almost_Prime_Count_Lower (K : Natural; N : U64) return U64
+     with Pre => True, Post => Almost_Prime_Count_Lower'Result <= N;
+
+   --  almost_primes.c: almost_prime_count_upper. Native count estimate or bound.
+   --  K counts factors with multiplicity; no errors for native inputs.
+   function Almost_Prime_Count_Upper (K : Natural; N : U64) return U64
+     with Pre => True, Post => Almost_Prime_Count_Upper'Result <= N;
+
+   --  almost_primes.c: almost_prime_count_approx. Native count estimate or bound.
+   --  K counts factors with multiplicity; no errors for native inputs.
+   function Almost_Prime_Count_Approx (K : Natural; N : U64) return U64
+     with Pre => True, Post => Almost_Prime_Count_Approx'Result <= N;
+
+   --  almost_primes.c: nth_almost_prime_lower. Native value estimate
+   --  or bound. Undefined for zero index or native overflow; no errors.
+   function Nth_Almost_Prime_Lower (K : Natural; N : U64)
+      return Int.Optional_U64
+     with Pre => True,
+          Post => (if N = 0 then
+                     not Nth_Almost_Prime_Lower'Result.Defined);
+
+   --  almost_primes.c: nth_almost_prime_upper. Native value estimate
+   --  or bound. Undefined for zero index or native overflow; no errors.
+   function Nth_Almost_Prime_Upper (K : Natural; N : U64)
+      return Int.Optional_U64
+     with Pre => True,
+          Post => (if N = 0 then
+                     not Nth_Almost_Prime_Upper'Result.Defined);
+
+   --  almost_primes.c: nth_almost_prime_approx. Native value estimate
+   --  or bound. Undefined for zero index or native overflow; no errors.
+   function Nth_Almost_Prime_Approx (K : Natural; N : U64)
+      return Int.Optional_U64
+     with Pre => True,
+          Post => (if N = 0 then
+                     not Nth_Almost_Prime_Approx'Result.Defined);
 end Math_Prime_Util.Families;
