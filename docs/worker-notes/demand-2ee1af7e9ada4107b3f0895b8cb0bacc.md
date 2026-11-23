@@ -15,3 +15,5 @@ Gate release and tests builds passed. Native square-free U64 fixture is still ru
 The stock AUnit runner also starts tests for --help, indicating CLI filter arguments are ignored. Added a dedicated focused runner to measure this package independently.
 Stopped duplicate unfiltered test jobs. Corrected focused-runner source path after the first gprbuild attempt reported it missing.
 Focused runner compilation is active; gate is still in the full existing test suite. No parent spec, fixtures, tools, or generated STATUS changes.
+Dedicated package runner built successfully and is running with a 60-second timeout. Line-length and git whitespace checks passed.
+Full gate tests and bounded focused run remain active; no additional implementation changes while collecting results.
