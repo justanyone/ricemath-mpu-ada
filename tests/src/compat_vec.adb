@@ -34,11 +34,11 @@ package body Compat_Vec is
    function Join (Items : Int_Vector) return String is
       Acc : Unbounded_String;
    begin
-      for V of Items loop
+      for I in Items.First_Index .. Items.Last_Index loop
          if Length (Acc) > 0 then
             Append (Acc, " ");
          end if;
-         Append (Acc, Image (V));
+         Append (Acc, Image (Items.Element (I)));
       end loop;
       return To_String (Acc);
    end Join;
@@ -94,8 +94,8 @@ package body Compat_Vec is
    is
       Result : Int_Vector;
    begin
-      for A of Items loop
-         Result.Append (BI.From_String (To_String (A)));
+      for I in Items.First_Index .. Items.Last_Index loop
+         Result.Append (BI.From_String (To_String (Items.Element (I))));
       end loop;
       return Result;
    end As_Ints;
@@ -109,12 +109,12 @@ package body Compat_Vec is
       if Items.First_Element.Missing then
          return "undef";
       end if;
-      for E of Items loop
+      for I in Items.First_Index .. Items.Last_Index loop
          if Length (Acc) > 0 then
             Append (Acc, " ");
          end if;
-         if not E.Missing then
-            Append (Acc, E.Text);
+         if not Items.Element (I).Missing then
+            Append (Acc, Items.Element (I).Text);
          end if;
       end loop;
       return To_String (Acc);
@@ -177,7 +177,8 @@ package body Compat_Vec is
          if Func = "vecextract" then
             return Format_Extract
               (Vecextract (Left_Text,
-                           BI.From_String (To_String (Right_Text (1)))));
+                           BI.From_String
+                             (To_String (Right_Text.Element (1)))));
          end if;
          return Format_Extract
            (Vecextract (Left_Text, As_Ints (Right_Text)));
