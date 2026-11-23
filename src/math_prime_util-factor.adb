@@ -6,9 +6,9 @@ with Math_Prime_Util.Sieve;
 
 --  factor.c and the XS.xs wrappers for the single-split methods.
 package body Math_Prime_Util.Factor is
-   use type U64;
    use type U128;
    use type Interfaces.Unsigned_32;
+   use type Primality.Prime_Result;
    subtype U32 is Interfaces.Unsigned_32;
    package Long_Math renames Ada.Numerics.Long_Elementary_Functions;
 
@@ -1066,7 +1066,7 @@ package body Math_Prime_Util.Factor is
          X := X * 2.0;
          A := U64 (Long_Float'Floor (X + 0.9999999665));
          Bb := U32 (A mod U64 (Inc));
-         Bb := U32 (U64 (A) + (U64 (Inc) + U64 (R) - U64 (Bb)) mod U64 (Inc));
+         Bb := U32 (A + (U64 (Inc) + U64 (R) - U64 (Bb)) mod U64 (Inc));
          C := U64 (Bb) * U64 (Bb) - Kn4;
          U := Trunc_U32 (X + Long_Float (B2) / (2.0 * X));
          A := U64 (Bb);
