@@ -14,7 +14,9 @@ def test_divisor_arithmetic():
 
 
 # New step: this repository has no existing BDD steps for Ada executables.
-@given("the checked arithmetic test runner is built", target_fixture="arith_runner")
+@given(
+    "the checked arithmetic test runner is built", target_fixture="arith_runner"
+)
 def arith_runner():
     runner = Path(__file__).parent / "bin" / "arith_runner"
     assert runner.is_file(), "Build with: cd tests && alr -n build"
