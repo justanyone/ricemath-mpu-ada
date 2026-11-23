@@ -5,6 +5,7 @@ Intent: Prime_Count must use the MPU LMO/Lehmer method (lmo.c, lehmer.c, prime_c
 The launcher says origin/dev-mpuada-001 is already in this branch, so first verify whether LMO is already ported and only fix failing tests.
 
 Next: locate Prime_Count, limits, skipped fixture rows, and the LMO/Lehmer sources.
+Lucy Prime_Count is still the body; limits are 2e13 and 3e11. Fixture prime_count rows above 2e13 are six narrow ranges (the test now calls them). Single-arg rows stop at 10^13 and 2^44, which Lucy cannot finish in the gate. Porting lmo.c plus prime_count_tables.h, crossover 66e6, and raising limits to U64'Last and MPU_MAX_PRIME_IDX.
 - 2026-11-23T14:25:57Z launcher: no commit for 60 s; 91 s elapsed. Files changed so far: docs/worker-notes/demand-d2a17cfd66b84d1eb07fb7f19aa538ed.md.
 - 2026-11-23T14:26:57Z launcher: no commit for 60 s; 151 s elapsed. Files changed so far: docs/worker-notes/demand-d2a17cfd66b84d1eb07fb7f19aa538ed.md.
 - 2026-11-23T14:27:57Z launcher: no commit for 60 s; 211 s elapsed. Files changed so far: docs/worker-notes/demand-d2a17cfd66b84d1eb07fb7f19aa538ed.md.
