@@ -1,9 +1,11 @@
 with Ada.Numerics.Long_Elementary_Functions;
+with Interfaces;
 with Math_Prime_Util.Primality;
 with Math_Prime_Util.Sieve;
 
 package body Math_Prime_Util.Powers with SPARK_Mode => On is
    use Int;
+   use type Interfaces.Unsigned_8;
    use Ada.Numerics.Long_Elementary_Functions;
    Max_Perfect : constant U64 := 18_446_744_065_119_617_025;
    Max_Perfect_Index : constant U64 := 4_297_615_581;
@@ -40,6 +42,8 @@ package body Math_Prime_Util.Powers with SPARK_Mode => On is
    end Is_Perfect_Power;
 
    --  _next/_prev_perfect_power: inspect roots instead of scanning gaps.
+   function Neighbor (N : U64; Forward, Prime, Odd : Boolean)
+      return Optional_U64;
    function Neighbor (N : U64; Forward, Prime, Odd : Boolean)
       return Optional_U64 is
       Best : Optional_U64 := (Defined => False);
@@ -115,9 +119,9 @@ package body Math_Prime_Util.Powers with SPARK_Mode => On is
 
    function Perfect_Power_Count (N : U64) return U64 is
       Mu : constant array (Positive range 1 .. 63) of Integer :=
-        [1,-1,-1,0,-1,1,-1,0,0,1,-1,0,-1,1,1,0,-1,0,-1,0,1,1,-1,
-         0,0,1,0,0,-1,-1,-1,0,1,1,1,0,-1,1,1,0,-1,-1,-1,0,0,1,
-         -1,0,0,0,1,0,-1,0,1,0,1,1,-1,0,-1,1,0];
+        [1, -1, -1, 0, -1, 1, -1, 0, 0, 1, -1, 0, -1, 1, 1, 0, -1, 0, -1, 0, 1, 1, -1,
+         0, 0, 1, 0, 0, -1, -1, -1, 0, 1, 1, 1, 0, -1, 1, 1, 0, -1, -1, -1, 0, 0, 1,
+         -1, 0, 0, 0, 1, 0, -1, 0, 1, 0, 1, 1, -1, 0, -1, 1, 0];
       Sum : I128 := 1;
    begin
       if N = 0 then
@@ -136,6 +140,7 @@ package body Math_Prime_Util.Powers with SPARK_Mode => On is
      (Perfect_Power_Count (N));
    function Perfect_Power_Count_Approx (N : U64) return U64 is
      (Perfect_Power_Count (N));
+   function Count_Powers (N : U64; Mode : Natural) return U64;
    function Count_Powers (N : U64; Mode : Natural) return U64 is
       Sum, R : U64 := 0;
    begin
@@ -169,6 +174,8 @@ package body Math_Prime_Util.Powers with SPARK_Mode => On is
         (if Low = 0 then 0 else Perfect_Power_Count (Low - 1)));
 
    --  Invert counts by bisection; the left edge of each plateau is chosen.
+   function Nth_Prime_Estimate (N : U64; Mode : Natural)
+      return Optional_U64;
    function Nth_Prime_Estimate (N : U64; Mode : Natural)
       return Optional_U64 is
       Low, High, Mid, C : U64;
@@ -223,6 +230,8 @@ package body Math_Prime_Util.Powers with SPARK_Mode => On is
       return (True, Low);
    end Nth_Perfect_Power;
 
+   function Perfect_Estimate (N : U64; Mode : Natural)
+      return Optional_U64;
    function Perfect_Estimate (N : U64; Mode : Natural)
       return Optional_U64 is
       X : constant Long_Float := Long_Float (N);

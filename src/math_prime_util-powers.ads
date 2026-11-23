@@ -114,7 +114,7 @@ package Math_Prime_Util.Powers with SPARK_Mode => On is
    function Perfect_Power_Count_Approx (N : U64) return U64
      with Pre => True,
           Post => Perfect_Power_Count_Approx'Result <= N;
-   --  perfect_powers.c: perfect_power_count_range. Inclusive; reversed is zero.
+   --  perfect_powers.c: perfect_power_count_range. Reversed is zero.
    function Perfect_Power_Count (Low, High : U64) return U64
      with Pre => True,
           Post => (if Low > High then Perfect_Power_Count'Result = 0);

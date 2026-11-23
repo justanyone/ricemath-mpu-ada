@@ -1,0 +1,121 @@
+Note: Building math_prime_util_tests=0.1.0-dev/math_prime_util_tests.gpr...
+Compile
+   [Ada]          math_prime_util_config.ads
+   [Ada]          math_prime_util-powers.adb
+   [Ada]          math_prime_util-families.adb
+   [Ada]          all_suites.adb
+   [Ada]          compat_combinat.adb
+   [Ada]          compat_count.adb
+   [Ada]          compat_digits.adb
+   [Ada]          compat_families.adb
+   [Ada]          compat_int.adb
+   [Ada]          compat_lucas.adb
+   [Ada]          compat_primality.adb
+   [Ada]          compat_rational.adb
+   [Ada]          compat_real.adb
+   [Ada]          compat_sieve.adb
+   [Ada]          prop_combinat.adb
+   [Ada]          prop_count.adb
+   [Ada]          prop_digits.adb
+   [Ada]          prop_families.adb
+math_prime_util-powers.adb:122:80: (style) this line is too long: 86 [-gnatyM]
+math_prime_util-powers.adb:123:80: (style) this line is too long: 84 [-gnatyM]
+   [Ada]          prop_int.adb
+prop_combinat.adb:18:26: warning: formal parameter "T" is not referenced [-gnatwf]
+prop_combinat.adb:38:15: (style) "and then" required [-gnatyB]
+prop_combinat.adb:65:12: (style) "and then" required [-gnatyB]
+prop_combinat.adb:66:12: (style) "and then" required [-gnatyB]
+prop_combinat.adb:67:12: (style) "and then" required [-gnatyB]
+prop_combinat.adb:81:32: (style) "and then" required [-gnatyB]
+prop_combinat.adb:82:12: (style) "and then" required [-gnatyB]
+prop_combinat.adb:88:15: (style) "and then" required [-gnatyB]
+prop_combinat.adb:89:15: (style) "and then" required [-gnatyB]
+prop_combinat.adb:94:18: (style) "and then" required [-gnatyB]
+prop_combinat.adb:103:16: (style) "and then" required [-gnatyB]
+prop_combinat.adb:113:19: (style) "and then" required [-gnatyB]
+prop_combinat.adb:120:34: (style) "and then" required [-gnatyB]
+prop_combinat.adb:121:12: (style) "and then" required [-gnatyB]
+prop_combinat.adb:121:40: (style) "and then" required [-gnatyB]
+prop_combinat.adb:122:12: (style) "and then" required [-gnatyB]
+prop_combinat.adb:123:12: (style) "and then" required [-gnatyB]
+prop_combinat.adb:126:38: (style) "and then" required [-gnatyB]
+prop_combinat.adb:127:12: (style) "and then" required [-gnatyB]
+prop_combinat.adb:127:44: (style) "and then" required [-gnatyB]
+prop_combinat.adb:128:12: (style) "and then" required [-gnatyB]
+prop_combinat.adb:131:33: (style) "and then" required [-gnatyB]
+prop_combinat.adb:132:12: (style) "and then" required [-gnatyB]
+prop_combinat.adb:132:39: (style) "and then" required [-gnatyB]
+prop_combinat.adb:152:24: warning: use of an anonymous access type allocator [-gnatw_a]
+   [Ada]          prop_lucas.adb
+prop_count.adb:19:20: warning: formal parameter "T" is not referenced [-gnatwf]
+prop_count.adb:63:41: (style) "and then" required [-gnatyB]
+prop_count.adb:67:26: warning: formal parameter "T" is not referenced [-gnatwf]
+prop_count.adb:85:32: warning: formal parameter "T" is not referenced [-gnatwf]
+prop_count.adb:87:27: warning: array aggregate using () is an obsolescent syntax, use [] instead [-gnatwj]
+prop_count.adb:101:35: (style) "and then" required [-gnatyB]
+prop_count.adb:118:24: warning: use of an anonymous access type allocator [-gnatw_a]
+   [Ada]          prop_primality.adb
+prop_families.adb:21:20: warning: formal parameter "T" is not referenced [-gnatwf]
+prop_families.adb:37:44: (style) "and then" required [-gnatyB]
+prop_families.adb:56:32: warning: formal parameter "T" is not referenced [-gnatwf]
+prop_families.adb:92:24: warning: use of an anonymous access type allocator [-gnatw_a]
+   [Ada]          prop_rational.adb
+prop_digits.adb:23:26: warning: formal parameter "T" is not referenced [-gnatwf]
+prop_digits.adb:106:24: warning: use of an anonymous access type allocator [-gnatw_a]
+   [Ada]          prop_real.adb
+prop_int.adb:12:04: warning: use clause for type "I128" defined at math_prime_util-int.ads:15 has no effect [-gnatwu]
+prop_int.adb:23:26: warning: formal parameter "T" is not referenced [-gnatwf]
+prop_int.adb:39:26: warning: actuals for this call may be in wrong order [-gnatw.p]
+prop_int.adb:75:33: warning: formal parameter "T" is not referenced [-gnatwf]
+prop_int.adb:111:24: warning: use of an anonymous access type allocator [-gnatw_a]
+   [Ada]          prop_sieve.adb
+compat_primality.adb:53:40: (style) "and then" required [-gnatyB]
+compat_primality.adb:62:46: (style) "and then" required [-gnatyB]
+compat_primality.adb:71:47: (style) "and then" required [-gnatyB]
+compat_primality.adb:176:22: warning: formal parameter "T" is not referenced [-gnatwf]
+compat_primality.adb:181:22: warning: formal parameter "T" is not referenced [-gnatwf]
+compat_primality.adb:186:22: warning: formal parameter "T" is not referenced [-gnatwf]
+compat_primality.adb:191:22: warning: formal parameter "T" is not referenced [-gnatwf]
+compat_primality.adb:196:22: warning: formal parameter "T" is not referenced [-gnatwf]
+compat_primality.adb:201:22: warning: formal parameter "T" is not referenced [-gnatwf]
+compat_primality.adb:206:22: warning: formal parameter "T" is not referenced [-gnatwf]
+compat_primality.adb:211:22: warning: formal parameter "T" is not referenced [-gnatwf]
+compat_primality.adb:216:22: warning: formal parameter "T" is not referenced [-gnatwf]
+compat_primality.adb:221:22: warning: formal parameter "T" is not referenced [-gnatwf]
+compat_primality.adb:226:23: warning: formal parameter "T" is not referenced [-gnatwf]
+compat_primality.adb:231:23: warning: formal parameter "T" is not referenced [-gnatwf]
+compat_primality.adb:236:23: warning: formal parameter "T" is not referenced [-gnatwf]
+compat_primality.adb:241:23: warning: formal parameter "T" is not referenced [-gnatwf]
+compat_primality.adb:246:23: warning: formal parameter "T" is not referenced [-gnatwf]
+compat_primality.adb:251:23: warning: formal parameter "T" is not referenced [-gnatwf]
+compat_primality.adb:256:23: warning: formal parameter "T" is not referenced [-gnatwf]
+compat_primality.adb:261:23: warning: formal parameter "T" is not referenced [-gnatwf]
+compat_primality.adb:266:23: warning: formal parameter "T" is not referenced [-gnatwf]
+compat_primality.adb:271:23: warning: formal parameter "T" is not referenced [-gnatwf]
+compat_primality.adb:322:24: warning: use of an anonymous access type allocator [-gnatw_a]
+   [Ada]          test_fixture_support.adb
+compat_lucas.adb:73:33: (style) "or else" required [-gnatyB]
+compat_lucas.adb:73:55: (style) "or else" required [-gnatyB]
+compat_lucas.adb:111:27: warning: formal parameter "T" is not referenced [-gnatwf]
+compat_lucas.adb:117:27: warning: formal parameter "T" is not referenced [-gnatwf]
+compat_lucas.adb:123:28: warning: formal parameter "T" is not referenced [-gnatwf]
+compat_lucas.adb:129:30: warning: formal parameter "T" is not referenced [-gnatwf]
+compat_lucas.adb:135:30: warning: formal parameter "T" is not referenced [-gnatwf]
+compat_lucas.adb:141:31: warning: formal parameter "T" is not referenced [-gnatwf]
+compat_lucas.adb:147:35: warning: formal parameter "T" is not referenced [-gnatwf]
+compat_lucas.adb:153:30: warning: formal parameter "T" is not referenced [-gnatwf]
+compat_lucas.adb:159:33: warning: formal parameter "T" is not referenced [-gnatwf]
+compat_lucas.adb:190:24: warning: use of an anonymous access type allocator [-gnatw_a]
+   [Ada]          version_suite.adb
+compat_sieve.adb:113:09: (style) incorrect layout [-gnatyl]
+compat_sieve.adb:121:16: (style) "end" in wrong column, should be in column 13 [-gnatyl]
+compat_sieve.adb:134:25: warning: formal parameter "T" is not referenced [-gnatwf]
+compat_sieve.adb:139:25: warning: formal parameter "T" is not referenced [-gnatwf]
+compat_sieve.adb:144:26: warning: formal parameter "T" is not referenced [-gnatwf]
+compat_sieve.adb:149:28: warning: formal parameter "T" is not referenced [-gnatwf]
+compat_sieve.adb:154:27: warning: formal parameter "T" is not referenced [-gnatwf]
+compat_sieve.adb:159:24: warning: formal parameter "T" is not referenced [-gnatwf]
+compat_sieve.adb:164:28: warning: formal parameter "T" is not referenced [-gnatwf]
+compat_sieve.adb:173:28: warning: formal parameter "T" is not referenced [-gnatwf]
+compat_sieve.adb:198:24: warning: use of an anonymous access type allocator [-gnatw_a]
+   [Ada]          fixture_support.adb
