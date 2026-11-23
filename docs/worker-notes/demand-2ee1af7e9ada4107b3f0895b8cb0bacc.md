@@ -7,3 +7,4 @@ Implemented segmented ranges and fixture replay, including explicit bigint skip 
 Focused test launch required obj creation and XDG_RUNTIME_DIR redirection because Alire defaults outside the writable checkout; build now running.
 Focused build remains pending with no compiler output; checking Alire verbose diagnostics before further validation.
 Implemented the dedicated MARKSEMI range sieve and moved square-free flags to heap-backed bounded storage; compiler/test diagnostics pending.
+Development library build succeeded. Fixed fixture diagnostic typo, segment-end odd-composite handling, and added XS almost-prime power-of-two reduction.

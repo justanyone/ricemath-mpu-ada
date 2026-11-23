@@ -4,6 +4,7 @@ with Math_Prime_Util.Families;
 with Math_Prime_Util.Sieve;
 
 package body Math_Prime_Util.Iter.Ranges is
+   use type U128;
    --  XS.xs: foroddcomposites. Enumerate gaps between segmented primes.
    procedure Foroddcomposites
      (Low, High : U64;
@@ -36,9 +37,10 @@ package body Math_Prime_Util.Iter.Ranges is
             exit when Context.Stop or else Last - C < 2;
             C := C + 2;
          end loop;
-         exit when Context.Stop or else High - Last < 2;
+         exit when Context.Stop or else Last = High;
          First := Last + 1;
          if First mod 2 = 0 then
+            exit when First = High;
             First := First + 1;
          end if;
       end loop;
@@ -58,21 +60,56 @@ package body Math_Prime_Util.Iter.Ranges is
         (Value : U64; Context : in out Loop_Context))
    is
       Context : Loop_Context := (Active => True, Stop => False);
-      First, Last : U64;
+      First, Last, Bound : U64;
+      Reduced_K : Natural := K;
+      Shift : Natural := 0;
+      Power : U64;
+      Segment_Size : U64;
    begin
       if K = 0 or else K >= 64 or else Low > High then
          return;
       end if;
       First := U64'Max (Low, 2 ** K);
-      while First <= High loop
-         --  XS.xs: bounded generate_almost_primes segments. The existing
-         --  Families implementation uses recursive generation / sieving.
-         Last := First + U64'Min (High - First, 65_536 * 256 - 1);
-         for V of Families.Almost_Primes (K, First, Last) loop
-            Process (V, Context);
-            exit when Context.Stop;
-         end loop;
-         exit when Context.Stop or else Last = High;
+      if First > High then
+         return;
+      end if;
+      --  XS.xs: strip forced powers of two before generating the segment.
+      if K > 40 then
+         Shift := K - 40;
+      end if;
+      while K - Shift > 1 and then High / 2 ** Shift < 3 ** (K - Shift)
+      loop
+         Shift := Shift + 1;
+      end loop;
+      First := First / 2 ** Shift +
+        (if First mod 2 ** Shift = 0 then 0 else 1);
+      Bound := High / 2 ** Shift;
+      Reduced_K := K - Shift;
+      Power := 3 ** Reduced_K;
+      while First <= Bound loop
+         Segment_Size := 65_536 * 256;
+         if Reduced_K > 12 then
+            Segment_Size := Segment_Size * 16;
+         end if;
+         if Reduced_K > 18 or else U128 (First) > 9 * U128 (Power) then
+            Segment_Size := Segment_Size * 4;
+         end if;
+         if Reduced_K > 24 or else U128 (First) > 81 * U128 (Power) then
+            Segment_Size := Segment_Size * 3;
+         end if;
+         Last := First + U64'Min (Bound - First, Segment_Size - 1);
+         if Reduced_K = 1 then
+            for V of Sieve.Primes (First, Last) loop
+               Process (V * 2 ** Shift, Context);
+               exit when Context.Stop;
+            end loop;
+         else
+            for V of Families.Almost_Primes (Reduced_K, First, Last) loop
+               Process (V * 2 ** Shift, Context);
+               exit when Context.Stop;
+            end loop;
+         end if;
+         exit when Context.Stop or else Last = Bound;
          First := Last + 1;
       end loop;
    end Foralmostprimes;
