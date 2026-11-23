@@ -6,3 +6,4 @@ Alire resolves GNAT 16.1.0 and gprbuild, but no GNATcheck executable. The declar
 Development/release builds passed; AUnit is running. No source diagnostic has been reported, and tools/ changes are prohibited by the packet, so no report generator or substitute report was added.
 Confirmed: alr -n exec -- gnatcheck --version exits 1: Executable not found in PATH when spawning. MPU test references match the existing compat cases. Awaiting AUnit results; no implementation defect identified.
 Both test commands are still running. The checked test_runner accepts no arguments, so tools/test.sh vec runs the full suite; no focused-filter result will be claimed.
+AUnit remains active with no returned summary. Build checks passed; GNATcheck cannot execute on this host. The report-error finding is an unavailable verification tool, not a reported Ada rule violation.
