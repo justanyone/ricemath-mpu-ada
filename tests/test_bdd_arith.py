@@ -3,8 +3,8 @@
 Build first from tests/: alr -n build. Run with pytest -p no:cacheprovider.
 """
 
-from pathlib import Path
 import subprocess
+from pathlib import Path
 
 from pytest_bdd import given, scenarios, then, when
 
@@ -12,8 +12,8 @@ scenarios("features/arith.feature")
 ROOT = Path(__file__).resolve().parent
 
 
-def built_runner():
-    runner = ROOT / "bin" / "arith_runner"
+def built_runner(name="arith_runner"):
+    runner = ROOT / "bin" / name
     assert runner.is_file(), "Build with: cd tests && alr -n build"
     return runner.resolve()
 
