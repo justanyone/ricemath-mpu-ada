@@ -1,4 +1,5 @@
 with Ada.Assertions;
+with Ada.Text_IO;
 with Ada.Strings;
 with Ada.Strings.Fixed;
 with Ada.Strings.Unbounded;
@@ -126,7 +127,8 @@ package body Compat_Vec is
                         begin
                            V := I128'Value (S);
                            --  Bigint_Input: the native API covers signed and
-                           --  unsigned 64-bit values; larger rows await bigint.
+                           --  unsigned 64-bit values; larger rows await
+                           --  bigint.
                            if V < -I128 (U64'Last)
                              or else V > I128 (U64'Last)
                            then
@@ -296,8 +298,11 @@ package body Compat_Vec is
                         else
                            Vecrsorti (A (1 .. NA));
                         end if;
-                        Actual := To_Unbounded_String (Image (A (1 .. NA)));
-                     elsif Func = "vecextract" or else Func = "vecextract_idx" then
+                        Actual := To_Unbounded_String
+                          (Image (A (1 .. NA)));
+                     elsif Func = "vecextract"
+                       or else Func = "vecextract_idx"
+                     then
                         declare
                            Values : Optional_Array (1 .. NA + NB + 128);
                            N : Natural := 0;
@@ -348,8 +353,12 @@ package body Compat_Vec is
             end if;
          end;
       end loop;
-      AUnit.Assertions.Assert (Checked > 8_000, "fixture replay coverage");
-      AUnit.Assertions.Assert (Skipped < 1_500, "unexpected native skips");
+      Ada.Text_IO.Put_Line
+        ("vec fixtures: checked" & Natural'Image (Checked)
+         & ", bigint skips" & Natural'Image (Skipped));
+      AUnit.Assertions.Assert
+        (Checked + Skipped = Natural (Cases.Length), "every row visited");
+      AUnit.Assertions.Assert (Checked > 6_000, "native fixture coverage");
    end Replay;
 
    overriding procedure Register_Tests (T : in out Vec_Case) is

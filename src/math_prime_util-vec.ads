@@ -108,7 +108,8 @@ package Math_Prime_Util.Vec with SPARK_Mode => On is
    --  Returns inserted count minus removed count.
    function Setinvert (A, B : Integer_Array) return Integer;
    --  Insert into a capacity buffer whose first Last elements form A.
-   --  Count is the inserted count; insufficient capacity raises before writing.
+   --  Count is the inserted count; insufficient capacity raises before
+   --  writing.
    procedure Setinsert
      (A : in out Integer_Array; Last : in out Natural;
       B : Integer_Array; Count : out Integer)
@@ -118,7 +119,8 @@ package Math_Prime_Util.Vec with SPARK_Mode => On is
      (A : in out Integer_Array; Last : in out Natural;
       B : Integer_Array; Count : out Integer)
      with Pre => Last <= A'Length, Post => Last <= Last'Old;
-   --  Toggle values in the first Last elements; Count is inserted minus removed.
+   --  Toggle values in the first Last elements; Count is inserted minus
+   --  removed.
    --  Insufficient capacity raises before writing.
    procedure Setinvert
      (A : in out Integer_Array; Last : in out Natural;
