@@ -8,6 +8,8 @@ package body Math_Prime_Util.Families is
    package Prime_Sieve renames Math_Prime_Util.Sieve;
    use Ada.Numerics.Long_Elementary_Functions;
    use Lucky_Vectors;
+   use type U128;
+   use type Int.I128;
    subtype F64 is Long_Float;
    Max_Lucky : constant U64 := 18_446_744_073_709_551_517;
    Small : constant array (Natural range 0 .. 47) of U64 :=
@@ -1504,4 +1506,697 @@ package body Math_Prime_Util.Families is
          end loop;
       end if;
    end Nth_Semiprime;
+
+   --  prime_powers.c and perfect_powers.c. Native UV domain, plus the
+   --  signed perfect-power forms whose absolute value fits in U64.
+   Max_Prime : constant U64 := 18_446_744_073_709_551_557;
+   Max_Perfect_Power : constant U64 := 18_446_744_065_119_617_025;
+   Max_Perfect_Index : constant U64 := 4_297_615_581;
+
+   function Fit (Wide : U128) return U64 with SPARK_Mode => Off;
+   function Fit (Wide : U128) return U64 is
+   begin
+      if Wide > U128 (U64'Last) then
+         raise Constraint_Error;
+      end if;
+      return U64 (Wide);
+   end Fit;
+
+   function Pow_Safe (A, K : U64) return U64 with SPARK_Mode => Off;
+   function Pow_Safe (A, K : U64) return U64 is
+      P : constant Int.Optional_U64 := Int.Powint (A, K);
+   begin
+      if P.Defined then
+         return P.Value;
+      end if;
+      return U64'Last;
+   end Pow_Safe;
+
+   function Prime_Power (N : U64) return Prime_Power_Factor
+     with SPARK_Mode => Off
+   is
+      Power : U64 := 0;
+      M : U64;
+      Root : U64;
+      Small : constant array (1 .. 3) of U64 := [3, 5, 7];
+   begin
+      if N < 2 then
+         return (0, 0);
+      end if;
+      if (N and 1) = 0 then
+         if (N and (N - 1)) /= 0 then
+            return (0, 0);
+         end if;
+         return (Int.Logint (N, 2), 2);
+      end if;
+      for Prime of Small loop
+         if N mod Prime = 0 then
+            M := N;
+            while M > 1 and then M mod Prime = 0 loop
+               M := M / Prime;
+               Power := Power + 1;
+            end loop;
+            if M /= 1 then
+               return (0, 0);
+            end if;
+            return (Power, Prime);
+         end if;
+      end loop;
+      if Primality.Is_Prob_Prime (N) /= 0 then
+         return (1, N);
+      end if;
+      Power := Int.Is_Power_Exp (N);
+      if Power <= 1 then
+         return (0, 0);
+      end if;
+      Root := Int.Rootint (N, Power);
+      if Primality.Is_Prob_Prime (Root) /= 0 then
+         return (Power, Root);
+      end if;
+      return (0, 0);
+   end Prime_Power;
+
+   function Is_Prime_Power (N : U64) return U64 is
+     (Prime_Power (N).Exponent) with SPARK_Mode => Off;
+
+   function Next_Prime_Power (N : U64) return Int.Optional_U64
+     with SPARK_Mode => Off
+   is
+      Bit, I : U64;
+   begin
+      if N < 2 then
+         return (True, 2);
+      elsif N >= Max_Prime then
+         return (Defined => False);
+      end if;
+      Bit := Interfaces.Shift_Left (1, Natural (Int.Logint (N, 2)));
+      I := N + 1 + (N and 1);
+      while (I and Bit) /= 0 loop
+         if Is_Prime_Power (I) /= 0 then
+            return (True, I);
+         end if;
+         I := I + 2;
+      end loop;
+      return (True, I - 1);
+   end Next_Prime_Power;
+
+   function Prev_Prime_Power (N : U64) return Int.Optional_U64
+     with SPARK_Mode => Off
+   is
+      M, Bit, I : U64;
+   begin
+      if N <= 2 then
+         return (Defined => False);
+      end if;
+      M := N - 1;
+      Bit := Interfaces.Shift_Left (1, Natural (Int.Logint (M, 2)));
+      I := (if (M and 1) = 0 then M - 1 else M);
+      while (I and Bit) /= 0 loop
+         if Is_Prime_Power (I) /= 0 then
+            return (True, I);
+         end if;
+         I := I - 2;
+      end loop;
+      return (True, I + 1);
+   end Prev_Prime_Power;
+
+   function Prime_Powers (Low, High : U64) return Family_Vectors.Vector
+     with SPARK_Mode => Off
+   is
+      Result : Family_Vectors.Vector;
+      package Sorting is new Family_Vectors.Generic_Sorting;
+   begin
+      if High < 2 or else Low > High then
+         return Result;
+      end if;
+      declare
+         Width : constant U64 := High - Low;
+         Limit : U64;
+      begin
+         if High < 7_929_856 then
+            Limit := 10;
+         else
+            Limit := Int.Sqrtint (High) / 256;
+         end if;
+         if Width < Limit then
+            for Value in Low .. High loop
+               if Is_Prime_Power (Value) /= 0 then
+                  Result.Append (Value);
+               end if;
+            end loop;
+            return Result;
+         end if;
+      end;
+      declare
+         Powers : Family_Vectors.Vector;
+         Primes : constant Prime_Sieve.Prime_Vectors.Vector :=
+           Prime_Sieve.Primes (Low, High);
+         Log2 : constant U64 := Int.Logint (High, 2);
+         K : U64 := 2;
+         Ip, Ir : Integer;
+      begin
+         while K <= Log2 loop
+            declare
+               Root : constant U64 := Int.Rootint (High, K);
+            begin
+               for P of Prime_Sieve.Primes (Root) loop
+                  declare
+                     Pk : constant Int.Optional_U64 := Int.Powint (P, K);
+                  begin
+                     if Pk.Defined and then Pk.Value >= Low
+                       and then Pk.Value <= High
+                     then
+                        Powers.Append (Pk.Value);
+                     end if;
+                  end;
+               end loop;
+            end;
+            K := K + 1;
+         end loop;
+         Sorting.Sort (Powers);
+         Ip := Powers.First_Index;
+         Ir := Primes.First_Index;
+         while Ip <= Powers.Last_Index
+           or else Ir <= Primes.Last_Index
+         loop
+            if Ip > Powers.Last_Index then
+               Result.Append (Primes.Element (Ir));
+               Ir := Ir + 1;
+            elsif Ir > Primes.Last_Index then
+               Result.Append (Powers.Element (Ip));
+               Ip := Ip + 1;
+            elsif Primes.Element (Ir) < Powers.Element (Ip) then
+               Result.Append (Primes.Element (Ir));
+               Ir := Ir + 1;
+            else
+               Result.Append (Powers.Element (Ip));
+               Ip := Ip + 1;
+            end if;
+         end loop;
+      end;
+      return Result;
+   end Prime_Powers;
+
+   function Prime_Powers (High : U64) return Family_Vectors.Vector is
+     (Prime_Powers (0, High)) with SPARK_Mode => Off;
+
+   function Bounded_Prime_Count
+     (High : U64; Kind : Estimate_Kind) return U64
+     with SPARK_Mode => Off;
+   function Bounded_Prime_Count
+     (High : U64; Kind : Estimate_Kind) return U64 is
+   begin
+      case Kind is
+         when Approx =>
+            return Count.Prime_Count_Approx (High);
+         when Lower =>
+            return Count.Prime_Count_Lower (High);
+         when Upper =>
+            return Count.Prime_Count_Upper (High);
+      end case;
+   end Bounded_Prime_Count;
+
+   function Prime_Power_Bound (High : U64; Kind : Estimate_Kind) return U64
+     with SPARK_Mode => Off;
+   function Prime_Power_Bound (High : U64; Kind : Estimate_Kind) return U64
+   is
+      Sum : U128;
+      K : U64;
+   begin
+      if High <= 5 then
+         return (if High = 0 then 0 else High - 1);
+      end if;
+      Sum := U128 (Bounded_Prime_Count (High, Kind));
+      K := 2;
+      while K <= Int.Logint (High, 2) loop
+         Sum := Sum + U128 (Bounded_Prime_Count
+           (Int.Rootint (High, K), Kind));
+         K := K + 1;
+      end loop;
+      return Fit (Sum);
+   end Prime_Power_Bound;
+
+   function Prime_Power_Count (High : U64) return U64
+     with SPARK_Mode => Off
+   is
+      Sum : U128;
+      K : U64;
+   begin
+      if High <= 5 then
+         return (if High = 0 then 0 else High - 1);
+      end if;
+      Sum := U128 (Count.Prime_Count (High));
+      K := 2;
+      while K <= Int.Logint (High, 2) loop
+         Sum := Sum + U128 (Count.Prime_Count (Int.Rootint (High, K)));
+         K := K + 1;
+      end loop;
+      return Fit (Sum);
+   end Prime_Power_Count;
+
+   function Prime_Power_Count (Low, High : U64) return U64
+     with SPARK_Mode => Off
+   is
+   begin
+      if High < 2 or else High < Low then
+         return 0;
+      end if;
+      return Prime_Power_Count (High)
+        - (if Low <= 2 then 0 else Prime_Power_Count (Low - 1));
+   end Prime_Power_Count;
+
+   function Prime_Power_Count_Lower (High : U64) return U64 is
+     (Prime_Power_Bound (High, Lower)) with SPARK_Mode => Off;
+
+   function Prime_Power_Count_Upper (High : U64) return U64 is
+     (Prime_Power_Bound (High, Upper)) with SPARK_Mode => Off;
+
+   function Prime_Power_Count_Approx (High : U64) return U64 is
+     (Prime_Power_Bound (High, Approx)) with SPARK_Mode => Off;
+
+   function Prime_Upper_At (X : U64) return U64 is
+     (Prime_Power_Count_Upper (X)) with SPARK_Mode => Off;
+   function Prime_Lower_At (X : U64) return U64 is
+     (Prime_Power_Count_Lower (X)) with SPARK_Mode => Off;
+   function Prime_Approx_At (X : U64) return U64 is
+     (Prime_Power_Count_Approx (X)) with SPARK_Mode => Off;
+   function Invert_Prime_Upper is new Inverse (F64, Prime_Upper_At);
+   function Invert_Prime_Lower is new Inverse (F64, Prime_Lower_At);
+   function Invert_Prime_Approx is new Inverse (F64, Prime_Approx_At);
+
+   function Simple_Prime_Lower (N : U64) return U64
+     with SPARK_Mode => Off;
+   function Simple_Prime_Lower (N : U64) return U64 is
+      Bound : F64;
+   begin
+      if N <= 100 then
+         return N + 1;
+      end if;
+      Bound := 0.98 * F64 (Count.Nth_Prime_Lower (N)) - 400.0;
+      if Bound <= 2.0 then
+         return 2;
+      end if;
+      return U64 (F64'Truncation (Bound));
+   end Simple_Prime_Lower;
+
+   function Simple_Prime_Upper (N : U64) return U64 is
+     (Count.Nth_Prime_Upper (N)) with SPARK_Mode => Off;
+
+   function Nth_Prime_Power_Value
+     (N : U64; Kind : Estimate_Kind) return U64
+     with SPARK_Mode => Off;
+   function Nth_Prime_Power_Value
+     (N : U64; Kind : Estimate_Kind) return U64
+   is
+      Lo, Hi : U64;
+   begin
+      if N <= 7 then
+         return (if N = 0 then 0 else N + 1 + N / 5);
+      end if;
+      Lo := Simple_Prime_Lower (N);
+      Hi := Simple_Prime_Upper (N);
+      if Lo > Hi then
+         Lo := 2;
+      end if;
+      case Kind is
+         when Lower =>
+            return Invert_Prime_Upper (Lo, Hi, N);
+         when Upper =>
+            return Invert_Prime_Lower (Lo, Hi, N);
+         when Approx =>
+            return Invert_Prime_Approx (Lo, Hi, N);
+      end case;
+   end Nth_Prime_Power_Value;
+
+   function Nth_Prime_Power_Lower (N : U64) return Int.Optional_U64 is
+     (if N = 0 then (Defined => False)
+      else (True, Nth_Prime_Power_Value (N, Lower)))
+     with SPARK_Mode => Off;
+
+   function Nth_Prime_Power_Upper (N : U64) return Int.Optional_U64 is
+     (if N = 0 then (Defined => False)
+      else (True, Nth_Prime_Power_Value (N, Upper)))
+     with SPARK_Mode => Off;
+
+   function Nth_Prime_Power_Approx (N : U64) return Int.Optional_U64 is
+     (if N = 0 then (Defined => False)
+      else (True, Nth_Prime_Power_Value (N, Approx)))
+     with SPARK_Mode => Off;
+
+   type Guess_Count is record
+      Guess : U64;
+      Count : U64;
+   end record;
+
+   generic
+      with function Approx_Nth (N : U64) return U64;
+      with function Exact_Count (N : U64) return U64;
+      with function Member (N : U64) return Boolean;
+      Use_Member : Boolean := False;
+   function Interpolate_Approx (N, Tol : U64) return Guess_Count;
+
+   function Interpolate_Approx (N, Tol : U64) return Guess_Count is
+      Guess : U64 := Approx_Nth (N);
+      Approx_N : constant U64 := Guess;
+      Count : U64 := 0;
+      Ming : U64 := 0;
+      Maxg : U64 := U64'Last;
+      Gn : U64 := 2;
+      Adjust, Approx_Count, Span, Step : U64;
+   begin
+      loop
+         exit when Gn >= 20;
+         Count := Exact_Count (Guess);
+         exit when N = Count
+           or else (N > Count and then N - Count < Tol)
+           or else (Count > N and then Count - N < Tol);
+         Approx_Count := Approx_Nth (Count);
+         if Count <= N and then Guess > Ming then
+            Ming := Guess;
+         end if;
+         if Count >= N and then Guess < Maxg then
+            Maxg := Guess;
+         end if;
+         if Approx_N >= Approx_Count then
+            Adjust := Approx_N - Approx_Count;
+            if Adjust > U64'Last - Guess then
+               Guess := U64'Last;
+            else
+               Guess := Guess + Adjust;
+            end if;
+         else
+            Adjust := Approx_Count - Approx_N;
+            if Adjust > Guess then
+               Guess := 0;
+            else
+               Guess := Guess - Adjust;
+            end if;
+         end if;
+         if Guess <= Ming or else Guess >= Maxg then
+            Span := Maxg - Ming;
+            Step := (if Tol > 1 then Tol - 1 else 1);
+            if Span <= 1 then
+               Guess := (if Guess <= Ming then Maxg else Ming);
+            elsif Step >= Span then
+               Guess := Ming + Span / 2;
+            elsif Guess <= Ming then
+               Guess := Ming + Step;
+            else
+               Guess := Maxg - Step;
+            end if;
+         end if;
+         Gn := Gn + 1;
+      end loop;
+      if Gn = 20 then
+         Count := Exact_Count (Guess);
+      end if;
+      if Use_Member then
+         if Count < N then
+            while Count < N loop
+               loop
+                  Guess := Guess + 1;
+                  exit when Member (Guess);
+               end loop;
+               Count := Count + 1;
+            end loop;
+         else
+            while not Member (Guess) loop
+               Guess := Guess - 1;
+            end loop;
+            while Count > N loop
+               loop
+                  Guess := Guess - 1;
+                  exit when Member (Guess);
+               end loop;
+               Count := Count - 1;
+            end loop;
+         end if;
+      end if;
+      return (Guess, Count);
+   end Interpolate_Approx;
+
+   function Approx_Prime_Nth (N : U64) return U64 is
+     (Nth_Prime_Power_Value (N, Approx)) with SPARK_Mode => Off;
+   function Exact_Prime_Count (N : U64) return U64 is
+     (Prime_Power_Count (N)) with SPARK_Mode => Off;
+   function Prime_Member (N : U64) return Boolean is
+     (Is_Prime_Power (N) /= 0) with SPARK_Mode => Off;
+   function Interpolate_Prime is new Interpolate_Approx
+     (Approx_Prime_Nth, Exact_Prime_Count, Prime_Member, True);
+
+   function Nth_Prime_Power (N : U64) return Int.Optional_U64
+     with SPARK_Mode => Off
+   is
+   begin
+      if N = 0 then
+         return (Defined => False);
+      elsif N <= 7 then
+         return (True, N + 1 + N / 5);
+      end if;
+      return (True, Interpolate_Prime (N, 800).Guess);
+   end Nth_Prime_Power;
+
+   function Next_Perfect_Unsigned (N : U64; Odd : Boolean) return U64
+     with SPARK_Mode => Off;
+   function Next_Perfect_Unsigned (N : U64; Odd : Boolean) return U64 is
+      Kinit : constant U64 := (if Odd then 3 else 2);
+      Kinc : constant U64 := (if Odd then 2 else 1);
+      Log2, Best, Step, Root, K : U64;
+   begin
+      if N = 0 then
+         return 1;
+      elsif N = 1 then
+         return (if Odd then 8 else 4);
+      elsif N >= Max_Perfect_Power then
+         return 0;
+      end if;
+      Log2 := Int.Logint (N, 2);
+      Best := Pow_Safe (Int.Rootint (N, Kinit) + 1, Kinit);
+      K := Kinit + Kinc;
+      while K <= Log2 + 1 loop
+         Root := Int.Rootint (N, K) + 1;
+         Step := Pow_Safe (Root, K);
+         if Step /= U64'Last and then Step < Best and then Step > N then
+            Best := Step;
+         end if;
+         K := K + Kinc;
+      end loop;
+      return (if Best = U64'Last then 0 else Best);
+   end Next_Perfect_Unsigned;
+
+   function Prev_Perfect_Unsigned (N : U64; Odd : Boolean) return U64
+     with SPARK_Mode => Off;
+   function Prev_Perfect_Unsigned (N : U64; Odd : Boolean) return U64 is
+      Kinit : constant U64 := (if Odd then 3 else 2);
+      Kinc : constant U64 := (if Odd then 2 else 1);
+      Best : U64 := 8;
+      K, Root, Step : U64;
+      Power : Int.Optional_U64;
+   begin
+      if N <= 4 then
+         return (if N > 1 then 1 else 0);
+      elsif N <= 8 then
+         return (if Odd then 1 else 4);
+      end if;
+      K := Kinit;
+      while K <= Int.Logint (N, 2) loop
+         Root := Int.Rootint (N, K);
+         Power := Int.Powint (Root, K);
+         Step := (if Power.Defined then Power.Value else 0);
+         if Step >= N and then Root > 1 then
+            Power := Int.Powint (Root - 1, K);
+            Step := (if Power.Defined then Power.Value else 0);
+         end if;
+         if Step > Best and then Step < N then
+            Best := Step;
+         end if;
+         K := K + Kinc;
+      end loop;
+      return Best;
+   end Prev_Perfect_Unsigned;
+
+   function Is_Perfect_Nonneg (N : U64) return Boolean is
+     (N <= 1 or else Int.Is_Power_Exp (N) > 1) with SPARK_Mode => Off;
+
+   function Is_Perfect_Power (N : U64) return Boolean is
+     (Is_Perfect_Nonneg (N)) with SPARK_Mode => Off;
+
+   function Is_Perfect_Power (N : Int.I128) return Boolean
+     with SPARK_Mode => Off
+   is
+      Abs_N, Exp : U64;
+   begin
+      if N >= 0 then
+         return Is_Perfect_Nonneg (U64 (N));
+      end if;
+      Abs_N := U64 (-N);
+      if Abs_N <= 1 then
+         return True;
+      end if;
+      Exp := Int.Is_Power_Exp (Abs_N);
+      return Exp > 2 and then (Exp and (Exp - 1)) /= 0;
+   end Is_Perfect_Power;
+
+   function Next_Perfect_Power (N : Int.I128) return Int.I128
+     with SPARK_Mode => Off
+   is
+      Step : U64;
+   begin
+      if N < 0 then
+         Step := Prev_Perfect_Unsigned (U64 (-N), True);
+         return -Int.I128 (Step);
+      end if;
+      return Int.I128 (Next_Perfect_Unsigned (U64 (N), False));
+   end Next_Perfect_Power;
+
+   function Prev_Perfect_Power (N : Int.I128) return Int.I128
+     with SPARK_Mode => Off
+   is
+   begin
+      if N = 0 then
+         return -1;
+      elsif N < 0 then
+         return -Int.I128 (Next_Perfect_Unsigned (U64 (-N), True));
+      end if;
+      return Int.I128 (Prev_Perfect_Unsigned (U64 (N), False));
+   end Prev_Perfect_Power;
+
+   Moebius : constant array (0 .. 64) of Integer :=
+     [0, 1, -1, -1, 0, -1, 1, -1, 0, 0, 1, -1, 0, -1, 1, 1,
+      0, -1, 0, -1, 0, 1, 1, -1, 0, 0, 1, 0, 0, -1, -1, -1,
+      0, 1, 1, 1, 0, -1, 1, 1, 0, -1, -1, -1, 0, 0, 1, -1,
+      0, 0, 0, 1, 0, -1, 0, 1, 0, 1, 1, -1, 0, -1, 1, 0, 0];
+
+   function Perfect_Power_Count (High : U64) return U64
+     with SPARK_Mode => Off
+   is
+      Sum : U64 := 1;
+      K : U64;
+      M : Integer;
+      Term : U64;
+   begin
+      if High < 8 then
+         return (if High >= 1 then 1 else 0)
+           + (if High >= 4 then 1 else 0);
+      end if;
+      K := 2;
+      while K <= Int.Logint (High, 2) loop
+         M := Moebius (Natural (K));
+         if M /= 0 then
+            Term := Int.Rootint (High, K) - 1;
+            if M < 0 then
+               Sum := Fit (U128 (Sum) + U128 (Term));
+            else
+               Sum := Sum - Term;
+            end if;
+         end if;
+         K := K + 1;
+      end loop;
+      return Sum;
+   end Perfect_Power_Count;
+
+   function Perfect_Power_Count_Lower (High : U64) return U64 is
+     (Perfect_Power_Count (High)) with SPARK_Mode => Off;
+
+   function Perfect_Power_Count_Upper (High : U64) return U64 is
+     (Perfect_Power_Count (High)) with SPARK_Mode => Off;
+
+   function Perfect_Power_Count_Approx (High : U64) return U64 is
+     (Perfect_Power_Count (High)) with SPARK_Mode => Off;
+
+   type Power_Bound is (Lower, Upper, Approx);
+
+   function Perfect_Nth_Bound (N : U64; Kind : Power_Bound) return U64
+     with SPARK_Mode => Off;
+   function Perfect_Nth_Bound (N : U64; Kind : Power_Bound) return U64 is
+      X : constant F64 := F64 (N);
+      Pp : F64;
+   begin
+      if N <= 1 then
+         return N;
+      elsif N >= Max_Perfect_Index then
+         return Max_Perfect_Power;
+      end if;
+      Pp := X * X + (13.0 / 3.0) * X ** (4.0 / 3.0)
+        + (32.0 / 15.0) * X ** (16.0 / 15.0);
+      Pp := Pp - 2.0 * X ** (5.0 / 3.0) - 2.0 * X ** (7.0 / 5.0)
+        - 2.0 * X ** (9.0 / 7.0) + 2.0 * X ** (12.0 / 10.0);
+      case Kind is
+         when Lower =>
+            Pp := Pp - 2.0 * X ** (13.0 / 11.0)
+              - 2.0 * X ** (15.0 / 13.0) + 5.5;
+         when Upper =>
+            Pp := Pp + 2.0 * X ** (16.0 / 14.0) - 3.5;
+         when Approx =>
+            Pp := Pp - 2.0 * X ** (13.0 / 11.0)
+              - 2.0 * X ** (15.0 / 13.0)
+              + 2.0 * X ** (16.0 / 14.0)
+              + 2.0 * X ** (17.0 / 15.0)
+              - 0.48 * X ** (19.0 / 17.0) - 1.5;
+      end case;
+      if Pp >= 2.0 ** 64 or else Pp >= F64 (U64'Last) then
+         return U64'Last;
+      elsif Pp <= 0.0 then
+         return 0;
+      end if;
+      return U64 (F64'Truncation (Pp));
+   end Perfect_Nth_Bound;
+
+   function Nth_Perfect_Power_Lower (N : U64) return Int.Optional_U64 is
+     (if N = 0 then (Defined => False)
+      else (True, Perfect_Nth_Bound (N, Lower)))
+     with SPARK_Mode => Off;
+
+   function Nth_Perfect_Power_Upper (N : U64) return Int.Optional_U64 is
+     (if N = 0 then (Defined => False)
+      else (True, Perfect_Nth_Bound (N, Upper)))
+     with SPARK_Mode => Off;
+
+   function Nth_Perfect_Power_Approx (N : U64) return Int.Optional_U64 is
+     (if N = 0 then (Defined => False)
+      else (True, Perfect_Nth_Bound (N, Approx)))
+     with SPARK_Mode => Off;
+
+   function Approx_Perfect_Nth (N : U64) return U64 is
+     (Perfect_Nth_Bound (N, Approx)) with SPARK_Mode => Off;
+   function Exact_Perfect_Count (N : U64) return U64 is
+     (Perfect_Power_Count (N)) with SPARK_Mode => Off;
+   function Perfect_Member (N : U64) return Boolean is (False)
+     with SPARK_Mode => Off;
+   function Interpolate_Perfect is new Interpolate_Approx
+     (Approx_Perfect_Nth, Exact_Perfect_Count, Perfect_Member, False);
+
+   function Nth_Perfect_Power (N : U64) return Int.Optional_U64
+     with SPARK_Mode => Off
+   is
+      Found : Guess_Count;
+      Guess, Count_At : U64;
+   begin
+      if N = 0 then
+         return (Defined => False);
+      elsif N = 1 then
+         return (True, 1);
+      elsif N >= Max_Perfect_Index then
+         return (True, Max_Perfect_Power);
+      end if;
+      Found := Interpolate_Perfect (N, 1000);
+      Guess := Found.Guess;
+      Count_At := Found.Count;
+      if Guess > Max_Perfect_Power then
+         Guess := Max_Perfect_Power;
+      end if;
+      if Count_At >= N then
+         Guess := Prev_Perfect_Unsigned (Guess + 1, False);
+         while Count_At > N loop
+            Guess := Prev_Perfect_Unsigned (Guess, False);
+            Count_At := Count_At - 1;
+         end loop;
+      else
+         while Count_At < N loop
+            Guess := Next_Perfect_Unsigned (Guess, False);
+            Count_At := Count_At + 1;
+         end loop;
+      end if;
+      return (True, Guess);
+   end Nth_Perfect_Power;
 end Math_Prime_Util.Families;
