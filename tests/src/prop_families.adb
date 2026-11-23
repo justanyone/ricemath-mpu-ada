@@ -78,8 +78,78 @@ package body Prop_Families is
       end loop;
    end Concurrent_Calls;
 
+
+   --  Given seeded intervals, when factor families are partitioned, then
+   --  lists, counts and one-based selection agree independently.
+   procedure Factor_Laws (T : in out Test_Case'Class) is
+      Seed : U64 := 20_261_123;
+      High : U64;
+      A, B : Family_Vectors.Vector;
+   begin
+      for Iteration in 1 .. 20 loop
+         Seed := Seed * 6_364_136_223_846_793_005 + 1;
+         High := 1 + Seed mod 500;
+         for K in 0 .. 9 loop
+            A := Almost_Primes (K, High);
+            AUnit.Assertions.Assert
+              (U64 (A.Length) = Almost_Prime_Count (K, High),
+               "almost list/count seed 20261123");
+            B := Almost_Primes (K, 0, High / 2);
+            B.Append (Almost_Primes (K, High / 2 + 1, High));
+            AUnit.Assertions.Assert (A = B, "almost partition seed 20261123");
+            A := Omega_Primes (K, High);
+            AUnit.Assertions.Assert
+              (U64 (A.Length) = Omega_Prime_Count (K, High),
+               "omega list/count seed 20261123");
+            B := Omega_Primes (K, 0, High / 2);
+            B.Append (Omega_Primes (K, High / 2 + 1, High));
+            AUnit.Assertions.Assert (A = B, "omega partition seed 20261123");
+         end loop;
+      end loop;
+      for K in 1 .. 5 loop
+         for N in U64 range 1 .. 12 loop
+            High := Nth_Almost_Prime (K, N).Value;
+            AUnit.Assertions.Assert
+              (Almost_Prime_Count (K, High) = N and then
+               Almost_Prime_Count (K, High - 1) = N - 1,
+               "almost nth inverse");
+            High := Nth_Omega_Prime (K, N).Value;
+            AUnit.Assertions.Assert
+              (Omega_Prime_Count (K, High) = N and then
+               Omega_Prime_Count (K, High - 1) = N - 1,
+               "omega nth inverse");
+         end loop;
+      end loop;
+      AUnit.Assertions.Assert
+        (Almost_Primes (2, 10, 1).Is_Empty and then
+         Omega_Primes (2, 10, 1).Is_Empty and then
+         Almost_Prime_Count (2, 10, 1) = 0 and then
+         Omega_Prime_Count (2, 10, 1) = 0,
+         "reversed ranges");
+      AUnit.Assertions.Assert
+        (Almost_Prime_Count (0, 0, 1) = 1 and then
+         Omega_Prime_Count (0, 0, 1) = 1 and then
+         Almost_Prime_Count (63, U64'Last) = 2 and then
+         not Nth_Almost_Prime (63, 3).Defined and then
+         not Nth_Omega_Prime (16, 1).Defined,
+         "zero-factor and native overflow edges");
+      declare
+         Edges : constant array (Positive range 1 .. 5) of U64 :=
+           [2 ** 32 - 1, 2 ** 32 + 1, 2 ** 63 - 1, 2 ** 63 + 1, U64'Last];
+      begin
+      for Edge of Edges loop
+         AUnit.Assertions.Assert
+           (Almost_Primes (64, Edge, Edge).Is_Empty and then
+            Omega_Primes (16, Edge, Edge).Is_Empty,
+            "impossible factor counts at native boundaries");
+      end loop;
+      end;
+   end Factor_Laws;
+
    overriding procedure Register_Tests (T : in out Families_Case) is
    begin
+      Registration.Register_Routine
+        (T, Factor_Laws'Access, "factor family laws");
       Registration.Register_Routine (T, Laws'Access, "lucky laws");
       Registration.Register_Routine
         (T, Concurrent_Calls'Access, "concurrent repeated sieves");

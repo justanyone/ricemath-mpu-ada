@@ -1,4 +1,5 @@
 with AUnit.Assertions;
+with Ada.Text_IO;
 with AUnit.Test_Cases;
 with Ada.Strings;
 with Ada.Strings.Fixed;
@@ -143,6 +144,7 @@ package body Compat_Families is
       V : Family_Vectors.Vector;
       R : Int.Optional_U64;
       N : U64;
+      Failures : Natural := 0;
    begin
       for C of Load ("families") loop
          declare
@@ -243,14 +245,18 @@ package body Compat_Families is
                            else Nth_Omega_Prime (K, High));
                      Actual := To_Unbounded_String (Image (R));
                   end if;
-                  AUnit.Assertions.Assert
-                    (Actual = C.Result, F & " line" & C.Line_Number'Image &
-                     " expected " & To_String (C.Result) & " got " &
-                     To_String (Actual));
+                  if Actual /= C.Result then
+                     Failures := Failures + 1;
+                     Ada.Text_IO.Put_Line
+                       (F & " line" & C.Line_Number'Image &
+                        " expected " & To_String (C.Result) & " got " &
+                        To_String (Actual));
+                  end if;
                end if;
             end if;
          end;
       end loop;
+      AUnit.Assertions.Assert (Failures = 0, "factor fixture mismatches");
    end Test_Factor_Families;
 
    overriding procedure Register_Tests (T : in out Families_Case) is
