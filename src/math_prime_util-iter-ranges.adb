@@ -365,28 +365,66 @@ package body Math_Prime_Util.Iter.Ranges is
               (Index_Type => Natural, Element_Type => Boolean);
             Flags : Flag_Vectors.Vector;
             Root : constant U64 := Int.Sqrtint (Last);
-            Prime_Low : U64 := 2;
-            Prime_High, Q, Offset : U64;
+            --  The prime sieve uses odd slots in a fixed-size segment.
+            --  Local arrays avoid a controlled-container operation for every
+            --  marked multiple; only the square-free result uses a vector.
+            type Prime_Flags is array (Natural range 0 .. 1_048_575)
+              of Boolean;
+            Composite : Prime_Flags;
+            Base_Primes : constant Sieve.Prime_Vectors.Vector :=
+              Sieve.Primes (Int.Sqrtint (Root));
+            Prime_Low : U64 := 3;
+            Prime_High, Q, Offset, Multiple : U64;
+            Length : Natural;
+            procedure Mark_Square (P : U64);
+
+            procedure Mark_Square (P : U64) is
+            begin
+               Q := P * P;
+               Offset := (if First mod Q = 0 then 0
+                          else Q - First mod Q);
+               while Offset <= Last - First loop
+                  Flags (Natural (Offset)) := False;
+                  exit when Q > Last - First - Offset;
+                  Offset := Offset + Q;
+               end loop;
+            end Mark_Square;
          begin
             Flags.Append
               (True, Ada.Containers.Count_Type (Last - First + 1));
-            --  util.c: range_issquarefree. Mark prime-square multiples,
-            --  consuming the sieving primes in bounded segments.
+            --  util.c: range_issquarefree. Sieve prime-square multiples.
+            --  Prime generation remains a segmented Eratosthenes sieve.
+            if Root >= 2 then
+               Mark_Square (2);
+            end if;
             while Prime_Low <= Root loop
                Prime_High := Prime_Low +
-                 U64'Min (Root - Prime_Low, 30 * 32_768 - 1);
-               for P of Sieve.Primes (Prime_Low, Prime_High) loop
-                  Q := P * P;
-                  Offset := (if First mod Q = 0 then 0
-                             else Q - First mod Q);
-                  while Offset <= Last - First loop
-                     Flags (Natural (Offset)) := False;
-                     exit when Q > Last - First - Offset;
-                     Offset := Offset + Q;
-                  end loop;
+                 U64'Min (Root - Prime_Low, 2 * Composite'Last);
+               Length := Natural ((Prime_High - Prime_Low) / 2);
+               Composite := [others => False];
+               for P of Base_Primes loop
+                  exit when P > Prime_High / P;
+                  if P > 2 then
+                     Multiple := Prime_Low / P +
+                       (if Prime_Low mod P = 0 then 0 else 1);
+                     Multiple := U64'Max (P, Multiple);
+                     if Multiple mod 2 = 0 then
+                        Multiple := Multiple + 1;
+                     end if;
+                     Offset := (Multiple * P - Prime_Low) / 2;
+                     while Offset <= U64 (Length) loop
+                        Composite (Natural (Offset)) := True;
+                        Offset := Offset + P;
+                     end loop;
+                  end if;
                end loop;
-               exit when Prime_High = Root;
-               Prime_Low := Prime_High + 1;
+               for I in 0 .. Length loop
+                  if not Composite (I) then
+                     Mark_Square (Prime_Low + 2 * U64 (I));
+                  end if;
+               end loop;
+               exit when Root - Prime_Low <= 2 * U64 (Length) + 1;
+               Prime_Low := Prime_Low + 2 * U64 (Length) + 2;
             end loop;
             for I in Flags.First_Index .. Flags.Last_Index loop
                if Flags (I) then
