@@ -1,10 +1,11 @@
 with Math_Prime_Util.Int;
 
-<<<<<<< HEAD
---  Native arithmetic functions from MPU 0.75 totients.c and moebius.c.
+--  Arithmetic from MPU 0.75 totients.c, moebius.c, factor.c, and XS.xs.
 package Math_Prime_Util.Arith with SPARK_Mode => On is
    use type U64;
    use type Int.I128;
+   subtype Optional_U64 is Int.Optional_U64;
+   subtype I128 is Int.I128;
    subtype Signed_Input is Int.I128 range -Int.I128 (U64'Last) ..
      Int.I128 (U64'Last);
    subtype Sign_Value is Integer range -1 .. 1;
@@ -20,7 +21,7 @@ package Math_Prime_Util.Arith with SPARK_Mode => On is
 
    --  totients.c: jordan_totient. Count coprime K-tuples modulo N.
    --  J_0(N) is one only at N=1. Undefined if the result exceeds U64.
-   function Jordan_Totient (K, N : U64) return Int.Optional_U64
+   function Jordan_Totient (K, N : U64) return Optional_U64
      with Pre => True,
           Post => (if N = 1 then Jordan_Totient'Result.Defined
                    and then Jordan_Totient'Result.Value = 1);
@@ -53,13 +54,6 @@ package Math_Prime_Util.Arith with SPARK_Mode => On is
      with Pre => True,
           Post => Exp_Mangoldt'Result >= 1
        and then (if N > 1 then Exp_Mangoldt'Result <= N);
-=======
---  Divisor arithmetic from MPU 0.75 factor.c and XS.xs.
-package Math_Prime_Util.Arith with SPARK_Mode => On is
-   use type U64;
-   subtype Optional_U64 is Int.Optional_U64;
-   subtype I128 is Int.I128;
-   use type I128;
 
    --  factor.c: divisor_sum. Sum of D**K over positive divisors D of N.
    --  K defaults to 1; K = 0 counts divisors. Zero has sum zero.
@@ -90,5 +84,4 @@ package Math_Prime_Util.Arith with SPARK_Mode => On is
    --  Result is in integer units. No errors.
    function Sopfr (N : U64) return U64
      with Pre => True, Post => Sopfr'Result <= N;
->>>>>>> origin/dev-mpuada-001
 end Math_Prime_Util.Arith;

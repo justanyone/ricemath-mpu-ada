@@ -1,119 +1,47 @@
-<<<<<<< HEAD
 with Interfaces;
-with Math_Prime_Util.Primality;
+with Math_Prime_Util.Factor;
+with Math_Prime_Util.Int;
 
-package body Math_Prime_Util.Arith is
+package body Math_Prime_Util.Arith with SPARK_Mode => On is
    use type U128;
-   use type Primality.Prime_Result;
-   use type Interfaces.Integer_8;
-
-   subtype Factor_Count is Natural range 0 .. 64;
-   type Factor_Array is array (Positive range 1 .. 64) of U64;
-   type Factorization is record
-      Values : Factor_Array := [others => 0];
-      Count : Factor_Count := 0;
-   end record;
-
-   --  factor.c: prho_factor, with deterministic polynomial restarts.
-   --  Private until the separate factor package dependency is available.
-   function Split (N : U64) return U64
-     with Pre => N > 1, Post => Split'Result in 2 .. N;
-
-   function Split (N : U64) return U64 is
-      C : U64 := 1;
-      X, Y, D : U64;
-      function Step (V : U64) return U64 is
-        (U64 ((U128 (V) * U128 (V) + U128 (C)) mod U128 (N)));
-   begin
-      if N mod 2 = 0 then
-         return 2;
-      elsif Primality.Is_Prime (N) /= 0 then
-         return N;
-      end if;
-      loop
-         X := 2;
-         Y := 2;
-         D := 1;
-         for Iteration in 1 .. 200_000 loop
-            X := Step (X);
-            Y := Step (Step (Y));
-            D := Int.Gcd ((if X > Y then X - Y else Y - X), N);
-            exit when D /= 1;
-         end loop;
-         if D > 1 and then D < N then
-            return D;
-         end if;
-         C := (if C = N - 1 then 1 else C + 1);
-      end loop;
-   end Split;
-
-   function Factors (N : U64) return Factorization;
-
-   function Factors (N : U64) return Factorization is
-      Result : Factorization;
-      procedure Visit (V : U64) with Pre => V > 0;
-
-      procedure Visit (V : U64) is
-         D : U64;
-      begin
-         if V = 1 then
-            return;
-         end if;
-         D := Split (V);
-         if D = V then
-            Result.Count := Result.Count + 1;
-            Result.Values (Result.Count) := V;
-         else
-            Visit (D);
-            Visit (V / D);
-         end if;
-      end Visit;
-      Key : U64;
-      J : Natural;
-   begin
-      if N > 1 then
-         Visit (N);
-      end if;
-      for I in 2 .. Result.Count loop
-         Key := Result.Values (I);
-         J := I;
-         while J > 1 and then Result.Values (J - 1) > Key loop
-            Result.Values (J) := Result.Values (J - 1);
-            J := J - 1;
-         end loop;
-         Result.Values (J) := Key;
-      end loop;
-      return Result;
-   end Factors;
 
    function Euler_Phi (N : Signed_Input) return U64 is
       Result : U64;
       Last : U64 := 0;
+      Factors : Factor.Factor_List;
    begin
       if N <= 0 then
          return 0;
       end if;
       Result := U64 (N);
-      for P of Factors (U64 (N)).Values loop
-         if P /= 0 and then P /= Last then
-            Result := Result / P * (P - 1);
-            Last := P;
-         end if;
+      Factors := Factor.Factor (Result);
+      for I in 1 .. Factors.Count loop
+         declare
+            P : constant U64 := Factors.Value (I);
+         begin
+            if P /= Last then
+               Result := Result / P * (P - 1);
+               Last := P;
+            end if;
+         end;
       end loop;
       return Result;
    end Euler_Phi;
 
-   function Jordan_Totient (K, N : U64) return Int.Optional_U64 is
+   function Jordan_Totient (K, N : U64) return Optional_U64 is
       Result : U128 := 1;
       Last : U64 := 0;
-      Power : Int.Optional_U64;
+      Power : Optional_U64;
       Term : U64;
+      Factors : constant Factor.Factor_List := Factor.Factor (N);
    begin
       if N <= 1 or else K = 0 then
          return (Defined => True, Value => (if N = 1 then 1 else 0));
       end if;
-      for P of Factors (N).Values loop
-         if P /= 0 then
+      for I in 1 .. Factors.Count loop
+         declare
+            P : constant U64 := Factors.Value (I);
+         begin
             Power := Int.Powint (P, K);
             if not Power.Defined then
                --  2**64 - 1 still fits when a prime power is exactly 2**64.
@@ -130,7 +58,7 @@ package body Math_Prime_Util.Arith is
                return (Defined => False);
             end if;
             Last := P;
-         end if;
+         end;
       end loop;
       return (Defined => True, Value => U64 (Result));
    end Jordan_Totient;
@@ -138,18 +66,22 @@ package body Math_Prime_Util.Arith is
    function Moebius (N : Signed_Input) return Sign_Value is
       Result : Sign_Value := 1;
       Last : U64 := 0;
+      Factors : Factor.Factor_List;
    begin
       if N = 0 then
          return 0;
       end if;
-      for P of Factors (U64 (abs N)).Values loop
-         if P /= 0 then
+      Factors := Factor.Factor (U64 (abs N));
+      for I in 1 .. Factors.Count loop
+         declare
+            P : constant U64 := Factors.Value (I);
+         begin
             if P = Last then
                return 0;
             end if;
             Result := -Result;
             Last := P;
-         end if;
+         end;
       end loop;
       return Result;
    end Moebius;
@@ -159,24 +91,27 @@ package body Math_Prime_Util.Arith is
       if N = 0 then
          return -1;
       end if;
-      return (if Factors (N).Count mod 2 = 0 then 1 else -1);
+      return (if Factor.Factor (N).Count mod 2 = 0 then 1 else -1);
    end Liouville;
 
    function Exp_Mangoldt (N : U64) return U64 is
-      F : constant Factorization := Factors (N);
+      F : constant Factor.Factor_List := Factor.Factor (N);
    begin
-      if F.Count = 0 then
+      if N <= 1 then
          return 1;
       end if;
       for I in 2 .. F.Count loop
-         if F.Values (I) /= F.Values (1) then
+         if F.Value (I) /= F.Value (1) then
             return 1;
          end if;
       end loop;
-      return F.Values (1);
+      return F.Value (1);
    end Exp_Mangoldt;
 
-   function Mertens (N : U64) return Int.I128 is
+   --  The per-call sieve and quotient cache use dynamic bounds.
+   function Mertens (N : U64) return Int.I128
+     with SPARK_Mode => Off
+   is
       --  moebius.c: mertens_array and _rmertens. Group equal quotients
       --  in M(x) = 1 - sum_{i=2..x} M(floor(x/i)). The cache is per call.
       Limit : constant U64 := U64'Min (N, 1_000_000);
@@ -243,7 +178,9 @@ package body Math_Prime_Util.Arith is
       return Evaluate (N);
    end Mertens;
 
-   function Mertens (Lo, Hi : U64) return Int.I128 is
+   function Mertens (Lo, Hi : U64) return Int.I128
+     with SPARK_Mode => Off
+   is
       Sum : Int.I128 := 0;
       I : U64 := U64'Max (1, Lo);
    begin
@@ -261,11 +198,6 @@ package body Math_Prime_Util.Arith is
       end if;
       return Mertens (Hi) - Mertens (Lo - 1);
    end Mertens;
-=======
-with Math_Prime_Util.Factor;
-
-package body Math_Prime_Util.Arith with SPARK_Mode => On is
-   use type U128;
 
    --  Sigma_1 (N) / N <= H_N < 65 for native N (dyadic groups).
    --  This bound also keeps conversion to the signed I128 type exact.
@@ -381,5 +313,4 @@ package body Math_Prime_Util.Arith with SPARK_Mode => On is
       end loop;
       return Sum;
    end Sopfr;
->>>>>>> origin/dev-mpuada-001
 end Math_Prime_Util.Arith;
