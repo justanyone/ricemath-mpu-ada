@@ -5,6 +5,7 @@ with Ada.Containers.Vectors;
 --  undef result (factor of 1, divisors of 0).
 package Math_Prime_Util.Factor is
    use type U64;
+   use type Ada.Containers.Count_Type;
    package Factor_Vectors is new Ada.Containers.Vectors
      (Index_Type => Positive, Element_Type => U64);
 

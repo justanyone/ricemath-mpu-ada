@@ -6,6 +6,9 @@ with Math_Prime_Util.Sieve;
 package body Math_Prime_Util.Factor is
    use type U128;
    use type Interfaces.C.double;
+   use type Int.I128;
+   use type Primality.Prime_Result;
+   use type Ada.Containers.Count_Type;
    subtype C_Double is Interfaces.C.double;
    subtype U32 is Interfaces.Unsigned_32;
    use type U32;
