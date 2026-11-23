@@ -14,6 +14,7 @@ package body Compat_Factor is
    use Fixture_Support;
    use Math_Prime_Util;
    use type U64;
+   use type U128;
    use type Primality.Prime_Result;
 
    type Factor_Case is new Test_Case with null record;
@@ -21,11 +22,20 @@ package body Compat_Factor is
       return AUnit.Message_String;
    overriding procedure Register_Tests (T : in out Factor_Case);
 
+   type Ecm_Case is new Test_Case with null record;
+   overriding function Name (T : Ecm_Case) return AUnit.Message_String;
+   overriding procedure Register_Tests (T : in out Ecm_Case);
+
    overriding function Name (T : Factor_Case)
       return AUnit.Message_String
    is
    begin
       return AUnit.Format ("Compat_Factor");
+   end Name;
+
+   overriding function Name (T : Ecm_Case) return AUnit.Message_String is
+   begin
+      return AUnit.Format ("Compat_Factor_ECM");
    end Name;
 
    function Trim (N : U64) return String is
@@ -56,6 +66,104 @@ package body Compat_Factor is
       end loop;
       return To_String (Text);
    end Join;
+
+   procedure Check_Fixtures (T : in out Test_Case'Class) is
+      Cases : constant Case_Vectors.Vector :=
+        For_Function (Load ("factor"), "ecm_factor");
+      Args : array (1 .. 4) of U64;
+   begin
+      AUnit.Assertions.Assert
+        (Natural (Cases.Length) = 57, "ECM rows");
+      for C of Cases loop
+         Args := [0, 4_000, 0, 100];
+         for I in 1 .. Natural (C.Args.Length) loop
+            AUnit.Assertions.Assert
+              (Parse_U64 (To_String (C.Args (I)), Args (I)),
+               "native ECM input");
+         end loop;
+         declare
+            Got : constant Factor.Factor_List :=
+              Factor.Ecm_Factor
+                (Args (1), Args (2), Args (3), Args (4));
+            Image : constant String :=
+              (if Got.Count = 0 then "undef" else Join (Got));
+         begin
+            AUnit.Assertions.Assert
+              (To_Unbounded_String (Image) = C.Result,
+               "ecm_factor row" & Positive'Image (C.Line_Number)
+               & " expected " & To_String (C.Result)
+               & " got " & Image);
+         end;
+      end loop;
+   end Check_Fixtures;
+
+   procedure Check_Edges (T : in out Test_Case'Class) is
+      Inputs : constant array (Positive range <>) of U64 :=
+        [0, 1, 2, 2 ** 32 - 1, 2 ** 32, 2 ** 32 + 1,
+         2 ** 63 - 1, 2 ** 63, 2 ** 63 + 1, U64'Last];
+      Product : U128;
+      Seed : U64 := 16#EC_075#;
+      N : U64;
+   begin
+      for Value of Inputs loop
+         declare
+            Got : constant Factor.Factor_List := Factor.Ecm_Factor (Value);
+         begin
+            Product := 1;
+            for I in 1 .. Got.Count loop
+               Product := Product * U128 (Got.Value (I));
+               AUnit.Assertions.Assert
+                 (I = 1 or else Got.Value (I - 1) <= Got.Value (I),
+                  "sorted ECM result");
+            end loop;
+            AUnit.Assertions.Assert
+              (Product = U128 (Value), "ECM product");
+         end;
+      end loop;
+      --  Seeded decomposition law, including ECM exhaustion: every result
+      --  must multiply back to its input even if it is not fully factored.
+      for Trial in 1 .. 128 loop
+         Seed := Seed * 6_364_136_223_846_793_005 + 1;
+         N := Seed mod 2 ** 32;
+         declare
+            Got : constant Factor.Factor_List :=
+              Factor.Ecm_Factor (N, B1 => 50, B2 => 500, Curves => 3);
+         begin
+            Product := 1;
+            for I in 1 .. Got.Count loop
+               Product := Product * U128 (Got.Value (I));
+               AUnit.Assertions.Assert
+                 (I = 1 or else Got.Value (I - 1) <= Got.Value (I),
+                  "seed=16#EC_075# trial" & Integer'Image (Trial));
+            end loop;
+            AUnit.Assertions.Assert
+              (Product = U128 (N),
+               "seed=16#EC_075# trial" & Integer'Image (Trial)
+               & " N=" & U64'Image (N));
+         end;
+      end loop;
+      AUnit.Assertions.Assert
+        (Join (Factor.Ecm_Factor (49, Curves => 0)) = "49",
+         "zero curves leaves the cofactor");
+      AUnit.Assertions.Assert
+        (Join (Factor.Ecm_Factor (210, Curves => 0)) = "2 3 5 7",
+         "small factors are stripped even without curves");
+      AUnit.Assertions.Assert
+        (Join (Factor.Ecm_Factor (77, B1 => 0, B2 => 0, Curves => 1))
+           = "7 11", "curve setup can discover a factor");
+      AUnit.Assertions.Assert
+        (Join (Factor.Ecm_Factor (49, B1 => 0, B2 => 0, Curves => 0))
+           = "49", "zero bounds and curves");
+      AUnit.Assertions.Assert
+        (Join (Factor.Ecm_Factor (49, B1 => U64'Last, Curves => 0))
+           = "49", "default B2 saturates without wrapping");
+      AUnit.Assertions.Assert
+        (Join (Factor.Ecm_Factor
+           (77, B1 => 0, B2 => 1, Curves => U64'Last))
+         = Join (Factor.Ecm_Factor
+              (77, B1 => 0, B2 => 1, Curves => 400)),
+         "curve count is capped");
+   end Check_Edges;
 
    function Arg (C : Case_Record; Index : Positive) return U64 is
       V : U64;
@@ -302,6 +410,10 @@ package body Compat_Factor is
    overriding procedure Register_Tests (T : in out Factor_Case) is
    begin
       Registration.Register_Routine
+        (T, Check_Fixtures'Access, "ecm_factor fixtures");
+      Registration.Register_Routine
+        (T, Check_Edges'Access, "ecm_factor edges");
+      Registration.Register_Routine
         (T, Test_Factor'Access, "factor");
       Registration.Register_Routine
         (T, Test_Trial'Access, "trial_factor");
@@ -325,6 +437,14 @@ package body Compat_Factor is
         (T, Test_Divisors'Access, "divisors");
    end Register_Tests;
 
+   overriding procedure Register_Tests (T : in out Ecm_Case) is
+   begin
+      Registration.Register_Routine
+        (T, Check_Fixtures'Access, "ecm_factor fixtures");
+      Registration.Register_Routine
+        (T, Check_Edges'Access, "ecm_factor edges");
+   end Register_Tests;
+
    function Suite return AUnit.Test_Suites.Access_Test_Suite is
       Result : constant AUnit.Test_Suites.Access_Test_Suite :=
         new AUnit.Test_Suites.Test_Suite;
@@ -332,4 +452,12 @@ package body Compat_Factor is
       Result.Add_Test (new Factor_Case);
       return Result;
    end Suite;
+
+   function Ecm_Suite return AUnit.Test_Suites.Access_Test_Suite is
+      Result : constant AUnit.Test_Suites.Access_Test_Suite :=
+        new AUnit.Test_Suites.Test_Suite;
+   begin
+      Result.Add_Test (new Ecm_Case);
+      return Result;
+   end Ecm_Suite;
 end Compat_Factor;
