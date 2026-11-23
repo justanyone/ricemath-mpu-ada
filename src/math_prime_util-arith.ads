@@ -51,5 +51,5 @@ package Math_Prime_Util.Arith with SPARK_Mode => On is
    function Exp_Mangoldt (N : U64) return U64
      with Pre => True,
           Post => Exp_Mangoldt'Result >= 1
-       and (if N > 1 then Exp_Mangoldt'Result <= N);
+       and then (if N > 1 then Exp_Mangoldt'Result <= N);
 end Math_Prime_Util.Arith;

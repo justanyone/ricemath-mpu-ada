@@ -3,7 +3,6 @@ with Math_Prime_Util.Primality;
 
 package body Math_Prime_Util.Arith is
    use type U128;
-   use type Int.I128;
    use type Primality.Prime_Result;
    use type Interfaces.Integer_8;
 
@@ -39,7 +38,7 @@ package body Math_Prime_Util.Arith is
             D := Int.Gcd ((if X > Y then X - Y else Y - X), N);
             exit when D /= 1;
          end loop;
-         if D > 1 and D < N then
+         if D > 1 and then D < N then
             return D;
          end if;
          C := (if C = N - 1 then 1 else C + 1);
@@ -90,7 +89,7 @@ package body Math_Prime_Util.Arith is
       end if;
       Result := U64 (N);
       for P of Factors (U64 (N)).Values loop
-         if P /= 0 and P /= Last then
+         if P /= 0 and then P /= Last then
             Result := Result / P * (P - 1);
             Last := P;
          end if;
@@ -104,7 +103,7 @@ package body Math_Prime_Util.Arith is
       Power : Int.Optional_U64;
       Term : U64;
    begin
-      if N <= 1 or K = 0 then
+      if N <= 1 or else K = 0 then
          return (Defined => True, Value => (if N = 1 then 1 else 0));
       end if;
       for P of Factors (N).Values loop
@@ -112,7 +111,7 @@ package body Math_Prime_Util.Arith is
             Power := Int.Powint (P, K);
             if not Power.Defined then
                --  2**64 - 1 still fits when a prime power is exactly 2**64.
-               if P = 2 and K = 64 and Last = 0 then
+               if P = 2 and then K = 64 and then Last = 0 then
                   Term := U64'Last;
                else
                   return (Defined => False);
@@ -242,7 +241,7 @@ package body Math_Prime_Util.Arith is
    begin
       if Lo > Hi then
          return 0;
-      elsif Lo = 0 or Lo = 1 then
+      elsif Lo = 0 or else Lo = 1 then
          return Mertens (Hi);
       elsif Hi - Lo <= 100 then
          while I <= Hi loop

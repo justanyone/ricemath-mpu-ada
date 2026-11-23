@@ -15,7 +15,6 @@ package body Compat_Arith is
    use Math_Prime_Util;
    use Math_Prime_Util.Arith;
    use Math_Prime_Util.Int;
-   use type I128;
    use type U64;
 
    type Arith_Case is new Test_Case with null record;
@@ -44,7 +43,7 @@ package body Compat_Arith is
                Actual := To_Unbounded_String
                  ((if R.Defined then Image (I128 (R.Value)) else "undef"));
             elsif Func = "mertens" then
-               if A < 0 or B < 0 then
+               if A < 0 or else B < 0 then
                   raise Constraint_Error;
                end if;
                Value := (if Natural (C.Args.Length) = 2 then
