@@ -412,11 +412,13 @@ package body Math_Prime_Util.Vec is
             Seen (To_Integer (V)) := True;
          end if;
       end loop;
-      for I in 0 .. Lim - 1 loop
-         if not Seen (I) then
-            return To_Big_Integer (I);
-         end if;
-      end loop;
+      if Lim > 0 then
+         for I in 0 .. Lim - 1 loop
+            if not Seen (I) then
+               return To_Big_Integer (I);
+            end if;
+         end loop;
+      end if;
       return To_Big_Integer (Lim);
    end Vecmex;
 
