@@ -1,3 +1,4 @@
+with Ada.Containers.Vectors;
 with Ada.Numerics.Big_Numbers.Big_Integers;
 with Ada.Strings.Fixed;
 with AUnit.Assertions;
@@ -13,13 +14,15 @@ package body Compat_Vec is
    use Math_Prime_Util.Vec;
    package BI renames Ada.Numerics.Big_Numbers.Big_Integers;
    use type BI.Big_Integer;
+   package Nums is new Ada.Containers.Vectors
+     (Index_Type => Positive, Element_Type => BI.Big_Integer);
 
    type Vec_Case is new Test_Case with null record;
    overriding function Name (T : Vec_Case) return AUnit.Message_String;
    overriding procedure Register_Tests (T : in out Vec_Case);
 
    type Arg_Split is record
-      Left_Num, Right_Num : Int_Vector;
+      Left_Num, Right_Num : Nums.Vector;
       Left_Text, Right_Text : String_Vectors.Vector;
       Has_Bar : Boolean := False;
       Left_Ok : Boolean := True;
@@ -40,7 +43,18 @@ package body Compat_Vec is
       return S (A .. B);
    end Img;
 
-   function Join (Items : Int_Vector) return String is
+   function To_Array (Items : Nums.Vector) return Int_Array is
+      Result : Int_Array (1 .. Natural (Items.Length));
+      Index : Natural := 0;
+   begin
+      for Value of Items loop
+         Index := Index + 1;
+         Result (Index) := Value;
+      end loop;
+      return Result;
+   end To_Array;
+
+   function Join (Items : Int_Array) return String is
       Acc : Unbounded_String;
       First : Boolean := True;
    begin
@@ -178,17 +192,17 @@ package body Compat_Vec is
       return Item;
    end Split;
 
-   function Positions (Count : Natural) return Int_Vector is
-      Result : Int_Vector;
+   function Positions (Count : Natural) return Int_Array is
+      Result : Int_Array (1 .. Count);
    begin
-      for I in 0 .. Count - 1 loop
-         Result.Append (BI.To_Big_Integer (I));
+      for I in Result'Range loop
+         Result (I) := BI.To_Big_Integer (I - 1);
       end loop;
       return Result;
    end Positions;
 
    function Map_Tokens
-     (Tokens : String_Vectors.Vector; Indexes : Int_Vector) return String
+     (Tokens : String_Vectors.Vector; Indexes : Int_Array) return String
    is
       Acc : Unbounded_String;
       First : Boolean := True;
@@ -217,30 +231,35 @@ package body Compat_Vec is
    --  vecfreq lines 225, 279, 729, 891, 999, 2853, 2871, 2889 and any
    --  other Perl hash-order row are compared as sorted value-count pairs.
    function Evaluate (Func : String; Item : Arg_Split) return String is
-      L : Int_Vector renames Item.Left_Num;
-      R : Int_Vector renames Item.Right_Num;
+      L : Nums.Vector renames Item.Left_Num;
+      R : Nums.Vector renames Item.Right_Num;
    begin
       if not Item.Left_Ok or else not Item.Right_Ok then
          if Func = "vecextract" then
-            return Map_Tokens
-              (Item.Left_Text,
-               Vecextract (Positions (Natural (Item.Left_Text.Length)),
-                           R (1)));
+            declare
+               Masks : constant Int_Array := To_Array (R);
+            begin
+               return Map_Tokens
+                 (Item.Left_Text,
+                  Vecextract
+                    (Positions (Natural (Item.Left_Text.Length)),
+                     Masks (Masks'First)));
+            end;
          elsif Func = "vecextract_idx" then
             return Map_Tokens
               (Item.Left_Text,
                Vecextract (Positions (Natural (Item.Left_Text.Length)),
-                           R));
+                           To_Array (R)));
          end if;
          raise Constraint_Error with "non-integer argument";
       end if;
       if Func = "vecsum" then
-         return Img (Vecsum (L));
+         return Img (Vecsum (To_Array (L)));
       elsif Func = "vecprod" then
-         return Img (Vecprod (L));
+         return Img (Vecprod (To_Array (L)));
       elsif Func = "vecmin" then
          declare
-            M : constant Optional_Big := Vecmin (L);
+            M : constant Optional_Big := Vecmin (To_Array (L));
          begin
             if not M.Defined then
                raise Undefined_Element;
@@ -249,7 +268,7 @@ package body Compat_Vec is
          end;
       elsif Func = "vecmax" then
          declare
-            M : constant Optional_Big := Vecmax (L);
+            M : constant Optional_Big := Vecmax (To_Array (L));
          begin
             if not M.Defined then
                raise Undefined_Element;
@@ -257,122 +276,151 @@ package body Compat_Vec is
             return Img (M.Value);
          end;
       elsif Func = "vecprefixsum" then
-         return Join (Vecprefixsum (L));
+         return Join (Vecprefixsum (To_Array (L)));
       elsif Func = "vecuniq" then
-         return Join (Vecuniq (L));
+         return Join (Vecuniq (To_Array (L)));
       elsif Func = "vecsingleton" then
-         return Join (Vecsingleton (L));
+         return Join (Vecsingleton (To_Array (L)));
       elsif Func = "vecfreq" then
-         return Join (Vecfreq (L));
+         return Join (Vecfreq (To_Array (L)));
       elsif Func = "vecsort" then
-         return Join (Vecsort (L));
+         return Join (Vecsort (To_Array (L)));
       elsif Func = "vecrsort" then
-         return Join (Vecrsort (L));
+         return Join (Vecrsort (To_Array (L)));
       elsif Func = "vecsorti" then
          declare
-            S : Int_Vector := L;
+            S : Int_Array := To_Array (L);
          begin
             Vecsorti (S);
             return Join (S);
          end;
       elsif Func = "vecrsorti" then
          declare
-            S : Int_Vector := L;
+            S : Int_Array := To_Array (L);
          begin
             Vecrsorti (S);
             return Join (S);
          end;
       elsif Func = "vecmex" then
-         return Img (Vecmex (L));
+         return Img (Vecmex (To_Array (L)));
       elsif Func = "vecpmex" then
-         return Img (Vecpmex (L));
+         return Img (Vecpmex (To_Array (L)));
       elsif Func = "toset" then
-         return Join (Toset (L));
+         return Join (Toset (To_Array (L)));
       elsif Func = "is_sidon_set" then
-         return Flag (Is_Sidon_Set (L));
+         return Flag (Is_Sidon_Set (To_Array (L)));
       elsif Func = "is_sumfree_set" then
-         return Flag (Is_Sumfree_Set (L));
+         return Flag (Is_Sumfree_Set (To_Array (L)));
       elsif Func = "sumset" then
          if Item.Has_Bar then
-            return Join (Sumset (L, R));
+            return Join (Sumset (To_Array (L), To_Array (R)));
          end if;
-         return Join (Sumset (L));
+         return Join (Sumset (To_Array (L)));
       elsif Func = "vecequal" then
-         return Flag (Vecequal (L, R));
+         return Flag (Vecequal (To_Array (L), To_Array (R)));
       elsif Func = "vecextract" then
-         return Join (Vecextract (L, R (1)));
+         declare
+            Masks : constant Int_Array := To_Array (R);
+         begin
+            return Join (Vecextract (To_Array (L), Masks (Masks'First)));
+         end;
       elsif Func = "vecextract_idx" then
-         return Join (Vecextract (L, R));
+         return Join (Vecextract (To_Array (L), To_Array (R)));
       elsif Func = "setunion" then
-         return Join (Setunion (L, R));
+         return Join (Setunion (To_Array (L), To_Array (R)));
       elsif Func = "setintersect" then
-         return Join (Setintersect (L, R));
+         return Join (Setintersect (To_Array (L), To_Array (R)));
       elsif Func = "setminus" then
-         return Join (Setminus (L, R));
+         return Join (Setminus (To_Array (L), To_Array (R)));
       elsif Func = "setdelta" then
-         return Join (Setdelta (L, R));
+         return Join (Setdelta (To_Array (L), To_Array (R)));
       elsif Func = "set_is_disjoint" then
-         return Flag (Set_Is_Disjoint (L, R));
+         return Flag (Set_Is_Disjoint (To_Array (L), To_Array (R)));
       elsif Func = "set_is_equal" then
-         return Flag (Set_Is_Equal (L, R));
+         return Flag (Set_Is_Equal (To_Array (L), To_Array (R)));
       elsif Func = "set_is_subset" then
-         return Flag (Set_Is_Subset (L, R));
+         return Flag (Set_Is_Subset (To_Array (L), To_Array (R)));
       elsif Func = "set_is_proper_subset" then
-         return Flag (Set_Is_Proper_Subset (L, R));
+         return Flag (Set_Is_Proper_Subset (To_Array (L), To_Array (R)));
       elsif Func = "set_is_superset" then
-         return Flag (Set_Is_Superset (L, R));
+         return Flag (Set_Is_Superset (To_Array (L), To_Array (R)));
       elsif Func = "set_is_proper_superset" then
-         return Flag (Set_Is_Proper_Superset (L, R));
+         return Flag (Set_Is_Proper_Superset (To_Array (L), To_Array (R)));
       elsif Func = "set_is_proper_intersection" then
-         return Flag (Set_Is_Proper_Intersection (L, R));
+         return Flag
+           (Set_Is_Proper_Intersection (To_Array (L), To_Array (R)));
       elsif Func = "setcontains" then
-         return Flag (Setcontains (L, R));
+         return Flag (Setcontains (To_Array (L), To_Array (R)));
       elsif Func = "setcontainsany" then
-         return Flag (Setcontainsany (L, R));
+         return Flag (Setcontainsany (To_Array (L), To_Array (R)));
       elsif Func = "setinsert" or else Func = "setinsert_set" then
          declare
-            S : Int_Vector := L;
+            Added : Integer;
+            S : constant Int_Array :=
+              Setinsert (To_Array (L), To_Array (R), Added);
          begin
-            if Setinsert (S, R) < 0 then
+            if Added < 0 then
                raise Constraint_Error with "insert count";
             end if;
             return Join (S);
          end;
       elsif Func = "setinsert_n" then
          declare
-            S : Int_Vector := L;
+            Base : constant Int_Array := To_Array (L);
+            Added : Integer;
+            S : constant Int_Array :=
+              Setinsert (Base, To_Array (R), Added);
          begin
-            return Count_Image (Setinsert (S, R));
+            if Integer (S'Length) - Integer (Base'Length) /= Added then
+               raise Constraint_Error with "insert count";
+            end if;
+            return Count_Image (Added);
          end;
       elsif Func = "setremove" or else Func = "setremove_set" then
          declare
-            S : Int_Vector := L;
+            Added : Integer;
+            S : constant Int_Array :=
+              Setremove (To_Array (L), To_Array (R), Added);
          begin
-            if Setremove (S, R) < 0 then
+            if Added < 0 then
                raise Constraint_Error with "remove count";
             end if;
             return Join (S);
          end;
       elsif Func = "setremove_n" then
          declare
-            S : Int_Vector := L;
+            Base : constant Int_Array := To_Array (L);
+            Added : Integer;
+            S : constant Int_Array :=
+              Setremove (Base, To_Array (R), Added);
          begin
-            return Count_Image (Setremove (S, R));
+            if Integer (Base'Length) - Integer (S'Length) /= Added then
+               raise Constraint_Error with "remove count";
+            end if;
+            return Count_Image (Added);
          end;
       elsif Func = "setinvert" or else Func = "setinvert_set" then
          declare
-            S : Int_Vector := L;
+            Added : Integer;
+            S : constant Int_Array :=
+              Setinvert (To_Array (L), To_Array (R), Added);
          begin
-            if Setinvert (S, R) = Integer'First then
+            if Added = Integer'First then
                raise Constraint_Error with "invert count";
             end if;
             return Join (S);
          end;
       elsif Func = "setinvert_n" then
          declare
-            S : Int_Vector := L;
+            Base : constant Int_Array := To_Array (L);
+            Added : Integer;
+            S : constant Int_Array :=
+              Setinvert (Base, To_Array (R), Added);
          begin
-            return Count_Image (Setinvert (S, R));
+            if Integer (S'Length) - Integer (Base'Length) /= Added then
+               raise Constraint_Error with "invert count";
+            end if;
+            return Count_Image (Added);
          end;
       end if;
       raise Constraint_Error with "unknown function";
