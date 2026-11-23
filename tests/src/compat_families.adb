@@ -6,12 +6,9 @@ with Ada.Strings.Unbounded;
 with Fixture_Support;
 with Math_Prime_Util.Families;
 with Math_Prime_Util.Int;
-<<<<<<< HEAD
 with Math_Prime_Util.Powers;
 with Math_Prime_Util.Count;
-=======
 with Math_Prime_Util.Sieve;
->>>>>>> origin/dev-mpuada-001
 
 package body Compat_Families is
    use AUnit.Test_Cases;

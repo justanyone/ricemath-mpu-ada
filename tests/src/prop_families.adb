@@ -252,14 +252,11 @@ package body Prop_Families is
 
    overriding procedure Register_Tests (T : in out Families_Case) is
    begin
-<<<<<<< HEAD
-      Registration.Register_Routine (T, Power_Laws'Access, "power laws");
-=======
       Registration.Register_Routine
         (T, Twin_Empty_Prefix'Access, "twin empty prefix");
       Registration.Register_Routine
         (T, Twin_Semi_Laws'Access, "twin and semiprime laws");
->>>>>>> origin/dev-mpuada-001
+      Registration.Register_Routine (T, Power_Laws'Access, "power laws");
       Registration.Register_Routine (T, Laws'Access, "lucky laws");
       Registration.Register_Routine
         (T, Concurrent_Calls'Access, "concurrent repeated sieves");
