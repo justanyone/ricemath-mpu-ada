@@ -213,12 +213,190 @@ package body Compat_Iter is
       Replay ("prime_iterator");
    end Check_Fixtures;
 
+   procedure Check_Control (T : in out Test_Case'Class) is
+      Rows : constant Case_Vectors.Vector := Load ("iter");
+      Got : Unbounded_String;
+      Count : Natural;
+      Outer_Value : U64;
+      Inactive : Loop_Context;
+      Raised : Boolean := False;
+      Callback_Error : exception;
+      procedure Push (Value : U64) is
+      begin
+         if Length (Got) > 0 then
+            Append (Got, " ");
+         end if;
+         Append (Got, Image (Value));
+      end Push;
+      procedure Inner (Value : U64; Context : in out Loop_Context) is
+      begin
+         if Value mod Outer_Value = 1 then
+            Lastfor (Context);
+            Push (Value);
+         end if;
+      end Inner;
+      procedure Outer (Value : U64; Context : in out Loop_Context) is
+      begin
+         Outer_Value := Value;
+         Forprimes (1000, Inner'Access);
+      end Outer;
+      procedure Outer_Composite
+        (Value : U64; Context : in out Loop_Context) is
+      begin
+         Outer_Value := Value;
+         Forcomposites (1000, Inner'Access);
+      end Outer_Composite;
+      procedure Parts (Values : Value_Array; Context : in out Loop_Context) is
+      begin
+         if Values'Length < 4 then
+            Lastfor (Context);
+         else
+            Count := Count + 1;
+         end if;
+      end Parts;
+      procedure Combination
+        (Values : Value_Array; Context : in out Loop_Context)
+      is
+         Sum : U64 := 0;
+      begin
+         for V of Values loop
+            Sum := Sum + V;
+         end loop;
+         if Sum > 11 then
+            Lastfor (Context);
+         else
+            Count := Count + 1;
+         end if;
+      end Combination;
+      procedure Permutation
+        (Values : Value_Array; Context : in out Loop_Context) is
+      begin
+         if Values (4) = 5 then
+            Lastfor (Context);
+         else
+            Count := Count + 1;
+         end if;
+      end Permutation;
+      procedure First (Value : U64; Context : in out Loop_Context) is
+      begin
+         Push (Value);
+         Lastfor (Context);
+      end First;
+      procedure First_Tuple
+        (Values : Value_Array; Context : in out Loop_Context) is
+      begin
+         Count := Count + 1;
+         Lastfor (Context);
+      end First_Tuple;
+      procedure First_Factored
+        (Value : U64; Factors : Value_Array;
+         Context : in out Loop_Context) is
+      begin
+         Count := Count + 1;
+         Lastfor (Context);
+      end First_Factored;
+      procedure Fail (Value : U64; Context : in out Loop_Context) is
+      begin
+         raise Callback_Error;
+      end Fail;
+      procedure Catch_Inner
+        (Value : U64; Context : in out Loop_Context) is
+      begin
+         begin
+            Forprimes (10, Fail'Access);
+         exception
+            when Callback_Error => null;
+         end;
+         Count := Count + 1;
+         Lastfor (Context);
+      end Catch_Inner;
+   begin
+      for C of Rows loop
+         Got := Null_Unbounded_String;
+         Count := 0;
+         if C.Func = "lastfor_forprimes_forprimes" then
+            Forprimes (100, Outer'Access);
+         elsif C.Func = "lastfor_forprimes_forcomposites" then
+            Forprimes (100, Outer_Composite'Access);
+         elsif C.Func = "lastfor_forpart_len4" then
+            Forpart (7, Parts'Access);
+            Got := To_Unbounded_String (Image (U64 (Count)));
+         elsif C.Func = "lastfor_forcomb_sum11" then
+            Forcomb (7, 4, Combination'Access);
+            Got := To_Unbounded_String (Image (U64 (Count)));
+         elsif C.Func = "lastfor_forperm_pos3_is5" then
+            Forperm (7, Permutation'Access);
+            Got := To_Unbounded_String (Image (U64 (Count)));
+         elsif C.Func = "lastfor_forpart_0" then
+            Forpart (0, First_Tuple'Access);
+            Got := To_Unbounded_String (Image (U64 (Count)));
+         elsif C.Func = "lastfor_forcomb_0" then
+            Forcomb (0, First_Tuple'Access);
+            Got := To_Unbounded_String (Image (U64 (Count)));
+         elsif C.Func = "lastfor_forcomb_3_0" then
+            Forcomb (3, 0, First_Tuple'Access);
+            Got := To_Unbounded_String (Image (U64 (Count)));
+         elsif C.Func = "lastfor_forperm_0" then
+            Forperm (0, First_Tuple'Access);
+            Got := To_Unbounded_String (Image (U64 (Count)));
+         elsif C.Func = "lastfor_forfactored_0_3" then
+            Forfactored (0, 3, First_Factored'Access);
+            Got := To_Unbounded_String (Image (U64 (Count)));
+         elsif C.Func = "lastfor_inner_die_outer_ok" then
+            Forprimes (20, Catch_Inner'Access);
+            Got := To_Unbounded_String (Image (U64 (Count)));
+         elsif C.Func = "lastfor_outside_loop" or else
+           C.Func = "lastfor_after_callback_die"
+         then
+            if C.Func = "lastfor_after_callback_die" then
+               begin
+                  Forprimes (10, Fail'Access);
+               exception
+                  when Callback_Error => null;
+               end;
+            end if;
+            Raised := False;
+            begin
+               Lastfor (Inactive);
+            exception
+               when Constraint_Error => Raised := True;
+            end;
+            AUnit.Assertions.Assert (Raised, "inactive context accepted");
+            Got := To_Unbounded_String ("ERROR");
+         else
+            --  Other lastfor rows exercise families outside this task.
+            goto Continue_Row;
+         end if;
+         AUnit.Assertions.Assert
+           (Got = C.Result, To_String (C.Func) & " got " & To_String (Got));
+         <<Continue_Row>>
+      end loop;
+      --  Boundary intervals never wrap, even when a callback stops early.
+      Got := Null_Unbounded_String;
+      Forcomposites (U64'Last, U64'Last, First'Access);
+      AUnit.Assertions.Assert (Got = Image (U64'Last), "last composite");
+      declare
+         Cursor : Prime_Cursor := Prime_Iterator (18446744073709551557);
+         Value : Int.Optional_U64;
+      begin
+         Next (Cursor, Value);
+         AUnit.Assertions.Assert
+           (Value.Defined and then Value.Value = 18446744073709551557,
+            "largest prime");
+         for I in 1 .. 2 loop
+            Next (Cursor, Value);
+            AUnit.Assertions.Assert (not Value.Defined, "cursor wrapped");
+         end loop;
+      end;
+   end Check_Control;
+
    overriding function Name (T : Iter_Case) return AUnit.Message_String is
      (AUnit.Format ("Compat_Iter"));
 
    overriding procedure Register_Tests (T : in out Iter_Case) is
    begin
       Registration.Register_Routine (T, Check_Fixtures'Access, "fixtures");
+      Registration.Register_Routine (T, Check_Control'Access, "control");
    end Register_Tests;
 
    function Suite return AUnit.Test_Suites.Access_Test_Suite is
