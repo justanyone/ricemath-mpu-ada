@@ -66,11 +66,11 @@ package body Compat_Families is
                   else Ramanujan_Primes
                     (N, U64'Value (To_String (C.Args (2)))));
             begin
-               for P of V loop
+               for J in V.First_Index .. V.Last_Index loop
                   if Length (Got) > 0 then
                      Append (Got, " ");
                   end if;
-                  Append (Got, Image (P));
+                  Append (Got, Image (V.Element (J)));
                end loop;
                if V.Is_Empty then
                   Got := To_Unbounded_String ("undef");
