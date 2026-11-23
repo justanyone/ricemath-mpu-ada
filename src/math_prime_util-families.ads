@@ -85,7 +85,7 @@ package Math_Prime_Util.Families is
           Post => (if N = 0 then not Nth_Almost_Prime'Result.Defined);
 
    --  omega_primes.c: range_omega_prime_sieve.
-   --  Integers in the inclusive range with K prime factors without multiplicity.
+   --  Inclusive range with K distinct prime factors.
    --  Reversed ranges are empty; Storage_Error may propagate.
    function Omega_Primes (K : Natural; Low, High : U64)
       return Family_Vectors.Vector
@@ -98,7 +98,7 @@ package Math_Prime_Util.Families is
      with Pre => True,
           Post => (for all V of Omega_Primes'Result => V <= High);
    --  omega_primes.c: omega_prime_count.
-   --  Count integers through High, counting prime factors without multiplicity.
+   --  Count integers through High with K distinct prime factors.
    --  Storage_Error may propagate from the prime sieve.
    function Omega_Prime_Count (K : Natural; High : U64) return U64
      with Pre => True, Post => Omega_Prime_Count'Result <= High;

@@ -672,8 +672,8 @@ package body Math_Prime_Util.Families is
      (K : Natural; Low, High : U64; Distinct, Listing : Boolean;
       Values : out Family_Vectors.Vector; Total : out U64)
    is
-      Cache_High : constant U64 := U64' Min (High, 1_000_000);
-      Pr : constant Sieve.Prime_Vectors.Vector := Sieve.Primes (Cache_High);
+      Cache_High : constant U64 := U64'Min (High, 1_000_000);
+      Pr : constant Math_Prime_Util.Sieve.Prime_Vectors.Vector := Math_Prime_Util.Sieve.Primes (Cache_High);
       package Sorting is new Family_Vectors.Generic_Sorting;
 
       function Pi (N : U64) return U64;
@@ -704,7 +704,7 @@ package body Math_Prime_Util.Families is
          if I < U64 (Pr.Length) then
             return Pr.Element (Natural (I));
          end if;
-         R := Sieve.Next_Prime (P);
+         R := Math_Prime_Util.Sieve.Next_Prime (P);
          return (if R.Defined then R.Value else 0);
       end Next;
 
@@ -737,10 +737,10 @@ package body Math_Prime_Util.Families is
          loop
             B := Int.Rootint (Upper, U64 (E));
             exit when B < P;
-            A := U64' Max (P, Int.Crootint (Lower, U64 (E)));
+            A := U64'Max (P, Int.Crootint (Lower, U64 (E)));
             if A <= B then
                if Listing then
-                  for Q of Sieve.Primes (A, B) loop
+                  for Q of Math_Prime_Util.Sieve.Primes (A, B) loop
                      Power := Int.Powint (Q, U64 (E));
                      if Power.Defined then
                         Values.Append (M * Power.Value);
@@ -830,7 +830,7 @@ package body Math_Prime_Util.Families is
          for I in Index loop
             Residual (I) := Low + U64 (I);
          end loop;
-         for P of Sieve.Primes (Int.Sqrtint (High)) loop
+         for P of Math_Prime_Util.Sieve.Primes (Int.Sqrtint (High)) loop
             Offset := (if Low mod P = 0 then 0 else P - Low mod P);
             while Offset <= High - Low loop
                declare
