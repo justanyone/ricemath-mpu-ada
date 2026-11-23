@@ -1,3 +1,4 @@
+with Compat_Factor;
 with Compat_Primality;
 with Prop_Primality;
 with Compat_Families;
@@ -44,6 +45,7 @@ package body All_Suites is
       Result.Add_Test (Prop_Real.Suite);
       Result.Add_Test (Compat_Count.Suite);
       Result.Add_Test (Prop_Count.Suite);
+      Result.Add_Test (Compat_Factor.Suite);
       Result.Add_Test (Compat_Primality.Suite);
       Result.Add_Test (Prop_Primality.Suite);
       Result.Add_Test (Compat_Families.Suite);
