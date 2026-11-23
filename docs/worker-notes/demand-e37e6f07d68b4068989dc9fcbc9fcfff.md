@@ -13,3 +13,5 @@ Development build continues through existing large units; removed redundant visi
 Development and release builds passed; all new tests compiled. Gate reached full tests; awaiting results. Corrected one test style diagnostic.
 Full runner ignores requested filter and has not returned; created an isolated runner/project only under obj to time and validate the new suite independently.
 Isolated AUnit runner compiled successfully under obj; running the eleven new tests with an explicit 60-second limit.
+All eleven isolated factor-class tests passed within 60 seconds: nine fixture functions, laws, boundaries; no errors or failures. Full gate tests still running.
+Reviewed native edge handling and recurrence bounds after isolated success; no fixture edits or generated status changes. Awaiting the already-running full gate.
