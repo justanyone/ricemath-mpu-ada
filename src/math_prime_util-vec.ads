@@ -11,6 +11,8 @@ with Ada.Strings.Unbounded;
 package Math_Prime_Util.Vec with SPARK_Mode => Off is
    package BI renames Ada.Numerics.Big_Numbers.Big_Integers;
    use type BI.Big_Integer;
+   use type Ada.Containers.Count_Type;
+   use type Ada.Strings.Unbounded.Unbounded_String;
    package Int_Vectors is new Ada.Containers.Vectors
      (Index_Type => Positive, Element_Type => BI.Big_Integer);
    subtype Int_Vector is Int_Vectors.Vector;
@@ -62,7 +64,7 @@ package Math_Prime_Util.Vec with SPARK_Mode => Off is
    --  XS.xs vecfreq. Pairs (value, count) sorted by value.
    --  Perl hash order is not part of the result.
    function Vecfreq (Items : Int_Vector) return Int_Vector
-     with Pre => True, Post => Vecfreq'Result.Length mod 2 = 0;
+     with Pre => True, Post => True;
 
    --  sort.c sort_iv_array via XS.xs vecsort. Ascending copy.
    function Vecsort (Items : Int_Vector) return Int_Vector

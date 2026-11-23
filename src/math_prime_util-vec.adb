@@ -2,6 +2,7 @@ with Ada.Containers;
 
 package body Math_Prime_Util.Vec with SPARK_Mode => Off is
    use type Ada.Containers.Count_Type;
+   use type Int_Vector;
 
    function Less (L, R : BI.Big_Integer) return Boolean is (L < R);
    package Sorting is new Int_Vectors.Generic_Sorting (Less);
@@ -388,7 +389,9 @@ package body Math_Prime_Util.Vec with SPARK_Mode => Off is
    end Setminus;
 
    function Setdelta (Left, Right : Int_Vector) return Int_Vector is
-     (Setunion (Setminus (Left, Right), Setminus (Right, Left)));
+     (Setunion
+        (Setminus (Left => Left, Right => Right),
+         Setminus (Left => Right, Right => Left)));
 
    function Setinsert (Set, Values : Int_Vector) return Int_Vector is
      (Setunion (Set, Values));
@@ -432,11 +435,11 @@ package body Math_Prime_Util.Vec with SPARK_Mode => Off is
      (Left.Length > Right.Length and then Set_Is_Subset (Left, Right));
 
    function Set_Is_Superset (Left, Right : Int_Vector) return Boolean is
-     (Set_Is_Subset (Right, Left));
+     (Set_Is_Subset (Left => Right, Right => Left));
 
    function Set_Is_Proper_Superset (Left, Right : Int_Vector)
      return Boolean is
-     (Set_Is_Proper_Subset (Right, Left));
+     (Set_Is_Proper_Subset (Left => Right, Right => Left));
 
    function Set_Is_Proper_Intersection (Left, Right : Int_Vector)
      return Boolean
