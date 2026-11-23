@@ -5,6 +5,7 @@ with Ada.Strings.Fixed;
 with Ada.Strings.Unbounded;
 with Fixture_Support;
 with Math_Prime_Util.Families;
+with Math_Prime_Util.Goldbach;
 with Math_Prime_Util.Int;
 
 package body Compat_Families is
@@ -14,6 +15,7 @@ package body Compat_Families is
    use Math_Prime_Util;
    use type U64;
    use Math_Prime_Util.Families;
+   use Math_Prime_Util.Goldbach;
    type Families_Case is new Test_Case with null record;
    overriding function Name (T : Families_Case)
       return AUnit.Message_String;
@@ -59,12 +61,12 @@ package body Compat_Families is
          elsif Func = "is_lucky" then
             Got := To_Unbounded_String ((if Is_Lucky (N) then "1" else "0"));
          elsif Func = "minimal_goldbach_pair" then
-            Got := To_Unbounded_String (Image (Minimal_Goldbach_Pair (N)));
+            Got := To_Unbounded_String (Image (Math_Prime_Util.Goldbach.Minimal_Goldbach_Pair (N)));
          elsif Func = "goldbach_pair_count" then
-            Got := To_Unbounded_String (Image (Goldbach_Pair_Count (N)));
+            Got := To_Unbounded_String (Image (Math_Prime_Util.Goldbach.Goldbach_Pair_Count (N)));
          elsif Func = "goldbach_pairs" then
             declare
-               Pairs : constant Pair_Vectors.Vector := Goldbach_Pairs (N);
+               Pairs : constant Math_Prime_Util.Goldbach.Pair_Vectors.Vector := Math_Prime_Util.Goldbach.Goldbach_Pairs (N);
             begin
                for P of Pairs loop
                   if Length (Got) > 0 then
