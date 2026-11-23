@@ -12,3 +12,5 @@ Resolved ambiguous vector indexing attributes with explicit Element calls in Car
 Focused runner compiles after using the tests Alire environment. Cleaned new layout diagnostics and initialized fixture workspaces; proceeding to executable fixture checks and the project gate.
 The checked focused runner compiled but GNAT linking failed on a vector for-of reference-control symbol in the new print test. Changed that comparison to indexed Element access, preserving line-by-line sieve verification; rebuilding and executing it now.
 All ten focused AUnit iterator checks pass, including every new native fixture family and callback controls. Started the full declared gate and the five pytest-bdd scenarios.
+Reviewed source layout and fixture skip comments; diff whitespace checks pass. Full gate remains in progress; no tool scripts, fixtures, reference sources, generated status, or dependencies changed.
+Pytest-bdd collection is blocked by missing pytest_bdd in the installed Python environment; no dependency or network changes made. The same scenarios' underlying ten AUnit checks passed. Full gate is compiling development/release profiles.
