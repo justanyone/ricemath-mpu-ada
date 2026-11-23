@@ -54,3 +54,9 @@ def selected_test_passes(result):
         "Unexpected Errors: 0",
     ):
         assert summary in result.stdout, result.stdout
+
+
+# Justification: compile and exercise the prime/perfect power regression paths.
+@when(parsers.parse('I check the "{kind}" power regression'), target_fixture="result")
+def check_power_regression(powers_runner, kind):
+    return run_selected(powers_runner, f"Compat_Powers : {kind} laws")
