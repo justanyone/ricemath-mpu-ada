@@ -497,8 +497,241 @@ package body Compat_Vec is
       Replay ("set_is_proper_intersection");
    end Test_Set_Is_Proper_Intersection;
 
+   type Integer_List is array (Positive range <>) of Integer;
+
+   function Vector_Of (Values : Integer_List) return Int_Vector is
+      Result : Int_Vector;
+   begin
+      for V of Values loop
+         Result.Append (BI.To_Big_Integer (V));
+      end loop;
+      return Result;
+   end Vector_Of;
+
+   function Is_One (Value : BI.Big_Integer) return Boolean is (Value = 1);
+   function Is_Nine (Value : BI.Big_Integer) return Boolean is
+     (8 = Value - 1);
+   function Over_Six (Value : BI.Big_Integer) return Boolean is
+   begin
+      loop
+         return Value > 6;
+      end loop;
+   end Over_Six;
+
+   procedure Test_Vecany (T : in out Test_Case'Class) is
+      function Check is new Vecany (Is_One);
+   begin
+      --  reference/mpu/t/26-vec.t:380
+      AUnit.Assertions.Assert
+        (Check (Vector_Of ([1, 2, 3])), "vecany t/26-vec.t:380");
+      --  reference/mpu/t/26-vec.t:381
+      AUnit.Assertions.Assert
+        (not Check (Vector_Of ([2, 3, 4])), "vecany t/26-vec.t:381");
+      --  reference/mpu/t/26-vec.t:382
+      AUnit.Assertions.Assert
+        (not Check (Vector_Of ([])), "vecany t/26-vec.t:382");
+   end Test_Vecany;
+
+   procedure Test_Vecall (T : in out Test_Case'Class) is
+      function Check is new Vecall (Is_One);
+   begin
+      --  reference/mpu/t/26-vec.t:384
+      AUnit.Assertions.Assert
+        (Check (Vector_Of ([1, 1, 1])), "vecall t/26-vec.t:384");
+      --  reference/mpu/t/26-vec.t:385
+      AUnit.Assertions.Assert
+        (not Check (Vector_Of ([1, 2, 3])), "vecall t/26-vec.t:385");
+      --  reference/mpu/t/26-vec.t:386
+      AUnit.Assertions.Assert
+        (Check (Vector_Of ([])), "vecall t/26-vec.t:386");
+   end Test_Vecall;
+
+   procedure Test_Vecnotall (T : in out Test_Case'Class) is
+      function Check is new Vecnotall (Is_One);
+   begin
+      --  reference/mpu/t/26-vec.t:388
+      AUnit.Assertions.Assert
+        (Check (Vector_Of ([1, 2, 3])), "vecnotall t/26-vec.t:388");
+      --  reference/mpu/t/26-vec.t:389
+      AUnit.Assertions.Assert
+        (not Check (Vector_Of ([1, 1, 1])), "vecnotall t/26-vec.t:389");
+      --  reference/mpu/t/26-vec.t:390
+      AUnit.Assertions.Assert
+        (not Check (Vector_Of ([])), "vecnotall t/26-vec.t:390");
+   end Test_Vecnotall;
+
+   procedure Test_Vecnone (T : in out Test_Case'Class) is
+      function Check is new Vecnone (Is_One);
+   begin
+      --  reference/mpu/t/26-vec.t:392
+      AUnit.Assertions.Assert
+        (Check (Vector_Of ([2, 3, 4])), "vecnone t/26-vec.t:392");
+      --  reference/mpu/t/26-vec.t:393
+      AUnit.Assertions.Assert
+        (not Check (Vector_Of ([1, 2, 3])), "vecnone t/26-vec.t:393");
+      --  reference/mpu/t/26-vec.t:394
+      AUnit.Assertions.Assert
+        (Check (Vector_Of ([])), "vecnone t/26-vec.t:394");
+   end Test_Vecnone;
+
+   procedure Test_Vecfirst (T : in out Test_Case'Class) is
+      procedure First_Nine is new Vecfirst (Is_Nine);
+      procedure First_Large is new Vecfirst (Over_Six);
+      Value : BI.Big_Integer;
+      Found : Boolean;
+   begin
+      --  reference/mpu/t/26-vec.t:400
+      First_Nine (Vector_Of ([9, 4, 5, 6]), Value, Found);
+      AUnit.Assertions.Assert (Found and then Value = 9, "first success");
+      --  reference/mpu/t/26-vec.t:401 (all predicates return false).
+      First_Nine (Vector_Of ([1, 2, 3, 4]), Value, Found);
+      AUnit.Assertions.Assert (not Found and then Value = 0, "first miss");
+      --  reference/mpu/t/26-vec.t:402
+      First_Nine (Vector_Of ([]), Value, Found);
+      AUnit.Assertions.Assert (not Found, "first empty");
+      --  t/26-vec.t:403-404 skipped: Perl reference arrays are not integers.
+      --  reference/mpu/t/26-vec.t:405
+      First_Large (Vector_Of ([2, 4, 6, 12]), Value, Found);
+      AUnit.Assertions.Assert (Found and then Value = 12, "first loop");
+   end Test_Vecfirst;
+
+   procedure Test_Vecfirstidx (T : in out Test_Case'Class) is
+      function First_Nine is new Vecfirstidx (Is_Nine);
+      function First_Large is new Vecfirstidx (Over_Six);
+   begin
+      --  reference/mpu/t/26-vec.t:409
+      AUnit.Assertions.Assert
+        (First_Nine (Vector_Of ([9, 4, 5, 6])) = 0, "first idx success");
+      --  reference/mpu/t/26-vec.t:410
+      AUnit.Assertions.Assert
+        (First_Nine (Vector_Of ([1, 2, 3, 4])) = -1, "first idx miss");
+      --  reference/mpu/t/26-vec.t:411
+      AUnit.Assertions.Assert
+        (First_Nine (Vector_Of ([])) = -1, "first idx empty");
+      --  t/26-vec.t:412 skipped: Perl reference arrays are not integers.
+      --  reference/mpu/t/26-vec.t:413
+      AUnit.Assertions.Assert
+        (First_Large (Vector_Of ([2, 4, 6, 12])) = 3, "first idx loop");
+   end Test_Vecfirstidx;
+
+   procedure Predicate_Laws (T : in out Test_Case'Class) is
+      use type Math_Prime_Util.U64;
+      Seed : Math_Prime_Util.U64 := 20_261_123;
+      Target : BI.Big_Integer := BI.To_Big_Integer (0);
+      function Matches (Value : BI.Big_Integer) return Boolean is
+        (Value = Target);
+      function Any_Match is new Vecany (Matches);
+      function All_Match is new Vecall (Matches);
+      function None_Match is new Vecnone (Matches);
+      function Not_All is new Vecnotall (Matches);
+      function First_Index is new Vecfirstidx (Matches);
+      procedure First_Value is new Vecfirst (Matches);
+      Items : Int_Vector;
+      Value : BI.Big_Integer;
+      Found : Boolean;
+      Index : Integer;
+      procedure Check is
+      begin
+         Index := First_Index (Items);
+         First_Value (Items, Value, Found);
+         AUnit.Assertions.Assert
+           (None_Match (Items) = not Any_Match (Items)
+            and then Not_All (Items) = not All_Match (Items)
+            and then (Index = -1) = not Any_Match (Items)
+            and then Found = (Index >= 0), "laws seed 20261123");
+         if Found then
+            AUnit.Assertions.Assert
+              (Value = Target and then Value = Items.Element (Index + 1),
+               "first value seed 20261123");
+            for I in 1 .. Index loop
+               AUnit.Assertions.Assert
+                 (Items.Element (I) /= Target, "first seed 20261123");
+            end loop;
+         end if;
+      end Check;
+   begin
+      Check;
+      for Trial in 1 .. 100 loop
+         Items.Clear;
+         for I in 1 .. Trial mod 17 loop
+            Seed := Seed * 6_364_136_223_846_793_005 + 1;
+            Items.Append (BI.To_Big_Integer (Integer (Seed mod 5)));
+         end loop;
+         Target := BI.To_Big_Integer (Trial mod 5);
+         Check;
+      end loop;
+      --  Full integer boundaries, without converting vector values to U64.
+      Items := Vector_Of ([0, 1, 2]);
+      for Power of Integer_List'[32, 63, 64, 127, 128] loop
+         for Offset in -1 .. 1 loop
+            Items.Append (BI.To_Big_Integer (2) ** Natural (Power)
+                          + BI.To_Big_Integer (Offset));
+         end loop;
+      end loop;
+      Items.Append (-BI.To_Big_Integer (2) ** 127);
+      for I in Items.First_Index .. Items.Last_Index loop
+         Target := Items.Element (I);
+         Check;
+      end loop;
+   end Predicate_Laws;
+
+   procedure Predicate_Order (T : in out Test_Case'Class) is
+      Calls : Natural := 0;
+      function Matches (Value : BI.Big_Integer) return Boolean is
+      begin
+         Calls := Calls + 1;
+         AUnit.Assertions.Assert
+           (Value = BI.To_Big_Integer (Calls), "predicate input order");
+         return Value = 2;
+      end Matches;
+      function Any_Match is new Vecany (Matches);
+      function All_Match is new Vecall (Matches);
+      function None_Match is new Vecnone (Matches);
+      function Not_All is new Vecnotall (Matches);
+      function First_Index is new Vecfirstidx (Matches);
+      procedure First_Value is new Vecfirst (Matches);
+      Items : constant Int_Vector := Vector_Of ([1, 2, 3, 2]);
+      Value : BI.Big_Integer;
+      Found : Boolean;
+   begin
+      AUnit.Assertions.Assert
+        (Any_Match (Items) and then Calls = 2, "any short circuit");
+      Calls := 0;
+      AUnit.Assertions.Assert
+        (not All_Match (Items) and then Calls = 1, "all short circuit");
+      Calls := 0;
+      AUnit.Assertions.Assert
+        (not None_Match (Items) and then Calls = 2, "none short circuit");
+      Calls := 0;
+      AUnit.Assertions.Assert
+        (Not_All (Items) and then Calls = 1, "notall short circuit");
+      Calls := 0;
+      AUnit.Assertions.Assert
+        (First_Index (Items) = 1 and then Calls = 2, "idx short circuit");
+      Calls := 0;
+      First_Value (Items, Value, Found);
+      AUnit.Assertions.Assert
+        (Found and then Value = 2 and then Calls = 2, "first short circuit");
+   end Predicate_Order;
+
    overriding procedure Register_Tests (T : in out Vec_Case) is
    begin
+      Registration.Register_Routine
+        (T, Test_Vecany'Access, "vecany");
+      Registration.Register_Routine
+        (T, Test_Vecall'Access, "vecall");
+      Registration.Register_Routine
+        (T, Test_Vecnone'Access, "vecnone");
+      Registration.Register_Routine
+        (T, Test_Vecnotall'Access, "vecnotall");
+      Registration.Register_Routine
+        (T, Test_Vecfirst'Access, "vecfirst");
+      Registration.Register_Routine
+        (T, Test_Vecfirstidx'Access, "vecfirstidx");
+      Registration.Register_Routine
+        (T, Predicate_Laws'Access, "predicate laws seed 20261123");
+      Registration.Register_Routine
+        (T, Predicate_Order'Access, "predicate order");
       Registration.Register_Routine (T, Test_Vecsum'Access, "vecsum");
       Registration.Register_Routine (T, Test_Vecprod'Access, "vecprod");
       Registration.Register_Routine (T, Test_Vecmin'Access, "vecmin");
