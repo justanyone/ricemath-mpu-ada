@@ -151,7 +151,10 @@ package body Compat_Families is
          begin
             if F in "almost_primes" | "omega_primes" |
               "almost_prime_count" | "omega_prime_count" |
-              "nth_almost_prime" | "nth_omega_prime"
+              "nth_almost_prime" | "nth_omega_prime" |
+              "almost_prime_count_lower" | "almost_prime_count_upper" |
+              "almost_prime_count_approx" | "nth_almost_prime_lower" |
+              "nth_almost_prime_upper" | "nth_almost_prime_approx"
             then
                if C.Error then
                   --  Negative factor counts are rejected by Ada's Natural
@@ -167,9 +170,32 @@ package body Compat_Families is
                      end;
                      AUnit.Assertions.Assert (Rejected, "negative K");
                   end;
-               else
+               elsif not C.Undef and then
+                 (To_String (C.Result)'Length > 20 or else
+                  (To_String (C.Result)'Length = 20 and then
+                   To_String (C.Result) > "18446744073709551615"))
+                 and then F /= "almost_primes" and then F /= "omega_primes"
+               then
+                  --  Native_Result_Overflow: bigint nth rows cannot be
+                  --  represented by Optional_U64; test undefined below.
                   K := Natural'Value (To_String (C.Args (1)));
                   High := U64'Value (To_String (C.Args (2)));
+                  R := (if F = "nth_almost_prime" then
+                          Nth_Almost_Prime (K, High)
+                        elsif F = "nth_almost_prime_lower" then
+                          Nth_Almost_Prime_Lower (K, High)
+                        elsif F = "nth_almost_prime_upper" then
+                          Nth_Almost_Prime_Upper (K, High)
+                        else Nth_Almost_Prime_Approx (K, High));
+                  AUnit.Assertions.Assert
+                    (not R.Defined, "native nth overflow");
+               else
+                  K := Natural'Value (To_String (C.Args (1)));
+                  if not Parse_U64 (To_String (C.Args (2)), High) then
+                     --  Bigint nth fixtures belong to the later bigint tier.
+                     --  Their exact output exceeds the native U64 result.
+                     High := 0;
+                  end if;
                   Actual := Null_Unbounded_String;
                   if F in "almost_primes" | "omega_primes" then
                      Low := 1;
@@ -189,6 +215,24 @@ package body Compat_Families is
                      if V.Is_Empty then
                         Actual := To_Unbounded_String ("undef");
                      end if;
+                  elsif F = "almost_prime_count_lower" then
+                     Actual := To_Unbounded_String
+                       (Image (Almost_Prime_Count_Lower (K, High)));
+                  elsif F = "almost_prime_count_upper" then
+                     Actual := To_Unbounded_String
+                       (Image (Almost_Prime_Count_Upper (K, High)));
+                  elsif F = "almost_prime_count_approx" then
+                     Actual := To_Unbounded_String
+                       (Image (Almost_Prime_Count_Approx (K, High)));
+                  elsif F = "nth_almost_prime_lower" then
+                     Actual := To_Unbounded_String
+                       (Image (Nth_Almost_Prime_Lower (K, High)));
+                  elsif F = "nth_almost_prime_upper" then
+                     Actual := To_Unbounded_String
+                       (Image (Nth_Almost_Prime_Upper (K, High)));
+                  elsif F = "nth_almost_prime_approx" then
+                     Actual := To_Unbounded_String
+                       (Image (Nth_Almost_Prime_Approx (K, High)));
                   elsif F in "almost_prime_count" | "omega_prime_count" then
                      N := (if F = "almost_prime_count" then
                              Almost_Prime_Count (K, High)
