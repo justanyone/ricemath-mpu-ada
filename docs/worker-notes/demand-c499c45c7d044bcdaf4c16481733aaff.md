@@ -7,3 +7,4 @@ Conflict markers are absent and git diff --check passed. Alire failed creating a
 Redirecting XDG_RUNTIME_DIR to tests/obj allowed Alire to build using available dependencies; compilation is underway.
 The Alire test build passed (51 seconds); running Compat_Factor with a 60-second timeout.
 Dedicated ECM runner passed both fixture and edge tests (2/2); the resolved test crate builds successfully.
+Finished: both sides retained, no conflict markers, whitespace check and Alire build passed, ECM tests passed 2/2. The main runner invocation timed out after 60 seconds without output; full gate remains unverified. Launcher owns the commit.
