@@ -103,12 +103,19 @@ package body Compat_Families is
       AUnit.Assertions.Assert (not Cases.Is_Empty, "missing " & Func);
       for C of Cases loop
          Signed := Int.I128'Value (To_String (C.Args (1)));
-         Skip := Signed > Int.I128 (U64'Last);
+         Skip := Signed not in
+           -Int.I128 (U64'Last) .. Int.I128 (U64'Last);
          N := (if Signed < 0 or Skip then 0 else U64 (Signed));
          H := (if C.Args.Last_Index = 2 then
                  U64'Value (To_String (C.Args (2))) else N);
          if Func = "prime_power_count" and then
            H > Math_Prime_Util.Count.Prime_Count_Limit
+         then
+            Skip := True;
+         end if;
+         --  Bigint_Index: MPU dispatches larger perfect-power indices to PP.
+         if Ada.Strings.Fixed.Index (Func, "nth_perfect_power") = 1 and then
+           N > 4_297_615_581
          then
             Skip := True;
          end if;

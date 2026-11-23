@@ -53,8 +53,10 @@ package body Math_Prime_Util.Powers with SPARK_Mode => On is
       if not Prime then
          if Forward and then N = 0 then
             return (True, 1);
-         elsif not Forward and then N <= 1 then
+         elsif not Forward and then N = 0 then
             return (Defined => False);
+         elsif not Forward and then N = 1 then
+            return (True, 0);
          elsif not Forward then
             Best := (True, 1);
          end if;
