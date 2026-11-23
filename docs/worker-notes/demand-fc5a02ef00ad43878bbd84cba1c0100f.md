@@ -23,3 +23,4 @@ Progress: final native-domain refinements are complete; reran the focused checke
 Progress: final focused runner reports 9/9 successful tests, zero failures/errors; final source passes whitespace and 79-column checks. Source ports: totients.c carmichael_lambda, dedekind_psi, inverse_totient_list/count, is_totient, sumtotient128; moebius.c sumliouville; util.c ramanujan_tau/hclassno; PP.pm ramanujan_sum/_tauprime/_taupower.
 Progress: final gate development build passed without new diagnostics; release and test stages are continuing.
 Progress: final gate development, release, and test builds all pass; waiting for the existing full-suite run. No further source edits are planned.
+Progress: the full-suite gate is still running; all final builds and the focused nine-test totient suite have passed. Waiting for the gate result without changing sources.
