@@ -22,7 +22,6 @@ package body Compat_Factor is
       return AUnit.Message_String;
    overriding procedure Register_Tests (T : in out Factor_Case);
 
-
    type Ecm_Case is new Test_Case with null record;
    overriding function Name (T : Ecm_Case) return AUnit.Message_String;
    overriding procedure Register_Tests (T : in out Ecm_Case);
@@ -67,7 +66,6 @@ package body Compat_Factor is
       end loop;
       return To_String (Text);
    end Join;
-
 
    procedure Check_Fixtures (T : in out Test_Case'Class) is
       Cases : constant Case_Vectors.Vector :=
