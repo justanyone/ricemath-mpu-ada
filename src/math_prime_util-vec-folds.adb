@@ -4,6 +4,9 @@ package body Math_Prime_Util.Vec.Folds with SPARK_Mode => On is
    package Results is new Ada.Containers.Vectors
      (Index_Type => Positive, Element_Type => U64);
 
+   function To_Array (Items : Results.Vector) return Value_Array;
+   function Canonical (Items : Value_Array) return Value_Array;
+
    function To_Array (Items : Results.Vector) return Value_Array is
       Result : Value_Array (1 .. Natural (Items.Length));
    begin
