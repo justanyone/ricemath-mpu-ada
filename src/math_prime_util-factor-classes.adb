@@ -126,7 +126,7 @@ package body Math_Prime_Util.Factor.Classes is
          V := V + 1;
       end loop;
       return (M and (M + 1)) = 0 and then M / 2 ** V = 1
-        and then Primality.Is_Mersenne_Prime (U64 (V + 1));
+        and then Primality.Is_Mersenne_Prime (U64 (V + 1)).Value;
    end Is_Perfect_Number;
 
    function Is_Practical (N : U64) return Boolean is

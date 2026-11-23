@@ -1,6 +1,7 @@
 with Compat_Primality;
 with Prop_Primality;
 with Compat_Factor;
+with Compat_Factor_Classes;
 with Compat_Arith;
 with Compat_Powers;
 with Compat_Families;
@@ -60,6 +61,7 @@ package body All_Suites is
       Result.Add_Test (Compat_Primality.Suite);
       Result.Add_Test (Prop_Primality.Suite);
       Result.Add_Test (Compat_Factor.Suite);
+      Result.Add_Test (Compat_Factor_Classes.Suite);
       Result.Add_Test (Compat_Arith.Suite);
       Result.Add_Test (Compat_Powers.Suite);
       Result.Add_Test (Compat_Families.Suite);
