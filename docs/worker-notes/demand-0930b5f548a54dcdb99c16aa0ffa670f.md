@@ -20,3 +20,4 @@ Next: locate vec/set sources, the fixture, compat_vec.adb, and the gate command.
 - 2026-11-23T17:16:23Z launcher: no commit for 60 s; 813 s elapsed. Files changed so far: docs/worker-notes/demand-0930b5f548a54dcdb99c16aa0ffa670f.md.
 - 2026-11-23T17:17:23Z launcher: no commit for 60 s; 873 s elapsed. Files changed so far: docs/worker-notes/demand-0930b5f548a54dcdb99c16aa0ffa670f.md.
 - 2026-11-23T17:20:54Z launcher: no commit for 60 s; 1084 s elapsed. Files changed so far: docs/worker-notes/demand-0930b5f548a54dcdb99c16aa0ffa670f.md, src/math_prime_util-vec.adb, src/math_prime_util-vec.ads, tests/src/all_suites.adb, tests/src/compat_vec.adb, tests/src/compat_vec.ads.
+- 2026-11-23T17:22:55Z launcher: no commit for 60 s; 1205 s elapsed. Files changed so far: docs/worker-notes/demand-0930b5f548a54dcdb99c16aa0ffa670f.md, src/math_prime_util-vec.adb, src/math_prime_util-vec.ads, tests/src/all_suites.adb, tests/src/compat_vec.adb, tests/src/compat_vec.ads.
