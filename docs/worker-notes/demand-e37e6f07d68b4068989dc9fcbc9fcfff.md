@@ -8,3 +8,4 @@ Implemented all nine APIs and fixture/property suites. First focused run blocked
 Focused build reached new package but compilation failed; rerunning development build directly to expose diagnostics hidden by test.sh tail.
 Corrected primality result comparisons and new-unit style diagnostics; focused fixture suite is rebuilding with contracts enabled.
 New package compiles; development gate is building. Existing units emit style warnings, while changed package diagnostics are clean.
+Development build continues through existing large units; removed redundant visibility clause in new spec. Awaiting focused results and full gate.
