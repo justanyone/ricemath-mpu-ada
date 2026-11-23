@@ -134,7 +134,6 @@ package body Compat_Families is
       Replay ("nth_lucky_upper");
    end Test_Nth_Lucky_Upper;
 
-
    --  Given the committed MPU family rows, when each native list, count,
    --  or nth API runs, then its serialized result equals the fixture.
    procedure Test_Factor_Families (T : in out Test_Case'Class) is
