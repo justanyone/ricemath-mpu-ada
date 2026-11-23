@@ -114,8 +114,8 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `fubini` -> `Fubini`
 - [ ] `gcd` -> `Gcd`
 - [ ] `gcdext` -> `Gcdext`
-- [ ] `goldbach_pair_count` -> `Goldbach_Pair_Count`
-- [ ] `goldbach_pairs` -> `Goldbach_Pairs`
+- [x] `goldbach_pair_count` -> `Goldbach_Pair_Count`
+- [x] `goldbach_pairs` -> `Goldbach_Pairs`
 - [ ] `hammingweight` -> `Hammingweight`
 - [ ] `harmfrac` -> `Harmfrac`
 - [ ] `harmreal` -> `Harmreal`
@@ -218,7 +218,7 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `lucky_numbers` -> `Lucky_Numbers`
 - [ ] `mertens` -> `Mertens`
 - [ ] `miller_rabin_random` -> `Miller_Rabin_Random`
-- [ ] `minimal_goldbach_pair` -> `Minimal_Goldbach_Pair`
+- [x] `minimal_goldbach_pair` -> `Minimal_Goldbach_Pair`
 - [ ] `modint` -> `Modint`
 - [ ] `moebius` -> `Moebius`
 - [ ] `muladdint` -> `Muladdint`
