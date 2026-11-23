@@ -35,6 +35,12 @@ package body Math_Prime_Util.Count.Lmo with SPARK_Mode => On is
       Last : constant Natural := Natural (U64'Min
         (N / 3000, U64 (Steps_0'Length)));
    begin
+      --  NSTEP_START_2 / NSTEP_COUNT_2 avoid long prefix enumerations.
+      if N >= 3_000_000 then
+         Anchor := 3_000_000;
+         Value := 216_816;
+         return;
+      end if;
       Anchor := U64 (Last) * 3000;
       Value := (if Last = 0 then 0 else 3);
       for K in 1 .. Last loop
@@ -92,7 +98,7 @@ package body Math_Prime_Util.Count.Lmo with SPARK_Mode => On is
    procedure Compute
      (N, N2, Initial_M : U64; K2, Initial_K3 : Natural;
       Ft : in out Factors; Ps : in out Words; Result : out U64)
-     with Pre => N >= 300_000 and then N2 = Int.Sqrtint (N)
+     with Pre => N >= 216 ** 3 and then N2 = Int.Sqrtint (N)
        and then Initial_M >= 1 and then K2 > 0
        and then Ft'First = 0 and then Ps'First = 0
        and then Ft'Last >= 1 and then Ps'Last > Ft'Last,
@@ -324,7 +330,8 @@ package body Math_Prime_Util.Count.Lmo with SPARK_Mode => On is
       M, Result : U64;
       use Storage;
    begin
-      if N < 300_000 then
+      --  Keep KM > C: M >= 324 requires cube root N >= 216.
+      if N < 216 ** 3 then
          declare
             Anchor, Value : U64;
          begin

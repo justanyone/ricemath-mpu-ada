@@ -130,7 +130,8 @@ package body Prop_Count is
       --  segmented enumeration, then check both neighbors of its last prime.
       for I in 1 .. 4 loop
          Seed := Seed * 6_364_136_223_846_793_005 + 1;
-         N := (if I = 1 then 299_999 else 300_000 + Seed mod 1_000_000);
+         N := (if I <= 2 then 216 ** 3 + U64 (I) - 2
+               else 216 ** 3 + Seed mod 1_000_000);
          declare
             Ps : constant Sieve.Prime_Vectors.Vector := Sieve.Primes (N);
             P : constant U64 := Ps.Last_Element;
