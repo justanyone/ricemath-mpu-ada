@@ -299,7 +299,7 @@ package body Prop_Families is
          and then not Nth_Powerful (2, 64).Defined
          and then Powerful_Numbers (10, 1).Is_Empty
          and then Powerful_Numbers (0, 0).Is_Empty
-         and then Sumpowerful (100, 0) = Sumpowerful (100, 2),
+         and then Sumpowerful (100, 0) = Sumpowerful (100, 1),
          "empty ranges and undefined indices");
    end Power_Laws;
 

@@ -1684,14 +1684,14 @@ package body Math_Prime_Util.Families is
    function Nth_Powerful (N : U64; K : U64 := 2)
       return Int.Optional_U64
    is
-      Power : constant U64 := (if K = 0 then 2 else K);
+      Power : constant U64 := K;
       Low : U64 := 1;
       High : U64 := N;
       Mid : U64;
    begin
       if N = 0 then
          return (Defined => False);
-      elsif N = 1 or else Power = 1 then
+      elsif N = 1 or else Power <= 1 then
          return (True, N);
       elsif Power >= 64 then
          return (Defined => False);
@@ -1762,11 +1762,11 @@ package body Math_Prime_Util.Families is
    end Powerful_Sum_Rec;
 
    function Sumpowerful (N : U64; K : U64 := 2) return U128 is
-      Power : constant U64 := (if K = 0 then 2 else K);
+      Power : constant U64 := K;
    begin
       if N <= 1 then
          return U128 (N);
-      elsif Power = 1 then
+      elsif Power <= 1 then
          return Triangular (N);
       elsif Power >= 64 then
          return 1;

@@ -249,12 +249,22 @@ package body Compat_Families is
          if not Skip then
             if Func = "powerful_numbers" then
                High := (if Natural (C.Args.Length) = 1 then N else K);
-               K := (if Natural (C.Args.Length) < 3 then 2 else
-                     U64'Value (To_String (C.Args (3))));
+               K := 2;
+               if Natural (C.Args.Length) >= 3 then
+                  if not Parse_U64 (To_String (C.Args (3)), K) then
+                     --  Negative_List_Exponent: Ada rejects this at the
+                     --  unsigned argument boundary, like the XS wrapper.
+                     AUnit.Assertions.Assert (C.Error, "negative list exponent");
+                     Skip := True;
+                  end if;
+               end if;
                Got := Null_Unbounded_String;
                declare
-                  Values : constant Family_Vectors.Vector := Powerful_Numbers
-                    ((if Natural (C.Args.Length) = 1 then 1 else N), High, K);
+                  Values : constant Family_Vectors.Vector :=
+                    (if Skip then Family_Vectors.Empty_Vector else
+                       Powerful_Numbers
+                         ((if Natural (C.Args.Length) = 1 then 1 else N),
+                          High, K));
                begin
                   for I in Values.First_Index .. Values.Last_Index loop
                      if Length (Got) > 0 then
@@ -280,7 +290,8 @@ package body Compat_Families is
                      (if Is_Powerful (N, K) then "1" else "0")
                    elsif Func = "powerful_count" then
                      Image (Powerful_Count (N, K))
-                   elsif Func = "sumpowerful" then Wide_Image (Sumpowerful (N, K))
+                   elsif Func = "sumpowerful" then
+                     Wide_Image (Sumpowerful (N, K))
                    elsif Func = "powerfree_count" then
                      Image (Powerfree_Count (N, K))
                    elsif Func = "powerfree_sum" then
@@ -296,7 +307,8 @@ package body Compat_Families is
                if To_String (C.Result) /= "undef" and then
                  not Parse_U64 (To_String (C.Result), Expected)
                then
-                  AUnit.Assertions.Assert (Got = "undef", "native nth overflow");
+                  AUnit.Assertions.Assert
+                    (Got = "undef", "native nth overflow");
                   Skip := True;
                end if;
             elsif Func = "sumpowerful" then
@@ -310,14 +322,17 @@ package body Compat_Families is
                Got := To_Unbounded_String (Wide_Image (Powerfree_Sum (N, K)));
             elsif Func = "powerfree_part" then
                Got := To_Unbounded_String
-                 ((if Negative then "-" else "") & Image (Powerfree_Part (N, K)));
+                 ((if Negative then "-" else "") &
+                  Image (Powerfree_Part (N, K)));
             elsif Func = "powerfree_part_sum" then
-               Got := To_Unbounded_String (Wide_Image (Powerfree_Part_Sum (N, K)));
+               Got := To_Unbounded_String
+                 (Wide_Image (Powerfree_Part_Sum (N, K)));
             elsif Func = "nth_powerfree" then
                Got := To_Unbounded_String (Image (Nth_Powerfree (N, K)));
             else
                Got := To_Unbounded_String
-                 ((if Negative then "-" else "") & Image (Squarefree_Kernel (N)));
+                 ((if Negative then "-" else "") &
+                  Image (Squarefree_Kernel (N)));
             end if;
             if not Skip then
                AUnit.Assertions.Assert
