@@ -166,8 +166,24 @@ package body Prop_Families is
          "native overflow and maximum semiprime");
    end Twin_Semi_Laws;
 
+   --  Given an empty prefix, listing must never treat the sentinel as prime.
+   procedure Twin_Empty_Prefix (T : in out Test_Case'Class) is
+   begin
+      for High in U64 range 0 .. 2 loop
+         AUnit.Assertions.Assert
+           (Twin_Primes (High).Is_Empty
+            and then Twin_Prime_Count (High) = 0,
+            "no twin primes below three:" & High'Image);
+      end loop;
+      AUnit.Assertions.Assert
+        (Twin_Primes (3) = Family_Vectors.To_Vector (3, 1),
+         "first twin pair has lower member three");
+   end Twin_Empty_Prefix;
+
    overriding procedure Register_Tests (T : in out Families_Case) is
    begin
+      Registration.Register_Routine
+        (T, Twin_Empty_Prefix'Access, "twin empty prefix");
       Registration.Register_Routine
         (T, Twin_Semi_Laws'Access, "twin and semiprime laws");
       Registration.Register_Routine (T, Laws'Access, "lucky laws");
