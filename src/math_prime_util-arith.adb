@@ -1,6 +1,5 @@
 with Interfaces;
 with Math_Prime_Util.Factor;
-with Math_Prime_Util.Int;
 
 package body Math_Prime_Util.Arith with SPARK_Mode => On is
    use type U128;
@@ -112,6 +111,7 @@ package body Math_Prime_Util.Arith with SPARK_Mode => On is
    function Mertens (N : U64) return Int.I128
      with SPARK_Mode => Off
    is
+      use type Interfaces.Integer_8;
       --  moebius.c: mertens_array and _rmertens. Group equal quotients
       --  in M(x) = 1 - sum_{i=2..x} M(floor(x/i)). The cache is per call.
       Limit : constant U64 := U64'Min (N, 1_000_000);
