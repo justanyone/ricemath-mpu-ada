@@ -11,3 +11,4 @@ Located installed GNAT and restored build via PATH. Compilation succeeded; linki
 Bounds tables and approximation routines added, including native overflow behavior for bigint fixture results. Focused runner attempts were blocked by compile/link issues; fixing generated-table Ada spelling before the next test run.
 Added seeded list/count/partition laws, nth inverses, reversed ranges, zero factors, and native-boundary tests. A focused AUnit runner now lives only under obj/ to isolate Families.
 Exact fixture run reached bounds: delegated prime-count lower(U64 Last) differs by 23 due to floating precision. Gathering all mismatches before choosing narrowly scoped floating comparison rules; no fixture edits.
+Build and focused suite are runnable with the installed GNAT toolchain. The focused harness is being rebuilt with the current Alire dependency paths; full gate will follow fixture fixes.
