@@ -6,6 +6,7 @@ with Ada.Strings.Unbounded;
 with Fixture_Support;
 with Math_Prime_Util.Families;
 with Math_Prime_Util.Int;
+with Math_Prime_Util.Powers;
 with Math_Prime_Util.Sieve;
 
 package body Compat_Families is
@@ -28,6 +29,10 @@ package body Compat_Families is
    function Image (N : U64) return String is
      (Ada.Strings.Fixed.Trim (U64'Image (N), Ada.Strings.Both));
    function Image (N : Int.Optional_U64) return String is
+     (if N.Defined then Image (N.Value) else "undef");
+   function Image (N : Int.I128) return String is
+     (Ada.Strings.Fixed.Trim (Int.I128'Image (N), Ada.Strings.Both));
+   function Image (N : Powers.Optional_Wide) return String is
      (if N.Defined then Image (N.Value) else "undef");
 
    procedure Replay (Func : String) is

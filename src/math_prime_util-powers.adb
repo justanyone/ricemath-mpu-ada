@@ -878,7 +878,8 @@ package body Math_Prime_Util.Powers with SPARK_Mode => Off is
       X : constant F64 := F64 (N);
       Pp : F64;
    begin
-      Pp := X ** 2.0 + (13.0 / 3.0) * Fmath."**" (X, 4.0 / 3.0)
+      Pp := Fmath."**" (X, 2.0)
+        + (13.0 / 3.0) * Fmath."**" (X, 4.0 / 3.0)
         + (32.0 / 15.0) * Fmath."**" (X, 16.0 / 15.0);
       Pp := Pp - 2.0 * Fmath."**" (X, 5.0 / 3.0)
         - 2.0 * Fmath."**" (X, 7.0 / 5.0)
@@ -975,9 +976,14 @@ package body Math_Prime_Util.Powers with SPARK_Mode => Off is
          return Wide (Int.I128 (N));
       elsif N >= Max_Perfect_Idx then
          G := U128 (Max_Perfect);
-         for Unused in 1 .. N - Max_Perfect_Idx loop
-            G := Next_Mag (G, False);
-         end loop;
+         declare
+            Left : U64 := N - Max_Perfect_Idx;
+         begin
+            while Left > 0 loop
+               G := Next_Mag (G, False);
+               Left := Left - 1;
+            end loop;
+         end;
          return Wide (To_I128 (G));
       end if;
       Approx_N := Raw_Perfect_Approx (N);
