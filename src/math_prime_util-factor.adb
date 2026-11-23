@@ -152,6 +152,13 @@ package body Math_Prime_Util.Factor with SPARK_Mode => On is
      (if N < 2 ** 63 then Redc63 (X, Y, N, Npi)
       else Redc64 (X, Y, N, Npi));
 
+   --  factor.c: x^2+a in Montgomery form. Above 2^63 the constant is
+   --  added after the square unless it is the Montgomery one.
+   function Advance (X, C, N, Npi, One : U64) return U64 is
+     (if N < 2 ** 63 or else C = One
+      then Mont_Mul (X, X + C, N, Npi)
+      else Int.Addmod (Mont_Mul (X, X, N, Npi), C, N).Value);
+
    function Inner_Limit (N : U64) return U64 is
       Bits : constant Natural := Bit_Length (N);
    begin
@@ -189,11 +196,11 @@ package body Math_Prime_Util.Factor with SPARK_Mode => On is
             Saved := X;
             Remaining := Remaining - Batch;
             Left := Left - Batch;
-            X := Mont_Mul (X, X + C, N, Npi);
+            X := Advance (X, C, N, Npi, One);
             D := Difference (X, Y);
             Batch := Batch - 1;
             while Batch > 0 loop
-               X := Mont_Mul (X, X + C, N, Npi);
+               X := Advance (X, C, N, Npi, One);
                D := Mont_Mul (D, Difference (X, Y), N, Npi);
                Batch := Batch - 1;
             end loop;
@@ -206,7 +213,7 @@ package body Math_Prime_Util.Factor with SPARK_Mode => On is
             if D = N then
                X := Saved;
                loop
-                  X := Mont_Mul (X, X + C, N, Npi);
+                  X := Advance (X, C, N, Npi, One);
                   D := Int.Gcd (Difference (X, Y), N);
                   exit when D /= 1 or else R = 0;
                   R := R - 1;
