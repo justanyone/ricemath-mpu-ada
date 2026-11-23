@@ -183,6 +183,56 @@ package body Compat_Iter_Ranges is
       Check (1);
    end Check_Lastfor;
 
+   procedure Check_Edges (T : in out Test_Case'Class) is
+      Count : Natural := 0;
+      Previous : U64 := 0;
+      procedure Collect (Value : U64; Context : in out Loop_Context) is
+      begin
+         AUnit.Assertions.Assert
+           (Value > Previous, "strict ascending order");
+         Previous := Value;
+         Count := Count + 1;
+      end Collect;
+      procedure Factors
+        (Value : U64; Values : Value_Array;
+         Context : in out Loop_Context)
+      is
+         Product : U128 := 1;
+         use type U128;
+      begin
+         for I in Values'Range loop
+            Product := Product * U128 (Values (I));
+            AUnit.Assertions.Assert
+              (I = Values'First or else Values (I - 1) < Values (I),
+               "distinct sorted factors");
+         end loop;
+         AUnit.Assertions.Assert (Product = U128 (Value), "factor product");
+         Collect (Value, Context);
+      end Factors;
+   begin
+      Foroddcomposites (U64'Last, 0, Collect'Access);
+      Forsemiprimes (U64'Last, 0, Collect'Access);
+      Foralmostprimes (0, 100, Collect'Access);
+      Foralmostprimes (64, U64'Last, Collect'Access);
+      Forsquarefree (2, 1, Factors'Access);
+      Forsquarefreeint (2, 1, Collect'Access);
+      Fordivisors (0, Collect'Access);
+      AUnit.Assertions.Assert (Count = 0, "empty ranges");
+      Foralmostprimes (63, U64'Last, Collect'Access);
+      AUnit.Assertions.Assert
+        (Count = 2 and then Previous = 3 * 2 ** 62, "large K reduction");
+      Count := 0;
+      Previous := 0;
+      --  A span of 100 selects factor_range_init's vector sieve.
+      Forsquarefree (100, 200, Factors'Access);
+      AUnit.Assertions.Assert (Count > 0, "segmented squarefree factors");
+      Count := 0;
+      Previous := 0;
+      --  Cross the 256*1024 factor chunk boundary.
+      Forsquarefree (1, 262_150, Factors'Access);
+      AUnit.Assertions.Assert (Previous = 262_149, "factor chunk endpoint");
+   end Check_Edges;
+
    overriding function Name (T : Range_Case) return AUnit.Message_String is
      (AUnit.Format ("Compat_Iter_Ranges"));
 
@@ -196,6 +246,7 @@ package body Compat_Iter_Ranges is
         (T, Check_Square_Int'Access, "squarefree integers");
       Registration.Register_Routine (T, Check_Divisors'Access, "divisors");
       Registration.Register_Routine (T, Check_Lastfor'Access, "lastfor");
+      Registration.Register_Routine (T, Check_Edges'Access, "edges");
    end Register_Tests;
 
    function Suite return AUnit.Test_Suites.Access_Test_Suite is
