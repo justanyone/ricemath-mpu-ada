@@ -299,14 +299,14 @@ package body Math_Prime_Util.Vec with SPARK_Mode => On is
      (A : in out Integer_Array; Last : in out Natural;
       B : Integer_Array; Count : out Integer)
    is
-      X : constant Integer_Array := A (A'First .. A'First + Last - 1);
+      X : constant Integer_Array := A (A'First .. A'First - 1 + Last);
       R : constant Integer_Array := Setunion (X, B);
    begin
       if R'Length > A'Length then
          raise Constraint_Error with "set buffer capacity exceeded";
       end if;
       Count := Setinsert (X, B);
-      A (A'First .. A'First + R'Length - 1) := R;
+      A (A'First .. A'First - 1 + R'Length) := R;
       Last := R'Length;
    end Setinsert;
 
@@ -314,14 +314,14 @@ package body Math_Prime_Util.Vec with SPARK_Mode => On is
      (A : in out Integer_Array; Last : in out Natural;
       B : Integer_Array; Count : out Integer)
    is
-      X : constant Integer_Array := A (A'First .. A'First + Last - 1);
+      X : constant Integer_Array := A (A'First .. A'First - 1 + Last);
       R : constant Integer_Array := Setminus (X, B);
    begin
       if R'Length > A'Length then
          raise Constraint_Error with "set buffer capacity exceeded";
       end if;
       Count := Setremove (X, B);
-      A (A'First .. A'First + R'Length - 1) := R;
+      A (A'First .. A'First - 1 + R'Length) := R;
       Last := R'Length;
    end Setremove;
 
@@ -329,14 +329,14 @@ package body Math_Prime_Util.Vec with SPARK_Mode => On is
      (A : in out Integer_Array; Last : in out Natural;
       B : Integer_Array; Count : out Integer)
    is
-      X : constant Integer_Array := A (A'First .. A'First + Last - 1);
+      X : constant Integer_Array := A (A'First .. A'First - 1 + Last);
       R : constant Integer_Array := Setdelta (X, B);
    begin
       if R'Length > A'Length then
          raise Constraint_Error with "set buffer capacity exceeded";
       end if;
       Count := Setinvert (X, B);
-      A (A'First .. A'First + R'Length - 1) := R;
+      A (A'First .. A'First - 1 + R'Length) := R;
       Last := R'Length;
    end Setinvert;
 
@@ -477,7 +477,7 @@ package body Math_Prime_Util.Vec with SPARK_Mode => On is
          end if;
          declare
             Part : constant Integer_Array := Operation
-              (A (A'First + Offset .. A'First + Offset + Size - 1));
+              (A (A'First + Offset .. A'First + Offset + (Size - 1)));
          begin
             if Step > A'Length - Offset then
                return Part;
@@ -513,6 +513,9 @@ package body Math_Prime_Util.Vec with SPARK_Mode => On is
       Pick : Positive;
    begin
       --  XS.xs: vecsample, ordered selection without replacement.
+      if K >= A'Length then
+         return A;
+      end if;
       for V of A loop
          exit when N = R'Length;
          Pick := Draw (Remaining);
