@@ -34,6 +34,9 @@ def properties(runner):
 @then("all selected Ada assertions pass")
 def passed(result):
     assert result.returncode == 0, result.stdout + result.stderr
-    assert "Failed Assertions: 0" in result.stdout, result.stdout
-    assert "Unexpected Errors: 0" in result.stdout, result.stdout
-    assert "Total Tests Run: 0" not in result.stdout, result.stdout
+    summary = dict(line.split(":", 1) for line in result.stdout.splitlines()
+                   if line.startswith(("Failed Assertions:", "Unexpected Errors:",
+                                       "Total Tests Run:")))
+    assert int(summary["Failed Assertions"]) == 0, result.stdout
+    assert int(summary["Unexpected Errors"]) == 0, result.stdout
+    assert int(summary["Total Tests Run"]) > 0, result.stdout

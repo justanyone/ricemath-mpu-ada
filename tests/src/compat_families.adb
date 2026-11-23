@@ -119,6 +119,12 @@ package body Compat_Families is
          then
             Skip := True;
          end if;
+         --  Signed_Overflow: the next odd-power magnitude must fit U64.
+         if Func = "prev_perfect_power" and then
+           Signed < -18_446_724_184_312_856_124
+         then
+            Skip := True;
+         end if;
          Got := Null_Unbounded_String;
          O := (Defined => False);
          if not Skip then
@@ -210,6 +216,19 @@ package body Compat_Families is
                     (not O.Defined, Func & " native overflow");
                   Skip := True;
                end if;
+            end if;
+            --  MPU_Li_Rounding: maximum-U64 bound rows use a less accurate
+            --  logarithmic integral. See docs/upstream-findings.md.
+            if N = U64'Last and then
+              (Func = "prime_power_count_lower" or else
+               Func = "prime_power_count_upper")
+            then
+               AUnit.Assertions.Assert
+                 (To_String (Got) =
+                    (if Func = "prime_power_count_lower" then
+                       "425656284125562281" else "425656284319202055"),
+                  "corrected Li power bound");
+               Skip := True;
             end if;
             if not Skip then
                AUnit.Assertions.Assert

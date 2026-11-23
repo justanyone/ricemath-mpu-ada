@@ -56,7 +56,7 @@ package Math_Prime_Util.Powers with SPARK_Mode => On is
    --  perfect_powers.c: prev_perfect_power_neg. Signed strict predecessor.
    --  Predecessor magnitude must fit U64; otherwise Constraint_Error.
    function Prev_Perfect_Power (N : Int.I128) return Int.I128
-     with Pre => N in -Int.I128 (2 ** 63) .. 0,
+     with Pre => N in -18_446_724_184_312_856_124 .. 0,
           Post => Prev_Perfect_Power'Result < N;
    --  prime_powers.c: prime_power_count. Count through N inclusive.
    function Prime_Power_Count (N : U64) return U64
