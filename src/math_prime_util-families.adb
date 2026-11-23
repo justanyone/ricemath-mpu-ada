@@ -1,4 +1,3 @@
-with Math_Prime_Util.Sieve;
 with Math_Prime_Util.Count;
 with Math_Prime_Util.Primality;
 with Ada.Numerics.Generic_Elementary_Functions;
@@ -1248,7 +1247,8 @@ package body Math_Prime_Util.Families is
 
    --  range_semiprime_sieve: count factors from p*p, then from 2*p*p.
    --  Saturating at two is sufficient: only entries equal to one survive.
-   function Semi_Window (Low, High : U64) return Family_Vectors.Vector;
+   function Semi_Window (Low, High : U64) return Family_Vectors.Vector
+     with SPARK_Mode => Off;
    function Semi_Window (Low, High : U64) return Family_Vectors.Vector
      with SPARK_Mode => Off
    is
