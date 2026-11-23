@@ -165,13 +165,9 @@ package body Compat_Int is
                Raised := True;
          end;
          AUnit.Assertions.Assert
-           (Raised = C.Error, Func & " error row" &
-            Positive'Image (C.Line_Number));
-         if not C.Error then
-            AUnit.Assertions.Assert
-              (Got = C.Result, Func & " row" &
-               Positive'Image (C.Line_Number) & " got " & To_String (Got));
-         end if;
+           (Raised = C.Error and then (C.Error or else Got = C.Result),
+            Func & " row" & Positive'Image (C.Line_Number) &
+            " got " & To_String (Got));
       end loop;
    end Replay_Removal;
 
@@ -217,9 +213,7 @@ package body Compat_Int is
             AUnit.Assertions.Assert (Raised = C.Error, "floor_sum error");
             if not C.Error then
                AUnit.Assertions.Assert
-                 (Parse_U128 (To_String (C.Result), Expected),
-                  "floor_sum expected");
-               AUnit.Assertions.Assert (V = Expected, "floor_sum result");
+                 (V = U128'Value (To_String (C.Result)), "floor_sum result");
             end if;
          end if;
       end loop;

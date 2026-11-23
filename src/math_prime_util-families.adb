@@ -91,16 +91,8 @@ package body Math_Prime_Util.Families is
       elsif V < 3 then
          return True;
       elsif K = 3 then
-         while V mod 4 = 0 loop
-            V := V / 4;
-         end loop;
+         V := U64 (Int.Remove_Factors (Int.I128 (V), 4).Value);
          return V mod 8 /= 7;
-      end if;
-      while V mod 2 = 0 loop
-         V := V / 2;
-      end loop;
-      if V mod 4 = 3 then
-         return False;
       end if;
       F := Factor.Factor (V);
       return (for all P of F.Value (1 .. F.Count) =>
