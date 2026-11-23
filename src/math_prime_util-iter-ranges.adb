@@ -88,9 +88,72 @@ package body Math_Prime_Util.Iter.Ranges is
    procedure Forsemiprimes
      (Low, High : U64;
       Process : not null access procedure
-        (Value : U64; Context : in out Loop_Context)) is
+        (Value : U64; Context : in out Loop_Context))
+   is
+      Context : Loop_Context := (Active => True, Stop => False);
+      First : U64 := U64'Max (4, Low);
+      Bound : constant U64 := U64'Min (High, 18_446_744_073_709_551_601);
+      Last : U64;
    begin
-      Foralmostprimes (2, Low, High, Process);
+      --  XS.xs: forsemiprimes uses individual tests for short ranges.
+      if First > Bound then
+         return;
+      end if;
+      if Bound - First < 200 then
+         loop
+            if Factor.Factor (First).Count = 2 then
+               Process (First, Context);
+            end if;
+            exit when Context.Stop or else First = Bound;
+            First := First + 1;
+         end loop;
+         return;
+      end if;
+      while First <= Bound loop
+         Last := First + U64'Min (Bound - First, 50_000_000 - 1);
+         declare
+            subtype Factor_Count is Natural range 0 .. 128;
+            package Count_Vectors is new Ada.Containers.Vectors
+              (Index_Type => Natural, Element_Type => Factor_Count);
+            Counts : Count_Vectors.Vector;
+            Root : constant U64 := Int.Sqrtint (Last);
+            Q, Offset : U64;
+            procedure Mark (Start, Step : U64);
+
+            procedure Mark (Start, Step : U64) is
+            begin
+               Offset := (if First mod Step = 0 then 0
+                          else Step - First mod Step);
+               if Start > First then
+                  Offset := U64'Max (Offset, Start - First);
+               end if;
+               while Offset <= Last - First loop
+                  Counts (Natural (Offset)) := Counts (Natural (Offset)) + 1;
+                  exit when Step > Last - First - Offset;
+                  Offset := Offset + Step;
+               end loop;
+            end Mark;
+         begin
+            Counts.Set_Length (Ada.Containers.Count_Type (Last - First + 1));
+            --  semi_primes.c: range_semiprime_sieve / MARKSEMI. A number
+            --  marked exactly once is semiprime; prime squares start at p*p.
+            for P of Sieve.Primes (Root) loop
+               Q := P * P;
+               Mark (Q, P);
+               if Q <= Last / 2 then
+                  Mark (2 * Q, Q);
+               end if;
+            end loop;
+            for I in Counts.First_Index .. Counts.Last_Index loop
+               if Counts (I) = 1 then
+                  Process (First + U64 (I), Context);
+               end if;
+               exit when Context.Stop;
+            end loop;
+         end;
+         exit when Context.Stop or else Last = Bound;
+         First := Last + 1;
+      end loop;
    end Forsemiprimes;
 
    procedure Forsemiprimes
@@ -249,13 +312,15 @@ package body Math_Prime_Util.Iter.Ranges is
          declare
             Last : constant U64 :=
               First + U64'Min (High - First, 65_536 * 256 - 1);
-            type Flag_Array is array (Natural range <>) of Boolean;
-            Flags : Flag_Array (0 .. Natural (Last - First)) :=
-              [others => True];
+            package Flag_Vectors is new Ada.Containers.Vectors
+              (Index_Type => Natural, Element_Type => Boolean);
+            Flags : Flag_Vectors.Vector;
             Root : constant U64 := Int.Sqrtint (Last);
             Prime_Low : U64 := 2;
             Prime_High, Q, Offset : U64;
          begin
+            Flags.Set_Length
+              (Ada.Containers.Count_Type (Last - First + 1), True);
             --  util.c: range_issquarefree. Mark prime-square multiples,
             --  consuming the sieving primes in bounded segments.
             while Prime_Low <= Root loop
@@ -274,7 +339,7 @@ package body Math_Prime_Util.Iter.Ranges is
                exit when Prime_High = Root;
                Prime_Low := Prime_High + 1;
             end loop;
-            for I in Flags'Range loop
+            for I in Flags.First_Index .. Flags.Last_Index loop
                if Flags (I) then
                   Process (First + U64 (I), Context);
                end if;

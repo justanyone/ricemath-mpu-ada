@@ -115,7 +115,8 @@ package body Compat_Iter_Ranges is
             end if;
             AUnit.Assertions.Assert
               (To_String (Got) = To_String (C.Result),
-               Diagnostic (C, To_String (Got)));
+               Func & " expected " & To_String (C.Result)
+               & " got " & To_String (Got));
          end if;
       end loop;
    end Replay;
@@ -164,7 +165,7 @@ package body Compat_Iter_Ranges is
       procedure Check (Expected : U64) is
       begin
          AUnit.Assertions.Assert
-           (Count = 1 and First = Expected, "Lastfor stops range");
+           (Count = 1 and then First = Expected, "Lastfor stops range");
          Count := 0;
       end Check;
    begin
