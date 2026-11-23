@@ -189,27 +189,29 @@ package body Math_Prime_Util.Vec is
    function Index_Slots
      (Count : Natural; Indexes : Integer_Array) return Integer_Array
    is
-      R : Integer_Array (1 .. Indexes'Length);
-      K : Natural := 0;
+      Lim : constant Big_Integer := To_Big_Integer (Count);
+      R   : Integer_Array (1 .. Indexes'Length);
+      K   : Natural := 0;
    begin
       for Idx of Indexes loop
-         declare
-            Pos : Integer := 0;
-            Sum : constant Long_Long_Integer :=
-              Long_Long_Integer (Count) + Long_Long_Integer (Idx);
-         begin
-            K := K + 1;
-            if Idx >= 0 then
-               if Long_Long_Integer (Idx) < Long_Long_Integer (Count) then
-                  Pos := Idx + 1;
-               end if;
-            elsif Sum + 1 >= 1
-              and then Sum + 1 <= Long_Long_Integer (Count)
-            then
-               Pos := Integer (Sum + 1);
+         K := K + 1;
+         if Idx >= 0 then
+            if Idx < Lim then
+               R (K) := Idx + 1;
+            else
+               R (K) := 0;
             end if;
-            R (K) := To_Big_Integer (Pos);
-         end;
+         else
+            declare
+               Pos : constant Big_Integer := Lim + Idx + 1;
+            begin
+               if Pos >= 1 and then Pos <= Lim then
+                  R (K) := Pos;
+               else
+                  R (K) := 0;
+               end if;
+            end;
+         end if;
       end loop;
       return R;
    end Index_Slots;
@@ -464,17 +466,7 @@ package body Math_Prime_Util.Vec is
    function Vecextract
      (Items : Integer_Array; Indexes : Integer_Array) return Sequence
    is
-      Idx : Integer_Array (1 .. Indexes'Length);
-   begin
-      for I in Indexes'Range loop
-         declare
-            N : constant Integer := To_Integer (Indexes (I));
-         begin
-            Idx (I - Indexes'First + 1) := To_Big_Integer (N);
-         end;
-      end loop;
-      return From_Slots (Items, Index_Slots (Items'Length, Idx));
-   end Vecextract;
+     (From_Slots (Items, Index_Slots (Items'Length, Indexes)));
 
    function Is_Sidon_Set (Items : Integer_Array) return Boolean is
       S : constant Integer_Array := Toset (Items);
