@@ -304,7 +304,8 @@ package Math_Prime_Util.Families with SPARK_Mode => On is
    --  perfect_powers.c: perfect_power_count. Count through High.
    function Perfect_Power_Count (High : U64) return U64
      with Pre => True,
-          Post => Perfect_Power_Count'Result <= High + 1;
+          Post => Perfect_Power_Count'Result <= High
+            or else High = 0;
 
    --  perfect_powers.c: perfect_power_count_lower. Same as the exact count.
    function Perfect_Power_Count_Lower (High : U64) return U64
