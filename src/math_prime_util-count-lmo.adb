@@ -2,6 +2,7 @@ with Ada.Containers.Indefinite_Holders;
 with Ada.Numerics.Long_Elementary_Functions;
 with Interfaces;
 with Math_Prime_Util.Int;
+with Math_Prime_Util.Count.Tables;
 with Math_Prime_Util.Sieve;
 
 package body Math_Prime_Util.Count.Lmo with SPARK_Mode => Off is
@@ -55,8 +56,13 @@ package body Math_Prime_Util.Count.Lmo with SPARK_Mode => Off is
       N3 : constant U64 := Int.Rootint (N, 3);
       M : U64;
    begin
-      if N < 1_000_000 then
-         return U64 (Sieve.Primes (N).Length);
+      if N < 66_000_000 then
+         declare
+            Anchor, Value : U64;
+         begin
+            Tables.Lookup (N, Anchor, Value);
+            return Value + U64 (Sieve.Primes (Anchor + 1, N).Length);
+         end;
       end if;
       M := (if N3 > 500 then
               U64 (Long_Float (N3) * (Log (Long_Float (N3)) / Log (5.2)) *
