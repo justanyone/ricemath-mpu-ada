@@ -32,11 +32,13 @@ package Math_Prime_Util.Int with SPARK_Mode => On is
          when True => Value : I128;
          when False => null;
       end case;
+   end record;
 
    --  util.c: valuation, XS.xs: valuation. Exponent in abs N; zero is
    --  undefined. K <= 1 fails the precondition. Native magnitudes only.
-   function Valuation (N : I128; K : I128) return Optional_U64
-     with Pre => N in -I128 (U64'Last) .. I128 (U64'Last) and K in 2 .. I128 (U64'Last),
+   function Valuation (N, K : I128) return Optional_U64
+     with Pre => N in -I128 (U64'Last) .. I128 (U64'Last)
+       and K in 2 .. I128 (U64'Last),
           Post => Valuation'Result.Defined = (N /= 0)
             and then (if Valuation'Result.Defined then
                          Valuation'Result.Value <= 63);
