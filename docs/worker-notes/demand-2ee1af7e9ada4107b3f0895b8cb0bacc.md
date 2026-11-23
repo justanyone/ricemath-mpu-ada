@@ -21,3 +21,5 @@ Awaiting the focused timeout verdict before deciding whether the exact upstream 
 Focused suite timed out at 60.02 seconds. Added named-routine selection to the dedicated runner to isolate runtime instead of weakening fixture coverage.
 Replaced controlled-vector operations inside the prime segment sieve with a fixed odd-slot array, retaining segmented Eratosthenes and prime-square marking to reduce runtime without per-value square-free tests.
 Rebuilding optimized square-free sieve and running the selected edge test. Stopped the earlier gate run because it used the pre-optimization library.
+Selected edge test passed in 0.42 seconds, including chunk crossing and K=63. Correcting one U64 conversion in the optimized prime-segment bound.
+Added Lastfor checks for short and segmented square-free factor paths and for the integer sieve after two; optimized focused run is in progress.

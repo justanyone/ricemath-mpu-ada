@@ -164,6 +164,13 @@ package body Compat_Iter_Ranges is
          AUnit.Assertions.Assert (Factors'Length = 0, "one has no factors");
          Stop (Value, Context);
       end Stop_Factors;
+      procedure Stop_Factored
+        (Value : U64; Factors : Value_Array;
+         Context : in out Loop_Context) is
+      begin
+         AUnit.Assertions.Assert (Factors'Length > 0, "nonempty factors");
+         Stop (Value, Context);
+      end Stop_Factored;
       procedure Check (Expected : U64) is
       begin
          AUnit.Assertions.Assert
@@ -181,6 +188,12 @@ package body Compat_Iter_Ranges is
       Check (1);
       Forsquarefreeint (0, 3, Stop'Access);
       Check (1);
+      Forsquarefree (2, 10, Stop_Factored'Access);
+      Check (2);
+      Forsquarefree (100, 200, Stop_Factored'Access);
+      Check (101);
+      Forsquarefreeint (2, 100, Stop'Access);
+      Check (2);
       Fordivisors (360, Stop'Access);
       Check (1);
    end Check_Lastfor;

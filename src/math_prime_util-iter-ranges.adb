@@ -399,7 +399,7 @@ package body Math_Prime_Util.Iter.Ranges is
             end if;
             while Prime_Low <= Root loop
                Prime_High := Prime_Low +
-                 U64'Min (Root - Prime_Low, 2 * Composite'Last);
+                 U64'Min (Root - Prime_Low, 2 * U64 (Composite'Last));
                Length := Natural ((Prime_High - Prime_Low) / 2);
                Composite := [others => False];
                for P of Base_Primes loop
