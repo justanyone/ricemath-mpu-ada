@@ -191,6 +191,7 @@ package body Compat_Random is
 
    procedure Contracts (T : in out Test_Case'Class);
    procedure Contracts (T : in out Test_Case'Class) is
+      type U64_Array is array (Positive range <>) of U64;
       G, H : Generator;
       A, B : Byte_Array (17 .. 80);
       V : U64;
@@ -218,6 +219,31 @@ package body Compat_Random is
             Random_Bytes (H, B);
             AUnit.Assertions.Assert (A = B, "seed replay mismatch");
          end;
+      end loop;
+      --  Published ChaCha20 zero-key vector (chacha.c: _test_core).
+      Csrand (G, Byte_Array'(0 .. 39 => 0));
+      Random_Bytes (G, A);
+      AUnit.Assertions.Assert
+        (Hex (A) =
+         "76b8e0ada0f13d90405d6ae55386bd28b" &
+         "dd219b8a08ded1aa836efcc8b770dc7da" &
+         "41597c5157488d7724e03fb8d84a376a4" &
+         "3b8f41518a11cc387b669b2ee6586", "ChaCha20 zero vector");
+      --  Seed 42: bounded draws at each native arithmetic boundary.
+      Csrand (G, [42, 0, 0, 0]);
+      for N of U64_Array'[0, 1, 2, 2 ** 32 - 1, 2 ** 32,
+                          2 ** 32 + 1, 2 ** 63 - 1, 2 ** 63,
+                          2 ** 63 + 1, U64'Last]
+      loop
+         for I in 1 .. 100 loop
+            Urandomm (G, N, V);
+            AUnit.Assertions.Assert
+              ((if N <= 1 then V = 0 else V < N),
+               "seed 42: modulo bound");
+            Urandomr (G, U64'Last - N, U64'Last, V);
+            AUnit.Assertions.Assert
+              (V >= U64'Last - N, "seed 42: inclusive range bound");
+         end loop;
       end loop;
       Csrand (G, [1, 2, 3]);
       Raised := False;
