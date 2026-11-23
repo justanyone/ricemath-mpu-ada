@@ -207,3 +207,181 @@ package body Math_Prime_Util.Random_Primes with SPARK_Mode => On is
    begin
       Random_Nbit_Prime (G, Bits, Value);
    end Random_Proven_Prime;
+
+   subtype Digest is Byte_Array (0 .. 31);
+   subtype Seed_Bytes is Byte_Array (0 .. 63);
+   --  SHA-256 for the fixed 512-bit seeds in RandomPrimes.pm: _ST_Random_prime.
+   --  Two compression blocks: seed, then the SHA padding and 512-bit length.
+   function Hash (Seed : Seed_Bytes) return Digest is
+      use Interfaces;
+      K : constant array (Natural range 0 .. 63) of Word :=
+        [16#428A2F98#, 16#71374491#, 16#B5C0FBCF#, 16#E9B5DBA5#,
+         16#3956C25B#, 16#59F111F1#, 16#923F82A4#, 16#AB1C5ED5#,
+         16#D807AA98#, 16#12835B01#, 16#243185BE#, 16#550C7DC3#,
+         16#72BE5D74#, 16#80DEB1FE#, 16#9BDC06A7#, 16#C19BF174#,
+         16#E49B69C1#, 16#EFBE4786#, 16#0FC19DC6#, 16#240CA1CC#,
+         16#2DE92C6F#, 16#4A7484AA#, 16#5CB0A9DC#, 16#76F988DA#,
+         16#983E5152#, 16#A831C66D#, 16#B00327C8#, 16#BF597FC7#,
+         16#C6E00BF3#, 16#D5A79147#, 16#06CA6351#, 16#14292967#,
+         16#27B70A85#, 16#2E1B2138#, 16#4D2C6DFC#, 16#53380D13#,
+         16#650A7354#, 16#766A0ABB#, 16#81C2C92E#, 16#92722C85#,
+         16#A2BFE8A1#, 16#A81A664B#, 16#C24B8B70#, 16#C76C51A3#,
+         16#D192E819#, 16#D6990624#, 16#F40E3585#, 16#106AA070#,
+         16#19A4C116#, 16#1E376C08#, 16#2748774C#, 16#34B0BCB5#,
+         16#391C0CB3#, 16#4ED8AA4A#, 16#5B9CCA4F#, 16#682E6FF3#,
+         16#748F82EE#, 16#78A5636F#, 16#84C87814#, 16#8CC70208#,
+         16#90BEFFFA#, 16#A4506CEB#, 16#BEF9A3F7#, 16#C67178F2#];
+      type Hash_State is array (Natural range 0 .. 7) of Word;
+      H : Hash_State :=
+        [16#6A09E667#, 16#BB67AE85#, 16#3C6EF372#, 16#A54FF53A#,
+         16#510E527F#, 16#9B05688C#, 16#1F83D9AB#, 16#5BE0CD19#];
+      X : Hash_State;
+      W : array (Natural range 0 .. 63) of Word;
+      S0, S1, T1, T2 : Word;
+      Result : Digest;
+   begin
+      for Block in 0 .. 1 loop
+         W := [others => 0];
+         if Block = 0 then
+            for I in 0 .. 15 loop
+               for J in 0 .. 3 loop
+                  W (I) := Shift_Left (W (I), 8) or Word (Seed (4 * I + J));
+               end loop;
+            end loop;
+         else
+            W (0) := 16#80000000#;
+            W (15) := 512;
+         end if;
+         for I in 16 .. 63 loop
+            S0 := Rotate_Right (W (I - 15), 7)
+              xor Rotate_Right (W (I - 15), 18)
+              xor Shift_Right (W (I - 15), 3);
+            S1 := Rotate_Right (W (I - 2), 17)
+              xor Rotate_Right (W (I - 2), 19)
+              xor Shift_Right (W (I - 2), 10);
+            W (I) := W (I - 16) + S0 + W (I - 7) + S1;
+         end loop;
+         X := H;
+         for I in W'Range loop
+            S1 := Rotate_Right (X (4), 6) xor Rotate_Right (X (4), 11)
+              xor Rotate_Right (X (4), 25);
+            T1 := X (7) + S1 + ((X (4) and X (5)) xor
+              ((not X (4)) and X (6))) + K (I) + W (I);
+            S0 := Rotate_Right (X (0), 2) xor Rotate_Right (X (0), 13)
+              xor Rotate_Right (X (0), 22);
+            T2 := S0 + ((X (0) and X (1)) xor (X (0) and X (2))
+              xor (X (1) and X (2)));
+            X := [T1 + T2, X (0), X (1), X (2),
+                  X (3) + T1, X (4), X (5), X (6)];
+         end loop;
+         for I in H'Range loop
+            H (I) := H (I) + X (I);
+         end loop;
+      end loop;
+      for I in Result'Range loop
+         Result (I) := Byte (Shift_Right (H (I / 4), 24 - 8 * (I mod 4))
+           and 255);
+      end loop;
+      return Result;
+   end Hash;
+
+   --  RandomPrimes.pm: _seed_plus_one (big-endian, wrapping at 512 bits).
+   procedure Increment (Seed : in out Seed_Bytes) is
+      use type Byte;
+   begin
+      for I in reverse Seed'Range loop
+         Seed (I) := Seed (I) + 1;
+         exit when Seed (I) /= 0;
+      end loop;
+   end Increment;
+
+   function Residue (Data : Digest; Modulus : U64) return U64
+     with Pre => Modulus > 0;
+   function Residue (Data : Digest; Modulus : U64) return U64 is
+      R : U128 := 0;
+   begin
+      for B of Data loop
+         R := (256 * R + U128 (B)) mod U128 (Modulus);
+      end loop;
+      return U64 (R);
+   end Residue;
+
+   --  RandomPrimes.pm: _ST_Random_prime. Native recursion still follows FIPS
+   --  seed evolution and the Pocklington witness, including rejected trials.
+   procedure Shawe_Taylor
+     (Bits : Natural; Seed : in out Seed_Bytes;
+      Counter : in out Natural; Value : out U64)
+     with Pre => Bits in 2 .. 64;
+   procedure Shawe_Taylor
+     (Bits : Natural; Seed : in out Seed_Bytes;
+      Counter : in out Natural; Value : out U64)
+   is
+      use type Byte;
+      H, H1 : Digest;
+      C0, X, A, Z : U64;
+      T, Candidate : U128;
+      Old_Counter : Natural;
+      Lower : constant U64 := 2 ** (Bits - 1);
+   begin
+      if Bits <= 32 then
+         loop
+            H := Hash (Seed);
+            Increment (Seed);
+            H1 := Hash (Seed);
+            Increment (Seed);
+            X := 0;
+            for I in 28 .. 31 loop
+               X := 256 * X + U64 (H (I) xor H1 (I));
+            end loop;
+            Value := (X mod Lower) or Lower or 1;
+            Counter := Counter + 1;
+            exit when Prime (Value);
+            if Counter > 10_000 + 16 * Bits then
+               raise Generation_Error with "Shawe-Taylor retry limit";
+            end if;
+         end loop;
+      else
+         Shawe_Taylor ((Bits + 1) / 2 + 1, Seed, Counter, C0);
+         Old_Counter := Counter;
+         H := Hash (Seed);
+         Increment (Seed);
+         X := Lower + Residue (H, Lower);
+         T := (U128 (X) + 2 * U128 (C0) - 1) / (2 * U128 (C0));
+         loop
+            Candidate := 2 * T * U128 (C0) + 1;
+            if Candidate >= 2 ** Bits then
+               T := (U128 (Lower) + 2 * U128 (C0) - 1)
+                 / (2 * U128 (C0));
+               Candidate := 2 * T * U128 (C0) + 1;
+            end if;
+            Value := U64 (Candidate);
+            Counter := Counter + 1;
+            H := Hash (Seed);
+            Increment (Seed);
+            if Prime (Value) then
+               A := 2 + Residue (H, Value - 3);
+               Z := Int.Powmod (A, U64 (2 * T), Value).Value;
+               if Int.Gcd ((if Z = 0 then Value - 1 else Z - 1), Value) = 1
+                 and then Int.Powmod (Z, C0, Value).Value = 1
+               then
+                  return;
+               end if;
+            end if;
+            if Counter > Old_Counter + 10_000 + 16 * Bits then
+               raise Generation_Error with "Shawe-Taylor retry limit";
+            end if;
+            T := T + 1;
+         end loop;
+      end if;
+   end Shawe_Taylor;
+
+   procedure Random_Shawe_Taylor_Prime
+     (G : in out Generator; Bits : Natural; Value : out U64)
+   is
+      Seed : Seed_Bytes;
+      Counter : Natural := 0;
+   begin
+      Random_Bytes (G, Seed);
+      Shawe_Taylor (Bits, Seed, Counter, Value);
+   end Random_Shawe_Taylor_Prime;
+end Math_Prime_Util.Random_Primes;
