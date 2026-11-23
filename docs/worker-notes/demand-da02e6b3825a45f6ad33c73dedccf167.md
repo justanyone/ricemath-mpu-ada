@@ -6,3 +6,4 @@ Read C recursive construction and counting; factor package is absent, so use exi
 Implemented exact recursive lists/counts/nth and narrow factor sieving. Alire needs XDG_RUNTIME_DIR redirected into obj/tmp on this host; checking compilation next.
 Exact fixture replay written. First build fails because Alire/gprbuild cannot locate an Ada compiler; checking local toolchain availability while adding bounds and edge coverage.
 - 2026-11-23T08:47:36Z launcher: no commit for 60 s; 271 s elapsed. Files changed so far: docs/worker-notes/demand-da02e6b3825a45f6ad33c73dedccf167.md, src/math_prime_util-families.adb, src/math_prime_util-families.ads, tests/src/compat_families.adb.
+- 2026-11-23T08:48:36Z launcher: no commit for 60 s; 331 s elapsed. Files changed so far: docs/worker-notes/demand-da02e6b3825a45f6ad33c73dedccf167.md, src/math_prime_util-families.adb, src/math_prime_util-families.ads, tests/src/compat_families.adb.
