@@ -25,19 +25,14 @@ package body Math_Prime_Util.Int with SPARK_Mode => On is
    function Remove_Factors (N, K : I128) return Optional_I128 is
       R : constant Removal_Result := Remove_Factors_Exp (N, K);
    begin
-      if not R.Defined then
-         return (Defined => False);
-      end if;
-      return (True, R.Value);
+      return (if R.Defined then (True, R.Value) else (Defined => False));
    end Remove_Factors;
 
    function Valuation (N, K : I128) return Optional_U64 is
       R : constant Removal_Result := Remove_Factors_Exp (N, K);
    begin
-      if not R.Defined then
-         return (Defined => False);
-      end if;
-      return (True, R.Exponent);
+      return (if R.Defined then (True, R.Exponent)
+              else (Defined => False));
    end Valuation;
 
    function Floor_Sum (N, M, A, B : U64) return U128 is

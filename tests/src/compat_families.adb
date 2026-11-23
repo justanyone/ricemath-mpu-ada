@@ -36,38 +36,11 @@ package body Compat_Families is
    function Image (N : Int.Optional_U64) return String is
      (if N.Defined then Image (N.Value) else "undef");
 
-   procedure Replay_Predicates (Func : String) is
-      Cases : constant Case_Vectors.Vector :=
-        For_Function (Load ("families"), Func);
-      Got : Unbounded_String;
-      N, B : Int.I128;
-      K : U64;
-   begin
-      AUnit.Assertions.Assert (not Cases.Is_Empty, "missing " & Func);
-      for C of Cases loop
-         N := Int.I128'Value (To_String (C.Args (1)));
-         if Func = "next_chen_prime" then
-            Got := To_Unbounded_String (Image (Next_Chen_Prime (U64 (N))));
-         elsif Func = "is_gaussian_prime" then
-            B := Int.I128'Value (To_String (C.Args (2)));
-            --  XS.xs encodes this predicate as 2 for a proven prime.
-            Got := To_Unbounded_String
-              ((if Is_Gaussian_Prime (N, B) then "2" else "0"));
-         else
-            K := (if Natural (C.Args.Length) = 1 then 2
-                  else U64'Value (To_String (C.Args (2))));
-            Got := To_Unbounded_String
-              ((if Is_Sum_Of_Squares (N, K) then "1" else "0"));
-         end if;
-         AUnit.Assertions.Assert
-           (Got = C.Result, Func & " row" &
-            Positive'Image (C.Line_Number) & " got " & To_String (Got));
-      end loop;
-   end Replay_Predicates;
+   procedure Replay (Func : String);
 
    procedure Test_Next_Chen_Prime (T : in out Test_Case'Class) is
    begin
-      Replay_Predicates ("next_chen_prime");
+      Replay ("next_chen_prime");
       AUnit.Assertions.Assert
         (not Next_Chen_Prime (18_446_744_073_709_551_437).Defined,
          "last Chen prime");
@@ -77,25 +50,40 @@ package body Compat_Families is
 
    procedure Test_Is_Gaussian_Prime (T : in out Test_Case'Class) is
    begin
-      Replay_Predicates ("is_gaussian_prime");
+      Replay ("is_gaussian_prime");
    end Test_Is_Gaussian_Prime;
 
    procedure Test_Is_Sum_Of_Squares (T : in out Test_Case'Class) is
    begin
-      Replay_Predicates ("is_sum_of_squares");
+      Replay ("is_sum_of_squares");
    end Test_Is_Sum_Of_Squares;
 
    procedure Replay (Func : String) is
       Cases : constant Case_Vectors.Vector :=
         For_Function (Load ("families"), Func);
       N : U64;
+      Signed_N, B : Int.I128;
+      K : U64;
       Got : Unbounded_String;
    begin
       AUnit.Assertions.Assert (not Cases.Is_Empty, "missing " & Func);
       for C of Cases loop
-         N := U64'Value (To_String (C.Args (1)));
+         Signed_N := Int.I128'Value (To_String (C.Args (1)));
+         N := U64 (abs Signed_N);
          Got := Null_Unbounded_String;
-         if Func = "lucky_numbers" or else Func = "ramanujan_primes"
+         if Func = "next_chen_prime" then
+            Got := To_Unbounded_String (Image (Next_Chen_Prime (N)));
+         elsif Func = "is_gaussian_prime" then
+            B := Int.I128'Value (To_String (C.Args (2)));
+            --  XS.xs encodes this predicate as 2 for a proven prime.
+            Got := To_Unbounded_String
+              ((if Is_Gaussian_Prime (Signed_N, B) then "2" else "0"));
+         elsif Func = "is_sum_of_squares" then
+            K := (if Natural (C.Args.Length) = 1 then 2
+                  else U64'Value (To_String (C.Args (2))));
+            Got := To_Unbounded_String
+              ((if Is_Sum_Of_Squares (Signed_N, K) then "1" else "0"));
+         elsif Func = "lucky_numbers" or else Func = "ramanujan_primes"
            or else Func = "twin_primes" or else Func = "semi_primes"
          then
             declare

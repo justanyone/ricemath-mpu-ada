@@ -84,7 +84,6 @@ package body Math_Prime_Util.Families is
    is
       V : U64 := U64 (abs N);
       F : Factor.Factor_List;
-      I, J : Natural;
    begin
       if K = 0 then
          return V = 0;
@@ -107,16 +106,12 @@ package body Math_Prime_Util.Families is
          return False;
       end if;
       F := Factor.Factor (V);
-      I := 1;
-      while I <= F.Count loop
-         J := I + 1;
-         while J <= F.Count and then F.Value (J) = F.Value (I) loop
-            J := J + 1;
-         end loop;
-         if (J - I) mod 2 = 1 and F.Value (I) mod 4 = 3 then
+      for P of F.Value (1 .. F.Count) loop
+         if P mod 4 = 3 and then
+           Int.Valuation (Int.I128 (V), Int.I128 (P)).Value mod 2 = 1
+         then
             return False;
          end if;
-         I := J;
       end loop;
       return True;
    end Is_Sum_Of_Squares;
@@ -2463,7 +2458,6 @@ package body Math_Prime_Util.Families is
 
    function Is_Powerful (N : U64; K : U64 := 2) return Boolean is
       F : Factor.Factor_List;
-      I, J : Natural;
    begin
       if N <= 1 then
          return N = 1;
@@ -2491,7 +2485,6 @@ package body Math_Prime_Util.Families is
       return Boolean
    is
       F : Factor.Factor_List;
-      I, J : Natural;
    begin
       if N <= 1 or else K < 2 then
          return N = 1;
@@ -2530,7 +2523,6 @@ package body Math_Prime_Util.Families is
    is
       F : Factor.Factor_List;
       P : U64 := 1;
-      I, J : Natural;
    begin
       if N <= 1 or else K < 2 then
          return (if N = 1 then 1 else 0);
