@@ -517,46 +517,32 @@ package body Compat_Iter is
             Forcomposites (20000, Composite_Over_2000'Access);
          elsif C.Func = "lastfor_forpart_len4" then
             Forpart (7, Parts'Access);
-            Got := To_Unbounded_String (Image (U64 (Count)));
          elsif C.Func = "lastfor_forcomp_len4" then
             Forcomp (7, Parts'Access);
-            Got := To_Unbounded_String (Image (U64 (Count)));
          elsif C.Func = "lastfor_forderange_pos3_is5" then
             Forderange (7, Permutation'Access);
-            Got := To_Unbounded_String (Image (U64 (Count)));
          elsif C.Func = "lastfor_forcomp_0" then
             Forcomp (0, First_Tuple'Access);
-            Got := To_Unbounded_String (Image (U64 (Count)));
          elsif C.Func = "lastfor_forderange_0" then
             Forderange (0, First_Tuple'Access);
-            Got := To_Unbounded_String (Image (U64 (Count)));
          elsif C.Func = "lastfor_formultiperm_empty" then
             Formultiperm ([1 .. 0 => 0], First_Tuple'Access);
-            Got := To_Unbounded_String (Image (U64 (Count)));
          elsif C.Func = "lastfor_forcomb_sum11" then
             Forcomb (7, 4, Combination'Access);
-            Got := To_Unbounded_String (Image (U64 (Count)));
          elsif C.Func = "lastfor_forperm_pos3_is5" then
             Forperm (7, Permutation'Access);
-            Got := To_Unbounded_String (Image (U64 (Count)));
          elsif C.Func = "lastfor_forpart_0" then
             Forpart (0, First_Tuple'Access);
-            Got := To_Unbounded_String (Image (U64 (Count)));
          elsif C.Func = "lastfor_forcomb_0" then
             Forcomb (0, First_Tuple'Access);
-            Got := To_Unbounded_String (Image (U64 (Count)));
          elsif C.Func = "lastfor_forcomb_3_0" then
             Forcomb (3, 0, First_Tuple'Access);
-            Got := To_Unbounded_String (Image (U64 (Count)));
          elsif C.Func = "lastfor_forperm_0" then
             Forperm (0, First_Tuple'Access);
-            Got := To_Unbounded_String (Image (U64 (Count)));
          elsif C.Func = "lastfor_forfactored_0_3" then
             Forfactored (0, 3, First_Factored'Access);
-            Got := To_Unbounded_String (Image (U64 (Count)));
          elsif C.Func = "lastfor_inner_die_outer_ok" then
             Forprimes (20, Catch_Inner'Access);
-            Got := To_Unbounded_String (Image (U64 (Count)));
          elsif C.Func = "lastfor_outside_loop" or else
            C.Func = "lastfor_after_callback_die"
          then
@@ -580,6 +566,9 @@ package body Compat_Iter is
             Selected := False;
          end if;
          if Selected then
+            if Length (Got) = 0 then
+               Got := To_Unbounded_String (Image (U64 (Count)));
+            end if;
             Assert
               (Got = C.Result, To_String (C.Func) & " got " & To_String (Got));
          end if;

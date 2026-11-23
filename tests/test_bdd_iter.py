@@ -1,30 +1,13 @@
-"""BDD bridge reusing the checked AUnit runner helpers."""
+"""BDD bridge reusing the checked AUnit runner and status steps."""
 
-from pathlib import Path
-
-from pytest_bdd import given, parsers, scenarios, then, when
-from test_bdd_powers import run_selected, selected_test_passes
+from test_bdd_powers import (
+    parsers, powers_runner, run_selected, scenarios, selected_test_passes, when,
+)
 
 scenarios("features/iter.feature")
 
 
-def iterator_runner():
-    runner = Path(__file__).resolve().parent / "bin/powers_runner"
-    assert runner.is_file(), "Build the tests Alire project"
-    return runner
-
-
-def run_iterator(runner, name):
-    return run_selected(runner, f"Compat_Iter : {name}")
-
-
-# Justification: locate the iterator harness for the existing bounded runner.
-given("the checked Ada iterator runner is built", target_fixture="runner")(
-    iterator_runner
-)
-# Justification: select the iterator AUnit case using the shared runner helper.
-when(parsers.parse("the iterator check {name} runs"), target_fixture="result")(
-    run_iterator
-)
-# Justification: reuse the existing AUnit status and nonempty-selection assertions.
-then("the selected AUnit test passes within one minute")(selected_test_passes)
+# Justification: select iterator cases through the shared bounded AUnit runner.
+@when(parsers.parse("the iterator check {name} runs"), target_fixture="result")
+def run_iterator(powers_runner, name):
+    return run_selected(powers_runner, f"Compat_Iter : {name}")

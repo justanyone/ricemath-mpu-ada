@@ -3,3 +3,5 @@ Read project plan/status and existing test helpers before making minimal edits.
 Validate the focused iterator tests and declared gate; record unavailable tooling.
 Focused iterator test build started; pytest-bdd and gnatcheck are absent from PATH/environment.
 Plan: reuse the existing powers BDD runner/steps and remove repeated test setup to fit 400 lines.
+Reused the powers BDD Given/Then steps and runner; removed the direct unresolved import.
+Consolidated repeated lastfor count formatting while retaining all fixture branches.
