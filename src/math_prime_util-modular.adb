@@ -1279,4 +1279,362 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
       end loop;
       return (True, Result);
    end Pisano_Period;
+   function Kronecker (A, B : I128) return Symbol is
+      X : U64 := U64 (abs A);
+      Y : U64 := U64 (abs B);
+      S : Symbol := (if A < 0 and then B < 0 then -1 else 1);
+      T : U64;
+      Odd : Boolean := False;
+   begin
+      if Y = 0 then
+         return (if X = 1 then 1 else 0);
+      end if;
+      while Y mod 2 = 0 loop
+         if X mod 2 = 0 then
+            return 0;
+         end if;
+         Y := Y / 2;
+         Odd := not Odd;
+      end loop;
+      if Odd and then A mod 8 in 3 | 5 then
+         S := -S;
+      end if;
+      if A < 0 then
+         X := U64 (A mod I128 (Y));
+      end if;
+      while X /= 0 loop
+         Odd := False;
+         while X mod 2 = 0 loop
+            X := X / 2;
+            Odd := not Odd;
+         end loop;
+         if Odd and then Y mod 8 in 3 | 5 then
+            S := -S;
+         end if;
+         if X mod 4 = 3 and then Y mod 4 = 3 then
+            S := -S;
+         end if;
+         T := Y mod X;
+         Y := X;
+         X := T;
+      end loop;
+      return (if Y = 1 then S else 0);
+   end Kronecker;
+
+   function Chinese2 (Pairs : Congruence_List) return Chinese_Result is
+      R : U64 := 0;
+      M : U64 := 1;
+      G, N, A, Step, New_M : U64;
+      Difference : I128;
+   begin
+      if Pairs'Length = 0 then
+         return (True, 0, 0);
+      end if;
+      --  util.c: chinese, generalized pairwise Bezout combination.
+      --  Reduce the signed difference before multiplying to avoid overflow.
+      for C of Pairs loop
+         N := C.Modulus;
+         if N = 0 then
+            return (Defined => False);
+         end if;
+         A := Reduce (C.Residue, N);
+         G := Gcd (M, N);
+         if R mod G /= A mod G then
+            return (Defined => False);
+         end if;
+         N := N / G;
+         if M > U64'Last / N then
+            return (Defined => False);
+         end if;
+         New_M := M * N;
+         Difference := (I128 (A) - I128 (R)) / I128 (G);
+         Step := Mul (Reduce (Difference, N), Invmod (M / G, N).Value, N);
+         R := U64 (U128 (R) + U128 (M) * U128 (Step));
+         M := New_M;
+      end loop;
+      return (True, R, M);
+   end Chinese2;
+
+   function Chinese (Pairs : Congruence_List) return Optional_U64 is
+      R : constant Chinese_Result := Chinese2 (Pairs);
+   begin
+      return (if R.Defined then (True, R.Remainder)
+              else (Defined => False));
+   end Chinese;
+
+   function Znorder (A : I128; N : U64) return Optional_U64 is
+      V, Lambda, Component, P, K, W : U64;
+      I : Positive := 1;
+      E : Natural;
+      F : Factors;
+   begin
+      if N = 0 then
+         return (Defined => False);
+      elsif N = 1 then
+         return (True, 1);
+      end if;
+      V := Reduce (A, N);
+      if Gcd (V, N) /= 1 then
+         return (Defined => False);
+      end if;
+      --  util.c: znorder, Cohen 1.4.3 starting at Carmichael lambda.
+      F := Factorize (N);
+      Lambda := 1;
+      while I <= F.Count loop
+         P := F.Values (I);
+         E := 0;
+         Component := 1;
+         while I <= F.Count and then F.Values (I) = P loop
+            if E > 0 then
+               Component := Component * P;
+            end if;
+            E := E + 1;
+            I := I + 1;
+         end loop;
+         Component := Component * (P - 1);
+         if P = 2 and then E > 2 then
+            Component := Component / 2;
+         end if;
+         Lambda := (Lambda / Gcd (Lambda, Component)) * Component;
+      end loop;
+      K := Lambda;
+      F := Factorize (Lambda);
+      I := 1;
+      while I <= F.Count loop
+         P := F.Values (I);
+         E := 0;
+         while I <= F.Count and then F.Values (I) = P loop
+            K := K / P;
+            E := E + 1;
+            I := I + 1;
+         end loop;
+         W := Pow (V, K, N);
+         for J in 1 .. E loop
+            exit when W = 1;
+            K := K * P;
+            W := Pow (W, P, N);
+         end loop;
+      end loop;
+      return (True, K);
+   end Znorder;
+
+   function Is_Primitive_Root (A : I128; N : U64) return Boolean is
+      V, M, P, Phi : U64;
+      F : Factors;
+   begin
+      if N <= 1 then
+         return N = 1;
+      end if;
+      V := Reduce (A, N);
+      if V <= 1 then
+         return V = 1 and then N = 2;
+      elsif N <= 4 then
+         return V = N - 1;
+      elsif N mod 4 = 0 then
+         return False;
+      end if;
+      M := N;
+      if M mod 2 = 0 then
+         if V mod 2 = 0 then
+            return False;
+         end if;
+         M := M / 2;
+      end if;
+      if Is_Square (V) or else Gcd (V, M) /= 1 then
+         return False;
+      end if;
+      F := Factorize (M);
+      P := F.Values (1);
+      if F.Values (F.Count) /= P then
+         return False;
+      elsif F.Count > 1 and then Pow (V, P - 1, P * P) = 1 then
+         return False;
+      elsif Kronecker (I128 (V), I128 (P)) /= -1 then
+         return False;
+      end if;
+      Phi := P - 1;
+      if Is_Power (V, 3) and then Phi mod 3 = 0 then
+         return False;
+      end if;
+      F := Factorize (Phi);
+      for I in 1 .. F.Count loop
+         if Pow (V, Phi / F.Values (I), P) = 1 then
+            return False;
+         end if;
+      end loop;
+      return True;
+   end Is_Primitive_Root;
+
+   function Znprimroot (N : U64) return Optional_U64 is
+      M : U64 := N;
+      P, A, Phi : U64;
+      F, Phif : Factors;
+      Even : constant Boolean := N mod 2 = 0;
+      Valid : Boolean;
+   begin
+      if N = 0 then
+         return (Defined => False);
+      elsif N <= 4 then
+         return (True, N - 1);
+      elsif N mod 4 = 0 then
+         return (Defined => False);
+      end if;
+      if Even then
+         M := M / 2;
+      end if;
+      F := Factorize (M);
+      P := F.Values (1);
+      if F.Values (F.Count) /= P then
+         return (Defined => False);
+      elsif P = 3 and then Even then
+         return (True, 5);
+      end if;
+      Phi := P - 1;
+      Phif := Factorize (Phi);
+      A := 2;
+      while A < P loop
+         if (not Even or else A mod 2 = 1) and then
+           A not in 4 | 8 | 9 and then
+           Kronecker (I128 (A), I128 (P)) = -1
+         then
+            Valid := True;
+            for I in 1 .. Phif.Count loop
+               if Phif.Values (I) /= 2 and then
+                 Pow (A, Phi / Phif.Values (I), P) = 1
+               then
+                  Valid := False;
+                  exit;
+               end if;
+            end loop;
+            if Valid and then
+              (F.Count = 1 or else Pow (A, Phi, P * P) /= 1)
+            then
+               return (True, A);
+            end if;
+         end if;
+         A := A + 1;
+      end loop;
+      return (Defined => False);
+   end Znprimroot;
+
+   function Is_Qr (A : I128; N : U64) return Boolean is
+      V, P, PE : U64;
+      I : Positive := 1;
+      E : Natural;
+      F : Factors;
+   begin
+      if N = 0 then
+         return A = 1;
+      elsif N <= 2 then
+         return True;
+      end if;
+      V := Reduce (A, N);
+      if V <= 1 then
+         return True;
+      end if;
+      F := Factorize (N);
+      while I <= F.Count loop
+         P := F.Values (I);
+         PE := 1;
+         E := 0;
+         while I <= F.Count and then F.Values (I) = P loop
+            PE := PE * P;
+            E := E + 1;
+            I := I + 1;
+         end loop;
+         if E = 1 and then (P = 2 or else V mod P = 0) then
+            null;
+         elsif E = 1 or else (P /= 2 and then V mod P /= 0) then
+            if Kronecker (I128 (V), I128 (P)) /= 1 then
+               return False;
+            end if;
+         elsif not Sqrtmod (I128 (V), PE).Defined then
+            return False;
+         end if;
+      end loop;
+      return True;
+   end Is_Qr;
+
+   function Qnr (N : U64) return Optional_U64 is
+      M : U64 := N;
+      A : U64 := 2;
+      E : Natural := 0;
+      F : Factors;
+   begin
+      if N = 0 then
+         return (Defined => False);
+      elsif N <= 2 then
+         return (True, N);
+      elsif Kronecker (2, I128 (N)) = -1 then
+         return (True, 2);
+      elsif Primality.Is_Prime (N) /= 0 then
+         A := 3;
+         while A < N loop
+            if Kronecker (I128 (A), I128 (N)) = -1 then
+               return (True, A);
+            end if;
+            A := A + 2;
+         end loop;
+      else
+         while M mod 2 = 0 loop
+            M := M / 2;
+            E := E + 1;
+         end loop;
+         if E >= 2 or else M = 1 or else M mod 3 = 0 or else
+           M mod 5 = 0 or else M mod 11 = 0 or else M mod 13 = 0
+           or else M mod 19 = 0
+         then
+            return (True, 2);
+         end if;
+         F := Factorize (M);
+         while A < M loop
+            for I in 1 .. F.Count loop
+               if A < F.Values (I) and then
+                 Kronecker (I128 (A), I128 (F.Values (I))) = -1
+               then
+                  return (True, A);
+               end if;
+            end loop;
+            loop
+               A := A + 1;
+               exit when Primality.Is_Prime (A) /= 0;
+            end loop;
+         end loop;
+      end if;
+      return (Defined => False);
+   end Qnr;
+
+   function Is_Fundamental (D : I128) return Boolean is
+      N : U64 := U64 (abs D);
+      R : constant I128 := D mod 16;
+      F : Factors;
+   begin
+      if R mod 4 = 0 and then R /= 0 and then R /= 4 then
+         N := N / 4;
+      elsif R mod 4 /= 1 then
+         return False;
+      end if;
+      F := Factorize (N);
+      for I in 2 .. F.Count loop
+         if F.Values (I) = F.Values (I - 1) then
+            return False;
+         end if;
+      end loop;
+      return True;
+   end Is_Fundamental;
+
+   function Divmod (A, B : I128; N : U64) return Optional_U64 is
+      Inverse : Optional_U64;
+   begin
+      if N = 0 then
+         return (Defined => False);
+      elsif N = 1 then
+         return (True, 0);
+      end if;
+      Inverse := Invmod (Reduce (B, N), N);
+      if not Inverse.Defined then
+         return (Defined => False);
+      end if;
+      return (True, Mul (Reduce (A, N), Inverse.Value, N));
+   end Divmod;
 end Math_Prime_Util.Modular;
