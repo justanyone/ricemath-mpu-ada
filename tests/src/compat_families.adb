@@ -4,10 +4,10 @@ with Ada.Strings;
 with Ada.Strings.Fixed;
 with Ada.Strings.Unbounded;
 with Fixture_Support;
+with Math_Prime_Util.Count;
 with Math_Prime_Util.Families;
 with Math_Prime_Util.Int;
 with Math_Prime_Util.Powers;
-with Math_Prime_Util.Count;
 with Math_Prime_Util.Sieve;
 
 package body Compat_Families is
