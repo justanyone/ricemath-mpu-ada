@@ -1,5 +1,4 @@
 with Ada.Numerics.Generic_Elementary_Functions;
-with Math_Prime_Util.Count.Lmo;
 with Math_Prime_Util.Int;
 with Math_Prime_Util.Sieve;
 
