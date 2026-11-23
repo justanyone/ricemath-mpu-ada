@@ -108,11 +108,13 @@ package Math_Prime_Util.Factor is
    --  Empty when N = 0 or Limit = 0. No errors.
    function Divisors (N, Limit : U64) return U64_Vectors.Vector
      with Pre => True,
-          Post => (for all D of Divisors'Result => D >= 1 and D <= N);
+          Post => (for all D of Divisors'Result =>
+                     D >= 1 and then D <= N);
 
    --  factor.c: divisor_list with the upper bound equal to N.
    --  Empty when N = 0. Divisors (1) is (1). No errors.
    function Divisors (N : U64) return U64_Vectors.Vector
      with Pre => True,
-          Post => (for all D of Divisors'Result => D >= 1 and D <= N);
+          Post => (for all D of Divisors'Result =>
+                     D >= 1 and then D <= N);
 end Math_Prime_Util.Factor;

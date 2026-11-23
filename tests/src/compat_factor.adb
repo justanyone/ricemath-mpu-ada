@@ -13,8 +13,8 @@ package body Compat_Factor is
    use Ada.Strings.Unbounded;
    use Fixture_Support;
    use Math_Prime_Util;
-   use Math_Prime_Util.Factor;
    use type U64;
+   use type Primality.Prime_Result;
 
    type Factor_Case is new Test_Case with null record;
    overriding function Name (T : Factor_Case)
@@ -31,7 +31,7 @@ package body Compat_Factor is
    function Trim (N : U64) return String is
      (Ada.Strings.Fixed.Trim (U64'Image (N), Ada.Strings.Both));
 
-   function Join (L : Factor_List) return String is
+   function Join (L : Factor.Factor_List) return String is
       Text : Unbounded_String;
    begin
       for I in 1 .. L.Count loop
@@ -43,7 +43,7 @@ package body Compat_Factor is
       return To_String (Text);
    end Join;
 
-   function Join (V : U64_Vectors.Vector) return String is
+   function Join (V : Factor.U64_Vectors.Vector) return String is
       Text : Unbounded_String;
       First : Boolean := True;
    begin
@@ -146,61 +146,61 @@ package body Compat_Factor is
          B := Arg (C, 3);
       end if;
       if F = "factor" then
-         return Join (Factor (N));
+         return Join (Factor.Factor (N));
       elsif F = "trial_factor" then
          if Natural (C.Args.Length) < 2 then
-            return Join (Trial_Factor (N));
+            return Join (Factor.Trial_Factor (N));
          end if;
-         return Join (Trial_Factor (N, A));
+         return Join (Factor.Trial_Factor (N, A));
       elsif F = "fermat_factor" then
          if Natural (C.Args.Length) < 2 then
-            return Join (Fermat_Factor (N));
+            return Join (Factor.Fermat_Factor (N));
          end if;
-         return Join (Fermat_Factor (N, A));
+         return Join (Factor.Fermat_Factor (N, A));
       elsif F = "holf_factor" then
          if Natural (C.Args.Length) < 2 then
-            return Join (Holf_Factor (N));
+            return Join (Factor.Holf_Factor (N));
          end if;
-         return Join (Holf_Factor (N, A));
+         return Join (Factor.Holf_Factor (N, A));
       elsif F = "lehman_factor" then
          if Natural (C.Args.Length) < 2 then
-            return Join (Lehman_Factor (N));
+            return Join (Factor.Lehman_Factor (N));
          end if;
-         return Join (Lehman_Factor (N, A /= 0));
+         return Join (Factor.Lehman_Factor (N, A /= 0));
       elsif F = "squfof_factor" then
          if Natural (C.Args.Length) < 2 then
-            return Join (Squfof_Factor (N));
+            return Join (Factor.Squfof_Factor (N));
          end if;
-         return Join (Squfof_Factor (N, A));
+         return Join (Factor.Squfof_Factor (N, A));
       elsif F = "prho_factor" then
          if Natural (C.Args.Length) < 2 then
-            return Join (Prho_Factor (N));
+            return Join (Factor.Prho_Factor (N));
          end if;
-         return Join (Prho_Factor (N, A));
+         return Join (Factor.Prho_Factor (N, A));
       elsif F = "pbrent_factor" then
          if Natural (C.Args.Length) < 2 then
-            return Join (Pbrent_Factor (N));
+            return Join (Factor.Pbrent_Factor (N));
          elsif Natural (C.Args.Length) < 3 then
-            return Join (Pbrent_Factor (N, A));
+            return Join (Factor.Pbrent_Factor (N, A));
          end if;
-         return Join (Pbrent_Factor (N, A, B));
+         return Join (Factor.Pbrent_Factor (N, A, B));
       elsif F = "pminus1_factor" then
          if Natural (C.Args.Length) < 2 then
-            return Join (Pminus1_Factor (N));
+            return Join (Factor.Pminus1_Factor (N));
          elsif Natural (C.Args.Length) < 3 then
-            return Join (Pminus1_Factor (N, A));
+            return Join (Factor.Pminus1_Factor (N, A));
          end if;
-         return Join (Pminus1_Factor (N, A, B));
+         return Join (Factor.Pminus1_Factor (N, A, B));
       elsif F = "pplus1_factor" then
          if Natural (C.Args.Length) < 2 then
-            return Join (Pplus1_Factor (N));
+            return Join (Factor.Pplus1_Factor (N));
          end if;
-         return Join (Pplus1_Factor (N, A));
+         return Join (Factor.Pplus1_Factor (N, A));
       elsif F = "divisors" then
          if Natural (C.Args.Length) < 2 then
-            return Join (Divisors (N));
+            return Join (Factor.Divisors (N));
          end if;
-         return Join (Divisors (N, A));
+         return Join (Factor.Divisors (N, A));
       end if;
       raise Constraint_Error with "unknown function";
    end Evaluate;
