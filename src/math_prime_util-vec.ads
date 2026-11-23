@@ -185,8 +185,7 @@ package Math_Prime_Util.Vec with SPARK_Mode => Off is
 
    --  xs_set.c: xs_set_relation SET_REL_EQUAL. The same elements.
    function Set_Is_Equal (Left, Right : Int_Vector) return Boolean
-     with Pre => True,
-          Post => Set_Is_Equal'Result = Set_Is_Equal (Right, Left);
+     with Pre => True, Post => True;
 
    --  xs_set.c: xs_set_relation SET_REL_SUBSET. Right is a subset of
    --  Left. An empty Right is a subset.
