@@ -148,7 +148,8 @@ package body Math_Prime_Util.Ramanujan is
       return Count.Prime_Count_Approx (N) - Count.Prime_Count_Approx (N / 2);
    end Ramanujan_Prime_Count_Approx;
 
-   function Invert_Approx is new Math_Prime_Util.Inverse (Wide, Ramanujan_Prime_Count_Approx);
+   function Invert_Approx is new Math_Prime_Util.Inverse
+     (Wide, Ramanujan_Prime_Count_Approx);
    function Nth_Ramanujan_Prime_Approx (N : U64) return Int.Optional_U64 is
    begin
       if N = 0 then
