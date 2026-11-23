@@ -1,4 +1,3 @@
-with Ada.Containers;
 with Ada.Containers.Generic_Array_Sort;
 with Ada.Containers.Ordered_Maps;
 with Ada.Containers.Ordered_Sets;
@@ -159,8 +158,6 @@ package body Math_Prime_Util.Vec is
 
    function Vecfreq (Items : Int_Array) return Int_Array is
       Counts : Count_Maps.Map;
-      Result : Int_Array (1 .. 2 * Natural (0));
-      I : Natural := 0;
    begin
       for V of Items loop
          if Counts.Contains (V) then
@@ -171,6 +168,7 @@ package body Math_Prime_Util.Vec is
       end loop;
       declare
          Pairs : Int_Array (1 .. 2 * Natural (Counts.Length));
+         I : Natural := 0;
       begin
          for C in Counts.Iterate loop
             I := I + 1;
