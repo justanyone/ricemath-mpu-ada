@@ -3,6 +3,7 @@ with Math_Prime_Util.Primality;
 with Ada.Numerics.Generic_Elementary_Functions;
 with Ada.Numerics.Long_Elementary_Functions;
 with Interfaces;
+with Math_Prime_Util.Powers;
 
 package body Math_Prime_Util.Families is
    package Prime_Sieve renames Math_Prime_Util.Sieve;
@@ -1504,4 +1505,22 @@ package body Math_Prime_Util.Families is
          end loop;
       end if;
    end Nth_Semiprime;
+
+   function Prime_Powers (Low, High : U64) return Vector is
+      Result : Vector;
+      P : Int.Optional_U64;
+   begin
+      if High < 2 or else Low > High then
+         return Result;
+      end if;
+      P := Powers.Next_Prime_Power (U64'Max (Low, 2) - 1);
+      while P.Defined and then P.Value <= High loop
+         Result.Append (P.Value);
+         P := Powers.Next_Prime_Power (P.Value);
+      end loop;
+      return Result;
+   end Prime_Powers;
+
+   function Prime_Powers (High : U64) return Vector is
+     (Prime_Powers (2, High));
 end Math_Prime_Util.Families;

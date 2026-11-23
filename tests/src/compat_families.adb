@@ -6,6 +6,8 @@ with Ada.Strings.Unbounded;
 with Fixture_Support;
 with Math_Prime_Util.Families;
 with Math_Prime_Util.Int;
+with Math_Prime_Util.Powers;
+with Math_Prime_Util.Count;
 with Math_Prime_Util.Sieve;
 
 package body Compat_Families is
@@ -15,6 +17,8 @@ package body Compat_Families is
    use Math_Prime_Util;
    use type U64;
    use Math_Prime_Util.Families;
+   use Math_Prime_Util.Powers;
+   use type Int.I128;
    type Families_Case is new Test_Case with null record;
    overriding function Name (T : Families_Case)
       return AUnit.Message_String;

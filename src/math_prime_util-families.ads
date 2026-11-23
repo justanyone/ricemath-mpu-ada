@@ -177,4 +177,15 @@ package Math_Prime_Util.Families with SPARK_Mode => On is
    function Nth_Semiprime_Approx (N : U64) return Int.Optional_U64
      with SPARK_Mode => On, Pre => True,
           Post => (if N = 0 then not Nth_Semiprime_Approx'Result.Defined);
+
+   --  prime_powers.c: prime_power_sieve. Sorted inclusive prime powers.
+   --  Reversed ranges are empty; Storage_Error may propagate.
+   function Prime_Powers (Low, High : U64) return Lucky_Vectors.Vector
+     with Pre => True,
+          Post => (for all V of Prime_Powers'Result =>
+                     V >= Low and then V <= High);
+   --  prime_powers.c: prime_power_sieve. Prime powers through High.
+   function Prime_Powers (High : U64) return Lucky_Vectors.Vector
+     with Pre => True,
+          Post => (for all V of Prime_Powers'Result => V <= High);
 end Math_Prime_Util.Families;
