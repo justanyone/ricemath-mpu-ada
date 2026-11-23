@@ -664,11 +664,11 @@ package body Math_Prime_Util.Families is
      [
       1, 425656284035217743, 1701748900850019777, 3167597434038354478,
       3787884015050788482, 3378907169603895030, 2466706950238087748,
-      1571012171387856192,,
+      1571012171387856192,
       913164427599983727, 499840874923678341, 263157990621533964,
-      135128109904869290,,
+      135128109904869290,
       68283616225825256, 34151861008771016, 16967424859951587,
-      8393048221327186,,
+      8393048221327186,
       4139595949113890, 2037655246635364, 1001591348315641, 491808604962296,
       241293656953012, 118304122014405, 57968649799947, 28388662714236,
       13895161400556, 6797526392535, 3323560145881, 1624109166018,
@@ -698,7 +698,7 @@ package body Math_Prime_Util.Families is
       100055558127615, 10995116277759, 17592186044415, 545357767376895,
       70368744177663, 1125899906842623, 10133099161583615, 9007199254740991,
       24769797950537727, 4503599627370495, 144115188075855871,
-      72057594037927935,,
+      72057594037927935,
       432345564227567615, 288230376151711743, 1152921504606846975,
       4611686018427387903];
    Upper_20 : constant array (Natural range 0 .. 12) of F64 :=
@@ -996,6 +996,17 @@ package body Math_Prime_Util.Families is
       Values : Family_Vectors.Vector;
       Total : U64;
    begin
+      if K = 0 then
+         return (if High >= 1 then 1 else 0);
+      elsif K >= 64 or else (Distinct and then K >= 16)
+        or else High < 2 ** K
+      then
+         return 0;
+      elsif not Distinct and then
+        High >= U64'Last - Max_Almost_Offset (K)
+      then
+         return Max_Almost_Count (K);
+      end if;
       Factor_Family (K, 1, High, Distinct, False, Values, Total);
       return Total;
    end Family_Count;
@@ -1035,13 +1046,35 @@ package body Math_Prime_Util.Families is
       Low : U64 := 1;
       High : U64 := 2;
       Mid : U64;
+      R : Natural := 0;
+      Result : Int.Optional_U64;
    begin
       if N = 0 or else K >= 64 or else (Distinct and then K >= 16) then
          return (Defined => False);
       elsif K = 0 then
          return (if N = 1 then (True, 1) else (Defined => False));
+      elsif not Distinct and then N > Max_Almost_Count (K) then
+         return (Defined => False);
+      elsif not Distinct and then N = Max_Almost_Count (K) then
+         return (True, U64'Last - Max_Almost_Offset (K));
       elsif not Distinct and then K = 1 then
          return (True, Count.Nth_Prime (N));
+      end if;
+      if not Distinct then
+         if K > 49 and then N < First_Three (49) then
+            R := K - 48;
+         end if;
+         while K - R <= 49 and then N < First_Three (K - R) loop
+            R := R + 1;
+         end loop;
+         if R > 0 then
+            Result := Family_Nth (K - R, N, False);
+            if not Result.Defined or else Result.Value > U64'Last / 2 ** R
+            then
+               return (Defined => False);
+            end if;
+            return (True, Result.Value * 2 ** R);
+         end if;
       end if;
       while Family_Count (K, High, Distinct) < N loop
          Low := High + 1;
