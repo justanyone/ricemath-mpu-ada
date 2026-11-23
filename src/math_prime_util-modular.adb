@@ -1061,14 +1061,28 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
    function Group_Order (G, M : U64) return U64
    is
       F : Factors := Factorize (M);
-      Phi : U64 := M;
-      Previous : U64 := 0;
+      Phi, Component, P : U64;
+      I : Positive := 1;
+      E : Natural;
    begin
-      for I in 1 .. F.Count loop
-         if F.Values (I) /= Previous then
-            Phi := (Phi / F.Values (I)) * (F.Values (I) - 1);
-            Previous := F.Values (I);
+      --  util.c: znorder, Cohen 1.4.3 starts at Carmichael lambda.
+      Phi := 1;
+      while I <= F.Count loop
+         P := F.Values (I);
+         Component := 1;
+         E := 0;
+         while I <= F.Count and then F.Values (I) = P loop
+            if E > 0 then
+               Component := Component * P;
+            end if;
+            E := E + 1;
+            I := I + 1;
+         end loop;
+         Component := Component * (P - 1);
+         if P = 2 and then E > 2 then
+            Component := Component / 2;
          end if;
+         Phi := Phi / Gcd (Phi, Component) * Component;
       end loop;
       F := Factorize (Phi);
       for I in 1 .. F.Count loop
@@ -1363,59 +1377,15 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
    end Chinese;
 
    function Znorder (A : I128; N : U64) return Optional_U64 is
-      V, Lambda, Component, P, K, W : U64;
-      I : Positive := 1;
-      E : Natural;
-      F : Factors;
    begin
       if N = 0 then
          return (Defined => False);
       elsif N = 1 then
          return (True, 1);
-      end if;
-      V := Reduce (A, N);
-      if Gcd (V, N) /= 1 then
+      elsif Gcd (Reduce (A, N), N) /= 1 then
          return (Defined => False);
       end if;
-      --  util.c: znorder, Cohen 1.4.3 starting at Carmichael lambda.
-      F := Factorize (N);
-      Lambda := 1;
-      while I <= F.Count loop
-         P := F.Values (I);
-         E := 0;
-         Component := 1;
-         while I <= F.Count and then F.Values (I) = P loop
-            if E > 0 then
-               Component := Component * P;
-            end if;
-            E := E + 1;
-            I := I + 1;
-         end loop;
-         Component := Component * (P - 1);
-         if P = 2 and then E > 2 then
-            Component := Component / 2;
-         end if;
-         Lambda := (Lambda / Gcd (Lambda, Component)) * Component;
-      end loop;
-      K := Lambda;
-      F := Factorize (Lambda);
-      I := 1;
-      while I <= F.Count loop
-         P := F.Values (I);
-         E := 0;
-         while I <= F.Count and then F.Values (I) = P loop
-            K := K / P;
-            E := E + 1;
-            I := I + 1;
-         end loop;
-         W := Pow (V, K, N);
-         for J in 1 .. E loop
-            exit when W = 1;
-            K := K * P;
-            W := Pow (W, P, N);
-         end loop;
-      end loop;
-      return (True, K);
+      return (True, Group_Order (Reduce (A, N), N));
    end Znorder;
 
    function Is_Primitive_Root (A : I128; N : U64) return Boolean is
@@ -1467,10 +1437,9 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
 
    function Znprimroot (N : U64) return Optional_U64 is
       M : U64 := N;
-      P, A, Phi : U64;
-      F, Phif : Factors;
+      P, A : U64;
+      F : Factors;
       Even : constant Boolean := N mod 2 = 0;
-      Valid : Boolean;
    begin
       if N = 0 then
          return (Defined => False);
@@ -1489,28 +1458,13 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
       elsif P = 3 and then Even then
          return (True, 5);
       end if;
-      Phi := P - 1;
-      Phif := Factorize (Phi);
       A := 2;
       while A < P loop
          if (not Even or else A mod 2 = 1) and then
            A not in 4 | 8 | 9 and then
-           Kronecker (I128 (A), I128 (P)) = -1
+           Is_Primitive_Root (I128 (A), N)
          then
-            Valid := True;
-            for I in 1 .. Phif.Count loop
-               if Phif.Values (I) /= 2 and then
-                 Pow (A, Phi / Phif.Values (I), P) = 1
-               then
-                  Valid := False;
-                  exit;
-               end if;
-            end loop;
-            if Valid and then
-              (F.Count = 1 or else Pow (A, Phi, P * P) /= 1)
-            then
-               return (True, A);
-            end if;
+            return (True, A);
          end if;
          A := A + 1;
       end loop;
