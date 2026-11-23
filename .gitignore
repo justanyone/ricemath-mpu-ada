@@ -29,3 +29,5 @@ gnatprove/
 /config/
 **/bin/
 **/share/
+__pycache__/
+*.pyc

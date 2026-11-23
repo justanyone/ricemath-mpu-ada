@@ -51,8 +51,15 @@ package body Compat_Count is
       end loop;
    end Check_Sums;
 
+<<<<<<< HEAD
    --  Undefined rows are rejected by the public preconditions. All native
    --  prime-count and nth-prime fixture rows run without resource-limit skips.
+=======
+   --  Prime-count rows include narrow intervals across the native range.
+   --  Nth-prime and phi rows above Nth_Prime_Limit and
+   --  Legendre_Index_Limit remain skipped pending the full LMO port.
+   --  Rows with undef results are skipped: a Pre check rejects them.
+>>>>>>> origin/dev-mpuada-001
    procedure Check_Prime_Count (T : in out Test_Case'Class) is
       Cases : constant Case_Vectors.Vector :=
         For_Function (Load ("count"), "prime_count");
@@ -77,8 +84,13 @@ package body Compat_Count is
             --  A range row counts primes in Low .. High; an empty range
             --  (Low > High) has no primes.
             AUnit.Assertions.Assert
+<<<<<<< HEAD
               (Pc.Prime_Count (Low, High) =
                 Expected,
+=======
+              ((if C.Args.Last_Index = 1 then Pc.Prime_Count (High)
+                 else Pc.Prime_Count (Low, High)) = Expected,
+>>>>>>> origin/dev-mpuada-001
                "prime_count row" & Positive'Image (C.Line_Number));
          end if;
       end loop;
