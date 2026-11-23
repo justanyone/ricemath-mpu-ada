@@ -4,6 +4,8 @@ with Math_Prime_Util.Int;
 --  Callbacks receive values, never aliases into the input arrays.
 --  Callback exceptions propagate; callback arithmetic is the caller's policy.
 package Math_Prime_Util.Vec.Folds with SPARK_Mode => On is
+   use type U64;
+
    type Value_Array is array (Positive range <>) of U64;
 
    --  XS.xs vecreduce: left fold, undefined on empty input.

@@ -31,6 +31,7 @@ with Compat_Arith;
 with Compat_Real;
 with Prop_Real;
 with Compat_Vec;
+with Compat_Vec_Folds;
 
 package body All_Suites is
    function Suite return AUnit.Test_Suites.Access_Test_Suite is
@@ -58,6 +59,7 @@ package body All_Suites is
       Result.Add_Test (Compat_Real.Suite);
       Result.Add_Test (Prop_Real.Suite);
       Result.Add_Test (Compat_Vec.Suite);
+      Result.Add_Test (Compat_Vec_Folds.Suite);
       Result.Add_Test (Compat_Count.Suite);
       Result.Add_Test (Prop_Count.Suite);
       Result.Add_Test (Compat_Primality.Suite);
