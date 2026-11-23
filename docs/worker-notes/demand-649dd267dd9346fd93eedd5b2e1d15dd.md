@@ -30,3 +30,4 @@ Writing the Powers spec and body, including wide results past 2^64 and the pure-
 - 2026-11-23T14:23:14Z launcher: no commit for 60 s; 1265 s elapsed. Files changed so far: docs/worker-notes/demand-649dd267dd9346fd93eedd5b2e1d15dd.md.
 - 2026-11-23T14:24:14Z launcher: no commit for 60 s; 1325 s elapsed. Files changed so far: docs/worker-notes/demand-649dd267dd9346fd93eedd5b2e1d15dd.md.
 - 2026-11-23T14:25:14Z launcher: no commit for 60 s; 1385 s elapsed. Files changed so far: docs/worker-notes/demand-649dd267dd9346fd93eedd5b2e1d15dd.md.
+- 2026-11-23T14:26:44Z launcher: no commit for 60 s; 1476 s elapsed. Files changed so far: docs/worker-notes/demand-649dd267dd9346fd93eedd5b2e1d15dd.md, src/math_prime_util-powers.ads.
