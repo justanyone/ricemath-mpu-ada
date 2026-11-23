@@ -5,9 +5,12 @@ package Math_Prime_Util.Random with SPARK_Mode => On is
    use type U64;
    subtype Byte is Interfaces.Unsigned_8;
    subtype Word is Interfaces.Unsigned_32;
+   --  Volatile components keep seed-wiping stores in generated code.
    type Byte_Array is array (Natural range <>) of Byte
      with Volatile_Components;
    type Generator is limited private;
+
+   --  Keep one context per task, or synchronize access when sharing it.
 
    --  Whether a seed has been supplied. A new generator cannot emit bytes.
    function Is_Seeded (G : Generator) return Boolean;

@@ -76,7 +76,9 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
       G.Buffer := [others => 0];
       G.Position := 1024;
       G.Seeded := True;
-      Key := [others => 0];
+      for I in Key'Range loop
+         Key (I) := 0;
+      end loop;
    end Csrand;
 
    procedure Csrand (G : out Generator) is
@@ -84,7 +86,9 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
    begin
       Random_Entropy.Fill (Seed);
       Csrand (G, Seed);
-      Seed := [others => 0];
+      for I in Seed'Range loop
+         Seed (I) := 0;
+      end loop;
    end Csrand;
 
    --  chacha.c: QUARTERROUND, chacha_core, increment_chacha_counter.
