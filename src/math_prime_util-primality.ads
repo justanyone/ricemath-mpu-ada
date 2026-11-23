@@ -33,7 +33,7 @@ package Math_Prime_Util.Primality with SPARK_Mode => On is
      with Pre => True,
           Post => (if N < 2 then not Is_Bpsw_Prime'Result);
 
-   --  primality.c: is_pseudoprime.
+   --  primality.c: is_pseudoprime; default base from XS.xs.
    --  Tests the supplied integer; no mutable shared state.
    --  A defaults to 2 and must be at least 2; invalid bases fail
    --  the precondition.
@@ -42,7 +42,7 @@ package Math_Prime_Util.Primality with SPARK_Mode => On is
      with Pre => A >= 2,
           Post => (if N < 2 then not Is_Pseudoprime'Result);
 
-   --  primality.c: is_euler_pseudoprime.
+   --  primality.c: is_euler_pseudoprime; default base from XS.xs.
    --  Tests the supplied integer; no mutable shared state.
    --  A defaults to 2 and must be at least 2; invalid bases fail
    --  the precondition.
@@ -51,7 +51,7 @@ package Math_Prime_Util.Primality with SPARK_Mode => On is
      with Pre => A >= 2,
           Post => (if N < 2 then not Is_Euler_Pseudoprime'Result);
 
-   --  primality.c: is_strong_pseudoprime.
+   --  primality.c: is_strong_pseudoprime; default base from XS.xs.
    --  Tests the supplied integer; no mutable shared state.
    --  A defaults to 2 and must be at least 2; invalid bases fail
    --  the precondition.
