@@ -49,11 +49,11 @@ package body Compat_Goldbach is
                   Pairs : constant Pair_Vectors.Vector := Goldbach_Pairs (N);
                begin
                   Got := Null_Unbounded_String;
-                  for P of Pairs loop
+                  for I in Pairs.First_Index .. Pairs.Last_Index loop
                      if Length (Got) > 0 then
                         Append (Got, " ");
                      end if;
-                     Append (Got, Image (P));
+                     Append (Got, Image (Pairs.Element (I)));
                   end loop;
                   if Pairs.Is_Empty then
                      Got := To_Unbounded_String ("undef");
