@@ -1,9 +1,6 @@
-with Math_Prime_Util.Int;
 with Math_Prime_Util.Primality;
-with Math_Prime_Util.Sieve;
 
 package body Math_Prime_Util.Goldbach is
-   use type U64;
    use type Math_Prime_Util.Primality.Prime_Result;
 
    --  families.tsv goldbach_pair_count reaches 60119912. A larger even
