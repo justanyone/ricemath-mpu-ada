@@ -52,11 +52,6 @@ package Math_Prime_Util.Families is
    function Nth_Lucky_Upper (N : U64) return Int.Optional_U64
      with Pre => True, Post => Nth_Lucky_Upper'Result.Defined = (N /= 0);
 
-   --  ramanujan_primes.c: is_ramanujan_prime. Test whether N is a
-   --  Ramanujan prime; may allocate a sieve and propagate Storage_Error.
-   function Is_Ramanujan_Prime (N : U64) return Boolean
-     with Pre => True,
-          Post => (if N < 2 then not Is_Ramanujan_Prime'Result);
    --  ramanujan_primes.c: is_ramanujan_prime. Test membership; allocation
    --  failures propagate as Storage_Error.
    function Is_Ramanujan_Prime (N : U64) return Boolean
