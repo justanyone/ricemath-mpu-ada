@@ -1,21 +1,12 @@
 with AUnit.Assertions;
 with AUnit.Test_Cases;
-<<<<<<< HEAD
 with Ada.Strings.Fixed;
-=======
->>>>>>> origin/dev-mpuada-001
 with Ada.Strings.Unbounded;
 with Fixture_Support;
 with Math_Prime_Util.Arith;
 
 package body Compat_Arith is
    use AUnit.Test_Cases;
-<<<<<<< HEAD
-   use Ada.Strings.Unbounded;
-   use Fixture_Support;
-   use Math_Prime_Util;
-   use type U64;
-=======
    use AUnit.Assertions;
    use Ada.Strings.Unbounded;
    use Fixture_Support;
@@ -25,12 +16,10 @@ package body Compat_Arith is
    use type I128;
    use type AUnit.Message_String;
 
->>>>>>> origin/dev-mpuada-001
    type Arith_Case is new Test_Case with null record;
    overriding function Name (T : Arith_Case) return AUnit.Message_String;
    overriding procedure Register_Tests (T : in out Arith_Case);
 
-<<<<<<< HEAD
    function Image (N : U64) return String is
      (Ada.Strings.Fixed.Trim (U64'Image (N), Ada.Strings.Both));
 
@@ -38,40 +27,36 @@ package body Compat_Arith is
       Rows : constant Case_Vectors.Vector :=
         For_Function (Load ("arith"), Func);
    begin
-      AUnit.Assertions.Assert (not Rows.Is_Empty, "missing " & Func);
+      Assert (not Rows.Is_Empty, "missing " & Func);
       for C of Rows loop
          declare
             K, Low, High : U64 := 0;
             Actual : Unbounded_String;
          begin
-            AUnit.Assertions.Assert
-              (Parse_U64 (To_String (C.Args (1)), K), "parse k");
-            if C.Args.Length = 2 then
-               AUnit.Assertions.Assert
+            Assert (Parse_U64 (To_String (C.Args (1)), K), "parse k");
+            if Natural (C.Args.Length) = 2 then
+               Assert
                  (Parse_U64 (To_String (C.Args (2)), High), "parse high");
-               Low := (if K = 1 then 0 else 1);
             else
-               AUnit.Assertions.Assert
+               Assert
                  (Parse_U64 (To_String (C.Args (2)), Low), "parse low");
-               AUnit.Assertions.Assert
+               Assert
                  (Parse_U64 (To_String (C.Args (3)), High), "parse high");
             end if;
             if Func = "inverse_sigma0_count" then
                Actual := To_Unbounded_String
                  (Image
-                    ((if C.Args.Length = 2 then
-                        Math_Prime_Util.Arith.Inverse_Sigma0_Count (K, High)
+                    ((if Natural (C.Args.Length) = 2 then
+                        Inverse_Sigma0_Count (K, High)
                       else
-                        Math_Prime_Util.Arith.Inverse_Sigma0_Count
-                          (K, Low, High))));
+                        Inverse_Sigma0_Count (K, Low, High))));
             else
                declare
-                  Values : constant Math_Prime_Util.Arith.U64_Vectors.Vector :=
-                    (if C.Args.Length = 2 then
-                       Math_Prime_Util.Arith.Inverse_Sigma0 (K, High)
+                  Values : constant U64_Vectors.Vector :=
+                    (if Natural (C.Args.Length) = 2 then
+                       Inverse_Sigma0 (K, High)
                      else
-                       Math_Prime_Util.Arith.Inverse_Sigma0
-                         (K, Low, High));
+                       Inverse_Sigma0 (K, Low, High));
                begin
                   if Values.Is_Empty then
                      Actual := To_Unbounded_String ("undef");
@@ -85,7 +70,7 @@ package body Compat_Arith is
                   end if;
                end;
             end if;
-            AUnit.Assertions.Assert
+            Assert
               (Actual = C.Result, Func & " line" & C.Line_Number'Image);
          end;
       end loop;
@@ -101,20 +86,11 @@ package body Compat_Arith is
       Replay ("inverse_sigma0_count");
    end Test_Count;
 
-=======
->>>>>>> origin/dev-mpuada-001
    overriding function Name (T : Arith_Case) return AUnit.Message_String is
    begin
       return AUnit.Format ("Compat_Arith");
    end Name;
 
-<<<<<<< HEAD
-   overriding procedure Register_Tests (T : in out Arith_Case) is
-   begin
-      Registration.Register_Routine (T, Test_List'Access, "inverse_sigma0");
-      Registration.Register_Routine
-        (T, Test_Count'Access, "inverse_sigma0_count");
-=======
    procedure Fixtures (T : in out Test_Case'Class) is
       Cases : constant Case_Vectors.Vector := Load ("arith");
       Count : Natural := 0;
@@ -242,10 +218,12 @@ package body Compat_Arith is
    overriding procedure Register_Tests (T : in out Arith_Case) is
       use AUnit.Test_Cases.Registration;
    begin
+      Register_Routine (T, Test_List'Access, "inverse_sigma0");
+      Register_Routine
+        (T, Test_Count'Access, "inverse_sigma0_count");
       Register_Routine (T, Fixtures'Access, "arith fixtures");
       Register_Routine (T, Boundaries'Access, "arith boundaries");
       Register_Routine (T, Properties'Access, "arith seeded properties");
->>>>>>> origin/dev-mpuada-001
    end Register_Tests;
 
    function Suite return AUnit.Test_Suites.Access_Test_Suite is
