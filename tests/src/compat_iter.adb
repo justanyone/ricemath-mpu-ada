@@ -1,11 +1,13 @@
 with AUnit.Assertions;
 with AUnit.Test_Cases;
 with Ada.Strings.Fixed;
+with Ada.Text_IO;
 with Ada.Strings.Unbounded;
 with Fixture_Support;
 with Math_Prime_Util.Int;
 with Math_Prime_Util.Iter;
 with Math_Prime_Util.Primality;
+with Math_Prime_Util.Sieve;
 
 package body Compat_Iter is
    use AUnit.Test_Cases;
@@ -52,7 +54,8 @@ package body Compat_Iter is
       begin
          for V of Values loop
             if Length (Token) > 0 then
-               Append (Token, (if Func = "forpart" then "+" else ","));
+               Append (Token, (if Func = "forpart" or Func = "forcomp"
+                            then "+" else ","));
             end if;
             Append (Token, Image (V));
          end loop;
@@ -86,7 +89,7 @@ package body Compat_Iter is
          end if;
          B := A;
          Options := (others => <>);
-         if Func = "forpart" then
+         if Func = "forpart" or Func = "forcomp" then
             for I in 2 .. Natural (C.Args.Length) loop
                declare
                   Token : constant String := To_String (C.Args (I));
@@ -124,13 +127,16 @@ package body Compat_Iter is
                   end if;
                end;
             end loop;
-         elsif Natural (C.Args.Length) > 1 then
+         elsif Func /= "formultiperm" and Func /= "forsetproduct"
+           and then Natural (C.Args.Length) > 1 then
             Fits := Parse_U64 (To_String (C.Args (2)), B) and then Fits;
          end if;
          --  Skipped ERROR rows: undef, negative, fractional and text inputs
          --  cannot reach these typed Ada APIs. Bigint inputs require the
          --  bigint tier. Prime streams crossing U64 are skipped as a whole.
-         if Func = "prime_iterator" and then not C.Error then
+         if (Func = "prime_iterator" or
+             Func = "prime_iterator_object_iterate")
+           and then not C.Error then
             declare
                Tokens : constant String := To_String (C.Result);
                Start : Positive := Tokens'First;
@@ -147,6 +153,19 @@ package body Compat_Iter is
                  and then Fits;
             end;
          end if;
+         if Func = "formultiperm" or Func = "forsetproduct" then
+            Fits := True;
+            for Arg of C.Args loop
+               if Arg /= "|" then
+                  Fits := Parse_U64 (To_String (Arg), B) and then Fits;
+               end if;
+            end loop;
+         end if;
+         --  iter.tsv 468,471: text multisets; 484,488: text products.
+         --  iter.tsv 475,490: Perl array-reference errors are unrepresentable.
+         --  iter.tsv 372,374,376,378: invalid typed composition options.
+         --  iter.tsv 537,540,543: object streams exceed U64.
+         --  iter.tsv 546,549,552: invalid typed object starts.
          if Fits and then not C.Error then
             if Func = "forprimes" then
                if Natural (C.Args.Length) = 1 then
@@ -168,6 +187,48 @@ package body Compat_Iter is
                end if;
             elsif Func = "forpart" then
                Forpart (Natural (A), Tuple'Access, Options);
+            elsif Func = "forcomp" then
+               Forcomp (Natural (A), Tuple'Access, Options);
+            elsif Func = "forderange" then
+               Forderange (Natural (A), Tuple'Access);
+            elsif Func = "formultiperm" or Func = "forsetproduct" then
+               declare
+                  Items : Value_Array (1 .. Natural (C.Args.Length));
+                  Length : Natural := 0;
+                  Lists : Value_List_Vectors.Vector;
+               begin
+                  for Arg of C.Args loop
+                     if Arg = "|" then
+                        Lists.Append (Items (1 .. Length));
+                        Length := 0;
+                     else
+                        Length := Length + 1;
+                        Items (Length) := U64'Value (To_String (Arg));
+                     end if;
+                  end loop;
+                  if Func = "formultiperm" then
+                     Formultiperm (Items (1 .. Length), Tuple'Access);
+                  else
+                     if not C.Args.Is_Empty then
+                        Lists.Append (Items (1 .. Length));
+                     end if;
+                     Forsetproduct (Lists, Tuple'Access);
+                  end if;
+               end;
+            elsif Func = "prime_iterator_object_iterate" then
+               declare
+                  Cursor : Prime_Object := Prime_Iterator_Object (A);
+                  P : Int.Optional_U64;
+               begin
+                  for I in 1 .. 50 loop
+                     Iterate (Cursor, P);
+                     AUnit.Assertions.Assert (P.Defined, "object ended");
+                     if I > 1 then
+                        Append (Got, " ");
+                     end if;
+                     Append (Got, Image (P.Value));
+                  end loop;
+               end;
             elsif Func = "forcomb" then
                if Natural (C.Args.Length) = 1 then
                   Forcomb (Natural (A), Tuple'Access);
@@ -200,11 +261,10 @@ package body Compat_Iter is
 
    procedure Check_Fixtures (T : in out Test_Case'Class) is
    begin
-      --  Skipped families outside the named task APIs: foroddcomposites,
-      --  foralmostprimes, forsemiprimes, forsquarefree, forsquarefreeint,
-      --  fordivisors, forcomp, forderange, formultiperm, forsetproduct.
-      --  Skipped prime_iterator_object and pio_* rows: Perl identity and
-      --  the extended object API are not the native cursor interface.
+      --  iter.tsv 494,497,500,503,506,509,512,515,518,521,524,527,
+      --  530,533,536,539,542: Perl object address strings have no Ada value.
+      --  Their numeric companions are replayed below. 545,548,551 are
+      --  invalid typed starts. Other families are outside this task.
       Replay ("forprimes");
       Replay ("forcomposites");
       Replay ("forfactored");
@@ -212,7 +272,110 @@ package body Compat_Iter is
       Replay ("forcomb");
       Replay ("forperm");
       Replay ("prime_iterator");
+      Replay ("prime_iterator_object_iterate");
    end Check_Fixtures;
+
+   procedure Check_Forcomp (T : in out Test_Case'Class) is
+   begin
+      Replay ("forcomp");
+   end Check_Forcomp;
+
+   procedure Check_Forderange (T : in out Test_Case'Class) is
+   begin
+      Replay ("forderange");
+   end Check_Forderange;
+
+   procedure Check_Formultiperm (T : in out Test_Case'Class) is
+   begin
+      Replay ("formultiperm");
+   end Check_Formultiperm;
+
+   procedure Check_Forsetproduct (T : in out Test_Case'Class) is
+   begin
+      Replay ("forsetproduct");
+   end Check_Forsetproduct;
+
+   procedure Check_Object (T : in out Test_Case'Class) is
+      Cursor : Prime_Object := Prime_Iterator_Object;
+      P : Int.Optional_U64;
+      procedure Expect (N : U64) is
+      begin
+         P := Value (Cursor);
+         AUnit.Assertions.Assert
+           (P.Defined and then P.Value = N, "object value " & Image (N));
+      end Expect;
+   begin
+      --  iter.tsv 554..560: next, prev, peek, iterate and rewind sequence.
+      for I in 1 .. 10 loop
+         Next (Cursor);
+      end loop;
+      Expect (31);
+      Prev (Cursor);
+      Expect (29);
+      P := Peek (Cursor);
+      AUnit.Assertions.Assert (P.Defined and then P.Value = 31, "peek");
+      Expect (29);
+      Iterate (Cursor, P);
+      AUnit.Assertions.Assert (P.Defined and then P.Value = 29, "iterate");
+      Iterate (Cursor, P);
+      AUnit.Assertions.Assert (P.Defined and then P.Value = 31, "iterate 2");
+      Rewind (Cursor);
+      for I in 1 .. 3 loop
+         Next (Cursor);
+      end loop;
+      Prev (Cursor);
+      Expect (5);
+      for N in 0 .. 2 loop
+         Rewind (Cursor, U64 (N));
+         Prev (Cursor);
+         Expect (2);
+      end loop;
+      --  561,562 require bigint successors: assert native exhaustion.
+      --  563..591 cover NumSeq methods beyond the six requested operations.
+      Rewind (Cursor, 18446744073709551557);
+      Expect (18446744073709551557);
+      Next (Cursor);
+      P := Value (Cursor);
+      AUnit.Assertions.Assert (not P.Defined, "object wrapped");
+      Next (Cursor);
+      P := Peek (Cursor);
+      AUnit.Assertions.Assert (not P.Defined, "exhausted peek");
+      Prev (Cursor);
+      Expect (18446744073709551557);
+      Rewind (Cursor, U64'Last);
+      P := Value (Cursor);
+      AUnit.Assertions.Assert (not P.Defined, "rewind beyond prime");
+      Replay ("prime_iterator_object_iterate");
+   end Check_Object;
+
+   procedure Check_Print (T : in out Test_Case'Class) is
+      File : Ada.Text_IO.File_Type;
+      Path : constant String := "obj/iter-primes.txt";
+      procedure Check (Low, High : U64) is
+         Expected : constant Sieve.Prime_Vectors.Vector :=
+           Sieve.Primes (Low, High);
+      begin
+         Ada.Text_IO.Create (File, Ada.Text_IO.Out_File, Path);
+         Print_Primes (Low, High, File);
+         Ada.Text_IO.Close (File);
+         Ada.Text_IO.Open (File, Ada.Text_IO.In_File, Path);
+         for P of Expected loop
+            AUnit.Assertions.Assert
+              (not Ada.Text_IO.End_Of_File (File), "missing printed prime");
+            AUnit.Assertions.Assert
+              (Ada.Text_IO.Get_Line (File) = Image (P), "printed prime");
+         end loop;
+         AUnit.Assertions.Assert
+           (Ada.Text_IO.End_Of_File (File), "extra printed prime");
+         Ada.Text_IO.Close (File);
+      end Check;
+   begin
+      Check (0, 30);
+      Check (31, 31);
+      Check (90, 120);
+      Check (20, 10);
+      Check (0, 1);
+   end Check_Print;
 
    procedure Check_Control (T : in out Test_Case'Class) is
       Rows : constant Case_Vectors.Vector := Load ("iter");
@@ -524,6 +687,15 @@ package body Compat_Iter is
    overriding procedure Register_Tests (T : in out Iter_Case) is
    begin
       Registration.Register_Routine (T, Check_Fixtures'Access, "fixtures");
+      Registration.Register_Routine (T, Check_Forcomp'Access, "forcomp");
+      Registration.Register_Routine
+        (T, Check_Forderange'Access, "forderange");
+      Registration.Register_Routine
+        (T, Check_Formultiperm'Access, "formultiperm");
+      Registration.Register_Routine
+        (T, Check_Forsetproduct'Access, "forsetproduct");
+      Registration.Register_Routine (T, Check_Object'Access, "object");
+      Registration.Register_Routine (T, Check_Print'Access, "print_primes");
       Registration.Register_Routine (T, Check_Control'Access, "control");
       Registration.Register_Routine
         (T, Check_Properties'Access, "properties");
