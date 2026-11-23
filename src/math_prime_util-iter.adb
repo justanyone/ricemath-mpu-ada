@@ -91,9 +91,16 @@ package body Math_Prime_Util.Iter is
 
    --  factor.c: prho_factor. Deterministic rho splitting, used until the
    --  separate Factor package is available. All products use mulmod.
+   function Split (N : U64) return U64
+     with Pre => N >= 4,
+          Post => Split'Result > 1 and then Split'Result < N
+            and then N mod Split'Result = 0;
+
    function Split (N : U64) return U64 is
       X, Y, D : U64;
       C : U64 := 1;
+      function Step (V : U64) return U64;
+
       function Step (V : U64) return U64 is
       begin
          return Int.Addmod (Int.Mulmod (V, V, N).Value, C, N).Value;
@@ -128,6 +135,8 @@ package body Math_Prime_Util.Iter is
       Value : U64 := U64'Max (1, Low);
       Factors : Value_Array (1 .. 64);
       Count : Natural range 0 .. 64 := 0;
+      procedure Factor (N : U64);
+
       procedure Factor (N : U64) is
          D : U64;
       begin
@@ -187,6 +196,8 @@ package body Math_Prime_Util.Iter is
       Max_Length : constant Natural := Natural'Min (N, Options.Nmax);
       Min_Part : constant Natural := Natural'Max (1, Options.Amin);
       Max_Part : constant Natural := Natural'Min (N, Options.Amax);
+      procedure Visit (Remaining, Minimum, Length : Natural);
+
       procedure Visit (Remaining, Minimum, Length : Natural) is
       begin
          if Remaining = 0 then
@@ -221,8 +232,16 @@ package body Math_Prime_Util.Iter is
      (N, K : Natural; Context : in out Loop_Context;
       Process : not null access procedure
         (Values : Value_Array; Context : in out Loop_Context))
+     with Pre => K <= N;
+
+   procedure Combinations
+     (N, K : Natural; Context : in out Loop_Context;
+      Process : not null access procedure
+        (Values : Value_Array; Context : in out Loop_Context))
    is
       Values : Value_Array (1 .. K);
+      procedure Visit (First, Length : Natural);
+
       procedure Visit (First, Length : Natural) is
       begin
          if Length = K then
@@ -272,6 +291,8 @@ package body Math_Prime_Util.Iter is
       Context : Loop_Context := (Active => True, Stop => False);
       Values : Value_Array (1 .. N);
       Used : array (1 .. N) of Boolean := (others => False);
+      procedure Visit (Length : Natural);
+
       procedure Visit (Length : Natural) is
       begin
          if Length = N then

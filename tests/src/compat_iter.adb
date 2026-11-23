@@ -220,6 +220,7 @@ package body Compat_Iter is
       Outer_Value : U64;
       Inactive : Loop_Context;
       Raised : Boolean := False;
+      Selected : Boolean;
       Callback_Error : exception;
       procedure Push (Value : U64) is
       begin
@@ -312,6 +313,7 @@ package body Compat_Iter is
       end Catch_Inner;
    begin
       for C of Rows loop
+         Selected := True;
          Got := Null_Unbounded_String;
          Count := 0;
          if C.Func = "lastfor_forprimes_forprimes" then
@@ -365,11 +367,12 @@ package body Compat_Iter is
             Got := To_Unbounded_String ("ERROR");
          else
             --  Other lastfor rows exercise families outside this task.
-            goto Continue_Row;
+            Selected := False;
          end if;
-         AUnit.Assertions.Assert
-           (Got = C.Result, To_String (C.Func) & " got " & To_String (Got));
-         <<Continue_Row>>
+         if Selected then
+            AUnit.Assertions.Assert
+              (Got = C.Result, To_String (C.Func) & " got " & To_String (Got));
+         end if;
       end loop;
       --  Boundary intervals never wrap, even when a callback stops early.
       Got := Null_Unbounded_String;
