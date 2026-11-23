@@ -1,4 +1,5 @@
 with Ada.Containers.Vectors;
+with Math_Prime_Util.Count;
 with Math_Prime_Util.Int;
 with Math_Prime_Util.Sieve;
 
@@ -177,4 +178,170 @@ package Math_Prime_Util.Families with SPARK_Mode => On is
    function Nth_Semiprime_Approx (N : U64) return Int.Optional_U64
      with SPARK_Mode => On, Pre => True,
           Post => (if N = 0 then not Nth_Semiprime_Approx'Result.Defined);
+
+   --  prime_powers.c: prime_power. Exponent and prime root.
+   --  Exponent is zero when N is not a prime power; the root is then zero.
+   type Prime_Power_Factor is record
+      Exponent : U64;
+      Root : U64;
+   end record;
+
+   --  prime_powers.c: prime_power. Units are the exponent and the prime.
+   --  N below 2 yields exponent 0. No separate error result.
+   function Prime_Power (N : U64) return Prime_Power_Factor
+     with Pre => True,
+          Post => (if N < 2 then Prime_Power'Result.Exponent = 0
+                   else Prime_Power'Result.Exponent <= 63);
+
+   --  prime_powers.c: is_prime_power. The exponent, or zero if none.
+   function Is_Prime_Power (N : U64) return U64
+     with Pre => True,
+          Post => Is_Prime_Power'Result = Prime_Power (N).Exponent;
+
+   --  prime_powers.c: next_prime_power. Strict successor.
+   --  Undefined when the successor does not fit in U64.
+   function Next_Prime_Power (N : U64) return Int.Optional_U64
+     with Pre => True,
+          Post => (if Next_Prime_Power'Result.Defined then
+                     Next_Prime_Power'Result.Value > N);
+
+   --  prime_powers.c: prev_prime_power. Strict predecessor.
+   --  Undefined for N below 3.
+   function Prev_Prime_Power (N : U64) return Int.Optional_U64
+     with Pre => True,
+          Post => (if Prev_Prime_Power'Result.Defined then
+                     Prev_Prime_Power'Result.Value < N);
+
+   --  prime_powers.c: prime_power_sieve. Prime powers in [Low, High].
+   --  Reversed bounds and High below 2 are empty.
+   --  Storage_Error may propagate from the sieve or the result vector.
+   function Prime_Powers (Low, High : U64) return Family_Vectors.Vector
+     with Pre => True,
+          Post => (for all P of Prime_Powers'Result =>
+                     P >= Low and then P <= High and then P >= 2);
+
+   --  Prime powers from 2 through High, inclusive.
+   function Prime_Powers (High : U64) return Family_Vectors.Vector
+     with Pre => True,
+          Post => (for all P of Prime_Powers'Result =>
+                     P <= High and then P >= 2);
+
+   --  prime_powers.c: prime_power_count. Count of prime powers <= High.
+   --  Uses Prime_Count, so High must fit that limit.
+   function Prime_Power_Count (High : U64) return U64
+     with Pre => High <= Count.Prime_Count_Limit,
+          Post => Prime_Power_Count'Result <= High;
+
+   --  prime_powers.c: prime_power_count_range. Inclusive.
+   --  Reversed bounds and High below 2 return zero.
+   function Prime_Power_Count (Low, High : U64) return U64
+     with Pre => Low > High or else High < 2
+       or else High <= Count.Prime_Count_Limit,
+          Post => (if Low > High or else High < 2 then
+                     Prime_Power_Count'Result = 0);
+
+   --  prime_powers.c: prime_power_count_lower. Sum of prime lower bounds.
+   function Prime_Power_Count_Lower (High : U64) return U64
+     with Pre => True,
+          Post => Prime_Power_Count_Lower'Result <= U64'Last;
+
+   --  prime_powers.c: prime_power_count_upper. Sum of prime upper bounds.
+   function Prime_Power_Count_Upper (High : U64) return U64
+     with Pre => True,
+          Post => Prime_Power_Count_Upper'Result <= U64'Last;
+
+   --  prime_powers.c: prime_power_count_approx. Sum of prime estimates.
+   function Prime_Power_Count_Approx (High : U64) return U64
+     with Pre => True,
+          Post => Prime_Power_Count_Approx'Result <= U64'Last;
+
+   --  prime_powers.c: nth_prime_power. One-based; zero is undefined.
+   --  The exact search stays inside the tested prime-count range.
+   function Nth_Prime_Power (N : U64) return Int.Optional_U64
+     with Pre => N <= 300_000_000,
+          Post => Nth_Prime_Power'Result.Defined = (N /= 0);
+
+   --  prime_powers.c: nth_prime_power_lower. One-based; zero undefined.
+   function Nth_Prime_Power_Lower (N : U64) return Int.Optional_U64
+     with Pre => N <= 300_000_000,
+          Post => Nth_Prime_Power_Lower'Result.Defined = (N /= 0);
+
+   --  prime_powers.c: nth_prime_power_upper. One-based; zero undefined.
+   function Nth_Prime_Power_Upper (N : U64) return Int.Optional_U64
+     with Pre => N <= 300_000_000,
+          Post => Nth_Prime_Power_Upper'Result.Defined = (N /= 0);
+
+   --  prime_powers.c: nth_prime_power_approx. One-based; zero undefined.
+   function Nth_Prime_Power_Approx (N : U64) return Int.Optional_U64
+     with Pre => N <= 300_000_000,
+          Post => Nth_Prime_Power_Approx'Result.Defined = (N /= 0);
+
+   --  perfect_powers.c: is_perfect_power. True for 0, 1, and higher powers.
+   function Is_Perfect_Power (N : U64) return Boolean
+     with Pre => True,
+          Post => (if N <= 1 then Is_Perfect_Power'Result);
+
+   --  perfect_powers.c: is_perfect_power_neg for a negative argument.
+   --  The absolute value must fit in U64. Odd exponents qualify.
+   function Is_Perfect_Power (N : Int.I128) return Boolean
+     with Pre => N >= -(2 ** 63) and then N <= 2 ** 64 - 1,
+          Post => (if N in 0 .. 1 then Is_Perfect_Power'Result);
+
+   --  perfect_powers.c: next_perfect_power and next_perfect_power_neg.
+   --  Negative arguments step through odd powers. Zero means the
+   --  positive successor does not fit in U64.
+   function Next_Perfect_Power (N : Int.I128) return Int.I128
+     with Pre => N >= -(2 ** 63) and then N < 2 ** 64,
+          Post => Next_Perfect_Power'Result > N
+            or else Next_Perfect_Power'Result = 0;
+
+   --  perfect_powers.c: prev_perfect_power and prev_perfect_power_neg.
+   --  Prev (0) is -1. Negative arguments step through odd powers.
+   function Prev_Perfect_Power (N : Int.I128) return Int.I128
+     with Pre => N >= -(2 ** 63) and then N <= 2 ** 64 - 1,
+          Post => Prev_Perfect_Power'Result < N;
+
+   --  perfect_powers.c: perfect_power_count. Count through High.
+   function Perfect_Power_Count (High : U64) return U64
+     with Pre => True,
+          Post => Perfect_Power_Count'Result <= High + 1;
+
+   --  perfect_powers.c: perfect_power_count_lower. Same as the exact count.
+   function Perfect_Power_Count_Lower (High : U64) return U64
+     with Pre => True,
+          Post => Perfect_Power_Count_Lower'Result =
+            Perfect_Power_Count (High);
+
+   --  perfect_powers.c: perfect_power_count_upper. Same as the exact count.
+   function Perfect_Power_Count_Upper (High : U64) return U64
+     with Pre => True,
+          Post => Perfect_Power_Count_Upper'Result =
+            Perfect_Power_Count (High);
+
+   --  perfect_powers.c: perfect_power_count_approx. Same as the exact count.
+   function Perfect_Power_Count_Approx (High : U64) return U64
+     with Pre => True,
+          Post => Perfect_Power_Count_Approx'Result =
+            Perfect_Power_Count (High);
+
+   --  perfect_powers.c: nth_perfect_power. One-based; zero is undefined.
+   --  At and above the native index limit the result is the native maximum.
+   function Nth_Perfect_Power (N : U64) return Int.Optional_U64
+     with Pre => True,
+          Post => Nth_Perfect_Power'Result.Defined = (N /= 0);
+
+   --  perfect_powers.c: nth_perfect_power_lower. Zero is undefined.
+   function Nth_Perfect_Power_Lower (N : U64) return Int.Optional_U64
+     with Pre => True,
+          Post => Nth_Perfect_Power_Lower'Result.Defined = (N /= 0);
+
+   --  perfect_powers.c: nth_perfect_power_upper. Zero is undefined.
+   function Nth_Perfect_Power_Upper (N : U64) return Int.Optional_U64
+     with Pre => True,
+          Post => Nth_Perfect_Power_Upper'Result.Defined = (N /= 0);
+
+   --  perfect_powers.c: nth_perfect_power_approx. Zero is undefined.
+   function Nth_Perfect_Power_Approx (N : U64) return Int.Optional_U64
+     with Pre => True,
+          Post => Nth_Perfect_Power_Approx'Result.Defined = (N /= 0);
 end Math_Prime_Util.Families;
