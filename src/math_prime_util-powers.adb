@@ -407,6 +407,7 @@ package body Math_Prime_Util.Powers with SPARK_Mode => Off is
       Span, Step : U64;
       Below : Boolean;
       Settled : Boolean := False;
+      Round : Natural := 2;
    begin
       if N = 0 then
          return (Defined => False);
@@ -416,7 +417,7 @@ package body Math_Prime_Util.Powers with SPARK_Mode => Off is
       Approx_N := Nth_Prime_Power_Approx (N).Value;
       Guess := Approx_N;
       Count_At := Prime_Power_Count (Guess);
-      for Gn in 2 .. 19 loop
+      while Round <= 19 loop
          if Count_At = N
            or else (N > Count_At and then N - Count_At < Tol)
            or else (Count_At > N and then Count_At - N < Tol)
@@ -461,6 +462,7 @@ package body Math_Prime_Util.Powers with SPARK_Mode => Off is
             end if;
          end if;
          Count_At := Prime_Power_Count (Guess);
+         Round := Round + 1;
       end loop;
       if not Settled then
          Count_At := Prime_Power_Count (Guess);
