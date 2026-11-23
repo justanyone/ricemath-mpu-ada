@@ -3,3 +3,4 @@ Read the plan, status, reference algorithms, and existing iterator tests first.
 Extend fixture replay and add deterministic file-output and edge tests.
 Run focused tests and the configured gate; record any environment limitations.
 - 2026-11-23T22:28:23Z launcher: no commit for 60 s; 90 s elapsed. Files changed so far: docs/worker-notes/demand-b80b4d0e8b8a4d5cb61d0ca99b517bc7.md.
+Read the existing iterator implementation and MPU sources; use lexical traversals, optional native prime results, and copied integer-list products. Perl identity/text/bigint fixture rows need named skip comments.
