@@ -239,7 +239,8 @@ package body Compat_Vec is
                           (Image (Setdelta (X, Y)));
                      elsif Func = "sumset" then
                         Actual := To_Unbounded_String
-                          (Image ((if Right then Sumset (X, Y) else Sumset (X))));
+                          (Image ((if Right then Sumset (X, Y)
+                                   else Sumset (X))));
                      elsif Func = "vecequal" then
                         Flag := Vecequal (X, Y);
                         Actual := To_Unbounded_String
