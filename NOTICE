@@ -29,3 +29,8 @@ differences and review limits are listed in
 [docs/upstream-findings.md](docs/upstream-findings.md).
 
 MPU is not affiliated with this port and has not endorsed it.
+
+Counting changes: the Ada extended LMO kernel and sparse prime-count tables
+translate lmo.c (LMO_prime_count, ft_create, phi sieve) and
+prime_count_tables.h from MPU 0.75. Scratch storage uses controlled Ada
+holders; narrow native ranges use the existing segmented sieve.

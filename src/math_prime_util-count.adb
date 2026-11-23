@@ -89,6 +89,11 @@ package body Math_Prime_Util.Count is
 
    function Prime_Count (High : U64) return U64 is
    begin
+      --  constants.h: MPU_MAX_PRIME and MPU_MAX_PRIME_IDX. There are no
+      --  further primes representable by U64 past this endpoint.
+      if High >= Max_Prime then
+         return Nth_Prime_Limit;
+      end if;
       return Lmo.Count (High);
    end Prime_Count;
 

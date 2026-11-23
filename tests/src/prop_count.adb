@@ -102,8 +102,54 @@ package body Prop_Count is
          "concurrent sums use independent scratch storage");
    end Concurrent_Calls;
 
+   procedure Count_Boundaries (T : in out Test_Case'Class) is
+      type U64_Array is array (Positive range <>) of U64;
+      Seed : U64 := 20_261_020;
+      N : U64;
+      Expected : U64;
+   begin
+      AUnit.Assertions.Assert
+        (Count.Prime_Count (U64'Last) = Count.Nth_Prime_Limit,
+         "native maximum count");
+      AUnit.Assertions.Assert
+        (Count.Prime_Count (18_446_744_073_709_551_557) =
+           Count.Nth_Prime_Limit, "count at final native prime");
+      AUnit.Assertions.Assert
+        (Count.Nth_Prime (Count.Nth_Prime_Limit) =
+           18_446_744_073_709_551_557, "native final prime index");
+      AUnit.Assertions.Assert
+        (Count.Prime_Count (100, 2) = 0, "empty count interval");
+      for Boundary of U64_Array'[2 ** 32, 2 ** 63, U64'Last - 1] loop
+         Expected := U64 (Sieve.Primes (Boundary - 1, Boundary + 1).Length);
+         AUnit.Assertions.Assert
+           (Count.Prime_Count (Boundary - 1, Boundary + 1) = Expected,
+            "native boundary interval");
+      end loop;
+      --  Exercise LMO above the table crossover against an independent
+      --  segmented enumeration, then check both neighbors of its last prime.
+      for I in 1 .. 3 loop
+         Seed := Seed * 6_364_136_223_846_793_005 + 1;
+         N := 66_000_000 + Seed mod 1_000_000;
+         declare
+            Ps : constant Sieve.Prime_Vectors.Vector := Sieve.Primes (N);
+            P : constant U64 := Ps.Last_Element;
+         begin
+            Expected := U64 (Ps.Length);
+            AUnit.Assertions.Assert
+              (Count.Prime_Count (N) = Expected,
+               "LMO versus sieve seed 20261020" & U64'Image (N));
+            AUnit.Assertions.Assert
+              (Count.Prime_Count (P) = Expected and then
+               Count.Prime_Count (P - 1) = Expected - 1,
+               "LMO prime boundary seed 20261020");
+         end;
+      end loop;
+   end Count_Boundaries;
+
    overriding procedure Register_Tests (T : in out Count_Case) is
    begin
+      Registration.Register_Routine
+        (T, Count_Boundaries'Access, "LMO and native boundaries");
       Registration.Register_Routine
         (T, Boundaries'Access, "sum boundaries and repeated calls");
       Registration.Register_Routine
