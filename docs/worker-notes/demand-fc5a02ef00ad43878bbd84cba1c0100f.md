@@ -11,3 +11,4 @@ Progress: added pytest-bdd feature and native-suite bridge; Alire builds are sti
 Progress: aligned inverse list/count implementations with the reference divisor-keyed dynamic programming, including native list-overflow bounds.
 Progress: library and test builds pass sequentially; added dedicated native runner because the shared runner does not apply the requested filter.
 Progress: added explicit native boundaries for lambda, psi overflow, and signed Ramanujan sums; focused runner build and first execution are underway.
+Progress: focused test executable links successfully; running fixtures, native boundaries, and BDD before the full declared gate.
