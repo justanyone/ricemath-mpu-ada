@@ -3,11 +3,15 @@ with Math_Prime_Util.Factor;
 package body Math_Prime_Util.Arith with SPARK_Mode => On is
    use type U128;
 
+   --  Sigma_1 (N) / N <= H_N < 65 for native N (dyadic groups).
+   --  This bound also keeps conversion to the signed I128 type exact.
+   Wide_Limit : constant U128 := U128 (U64'Last) * 128;
+
    --  A native integer has at most N divisors, each at most N, so sigma
    --  fits U128. Cap intermediate products before any modular wrap.
    function Sigma (N, K : U64; Limit : U128) return U128
-     with Pre => Limit in 1 .. U128'Last - 1
-;
+     with Pre => Limit in 1 .. U128'Last - 1,
+          Post => Sigma'Result <= Limit + 1;
    function Sigma (N, K : U64; Limit : U128) return U128 is
       Factors : constant Factor.Factor_List := Factor.Factor (N);
       Product : U128 := 1;
@@ -79,7 +83,7 @@ package body Math_Prime_Util.Arith with SPARK_Mode => On is
       if N <= 1 then
          return (True, 0);
       end if;
-      return Native (Sigma (N, 1, U128'Last - 1) - U128 (N));
+      return Native (Sigma (N, 1, Wide_Limit) - U128 (N));
    end Aliquot_Sum;
 
    function Abundance (N : U64) return I128 is
@@ -87,7 +91,7 @@ package body Math_Prime_Util.Arith with SPARK_Mode => On is
       if N = 0 then
          return 0;
       end if;
-      return I128 (Sigma (N, 1, U128'Last - 1)) - 2 * I128 (N);
+      return I128 (Sigma (N, 1, Wide_Limit)) - 2 * I128 (N);
    end Abundance;
 
    function Sopf (N : U64) return U64 is
