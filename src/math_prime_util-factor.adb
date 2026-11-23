@@ -6,6 +6,7 @@ with Math_Prime_Util.Sieve;
 
 --  factor.c and the XS.xs wrappers for the single-split methods.
 package body Math_Prime_Util.Factor is
+   use type U64;
    use type U128;
    use type Interfaces.Unsigned_32;
    subtype U32 is Interfaces.Unsigned_32;
@@ -115,7 +116,7 @@ package body Math_Prime_Util.Factor is
       R : U64;
       Bit : U64;
    begin
-      Bit := Interfaces.Shift_Left (U64'(1), Natural (N and 63));
+      Bit := Interfaces.Shift_Left (U64'(1), Natural (N mod 64));
       if (Bit and 16#FDFD_FDED_FDFC_FDEC#) /= 0 then
          Root := 0;
          return False;
@@ -846,7 +847,7 @@ package body Math_Prime_Util.Factor is
          Guard : Natural := 0;
       begin
          loop
-            if (I and 1) /= 0 then
+            if I mod 2 /= 0 then
                T1 := P;
                P := Bn * Qn - P;
                T2 := Qn;
@@ -1045,7 +1046,7 @@ package body Math_Prime_Util.Factor is
       B2 := U64 (B * B);
       Kn := 0;
       for K in U32 range 1 .. Bred loop
-         if (K and 1) /= 0 then
+         if K mod 2 /= 0 then
             Inc := 4;
             R := U32 ((U64 (K) + N) mod 4);
          else
