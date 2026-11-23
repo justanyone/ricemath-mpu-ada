@@ -55,87 +55,148 @@ package body Math_Prime_Util.Arith.Totients is
       return (True, U64 (Result));
    end Dedekind_Psi;
 
-   --  The reference's divisor-keyed sets store intermediate products.
-   --  Recursing over the same prime/divisor choices avoids storing them.
-   procedure Inverse_Search
-     (N : U64; Values : out U64_Vectors.Vector; Count : out U64;
-      Count_Only : Boolean)
-     with SPARK_Mode => Off
-;
-
-   procedure Inverse_Search
-     (N : U64; Values : out U64_Vectors.Vector; Count : out U64;
-      Count_Only : Boolean)
-     with SPARK_Mode => Off
-   is
-      Divs : constant Factor.U64_Vectors.Vector := Factor.Divisors (N);
-      procedure Visit (Remaining, Product, Minimum : U64);
-      procedure Visit (Remaining, Product, Minimum : U64) is
-         P, R, V : U64;
-      begin
-         if Remaining = 1 then
-            if Count = U64'Last then
-               raise Constraint_Error with "inverse totient count overflow";
-            end if;
-            Count := Count + 1;
-            if not Count_Only then
-               Values.Append (Product);
-            end if;
-         end if;
-         for Index in Divs.First_Index .. Divs.Last_Index loop
-            declare
-               D : constant U64 := Divs.Element (Index);
-            begin
-               exit when D > Remaining;
-               if D < U64'Last and then D + 1 >= Minimum
-                 and then Remaining mod D = 0
-                 and then Primality.Is_Prime (D + 1) /= 0
-               then
-                  P := D + 1;
-                  R := Remaining / D;
-                  V := Product;
-                  loop
-                     if V > U64'Last / P then
-                        if not Count_Only then
-                           raise Constraint_Error with
-                             "inverse totient preimage overflow";
-                        end if;
-                     else
-                        V := V * P;
-                     end if;
-                     Visit (R, V, P + 1);
-                     exit when R mod P /= 0;
-                     R := R / P;
-                  end loop;
-               end if;
-            end;
-         end loop;
-      end Visit;
-   begin
-      Values.Clear;
-      Count := 0;
-      if N = 0 or else (N > 1 and then N mod 2 = 1) then
-         return;
-      end if;
-      Visit (N, 1, 2);
-   end Inverse_Search;
-
    function Inverse_Totient (N : U64) return U64_Vectors.Vector is
+      package Lists is new Ada.Containers.Ordered_Maps
+        (U64, U64_Vectors.Vector, "<", U64_Vectors."=");
       package Sorting is new U64_Vectors.Generic_Sorting;
-      Values : U64_Vectors.Vector;
-      Count : U64;
+      Set, Added : Lists.Map;
+      Divs : Factor.U64_Vectors.Vector;
+      Initial, Result : U64_Vectors.Vector;
+      D, P, DP, PP, R, Key : U64;
    begin
-      Inverse_Search (N, Values, Count, False);
-      Sorting.Sort (Values);
-      return Values;
+      if N = 0 or else (N > 1 and then N mod 2 = 1) then
+         return Result;
+      elsif N = 1 then
+         Result.Append (1);
+         Result.Append (2);
+         return Result;
+      end if;
+      --  totients.c refuses the list when products can exceed U64.
+      if N >= 2_459_565_884_898_017_280 then
+         raise Constraint_Error with "inverse totient list overflow";
+      end if;
+      Divs := Factor.Divisors (N);
+      Initial.Append (1);
+      Set.Insert (1, Initial);
+      for I in reverse Divs.First_Index .. Divs.Last_Index loop
+         D := Divs.Element (I);
+         P := D + 1;
+         if Primality.Is_Prime (P) /= 0 then
+            DP := D;
+            PP := P;
+            R := N;
+            Added.Clear;
+            loop
+               for J in Divs.First_Index .. Divs.Last_Index loop
+                  Key := Divs.Element (J);
+                  exit when Key > N / DP;
+                  if (N / DP) mod Key = 0
+                    and then (D /= 1 or else Key * DP = N)
+                    and then Set.Contains (Key)
+                  then
+                     declare
+                        Values : U64_Vectors.Vector;
+                        Source : constant U64_Vectors.Vector :=
+                          Set.Element (Key);
+                     begin
+                        if Added.Contains (Key * DP) then
+                           Values := Added.Element (Key * DP);
+                        end if;
+                        for K in Source.First_Index .. Source.Last_Index loop
+                           if Source.Element (K) > U64'Last / PP then
+                              raise Constraint_Error with
+                                "inverse totient preimage overflow";
+                           end if;
+                           Values.Append (Source.Element (K) * PP);
+                        end loop;
+                        Added.Include (Key * DP, Values);
+                     end;
+                  end if;
+               end loop;
+               exit when R mod P /= 0;
+               R := R / P;
+               exit when DP > N / P;
+               DP := DP * P;
+               PP := PP * P;
+            end loop;
+            for Position in Added.Iterate loop
+               Key := Lists.Key (Position);
+               if Set.Contains (Key) then
+                  declare
+                     Values : U64_Vectors.Vector := Set.Element (Key);
+                  begin
+                     Values.Append (Lists.Element (Position));
+                     Set.Replace (Key, Values);
+                  end;
+               else
+                  Set.Insert (Key, Lists.Element (Position));
+               end if;
+            end loop;
+         end if;
+      end loop;
+      if Set.Contains (N) then
+         Result := Set.Element (N);
+         Sorting.Sort (Result);
+      end if;
+      return Result;
    end Inverse_Totient;
 
    function Inverse_Totient_Count (N : U64) return U64 is
-      Values : U64_Vectors.Vector;
-      Count : U64;
+      package Counts is new Ada.Containers.Ordered_Maps (U64, U64);
+      Set, Added : Counts.Map;
+      Divs : Factor.U64_Vectors.Vector;
+      D, P, DP, R, Key, Value : U64;
+      procedure Add (Target : in out Counts.Map; K, V : U64);
+      procedure Add (Target : in out Counts.Map; K, V : U64) is
+      begin
+         if Target.Contains (K) then
+            if Target.Element (K) > U64'Last - V then
+               raise Constraint_Error with "inverse totient count overflow";
+            end if;
+            Target.Replace (K, Target.Element (K) + V);
+         else
+            Target.Insert (K, V);
+         end if;
+      end Add;
    begin
-      Inverse_Search (N, Values, Count, True);
-      return Count;
+      if N = 1 then
+         return 2;
+      elsif N = 0 or else N mod 2 = 1 then
+         return 0;
+      end if;
+      Divs := Factor.Divisors (N);
+      Set.Insert (1, 1);
+      for I in Divs.First_Index .. Divs.Last_Index loop
+         D := Divs.Element (I);
+         P := D + 1;
+         if Primality.Is_Prime (P) /= 0 then
+            DP := D;
+            R := N;
+            Added.Clear;
+            loop
+               if DP = 1 then
+                  Add (Added, 1, 1);
+               else
+                  for J in Divs.First_Index .. Divs.Last_Index loop
+                     Key := Divs.Element (J);
+                     exit when Key > N / DP;
+                     if (N / DP) mod Key = 0 and then Set.Contains (Key) then
+                        Value := Set.Element (Key);
+                        Add (Added, Key * DP, Value);
+                     end if;
+                  end loop;
+               end if;
+               exit when R mod P /= 0;
+               R := R / P;
+               exit when DP > N / P;
+               DP := DP * P;
+            end loop;
+            for Position in Added.Iterate loop
+               Add (Set, Counts.Key (Position), Counts.Element (Position));
+            end loop;
+         end if;
+      end loop;
+      return (if Set.Contains (N) then Set.Element (N) else 0);
    end Inverse_Totient_Count;
 
    function Is_Totient (N : U64) return Boolean is

@@ -8,3 +8,4 @@ Progress: wrote public API and factor/divisor-based implementations plus local s
 Progress: XDG_RUNTIME_DIR override lets Alire build in obj/tmp; added eight fixture tests, count/list checks, seeded laws, and exact wide-sum oracle checks.
 Progress: library compiles; focused AUnit build launched. Native-overflow sum fixtures are named skips, with the exact 128-bit crossing checked separately.
 Progress: added pytest-bdd feature and native-suite bridge; Alire builds are still running, and gnatprove is unavailable on this host.
+Progress: aligned inverse list/count implementations with the reference divisor-keyed dynamic programming, including native list-overflow bounds.
