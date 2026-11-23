@@ -1286,7 +1286,7 @@ package body Math_Prime_Util.Factor is
       Inv := Rest / 2 + 1;
       X := (if Initx = 0 then 72 else Initx mod Rest);
       Primes := Sieve.Primes (2, Bound);
-      for I in 1 .. Natural (Primes.Length) loop
+      for I in Primes.First_Index .. Primes.Last_Index loop
          declare
             P : constant U64 := Primes.Element (I);
          begin

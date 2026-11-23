@@ -99,6 +99,10 @@ package body Prop_Factor is
            (not Is_Almost_Prime (U64'Last, N)
             and then not Is_Omega_Prime (U64'Last, N), "huge K");
       end loop;
+      Split := Cheb_Factor (403);
+      AUnit.Assertions.Assert
+        (Split.Count = 2 and then Split.Value (1) = 13
+         and then Split.Value (2) = 31, "prime iterator includes two");
       Split := Cheb_Factor (221, 100, U64'Last);
       AUnit.Assertions.Assert
         (Split.Count = 2 and then Split.Value (1) = 13
