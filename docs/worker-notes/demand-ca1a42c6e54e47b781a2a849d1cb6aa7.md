@@ -8,3 +8,4 @@ Added five operation tests and nine native bigint_sets fixture rows; named all n
 Development library build passed. Focused AUnit build is running; checks include empty/singleton lists, list and empty callback returns, arbitrary bounds, huge steps, canonical callback order, and input snapshots.
 Review found intermediate index additions could overflow for Positive'Last lower bounds. Reassociated those expressions and added maximum-index tests; gate has started.
 Both development and release build phases accept the new library. Added all specified U64 edge values to callback traversal tests; waiting for initial test-crate compilation before final validation.
+Initial focused build reached binding but rejected sources edited during compilation. Waiting for the gate to rebuild the final source revision; no source edits while it compiles.

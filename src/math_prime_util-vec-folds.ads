@@ -26,7 +26,7 @@ package Math_Prime_Util.Vec.Folds with SPARK_Mode => On is
    generic
       with function Block (A, B : U64) return Value_Array;
    function Vecpairwise (Left, Right : Value_Array) return Value_Array
-     with Post => (if Left'Length = 0 or Right'Length = 0
+     with Post => (if Left'Length = 0 or else Right'Length = 0
                    then Vecpairwise'Result'Length = 0);
 
    --  XS.xs / PP.pm vecwindow: concatenate lists from full windows only.

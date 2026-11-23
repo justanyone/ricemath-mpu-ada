@@ -93,7 +93,7 @@ package body Compat_Vec_Folds is
       function Count_Reduce is new Vecreduce (Count);
    begin
       Assert (not Reduce ([]).Defined, "26-vec.t:266 empty");
-      Assert (Count_Reduce ([15]).Value = 15 and Calls = 0,
+      Assert (Count_Reduce ([15]).Value = 15 and then Calls = 0,
               "26-vec.t:267 singleton does not call block");
       Assert (Reduce_Xor ([4, 2]).Value = 6, "26-vec.t:268 xor");
       Assert (Reduce_Squares ([1, 17, 18, 19]).Value = 33_802_596,
