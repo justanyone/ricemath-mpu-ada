@@ -1,7 +1,6 @@
 with AUnit.Assertions;
 with AUnit.Test_Cases;
 with Math_Prime_Util.Families;
-with Math_Prime_Util.Ramanujan;
 with Math_Prime_Util.Sieve;
 
 package body Prop_Families is
@@ -82,8 +81,7 @@ package body Prop_Families is
 
    --  Noe's window must preserve membership, index, and interval identities.
    procedure Ramanujan_Laws (T : in out Test_Case'Class) is
-      use Math_Prime_Util.Ramanujan;
-      use type Math_Prime_Util.Sieve.Prime_Vectors.Vector;
+         use type Math_Prime_Util.Sieve.Prime_Vectors.Vector;
       Seed : U64 := 20_261_123;
       N, P : U64;
       Edges : constant array (Positive range 1 .. 7) of U64 :=
