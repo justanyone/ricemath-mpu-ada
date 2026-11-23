@@ -12,3 +12,4 @@ Development build continues through existing large units; removed redundant visi
 - 2026-11-23T22:28:17Z launcher: no commit for 60 s; 429 s elapsed. Files changed so far: docs/worker-notes/demand-e37e6f07d68b4068989dc9fcbc9fcfff.md, src/math_prime_util-factor-classes.adb, src/math_prime_util-factor-classes.ads, tests/src/all_suites.adb, tests/src/compat_factor_classes.adb, tests/src/compat_factor_classes.ads.
 Development and release builds passed; all new tests compiled. Gate reached full tests; awaiting results. Corrected one test style diagnostic.
 Full runner ignores requested filter and has not returned; created an isolated runner/project only under obj to time and validate the new suite independently.
+Isolated AUnit runner compiled successfully under obj; running the eleven new tests with an explicit 60-second limit.
