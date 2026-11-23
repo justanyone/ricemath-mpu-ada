@@ -29,6 +29,7 @@ package body Math_Prime_Util.Count.Lmo with SPARK_Mode => On is
       21, 30, 25, 21, 42, 6, 17, 20, 28, 26, 32, 20,
       16, 18, 20, 17, 26, 28, 26, 15, 19, 26, 20, 0,
       27, 4, 23, 5];
+   procedure Lookup (N : U64; Anchor, Value : out U64);
    procedure Lookup (N : U64; Anchor, Value : out U64) is
       Last : constant Natural := Natural (U64'Min
         (N / 3000, U64 (Steps_0'Length)));
@@ -50,6 +51,7 @@ package body Math_Prime_Util.Count.Lmo with SPARK_Mode => On is
    Segment_Words : constant := 1155 * 13;
    Segment_Size : constant := Segment_Words * 128;
 
+   function Make_Phi return Naturals;
    function Make_Phi return Naturals is
       Result : Naturals (0 .. Wheel) := [others => 0];
    begin
@@ -69,6 +71,7 @@ package body Math_Prime_Util.Count.Lmo with SPARK_Mode => On is
      (X / Wheel * U64 (Phi_Table (Wheel)) +
       U64 (Phi_Table (Natural (X mod Wheel))));
 
+   function Bit_Count (Value : U64) return U64;
    function Bit_Count (Value : U64) return U64 is
       B : U64 := Value;
    begin
@@ -195,6 +198,7 @@ package body Math_Prime_Util.Count.Lmo with SPARK_Mode => On is
          Phi_Total : U64 := 0;
          Size : Natural;
 
+         procedure Clear (B : Natural);
          procedure Clear (B : Natural) is
             W : constant Natural := B / 64;
             Mask : constant U64 := Interfaces.Shift_Left (U64'(1), B mod 64);
@@ -202,6 +206,7 @@ package body Math_Prime_Util.Count.Lmo with SPARK_Mode => On is
             Bits (W) := Bits (W) and not Mask;
          end Clear;
 
+         procedure Remove (First, Last : Natural);
          procedure Remove (First, Last : Natural) is
             P, V : U64;
          begin
@@ -228,6 +233,7 @@ package body Math_Prime_Util.Count.Lmo with SPARK_Mode => On is
               U64 (Counts ((Size + 63) / 64));
          end Remove;
 
+         function Sieve_Phi (X : U64) return U64;
          function Sieve_Phi (X : U64) return U64 is
             B : constant Natural := Natural ((X - Start + 1) / 2);
             Mask : constant U64 :=
