@@ -7,7 +7,8 @@ with Compat_Modular;
 --  Focused runner for modular fixtures, roots, and boundary checks.
 --  A failing AUnit result is a non-zero process status.
 procedure Modular_Runner is
-   function Run is new AUnit.Run.Test_Runner_With_Status (Compat_Modular.Suite);
+   function Run is new AUnit.Run.Test_Runner_With_Status
+     (Compat_Modular.Suite);
    Reporter : AUnit.Reporter.Text.Text_Reporter;
    Result : AUnit.Status;
    use type AUnit.Status;
