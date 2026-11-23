@@ -6,3 +6,4 @@ Review failed on merge conflicts in STATUS.md and math_prime_util-families.ads/.
 
 Next: inspect conflict markers, families fixture, and the Goldbach package layout.
 - 2026-11-23T14:31:46Z launcher: no commit for 60 s; 90 s elapsed. Files changed so far: docs/worker-notes/demand-6a3f2df5f79f4e8ab03cfbe6b39bb8de.md.
+- 2026-11-23T14:32:46Z launcher: no commit for 60 s; 151 s elapsed. Files changed so far: docs/worker-notes/demand-6a3f2df5f79f4e8ab03cfbe6b39bb8de.md.
