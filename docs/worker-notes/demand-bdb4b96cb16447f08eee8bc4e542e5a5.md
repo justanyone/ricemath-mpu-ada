@@ -8,3 +8,5 @@ Development library build passes. Added Compat_Powers regression tests and BDD s
 Test build is compiling the full checked Ada suite; local Python lacks pytest-bdd, so the same BDD-selected Ada checks will be run directly if no installed environment is available.
 The checked test build has compiled Compat_Powers without errors; focused runner invocation was too early (binary not linked yet). The declared gate has passed development and is building release; waiting for test linking before retrying focused checks.
 Focused Compat_Powers passes both tests (prime 0.107 s, perfect below 0.001 s). Added native nth-bound fixture checks through index 1,000,000 to verify the replacement inverse against committed outputs before final gate completion.
+Gate development, release, and test builds pass; full test run is active. Expanded inverse fixture regression has rebuilt successfully and is running under a 59-second timeout.
+Expanded focused tests pass (prime 0.357 s, perfect below 0.001 s), including committed inverse fixture outputs. Full gate is still running; no generated STATUS.md changes or source whitespace errors observed.
