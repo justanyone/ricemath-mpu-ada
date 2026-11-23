@@ -1,6 +1,11 @@
+with Ada.Containers.Vectors;
 with Math_Prime_Util.Int;
 
+<<<<<<< HEAD
 --  Arithmetic from MPU 0.75 totients.c, moebius.c, factor.c, and XS.xs.
+=======
+--  Divisor arithmetic from MPU 0.75 factor.c, XS.xs, and inverse_sigma0.c.
+>>>>>>> origin/dev-mpuada-001
 package Math_Prime_Util.Arith with SPARK_Mode => On is
    use type U64;
    use type Int.I128;
@@ -55,6 +60,9 @@ package Math_Prime_Util.Arith with SPARK_Mode => On is
           Post => Exp_Mangoldt'Result >= 1
        and then (if N > 1 then Exp_Mangoldt'Result <= N);
 
+   package U64_Vectors is new Ada.Containers.Vectors
+     (Index_Type => Natural, Element_Type => U64);
+
    --  factor.c: divisor_sum. Sum of D**K over positive divisors D of N.
    --  K defaults to 1; K = 0 counts divisors. Zero has sum zero.
    --  Undefined if the exact sum exceeds U64'Last. No errors.
@@ -84,4 +92,28 @@ package Math_Prime_Util.Arith with SPARK_Mode => On is
    --  Result is in integer units. No errors.
    function Sopfr (N : U64) return U64
      with Pre => True, Post => Sopfr'Result <= N;
+
+   --  inverse_sigma0.c: inverse_sigma0_list. Inclusive range; reversed
+   --  ranges and k = 0 return an empty vector. No errors.
+   --  Vector storage is outside the proved arithmetic subset.
+   function Inverse_Sigma0 (K, Low, High : U64) return U64_Vectors.Vector
+     with SPARK_Mode => Off, Pre => True,
+          Post => (for all N of Inverse_Sigma0'Result =>
+                     N >= Low and then N <= High);
+   --  inverse_sigma0.c: inverse_sigma0_list. Search 1 .. High inclusive.
+   --  No errors.
+   function Inverse_Sigma0 (K, High : U64) return U64_Vectors.Vector
+     with SPARK_Mode => Off, Pre => True,
+          Post => (for all N of Inverse_Sigma0'Result => N <= High);
+
+   --  inverse_sigma0.c: inverse_sigma0_count. Inclusive range; returns
+   --  zero for reversed ranges and k = 0. No errors.
+   function Inverse_Sigma0_Count (K, Low, High : U64) return U64
+     with SPARK_Mode => Off, Pre => True,
+          Post => Inverse_Sigma0_Count'Result <= High;
+   --  inverse_sigma0.c: inverse_sigma0_count. Search 1 .. High inclusive.
+   --  No errors.
+   function Inverse_Sigma0_Count (K, High : U64) return U64
+     with SPARK_Mode => Off, Pre => True,
+          Post => Inverse_Sigma0_Count'Result <= High;
 end Math_Prime_Util.Arith;

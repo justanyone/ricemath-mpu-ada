@@ -4,6 +4,11 @@ with Ada.Strings.Fixed;
 with Ada.Strings.Unbounded;
 with AUnit.Assertions;
 with AUnit.Test_Cases;
+<<<<<<< HEAD
+=======
+with Ada.Strings.Fixed;
+with Ada.Strings.Unbounded;
+>>>>>>> origin/dev-mpuada-001
 with Fixture_Support;
 with Math_Prime_Util.Arith;
 
@@ -22,6 +27,7 @@ package body Compat_Arith is
    overriding function Name (T : Arith_Case) return AUnit.Message_String;
    overriding procedure Register_Tests (T : in out Arith_Case);
 
+<<<<<<< HEAD
    function Image (N : I128) return String is
      (Ada.Strings.Fixed.Trim (I128'Image (N), Ada.Strings.Both));
 
@@ -31,6 +37,77 @@ package body Compat_Arith is
       A, B, Value : I128;
       Actual : Unbounded_String;
       R : Optional_U64;
+=======
+   function Image (N : U64) return String is
+     (Ada.Strings.Fixed.Trim (U64'Image (N), Ada.Strings.Both));
+
+   procedure Replay (Func : String) is
+      Rows : constant Case_Vectors.Vector :=
+        For_Function (Load ("arith"), Func);
+   begin
+      Assert (not Rows.Is_Empty, "missing " & Func);
+      for C of Rows loop
+         declare
+            K, Low, High : U64 := 0;
+            Actual : Unbounded_String;
+         begin
+            Assert (Parse_U64 (To_String (C.Args (1)), K), "parse k");
+            if Natural (C.Args.Length) = 2 then
+               Assert
+                 (Parse_U64 (To_String (C.Args (2)), High), "parse high");
+            else
+               Assert
+                 (Parse_U64 (To_String (C.Args (2)), Low), "parse low");
+               Assert
+                 (Parse_U64 (To_String (C.Args (3)), High), "parse high");
+            end if;
+            if Func = "inverse_sigma0_count" then
+               Actual := To_Unbounded_String
+                 (Image
+                    ((if Natural (C.Args.Length) = 2 then
+                        Inverse_Sigma0_Count (K, High)
+                      else
+                        Inverse_Sigma0_Count (K, Low, High))));
+            else
+               declare
+                  Values : constant U64_Vectors.Vector :=
+                    (if Natural (C.Args.Length) = 2 then
+                       Inverse_Sigma0 (K, High)
+                     else
+                       Inverse_Sigma0 (K, Low, High));
+               begin
+                  if Values.Is_Empty then
+                     Actual := To_Unbounded_String ("undef");
+                  else
+                     for I in Values.First_Index .. Values.Last_Index loop
+                        if I > Values.First_Index then
+                           Append (Actual, " ");
+                        end if;
+                        Append (Actual, Image (Values.Element (I)));
+                     end loop;
+                  end if;
+               end;
+            end if;
+            Assert
+              (Actual = C.Result, Func & " line" & C.Line_Number'Image);
+         end;
+      end loop;
+   end Replay;
+
+   procedure Test_List (T : in out Test_Case'Class) is
+   begin
+      Assert (T.Name /= null, "named arithmetic test case");
+      Replay ("inverse_sigma0");
+   end Test_List;
+
+   procedure Test_Count (T : in out Test_Case'Class) is
+   begin
+      Assert (T.Name /= null, "named arithmetic test case");
+      Replay ("inverse_sigma0_count");
+   end Test_Count;
+
+   overriding function Name (T : Arith_Case) return AUnit.Message_String is
+>>>>>>> origin/dev-mpuada-001
    begin
       AUnit.Assertions.Assert (not Cases.Is_Empty, Func & " has fixtures");
       for C of Cases loop
@@ -284,6 +361,7 @@ package body Compat_Arith is
    overriding procedure Register_Tests (T : in out Arith_Case) is
       use AUnit.Test_Cases.Registration;
    begin
+<<<<<<< HEAD
       Register_Routine (T, Test_Euler_Phi'Access, "euler_phi");
       Register_Routine (T, Test_Jordan_Totient'Access, "jordan_totient");
       Register_Routine (T, Test_Moebius'Access, "moebius");
@@ -292,6 +370,11 @@ package body Compat_Arith is
       Register_Routine (T, Test_Exp_Mangoldt'Access, "exp_mangoldt");
       Register_Routine
         (T, Test_Properties'Access, "arithmetic identities and boundaries");
+=======
+      Register_Routine (T, Test_List'Access, "inverse_sigma0");
+      Register_Routine
+        (T, Test_Count'Access, "inverse_sigma0_count");
+>>>>>>> origin/dev-mpuada-001
       Register_Routine (T, Fixtures'Access, "arith fixtures");
       Register_Routine (T, Boundaries'Access, "arith boundaries");
       Register_Routine (T, Properties'Access, "arith seeded properties");

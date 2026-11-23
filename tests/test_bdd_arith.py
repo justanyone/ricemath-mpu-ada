@@ -29,11 +29,20 @@ def run_runner(arith_runner):
     )
 
 
+<<<<<<< HEAD
 def assert_arith_passed(completed):
     output = completed.stdout + completed.stderr
     assert completed.returncode == 0, output
     assert "Total Tests Run:   10" in output, output
     assert "Successful Tests:  10" in output, output
+=======
+# New step: AUnit's status and count make success an observable BDD outcome.
+@then("all arithmetic fixtures, boundaries, and seeded divisor laws pass")
+def arithmetic_passes(arith_result):
+    output = arith_result.stdout + arith_result.stderr
+    assert arith_result.returncode == 0, output
+    assert "Total Tests Run:   5" in output, output
+>>>>>>> origin/dev-mpuada-001
     assert "Failed Assertions: 0" in output, output
     assert "Unexpected Errors: 0" in output, output
 
