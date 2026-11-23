@@ -92,6 +92,19 @@ package body Math_Prime_Util.Count is
       return Lmo.Count (High);
    end Prime_Count;
 
+   function Prime_Count (Low, High : U64) return U64
+     with SPARK_Mode => Off
+   is
+   begin
+      if Low > High or High < 2 then
+         return 0;
+      elsif High - Low < 100_000 then
+         return U64 (Sieve.Primes (Low, High).Length);
+      end if;
+      return Prime_Count (High) -
+        (if Low < 2 then 0 else Prime_Count (Low - 1));
+   end Prime_Count;
+
    function Legendre_Phi (X : U64; A : Natural) return U64 is
       type Prime_List is array (Positive range <>) of U64;
 
@@ -132,11 +145,13 @@ package body Math_Prime_Util.Count is
       --  Count primes up to the approximation A, then walk with a
       --  segmented sieve in the direction of N. The walk is short:
       --  the approximation is within a few thousand of the answer.
-      Window : constant U64 := 1_000_000;
+      Window : constant U64 := 65_536;
       C : U64;
       A, Lo, Hi : U64;
    begin
-      if N < 306 then
+      if N = Nth_Prime_Limit then
+         return Max_Prime;
+      elsif N < 306 then
          --  The approximations call Nth_Prime for small N.
          declare
             Ps : constant Sieve.Prime_Vectors.Vector := Sieve.Primes (2_100);
@@ -149,7 +164,7 @@ package body Math_Prime_Util.Count is
       if C < N then
          Lo := A + 1;
          loop
-            Hi := Lo + Window - 1;
+            Hi := Lo + U64'Min (Window - 1, U64'Last - Lo);
             declare
                Ps : constant Sieve.Prime_Vectors.Vector :=
                  Sieve.Primes (Lo, Hi);

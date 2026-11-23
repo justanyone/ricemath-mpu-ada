@@ -51,10 +51,8 @@ package body Compat_Count is
       end loop;
    end Check_Sums;
 
-   --  Rows above the limits of Count (Prime_Count_Limit 2 * 10**13,
-   --  Nth_Prime_Limit, Legendre_Index_Limit) are skipped: the full LMO
-   --  method for arguments up to 2**64 needs tables not ported yet.
-   --  Rows with undef results are skipped: a Pre check rejects them.
+   --  Undefined rows are rejected by the public preconditions. All native
+   --  prime-count and nth-prime fixture rows run without resource-limit skips.
    procedure Check_Prime_Count (T : in out Test_Case'Class) is
       Cases : constant Case_Vectors.Vector :=
         For_Function (Load ("count"), "prime_count");
@@ -72,16 +70,14 @@ package body Compat_Count is
             AUnit.Assertions.Assert
               (Parse_U64 (To_String (C.Args (2)), High), "prime_count high");
          end if;
-         if not C.Undef and then High <= Pc.Prime_Count_Limit then
+         if not C.Undef then
             AUnit.Assertions.Assert
               (Parse_U64 (To_String (C.Result), Expected),
                "prime_count result");
             --  A range row counts primes in Low .. High; an empty range
             --  (Low > High) has no primes.
             AUnit.Assertions.Assert
-              ((if Low > High then 0 else
-                  Pc.Prime_Count (High) -
-                  (if Low <= 1 then 0 else Pc.Prime_Count (Low - 1))) =
+              (Pc.Prime_Count (Low, High) =
                 Expected,
                "prime_count row" & Positive'Image (C.Line_Number));
          end if;
@@ -98,9 +94,7 @@ package body Compat_Count is
       for C of Cases loop
          AUnit.Assertions.Assert
            (Parse_U64 (To_String (C.Args (1)), N), "nth_prime argument");
-         if not C.Undef and then N >= 1 and then
-           N <= Pc.Nth_Prime_Limit
-         then
+         if not C.Undef and then N >= 1 then
             AUnit.Assertions.Assert
               (Parse_U64 (To_String (C.Result), Expected),
                "nth_prime result");
