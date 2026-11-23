@@ -66,7 +66,7 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [x] `convergents` -> `Convergents`
 - [ ] `cornacchia` -> `Cornacchia`
 - [x] `crootint` -> `Crootint`
-- [ ] `csrand` -> `Csrand`
+- [x] `csrand` -> `Csrand`
 - [ ] `dedekind_psi` -> `Dedekind_Psi`
 - [x] `digital_root` -> `Digital_Root`
 - [x] `divint` -> `Divint`
@@ -128,7 +128,7 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `inverse_sigma0_count` -> `Inverse_Sigma0_Count`
 - [ ] `inverse_totient` -> `Inverse_Totient`
 - [x] `invmod` -> `Invmod`
-- [ ] `irand` -> `Irand`
+- [x] `irand` -> `Irand`
 - [ ] `irand32` -> `Irand32`
 - [ ] `irand64` -> `Irand64`
 - [ ] `is_aks_prime` -> `Is_Aks_Prime`
@@ -162,11 +162,7 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `is_omega_prime` -> `Is_Omega_Prime`
 - [x] `is_palindrome` -> `Is_Palindrome`
 - [ ] `is_perfect_number` -> `Is_Perfect_Number`
-<<<<<<< HEAD
 - [x] `is_perfect_power` -> `Is_Perfect_Power`
-=======
-- [ ] `is_perfect_power` -> `Is_Perfect_Power`
->>>>>>> origin/dev-mpuada-001
 - [x] `is_perrin_pseudoprime` -> `Is_Perrin_Pseudoprime`
 - [x] `is_pillai` -> `Is_Pillai`
 - [x] `is_polygonal` -> `Is_Polygonal`
@@ -175,11 +171,7 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `is_powerful` -> `Is_Powerful`
 - [ ] `is_practical` -> `Is_Practical`
 - [x] `is_prime` -> `Is_Prime`
-<<<<<<< HEAD
 - [x] `is_prime_power` -> `Is_Prime_Power`
-=======
-- [ ] `is_prime_power` -> `Is_Prime_Power`
->>>>>>> origin/dev-mpuada-001
 - [ ] `is_primitive_root` -> `Is_Primitive_Root`
 - [x] `is_prob_prime` -> `Is_Prob_Prime`
 - [ ] `is_provable_prime` -> `Is_Provable_Prime`
@@ -242,15 +234,9 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [x] `next_calkin_wilf` -> `Next_Calkin_Wilf`
 - [ ] `next_chen_prime` -> `Next_Chen_Prime`
 - [x] `next_farey` -> `Next_Farey`
-<<<<<<< HEAD
 - [x] `next_perfect_power` -> `Next_Perfect_Power`
 - [x] `next_prime` -> `Next_Prime`
 - [x] `next_prime_power` -> `Next_Prime_Power`
-=======
-- [ ] `next_perfect_power` -> `Next_Perfect_Power`
-- [x] `next_prime` -> `Next_Prime`
-- [ ] `next_prime_power` -> `Next_Prime_Power`
->>>>>>> origin/dev-mpuada-001
 - [x] `next_stern_brocot` -> `Next_Stern_Brocot`
 - [ ] `nth_almost_prime` -> `Nth_Almost_Prime`
 - [ ] `nth_almost_prime_approx` -> `Nth_Almost_Prime_Approx`
@@ -271,50 +257,31 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [x] `nth_prime` -> `Nth_Prime`
 - [x] `nth_prime_approx` -> `Nth_Prime_Approx`
 - [x] `nth_prime_lower` -> `Nth_Prime_Lower`
-<<<<<<< HEAD
 - [x] `nth_prime_power` -> `Nth_Prime_Power`
 - [x] `nth_prime_power_approx` -> `Nth_Prime_Power_Approx`
 - [x] `nth_prime_power_lower` -> `Nth_Prime_Power_Lower`
 - [x] `nth_prime_power_upper` -> `Nth_Prime_Power_Upper`
 - [x] `nth_prime_upper` -> `Nth_Prime_Upper`
-- [ ] `nth_ramanujan_prime` -> `Nth_Ramanujan_Prime`
-- [ ] `nth_ramanujan_prime_approx` -> `Nth_Ramanujan_Prime_Approx`
-- [ ] `nth_ramanujan_prime_lower` -> `Nth_Ramanujan_Prime_Lower`
-- [ ] `nth_ramanujan_prime_upper` -> `Nth_Ramanujan_Prime_Upper`
-=======
-- [ ] `nth_prime_power` -> `Nth_Prime_Power`
-- [ ] `nth_prime_power_approx` -> `Nth_Prime_Power_Approx`
-- [ ] `nth_prime_power_lower` -> `Nth_Prime_Power_Lower`
-- [ ] `nth_prime_power_upper` -> `Nth_Prime_Power_Upper`
-- [x] `nth_prime_upper` -> `Nth_Prime_Upper`
 - [x] `nth_ramanujan_prime` -> `Nth_Ramanujan_Prime`
 - [x] `nth_ramanujan_prime_approx` -> `Nth_Ramanujan_Prime_Approx`
 - [x] `nth_ramanujan_prime_lower` -> `Nth_Ramanujan_Prime_Lower`
 - [x] `nth_ramanujan_prime_upper` -> `Nth_Ramanujan_Prime_Upper`
->>>>>>> origin/dev-mpuada-001
-- [ ] `nth_semiprime` -> `Nth_Semiprime`
-- [ ] `nth_semiprime_approx` -> `Nth_Semiprime_Approx`
+- [x] `nth_semiprime` -> `Nth_Semiprime`
+- [x] `nth_semiprime_approx` -> `Nth_Semiprime_Approx`
 - [x] `nth_stern_brocot` -> `Nth_Stern_Brocot`
 - [x] `nth_stern_diatomic` -> `Nth_Stern_Diatomic`
-- [ ] `nth_twin_prime` -> `Nth_Twin_Prime`
-- [ ] `nth_twin_prime_approx` -> `Nth_Twin_Prime_Approx`
+- [x] `nth_twin_prime` -> `Nth_Twin_Prime`
+- [x] `nth_twin_prime_approx` -> `Nth_Twin_Prime_Approx`
 - [x] `numtoperm` -> `Numtoperm`
 - [ ] `omega_prime_count` -> `Omega_Prime_Count`
 - [ ] `omega_primes` -> `Omega_Primes`
 - [x] `partitions` -> `Partitions`
 - [x] `partitionsq` -> `Partitionsq`
 - [ ] `pbrent_factor` -> `Pbrent_Factor`
-<<<<<<< HEAD
 - [x] `perfect_power_count` -> `Perfect_Power_Count`
 - [x] `perfect_power_count_approx` -> `Perfect_Power_Count_Approx`
 - [x] `perfect_power_count_lower` -> `Perfect_Power_Count_Lower`
 - [x] `perfect_power_count_upper` -> `Perfect_Power_Count_Upper`
-=======
-- [ ] `perfect_power_count` -> `Perfect_Power_Count`
-- [ ] `perfect_power_count_approx` -> `Perfect_Power_Count_Approx`
-- [ ] `perfect_power_count_lower` -> `Perfect_Power_Count_Lower`
-- [ ] `perfect_power_count_upper` -> `Perfect_Power_Count_Upper`
->>>>>>> origin/dev-mpuada-001
 - [x] `permtonum` -> `Permtonum`
 - [x] `Pi` -> `Pi`
 - [ ] `pisano_period` -> `Pisano_Period`
@@ -330,15 +297,9 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [x] `powint` -> `Powint`
 - [x] `powmod` -> `Powmod`
 - [ ] `pplus1_factor` -> `Pplus1_Factor`
-<<<<<<< HEAD
 - [x] `prev_perfect_power` -> `Prev_Perfect_Power`
 - [x] `prev_prime` -> `Prev_Prime`
 - [x] `prev_prime_power` -> `Prev_Prime_Power`
-=======
-- [ ] `prev_perfect_power` -> `Prev_Perfect_Power`
-- [x] `prev_prime` -> `Prev_Prime`
-- [ ] `prev_prime_power` -> `Prev_Prime_Power`
->>>>>>> origin/dev-mpuada-001
 - [ ] `prho_factor` -> `Prho_Factor`
 - [ ] `prime_bigomega` -> `Prime_Bigomega`
 - [ ] `prime_certificate` -> `Prime_Certificate`
@@ -351,19 +312,11 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `prime_iterator_object` -> `Prime_Iterator_Object`
 - [x] `prime_memfree` -> `Prime_Memfree`
 - [ ] `prime_omega` -> `Prime_Omega`
-<<<<<<< HEAD
 - [x] `prime_power_count` -> `Prime_Power_Count`
 - [x] `prime_power_count_approx` -> `Prime_Power_Count_Approx`
 - [x] `prime_power_count_lower` -> `Prime_Power_Count_Lower`
 - [x] `prime_power_count_upper` -> `Prime_Power_Count_Upper`
 - [x] `prime_powers` -> `Prime_Powers`
-=======
-- [ ] `prime_power_count` -> `Prime_Power_Count`
-- [ ] `prime_power_count_approx` -> `Prime_Power_Count_Approx`
-- [ ] `prime_power_count_lower` -> `Prime_Power_Count_Lower`
-- [ ] `prime_power_count_upper` -> `Prime_Power_Count_Upper`
-- [ ] `prime_powers` -> `Prime_Powers`
->>>>>>> origin/dev-mpuada-001
 - [x] `prime_precalc` -> `Prime_Precalc`
 - [x] `primes` -> `Primes`
 - [x] `prime_set_config` -> `Prime_Set_Config`
@@ -379,7 +332,7 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `ramanujan_sum` -> `Ramanujan_Sum`
 - [ ] `ramanujan_tau` -> `Ramanujan_Tau`
 - [ ] `rand` -> `Rand`
-- [ ] `random_bytes` -> `Random_Bytes`
+- [x] `random_bytes` -> `Random_Bytes`
 - [ ] `random_factored_integer` -> `Random_Factored_Integer`
 - [ ] `random_maurer_prime` -> `Random_Maurer_Prime`
 - [ ] `random_maurer_prime_with_cert` -> `Random_Maurer_Prime_With_Cert`
@@ -406,9 +359,9 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `rootmod` -> `Rootmod`
 - [ ] `rough_count` -> `Rough_Count`
 - [x] `rshiftint` -> `Rshiftint`
-- [ ] `semiprime_count` -> `Semiprime_Count`
-- [ ] `semiprime_count_approx` -> `Semiprime_Count_Approx`
-- [ ] `semi_primes` -> `Semi_Primes`
+- [x] `semiprime_count` -> `Semiprime_Count`
+- [x] `semiprime_count_approx` -> `Semiprime_Count_Approx`
+- [x] `semi_primes` -> `Semi_Primes`
 - [ ] `setbinop` -> `Setbinop`
 - [ ] `setcontains` -> `Setcontains`
 - [ ] `setcontainsany` -> `Setcontainsany`
@@ -457,12 +410,12 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `toset` -> `Toset`
 - [x] `tozeckendorf` -> `Tozeckendorf`
 - [ ] `trial_factor` -> `Trial_Factor`
-- [ ] `twin_prime_count` -> `Twin_Prime_Count`
-- [ ] `twin_prime_count_approx` -> `Twin_Prime_Count_Approx`
-- [ ] `twin_primes` -> `Twin_Primes`
-- [ ] `urandomb` -> `Urandomb`
-- [ ] `urandomm` -> `Urandomm`
-- [ ] `urandomr` -> `Urandomr`
+- [x] `twin_prime_count` -> `Twin_Prime_Count`
+- [x] `twin_prime_count_approx` -> `Twin_Prime_Count_Approx`
+- [x] `twin_primes` -> `Twin_Primes`
+- [x] `urandomb` -> `Urandomb`
+- [x] `urandomm` -> `Urandomm`
+- [x] `urandomr` -> `Urandomr`
 - [ ] `valuation` -> `Valuation`
 - [ ] `vecall` -> `Vecall`
 - [ ] `vecany` -> `Vecany`
