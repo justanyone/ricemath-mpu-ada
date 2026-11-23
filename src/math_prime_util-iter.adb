@@ -72,16 +72,13 @@ package body Math_Prime_Util.Iter is
    is
       pragma SPARK_Mode (Off);
       package Number_IO is new Ada.Text_IO.Modular_IO (U64);
-      Cursor : Prime_Cursor := Prime_Iterator (Low);
-      P : Int.Optional_U64;
-   begin
-      loop
-         P := Cursor.Pending;
-         exit when not P.Defined or else P.Value > High;
-         Number_IO.Put (File, P.Value, Width => 0);
+      procedure Write_Prime (Value : U64; Context : in out Loop_Context) is
+      begin
+         Number_IO.Put (File, Value, Width => 0);
          Ada.Text_IO.New_Line (File);
-         Next (Cursor, P);
-      end loop;
+      end Write_Prime;
+   begin
+      Forprimes (Low, High, Write_Prime'Access);
    end Print_Primes;
 
    procedure Print_Primes (Low, High : U64) is
