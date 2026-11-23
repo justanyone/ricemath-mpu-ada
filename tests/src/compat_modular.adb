@@ -1,6 +1,5 @@
 with AUnit.Assertions;
 with AUnit.Test_Cases;
-<<<<<<< HEAD
 with Ada.Strings;
 with Ada.Strings.Fixed;
 with Ada.Strings.Unbounded;
@@ -17,27 +16,13 @@ package body Compat_Modular is
    use Math_Prime_Util.Modular;
    use type U64;
    use type I128;
-=======
-with Ada.Strings.Unbounded;
-with Fixture_Support;
-with Math_Prime_Util.Int;
-with Math_Prime_Util.Modular;
 
-package body Compat_Modular is
-   use AUnit.Test_Cases;
-   use Ada.Strings.Unbounded;
-   use Fixture_Support;
-   use Math_Prime_Util;
-   use Math_Prime_Util.Int;
-   use Math_Prime_Util.Modular;
-   use type U64;
-
->>>>>>> origin/dev-mpuada-001
    type Modular_Case is new Test_Case with null record;
    overriding function Name (T : Modular_Case) return AUnit.Message_String;
    overriding procedure Register_Tests (T : in out Modular_Case);
 
-<<<<<<< HEAD
+   subtype Optional_U64 is Int.Optional_U64;
+
    function Image (V : U64) return String is
      (Ada.Strings.Fixed.Trim (U64'Image (V), Ada.Strings.Both));
    function Image (V : Int.Optional_U64) return String is
@@ -53,7 +38,7 @@ package body Compat_Modular is
       end loop;
       return (if V'Length = 0 then "undef" else To_String (S));
    end Image;
-=======
+
    function Signed_Input (Text : String; V : out I128) return Boolean is
       Negative : constant Boolean := Text (Text'First) = '-';
       First : constant Positive := Text'First + (if Negative then 1 else 0);
@@ -66,12 +51,10 @@ package body Compat_Modular is
       V := (if Negative then -I128 (Magnitude) else I128 (Magnitude));
       return True;
    end Signed_Input;
->>>>>>> origin/dev-mpuada-001
 
-   procedure Replay (Func : String) is
+   procedure Replay_Roots (Func : String) is
       Cases : constant Case_Vectors.Vector :=
         For_Function (Load ("modular"), Func);
-<<<<<<< HEAD
       N, D : U64;
       A, K : I128;
    begin
@@ -111,27 +94,27 @@ package body Compat_Modular is
             end;
          end if;
       end loop;
-   end Replay;
+   end Replay_Roots;
 
    procedure Test_Sqrt (T : in out Test_Case'Class) is
    begin
-      Replay ("sqrtmod");
+      Replay_Roots ("sqrtmod");
    end Test_Sqrt;
    procedure Test_Allsqrt (T : in out Test_Case'Class) is
    begin
-      Replay ("allsqrtmod");
+      Replay_Roots ("allsqrtmod");
    end Test_Allsqrt;
    procedure Test_Root (T : in out Test_Case'Class) is
    begin
-      Replay ("rootmod");
+      Replay_Roots ("rootmod");
    end Test_Root;
    procedure Test_Allroot (T : in out Test_Case'Class) is
    begin
-      Replay ("allrootmod");
+      Replay_Roots ("allrootmod");
    end Test_Allroot;
    procedure Test_Cornacchia (T : in out Test_Case'Class) is
    begin
-      Replay ("cornacchia");
+      Replay_Roots ("cornacchia");
    end Test_Cornacchia;
 
    procedure Check_Laws (T : in out Test_Case'Class) is
@@ -200,7 +183,10 @@ package body Compat_Modular is
          when Errors.Maximum_Roots_Exceeded => null;
       end;
    end Check_Laws;
-=======
+
+   procedure Replay_Helpers (Func : String) is
+      Cases : constant Case_Vectors.Vector :=
+        For_Function (Load ("modular"), Func);
       A : array (1 .. 3) of U64 := [others => 0];
       N, K : I128 := 0;
       Fits, Expected_Fits : Boolean;
@@ -249,26 +235,26 @@ package body Compat_Modular is
          end if;
       end loop;
       AUnit.Assertions.Assert (Count > 0, "no native rows " & Func);
-   end Replay;
+   end Replay_Helpers;
 
    procedure Check_Znlog (T : in out Test_Case'Class) is
    begin
-      Replay ("znlog");
+      Replay_Helpers ("znlog");
    end Check_Znlog;
 
    procedure Check_Factorialmod (T : in out Test_Case'Class) is
    begin
-      Replay ("factorialmod");
+      Replay_Helpers ("factorialmod");
    end Check_Factorialmod;
 
    procedure Check_Binomialmod (T : in out Test_Case'Class) is
    begin
-      Replay ("binomialmod");
+      Replay_Helpers ("binomialmod");
    end Check_Binomialmod;
 
    procedure Check_Pisano (T : in out Test_Case'Class) is
    begin
-      Replay ("pisano_period");
+      Replay_Helpers ("pisano_period");
    end Check_Pisano;
 
    procedure Check_Edges (T : in out Test_Case'Class) is
@@ -349,13 +335,11 @@ package body Compat_Modular is
       AUnit.Assertions.Assert
         (R.Defined and then R.Value = 1, "even negative binomial sign");
    end Check_Properties;
->>>>>>> origin/dev-mpuada-001
 
    overriding function Name (T : Modular_Case) return AUnit.Message_String is
    begin
       return AUnit.Format ("Compat_Modular");
    end Name;
-<<<<<<< HEAD
    overriding procedure Register_Tests (T : in out Modular_Case) is
    begin
       Registration.Register_Routine (T, Test_Sqrt'Access, "sqrtmod");
@@ -364,11 +348,6 @@ package body Compat_Modular is
       Registration.Register_Routine (T, Test_Allroot'Access, "allrootmod");
       Registration.Register_Routine (T, Test_Cornacchia'Access, "cornacchia");
       Registration.Register_Routine (T, Check_Laws'Access, "exhaustive laws");
-   end Register_Tests;
-=======
-
-   overriding procedure Register_Tests (T : in out Modular_Case) is
-   begin
       Registration.Register_Routine (T, Check_Znlog'Access, "znlog");
       Registration.Register_Routine
         (T, Check_Factorialmod'Access, "factorialmod");
@@ -380,7 +359,6 @@ package body Compat_Modular is
         (T, Check_Properties'Access, "modular properties");
    end Register_Tests;
 
->>>>>>> origin/dev-mpuada-001
    function Suite return AUnit.Test_Suites.Access_Test_Suite is
       Result : constant AUnit.Test_Suites.Access_Test_Suite :=
         new AUnit.Test_Suites.Test_Suite;
