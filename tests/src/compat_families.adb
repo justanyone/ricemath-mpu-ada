@@ -5,7 +5,6 @@ with Ada.Strings.Fixed;
 with Ada.Strings.Unbounded;
 with Fixture_Support;
 with Math_Prime_Util.Families;
-with Math_Prime_Util.Goldbach;
 with Math_Prime_Util.Int;
 
 package body Compat_Families is
@@ -15,7 +14,6 @@ package body Compat_Families is
    use Math_Prime_Util;
    use type U64;
    use Math_Prime_Util.Families;
-   use Math_Prime_Util.Goldbach;
    type Families_Case is new Test_Case with null record;
    overriding function Name (T : Families_Case)
       return AUnit.Message_String;
