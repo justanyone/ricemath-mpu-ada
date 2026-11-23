@@ -1524,7 +1524,8 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
       F : Factors;
    begin
       if N = 0 then
-         return A = 1;
+         --  XS.xs returns false for modulus zero before calling util.c.
+         return False;
       elsif N <= 2 then
          return True;
       end if;

@@ -162,10 +162,10 @@ package Math_Prime_Util.Modular with SPARK_Mode => On is
      with Pre => True,
           Post => (if Qnr'Result.Defined then Qnr'Result.Value <= N);
 
-   --  util.c: is_qr. Whether A is a square residue; N=0 tests A=1.
+   --  util.c: is_qr. Whether A is a square residue; N=0 returns false.
    function Is_Qr (A : I128; N : U64) return Boolean
      with Pre => True,
-          Post => (if N = 0 then Is_Qr'Result = (A = 1));
+          Post => (if N = 0 then not Is_Qr'Result);
 
    --  util.c: is_fundamental. Signed fundamental discriminant predicate.
    --  Native magnitude inputs; zero is false, one is true. No errors.
