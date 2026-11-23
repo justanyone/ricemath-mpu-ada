@@ -41,6 +41,6 @@ def run_arith(arith_runner):
 def arithmetic_passes(arith_result):
     output = arith_result.stdout + arith_result.stderr
     assert arith_result.returncode == 0, output
-    assert "Total Tests Run:   3" in output, output
+    assert "Total Tests Run:   5" in output, output
     assert "Failed Assertions: 0" in output, output
     assert "Unexpected Errors: 0" in output, output
