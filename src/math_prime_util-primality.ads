@@ -13,18 +13,22 @@ package Math_Prime_Util.Primality with SPARK_Mode => On is
    end record;
 
    --  util.c: is_prime.
-   --  Native integer input; returns the MPU primality result.
+   --  Native unsigned integer input; returns 0 for composites and 2 for
+   --  primes. The native tier never returns 1 (probable prime). No errors.
    function Is_Prime
      (N : U64) return Prime_Result
      with Pre => True,
-          Post => (if N < 2 then Is_Prime'Result = 0);
+          Post => Is_Prime'Result in 0 | 2
+            and then (if N < 2 then Is_Prime'Result = 0);
 
    --  primality.c: is_prob_prime.
-   --  Native integer input; returns the MPU primality result.
+   --  Native unsigned integer input; returns 0 for composites and 2 for
+   --  primes. The native tier never returns 1 (probable prime). No errors.
    function Is_Prob_Prime
      (N : U64) return Prime_Result
      with Pre => True,
-          Post => (if N < 2 then Is_Prob_Prime'Result = 0);
+          Post => Is_Prob_Prime'Result in 0 | 2
+            and then (if N < 2 then Is_Prob_Prime'Result = 0);
 
    --  primality.c: BPSW.
    --  Tests the supplied integer; no mutable shared state.
