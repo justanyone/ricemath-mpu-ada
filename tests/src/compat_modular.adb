@@ -444,56 +444,40 @@ package body Compat_Modular is
       AUnit.Assertions.Assert (Count > 0, "no native rows " & Func);
    end Replay_Residues;
 
-   procedure Check_Kronecker (T : in out Test_Case'Class) is
-   begin
-      Replay_Residues ("arith", "kronecker");
-   end Check_Kronecker;
+   generic
+      Func : String;
+   procedure Check_Residue (T : in out Test_Case'Class);
 
-   procedure Check_Chinese (T : in out Test_Case'Class) is
+   procedure Check_Residue (T : in out Test_Case'Class) is
    begin
-      Replay_Residues ("arith", "chinese");
-   end Check_Chinese;
+      if Func /= "divmod" then
+         Replay_Residues ("arith", Func);
+      end if;
+      if Func = "divmod" or else Func = "znorder" then
+         Replay_Residues ("modular", Func);
+      end if;
+   end Check_Residue;
 
-   procedure Check_Chinese2 (T : in out Test_Case'Class) is
-   begin
-      Replay_Residues ("arith", "chinese2");
-   end Check_Chinese2;
-
-   procedure Check_Znorder (T : in out Test_Case'Class) is
-   begin
-      Replay_Residues ("arith", "znorder");
-      Replay_Residues ("modular", "znorder");
-   end Check_Znorder;
-
-   procedure Check_Znprimroot (T : in out Test_Case'Class) is
-   begin
-      Replay_Residues ("arith", "znprimroot");
-   end Check_Znprimroot;
-
-   procedure Check_Is_Primitive_Root (T : in out Test_Case'Class) is
-   begin
-      Replay_Residues ("arith", "is_primitive_root");
-   end Check_Is_Primitive_Root;
-
-   procedure Check_Qnr (T : in out Test_Case'Class) is
-   begin
-      Replay_Residues ("arith", "qnr");
-   end Check_Qnr;
-
-   procedure Check_Is_Qr (T : in out Test_Case'Class) is
-   begin
-      Replay_Residues ("arith", "is_qr");
-   end Check_Is_Qr;
-
-   procedure Check_Is_Fundamental (T : in out Test_Case'Class) is
-   begin
-      Replay_Residues ("arith", "is_fundamental");
-   end Check_Is_Fundamental;
-
-   procedure Check_Divmod (T : in out Test_Case'Class) is
-   begin
-      Replay_Residues ("modular", "divmod");
-   end Check_Divmod;
+   procedure Check_Kronecker is new Check_Residue
+     ("kronecker");
+   procedure Check_Chinese is new Check_Residue
+     ("chinese");
+   procedure Check_Chinese2 is new Check_Residue
+     ("chinese2");
+   procedure Check_Znorder is new Check_Residue
+     ("znorder");
+   procedure Check_Znprimroot is new Check_Residue
+     ("znprimroot");
+   procedure Check_Is_Primitive_Root is new Check_Residue
+     ("is_primitive_root");
+   procedure Check_Qnr is new Check_Residue
+     ("qnr");
+   procedure Check_Is_Qr is new Check_Residue
+     ("is_qr");
+   procedure Check_Is_Fundamental is new Check_Residue
+     ("is_fundamental");
+   procedure Check_Divmod is new Check_Residue
+     ("divmod");
 
    procedure Residue_Laws (T : in out Test_Case'Class) is
       Seed : U64 := 20_261_123;
