@@ -1,17 +1,9 @@
-<<<<<<< HEAD
-with Ada.Numerics.Long_Elementary_Functions;
-with Interfaces;
+with Math_Prime_Util.Count;
 with Math_Prime_Util.Primality;
 with Math_Prime_Util.Sieve;
 with Ada.Numerics.Generic_Elementary_Functions;
-with Math_Prime_Util.Count;
-=======
-with Math_Prime_Util.Count;
-with Math_Prime_Util.Primality;
-with Ada.Numerics.Generic_Elementary_Functions;
 with Ada.Numerics.Long_Elementary_Functions;
 with Interfaces;
->>>>>>> origin/dev-mpuada-001
 
 package body Math_Prime_Util.Families is
    package Prime_Sieve renames Math_Prime_Util.Sieve;
