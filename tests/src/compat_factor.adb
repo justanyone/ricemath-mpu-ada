@@ -459,50 +459,23 @@ package body Compat_Factor is
       Replay ("divisors");
    end Test_Divisors;
 
-   procedure Test_Factor_Exp (T : in out Test_Case'Class) is
+   generic
+      Function_Name : String;
+   procedure Test_Count (T : in out Test_Case'Class);
+   procedure Test_Count (T : in out Test_Case'Class) is
    begin
-      Replay ("factor_exp");
-   end Test_Factor_Exp;
+      Replay (Function_Name);
+   end Test_Count;
 
-   procedure Test_Prime_Omega (T : in out Test_Case'Class) is
-   begin
-      Replay ("prime_omega");
-   end Test_Prime_Omega;
-
-   procedure Test_Prime_Bigomega (T : in out Test_Case'Class) is
-   begin
-      Replay ("prime_bigomega");
-   end Test_Prime_Bigomega;
-
-   procedure Test_Prime_Signature (T : in out Test_Case'Class) is
-   begin
-      Replay ("prime_signature");
-   end Test_Prime_Signature;
-
-   procedure Test_Is_Square_Free (T : in out Test_Case'Class) is
-   begin
-      Replay ("is_square_free");
-   end Test_Is_Square_Free;
-
-   procedure Test_Is_Semiprime (T : in out Test_Case'Class) is
-   begin
-      Replay ("is_semiprime");
-   end Test_Is_Semiprime;
-
-   procedure Test_Is_Almost_Prime (T : in out Test_Case'Class) is
-   begin
-      Replay ("is_almost_prime");
-   end Test_Is_Almost_Prime;
-
-   procedure Test_Is_Omega_Prime (T : in out Test_Case'Class) is
-   begin
-      Replay ("is_omega_prime");
-   end Test_Is_Omega_Prime;
-
-   procedure Test_Cheb_Factor (T : in out Test_Case'Class) is
-   begin
-      Replay ("cheb_factor");
-   end Test_Cheb_Factor;
+   procedure Test_Factor_Exp is new Test_Count ("factor_exp");
+   procedure Test_Prime_Omega is new Test_Count ("prime_omega");
+   procedure Test_Prime_Bigomega is new Test_Count ("prime_bigomega");
+   procedure Test_Prime_Signature is new Test_Count ("prime_signature");
+   procedure Test_Is_Square_Free is new Test_Count ("is_square_free");
+   procedure Test_Is_Semiprime is new Test_Count ("is_semiprime");
+   procedure Test_Is_Almost_Prime is new Test_Count ("is_almost_prime");
+   procedure Test_Is_Omega_Prime is new Test_Count ("is_omega_prime");
+   procedure Test_Cheb_Factor is new Test_Count ("cheb_factor");
 
    procedure Test_Wide (T : in out Test_Case'Class) is
    begin
