@@ -14,3 +14,4 @@ The existing AUnit runner ignored CLI filters and began the whole suite. Added i
 Seeded power laws pass. Focused fixture tests found a missing predecessor of 1 and bigint dispatch exclusions; fixed both. Investigating two maximum-U64 bound discrepancies inherited from Count numeric estimates.
 Corrected native predecessor behavior and signed range handling. Added a high-precision derivation for MPU_Li_Rounding and retained fixtures unchanged; rerunning all power fixtures and properties before the project gate.
 All 34 Compat_Families routines and the seeded power-law routine pass. Full gate is running with its cleanup function disabled to obey the no-delete worker rule; output stays in obj/.
+Formatted new fixture dispatch and added explicit invalid-index/overflow properties. BDD module parses, but pytest-bdd is unavailable offline; GNATprove is also absent from this worker.

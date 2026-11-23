@@ -169,14 +169,19 @@ package body Compat_Families is
             elsif Func = "prev_prime_power" then
                O := Prev_Prime_Power (N);
             elsif Func = "prime_power_count" then
-               Got := To_Unbounded_String (Image ((if C.Args.Last_Index = 1 then Prime_Power_Count (N)
+               Got := To_Unbounded_String
+                 (Image ((if C.Args.Last_Index = 1 then
+                            Prime_Power_Count (N)
                   else Prime_Power_Count (N, H))));
             elsif Func = "prime_power_count_approx" then
-               Got := To_Unbounded_String (Image (Prime_Power_Count_Approx (N)));
+               Got := To_Unbounded_String
+                 (Image (Prime_Power_Count_Approx (N)));
             elsif Func = "prime_power_count_lower" then
-               Got := To_Unbounded_String (Image (Prime_Power_Count_Lower (N)));
+               Got := To_Unbounded_String
+                 (Image (Prime_Power_Count_Lower (N)));
             elsif Func = "prime_power_count_upper" then
-               Got := To_Unbounded_String (Image (Prime_Power_Count_Upper (N)));
+               Got := To_Unbounded_String
+                 (Image (Prime_Power_Count_Upper (N)));
             elsif Func = "nth_prime_power" then
                O := Nth_Prime_Power (N);
             elsif Func = "nth_prime_power_approx" then
@@ -190,14 +195,19 @@ package body Compat_Families is
             elsif Func = "prev_perfect_power" then
                O := Prev_Perfect_Power (N);
             elsif Func = "perfect_power_count" then
-               Got := To_Unbounded_String (Image ((if C.Args.Last_Index = 1 then Perfect_Power_Count (N)
+               Got := To_Unbounded_String
+                 (Image ((if C.Args.Last_Index = 1 then
+                            Perfect_Power_Count (N)
                   else Perfect_Power_Count (N, H))));
             elsif Func = "perfect_power_count_approx" then
-               Got := To_Unbounded_String (Image (Perfect_Power_Count_Approx (N)));
+               Got := To_Unbounded_String
+                 (Image (Perfect_Power_Count_Approx (N)));
             elsif Func = "perfect_power_count_lower" then
-               Got := To_Unbounded_String (Image (Perfect_Power_Count_Lower (N)));
+               Got := To_Unbounded_String
+                 (Image (Perfect_Power_Count_Lower (N)));
             elsif Func = "perfect_power_count_upper" then
-               Got := To_Unbounded_String (Image (Perfect_Power_Count_Upper (N)));
+               Got := To_Unbounded_String
+                 (Image (Perfect_Power_Count_Upper (N)));
             elsif Func = "nth_perfect_power" then
                O := Nth_Perfect_Power (N);
             elsif Func = "nth_perfect_power_approx" then
@@ -467,11 +477,14 @@ package body Compat_Families is
       Registration.Register_Routine
         (T, Test_Perfect_Power_Count'Access, "perfect_power_count");
       Registration.Register_Routine
-        (T, Test_Perfect_Power_Count_Approx'Access, "perfect_power_count_approx");
+        (T, Test_Perfect_Power_Count_Approx'Access,
+         "perfect_power_count_approx");
       Registration.Register_Routine
-        (T, Test_Perfect_Power_Count_Lower'Access, "perfect_power_count_lower");
+        (T, Test_Perfect_Power_Count_Lower'Access,
+         "perfect_power_count_lower");
       Registration.Register_Routine
-        (T, Test_Perfect_Power_Count_Upper'Access, "perfect_power_count_upper");
+        (T, Test_Perfect_Power_Count_Upper'Access,
+         "perfect_power_count_upper");
       Registration.Register_Routine
         (T, Test_Nth_Perfect_Power'Access, "nth_perfect_power");
       Registration.Register_Routine

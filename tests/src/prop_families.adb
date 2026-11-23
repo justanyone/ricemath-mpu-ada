@@ -91,7 +91,10 @@ package body Prop_Families is
             "prime neighbor/nth seed 20261123" & N'Image);
       end loop;
       AUnit.Assertions.Assert
-        (not Next_Perfect_Power (U64'Last).Defined and then
+        (not Nth_Perfect_Power (4_297_615_582).Defined and then
+         not Nth_Perfect_Power_Approx (U64'Last).Defined and then
+         not Nth_Prime_Power (0).Defined and then
+         not Next_Perfect_Power (U64'Last).Defined and then
          not Next_Prime_Power (U64'Last).Defined and then
          not Prev_Prime_Power (U64 (2)).Defined and then
          not Prev_Perfect_Power (U64 (0)).Defined,
