@@ -4,6 +4,7 @@ Plan: the branch already contains origin/dev-mpuada-001. Review failed on merge 
 
 Next: inspect conflict markers and the Goldbach/family layout before editing.
 Base already has families, twin, semi, and ramanujan. No conflict markers. Goldbach is absent. Port a standalone Goldbach package and fixture tests. Do not edit families or STATUS.md (factory regenerates STATUS). Skip the one families.tsv argument that does not fit in U64.
+Wrote goldbach spec/body and compat_goldbach, registered the suite. Next: development build, then the goldbach fixture tests.
 - 2026-11-23T13:39:44Z launcher: no commit for 60 s; 90 s elapsed. Files changed so far: docs/worker-notes/demand-ff894b2b04af4ae9998284ba2bdae117.md.
 - 2026-11-23T13:40:44Z launcher: no commit for 60 s; 150 s elapsed. Files changed so far: docs/worker-notes/demand-ff894b2b04af4ae9998284ba2bdae117.md.
 - 2026-11-23T13:41:45Z launcher: no commit for 60 s; 210 s elapsed. Files changed so far: docs/worker-notes/demand-ff894b2b04af4ae9998284ba2bdae117.md.
