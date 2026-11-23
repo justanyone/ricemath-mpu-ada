@@ -14,3 +14,4 @@ Square-free integer loop now visits one before allocation, matching XS Lastfor b
 Gate release and tests builds passed. Native square-free U64 fixture is still running and may conflict with the owner one-minute test limit; checking isolated execution controls.
 The stock AUnit runner also starts tests for --help, indicating CLI filter arguments are ignored. Added a dedicated focused runner to measure this package independently.
 Stopped duplicate unfiltered test jobs. Corrected focused-runner source path after the first gprbuild attempt reported it missing.
+Focused runner compilation is active; gate is still in the full existing test suite. No parent spec, fixtures, tools, or generated STATUS changes.
