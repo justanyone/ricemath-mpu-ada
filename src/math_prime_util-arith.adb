@@ -122,7 +122,7 @@ package body Math_Prime_Util.Arith with SPARK_Mode => On is
    --  Trial divisor count for the native inverse-sigma ranges.
    --  Containers and the scan sit outside the proved sigma routines.
    function Divisor_Count (N : U64) return U64 with SPARK_Mode => Off;
-   function Divisor_Count (N : U64) return U64 is
+   function Divisor_Count (N : U64) return U64 with SPARK_Mode => Off is
       Remaining : U64 := N;
       Count : U64 := 1;
       Prime : U64 := 2;
@@ -147,7 +147,8 @@ package body Math_Prime_Util.Arith with SPARK_Mode => On is
       return Count;
    end Divisor_Count;
 
-   function Inverse_Sigma0 (K, Low, High : U64) return U64_Vectors.Vector is
+   function Inverse_Sigma0 (K, Low, High : U64) return U64_Vectors.Vector
+     with SPARK_Mode => Off is
       Result : U64_Vectors.Vector;
       N : U64 := Low;
    begin
@@ -167,10 +168,12 @@ package body Math_Prime_Util.Arith with SPARK_Mode => On is
       return Result;
    end Inverse_Sigma0;
 
-   function Inverse_Sigma0 (K, High : U64) return U64_Vectors.Vector is
+   function Inverse_Sigma0 (K, High : U64) return U64_Vectors.Vector
+     with SPARK_Mode => Off is
      (Inverse_Sigma0 (K, 1, High));
 
-   function Inverse_Sigma0_Count (K, Low, High : U64) return U64 is
+   function Inverse_Sigma0_Count (K, Low, High : U64) return U64
+     with SPARK_Mode => Off is
       use type Primality.Prime_Result;
       Result : U64 := 0;
       N : U64 := Low;
@@ -204,6 +207,7 @@ package body Math_Prime_Util.Arith with SPARK_Mode => On is
       return Result;
    end Inverse_Sigma0_Count;
 
-   function Inverse_Sigma0_Count (K, High : U64) return U64 is
+   function Inverse_Sigma0_Count (K, High : U64) return U64
+     with SPARK_Mode => Off is
      (Inverse_Sigma0_Count (K, 1, High));
 end Math_Prime_Util.Arith;

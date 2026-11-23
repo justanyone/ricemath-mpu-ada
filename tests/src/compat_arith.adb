@@ -78,11 +78,13 @@ package body Compat_Arith is
 
    procedure Test_List (T : in out Test_Case'Class) is
    begin
+      Assert (T.Name /= null, "named arithmetic test case");
       Replay ("inverse_sigma0");
    end Test_List;
 
    procedure Test_Count (T : in out Test_Case'Class) is
    begin
+      Assert (T.Name /= null, "named arithmetic test case");
       Replay ("inverse_sigma0_count");
    end Test_Count;
 
