@@ -244,48 +244,84 @@ package body Math_Prime_Util.Iter is
       Forfactored (1, High, Process);
    end Forfactored;
 
-   procedure Forpart
-     (N : Natural;
+   procedure Partitions
+     (N : Natural; Ordered : Boolean;
       Process : not null access procedure
         (Parts : Value_Array; Context : in out Loop_Context);
       Options : Partition_Options := (others => <>))
    is
       Context : Loop_Context := (Active => True, Stop => False);
-      Parts : Value_Array (1 .. N);
+      Parts : Value_Array (1 .. Natural'Max (2, N));
+      K : Natural := 1;
+      X, Y, Step : U64;
+      Min_Part : constant Natural := Natural'Max (1, Options.Amin);
       Min_Length : constant Natural := Natural'Max (1, Options.Nmin);
       Max_Length : constant Natural := Natural'Min (N, Options.Nmax);
-      Min_Part : constant Natural := Natural'Max (1, Options.Amin);
       Max_Part : constant Natural := Natural'Min (N, Options.Amax);
-      procedure Visit (Remaining, Minimum, Length : Natural);
-
-      procedure Visit (Remaining, Minimum, Length : Natural) is
-      begin
-         if Remaining = 0 then
-            if Length >= Min_Length then
-               Process (Parts (1 .. Length), Context);
-            end if;
-         elsif Length < Max_Length then
-            for P in Minimum .. Natural'Min (Remaining, Max_Part) loop
-               if Options.Prime = Any_Part or else
-                 ((Primality.Is_Prime (U64 (P)) /= 0) =
-                  (Options.Prime = Prime_Part))
-               then
-                  Parts (Length + 1) := U64 (P);
-                  Visit (Remaining - P, P, Length + 1);
-                  exit when Context.Stop;
-               end if;
-            end loop;
-         end if;
-      end Visit;
+      Selected : Boolean;
    begin
       if N = 0 then
          if Options.Nmin <= 1 then
-            Process (Parts, Context);
+            Process (Parts (1 .. 0), Context);
          end if;
-      elsif Min_Length <= Max_Length then
-         Visit (N, Min_Part, 0);
+         return;
+      elsif Min_Length > Max_Length or else Min_Part > Max_Part then
+         return;
       end if;
+      --  PP.pm: _forcompositions, iterative lexical composition traversal.
+      Parts (1) := U64 (Min_Part - 1);
+      Parts (2) := U64 (N - Min_Part + 1);
+      while K /= 0 loop
+         X := Parts (K) + 1;
+         Y := Parts (K + 1) - 1;
+         K := K - 1;
+         Step := (if Ordered then 1 else X);
+         while Y >= Step loop
+            Parts (K + 1) := X;
+            X := Step;
+            Y := Y - Step;
+            K := K + 1;
+         end loop;
+         Parts (K + 1) := X + Y;
+         while K >= Max_Length loop
+            Parts (K) := Parts (K) + Parts (K + 1);
+            K := K - 1;
+         end loop;
+         exit when Parts (1) > U64 (Max_Part);
+         Selected := K + 1 >= Min_Length;
+         for I in 1 .. K + 1 loop
+            Selected := Selected and then Parts (I) >= U64 (Min_Part)
+              and then Parts (I) <= U64 (Max_Part);
+            if Options.Prime /= Any_Part then
+               Selected := Selected and then
+                 ((Primality.Is_Prime (Parts (I)) /= 0) =
+                  (Options.Prime = Prime_Part));
+            end if;
+         end loop;
+         if Selected then
+            Process (Parts (1 .. K + 1), Context);
+         end if;
+         exit when Context.Stop;
+      end loop;
+   end Partitions;
+
+   procedure Forpart
+     (N : Natural;
+      Process : not null access procedure
+        (Parts : Value_Array; Context : in out Loop_Context);
+      Options : Partition_Options := (others => <>)) is
+   begin
+      Partitions (N, False, Process, Options);
    end Forpart;
+
+   procedure Forcomp
+     (N : Natural;
+      Process : not null access procedure
+        (Parts : Value_Array; Context : in out Loop_Context);
+      Options : Partition_Options := (others => <>)) is
+   begin
+      Partitions (N, True, Process, Options);
+   end Forcomp;
 
    --  XS.xs: forcomb, lexical subset traversal with one shared context.
    procedure Combinations
@@ -389,66 +425,6 @@ package body Math_Prime_Util.Iter is
    begin
       Permutations (N, True, Process);
    end Forderange;
-
-   procedure Forcomp
-     (N : Natural;
-      Process : not null access procedure
-        (Parts : Value_Array; Context : in out Loop_Context);
-      Options : Partition_Options := (others => <>))
-   is
-      Context : Loop_Context := (Active => True, Stop => False);
-      Parts : Value_Array (1 .. Natural'Max (2, N));
-      K : Natural := 1;
-      X, Y : U64;
-      Min_Part : constant Natural := Natural'Max (1, Options.Amin);
-      Min_Length : constant Natural := Natural'Max (1, Options.Nmin);
-      Max_Length : constant Natural := Natural'Min (N, Options.Nmax);
-      Max_Part : constant Natural := Natural'Min (N, Options.Amax);
-      Selected : Boolean;
-   begin
-      if N = 0 then
-         if Options.Nmin <= 1 then
-            Process (Parts (1 .. 0), Context);
-         end if;
-         return;
-      elsif Min_Length > Max_Length or else Min_Part > Max_Part then
-         return;
-      end if;
-      --  PP.pm: _forcompositions, iterative lexical composition traversal.
-      Parts (1) := U64 (Min_Part - 1);
-      Parts (2) := U64 (N - Min_Part + 1);
-      while K /= 0 loop
-         X := Parts (K) + 1;
-         Y := Parts (K + 1) - 1;
-         K := K - 1;
-         while Y >= 1 loop
-            Parts (K + 1) := X;
-            X := 1;
-            Y := Y - 1;
-            K := K + 1;
-         end loop;
-         Parts (K + 1) := X + Y;
-         while K >= Max_Length loop
-            Parts (K) := Parts (K) + Parts (K + 1);
-            K := K - 1;
-         end loop;
-         exit when Parts (1) > U64 (Max_Part);
-         Selected := K + 1 >= Min_Length;
-         for I in 1 .. K + 1 loop
-            Selected := Selected and then Parts (I) >= U64 (Min_Part)
-              and then Parts (I) <= U64 (Max_Part);
-            if Options.Prime /= Any_Part then
-               Selected := Selected and then
-                 ((Primality.Is_Prime (Parts (I)) /= 0) =
-                  (Options.Prime = Prime_Part));
-            end if;
-         end loop;
-         if Selected then
-            Process (Parts (1 .. K + 1), Context);
-         end if;
-         exit when Context.Stop;
-      end loop;
-   end Forcomp;
 
    procedure Formultiperm
      (Items : Value_Array;

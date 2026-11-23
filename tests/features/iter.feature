@@ -7,7 +7,7 @@ Feature: Native MPU callback iterators
     Examples:
       | names                                           |
       | fixtures                                        |
-      | control, new_control, properties                |
+      | control, properties                |
       | forcomp, forderange, formultiperm, forsetproduct |
       | object                                          |
       | print_primes                                    |

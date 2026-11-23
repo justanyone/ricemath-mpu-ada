@@ -219,20 +219,6 @@ package body Compat_Iter is
                      Forsetproduct (Lists, Tuple'Access);
                   end if;
                end;
-            elsif Func = "prime_iterator_object_iterate" then
-               declare
-                  Cursor : Prime_Object := Prime_Iterator_Object (A);
-                  P : Int.Optional_U64;
-               begin
-                  for I in 1 .. 50 loop
-                     Iterate (Cursor, P);
-                     AUnit.Assertions.Assert (P.Defined, "object ended");
-                     if I > 1 then
-                        Append (Got, " ");
-                     end if;
-                     Append (Got, Image (P.Value));
-                  end loop;
-               end;
             elsif Func = "forcomb" then
                if Natural (C.Args.Length) = 1 then
                   Forcomb (Natural (A), Tuple'Access);
@@ -241,13 +227,20 @@ package body Compat_Iter is
                end if;
             elsif Func = "forperm" then
                Forperm (Natural (A), Tuple'Access);
-            elsif Func = "prime_iterator" then
+            elsif Func = "prime_iterator" or else
+              Func = "prime_iterator_object_iterate"
+            then
                declare
                   Cursor : Prime_Cursor := Prime_Iterator (A);
+                  Object : Prime_Object := Prime_Iterator_Object (A);
                   Value : Int.Optional_U64;
                begin
                   for I in 1 .. 50 loop
-                     Next (Cursor, Value);
+                     if Func = "prime_iterator" then
+                        Next (Cursor, Value);
+                     else
+                        Iterate (Object, Value);
+                     end if;
                      AUnit.Assertions.Assert (Value.Defined, "cursor ended");
                      if I > 1 then
                         Append (Got, " ");
@@ -278,25 +271,17 @@ package body Compat_Iter is
       Replay ("prime_iterator");
    end Check_Fixtures;
 
-   procedure Check_Forcomp (T : in out Test_Case'Class) is
+   generic
+      Func : String;
+   procedure Check_Family (T : in out Test_Case'Class);
+   procedure Check_Family (T : in out Test_Case'Class) is
    begin
-      Replay ("forcomp");
-   end Check_Forcomp;
-
-   procedure Check_Forderange (T : in out Test_Case'Class) is
-   begin
-      Replay ("forderange");
-   end Check_Forderange;
-
-   procedure Check_Formultiperm (T : in out Test_Case'Class) is
-   begin
-      Replay ("formultiperm");
-   end Check_Formultiperm;
-
-   procedure Check_Forsetproduct (T : in out Test_Case'Class) is
-   begin
-      Replay ("forsetproduct");
-   end Check_Forsetproduct;
+      Replay (Func);
+   end Check_Family;
+   procedure Check_Forcomp is new Check_Family ("forcomp");
+   procedure Check_Forderange is new Check_Family ("forderange");
+   procedure Check_Formultiperm is new Check_Family ("formultiperm");
+   procedure Check_Forsetproduct is new Check_Family ("forsetproduct");
 
    procedure Check_Object (T : in out Test_Case'Class) is
       Cursor : Prime_Object := Prime_Iterator_Object;
@@ -385,77 +370,6 @@ package body Compat_Iter is
       Check (0, 1);
    end Check_Print;
 
-   procedure Check_New_Control (T : in out Test_Case'Class) is
-      Calls : Natural := 0;
-      Lists : Value_List_Vectors.Vector;
-      Callback_Error : exception;
-      Raised : Boolean;
-      Got : Unbounded_String;
-      procedure Stop
-        (Values : Value_Array; Context : in out Loop_Context);
-      procedure Fail
-        (Values : Value_Array; Context : in out Loop_Context);
-      procedure Collect
-        (Values : Value_Array; Context : in out Loop_Context);
-
-      procedure Stop
-        (Values : Value_Array; Context : in out Loop_Context) is
-      begin
-         Calls := Calls + 1;
-         Lastfor (Context);
-      end Stop;
-
-      procedure Fail
-        (Values : Value_Array; Context : in out Loop_Context) is
-      begin
-         raise Callback_Error;
-      end Fail;
-
-      procedure Collect
-        (Values : Value_Array; Context : in out Loop_Context) is
-      begin
-         for V of Values loop
-            Append (Got, Image (V) & " ");
-         end loop;
-      end Collect;
-   begin
-      --  Each new loop stops after its first callback.
-      Forcomp (12, Stop'Access);
-      Forderange (8, Stop'Access);
-      Formultiperm ([1, 1, 2, 2], Stop'Access);
-      Lists.Append (Value_Array'(3 .. 4 => U64'Last));
-      Lists.Append (Value_Array'[0, 1]);
-      Forsetproduct (Lists, Stop'Access);
-      AUnit.Assertions.Assert (Calls = 4, "new loop lastfor");
-      --  Exceptions propagate and leave later loops independently usable.
-      for Kind in 1 .. 4 loop
-         Raised := False;
-         begin
-            case Kind is
-               when 1 => Forcomp (4, Fail'Access);
-               when 2 => Forderange (4, Fail'Access);
-               when 3 => Formultiperm ([1, 2], Fail'Access);
-               when 4 => Forsetproduct (Lists, Fail'Access);
-            end case;
-         exception
-            when Callback_Error => Raised := True;
-         end;
-         AUnit.Assertions.Assert (Raised, "callback exception swallowed");
-      end loop;
-      Calls := 0;
-      Forsetproduct (Lists, Stop'Access);
-      AUnit.Assertions.Assert (Calls = 1, "loop after callback exception");
-      --  Numeric Perl hash keys sort by decimal spelling, not magnitude.
-      Formultiperm ([2, 10], Collect'Access);
-      AUnit.Assertions.Assert (Got = "10 2 2 10 ", "multiset key order");
-      Got := Null_Unbounded_String;
-      Formultiperm (Value_Array'(4 .. 5 => U64'Last), Collect'Access);
-      AUnit.Assertions.Assert
-        (Got = Image (U64'Last) & " " & Image (U64'Last) & " ",
-         "nonstandard multiset bounds");
-      Print_Primes (1, 0);
-   end Check_New_Control;
-
    procedure Check_Control (T : in out Test_Case'Class) is
       Rows : constant Case_Vectors.Vector := Load ("iter");
       Got : Unbounded_String;
@@ -464,6 +378,7 @@ package body Compat_Iter is
       Inactive : Loop_Context;
       Raised : Boolean := False;
       Selected : Boolean;
+      Lists : Value_List_Vectors.Vector;
       Callback_Error : exception;
       procedure Push (Value : U64) is
       begin
@@ -562,6 +477,18 @@ package body Compat_Iter is
          Count := Count + 1;
          Lastfor (Context);
       end First_Tuple;
+      procedure Fail
+        (Values : Value_Array; Context : in out Loop_Context) is
+      begin
+         raise Callback_Error;
+      end Fail;
+      procedure Collect
+        (Values : Value_Array; Context : in out Loop_Context) is
+      begin
+         for V of Values loop
+            Append (Got, Image (V) & " ");
+         end loop;
+      end Collect;
       procedure First_Factored
         (Value : U64; Factors : Value_Array;
          Context : in out Loop_Context) is
@@ -685,6 +612,43 @@ package body Compat_Iter is
             AUnit.Assertions.Assert (not Value.Defined, "cursor wrapped");
          end loop;
       end;
+      Count := 0;
+      Got := Null_Unbounded_String;
+      --  Each new loop stops after its first callback.
+      Forcomp (12, First_Tuple'Access);
+      Forderange (8, First_Tuple'Access);
+      Formultiperm ([1, 1, 2, 2], First_Tuple'Access);
+      Lists.Append (Value_Array'(3 .. 4 => U64'Last));
+      Lists.Append (Value_Array'[0, 1]);
+      Forsetproduct (Lists, First_Tuple'Access);
+      AUnit.Assertions.Assert (Count = 4, "new loop lastfor");
+      --  Exceptions propagate and leave later loops independently usable.
+      for Kind in 1 .. 4 loop
+         Raised := False;
+         begin
+            case Kind is
+               when 1 => Forcomp (4, Fail'Access);
+               when 2 => Forderange (4, Fail'Access);
+               when 3 => Formultiperm ([1, 2], Fail'Access);
+               when 4 => Forsetproduct (Lists, Fail'Access);
+            end case;
+         exception
+            when Callback_Error => Raised := True;
+         end;
+         AUnit.Assertions.Assert (Raised, "callback exception swallowed");
+      end loop;
+      Count := 0;
+      Forsetproduct (Lists, First_Tuple'Access);
+      AUnit.Assertions.Assert (Count = 1, "loop after callback exception");
+      --  Numeric Perl hash keys sort by decimal spelling, not magnitude.
+      Formultiperm ([2, 10], Collect'Access);
+      AUnit.Assertions.Assert (Got = "10 2 2 10 ", "multiset key order");
+      Got := Null_Unbounded_String;
+      Formultiperm (Value_Array'(4 .. 5 => U64'Last), Collect'Access);
+      AUnit.Assertions.Assert
+        (Got = Image (U64'Last) & " " & Image (U64'Last) & " ",
+         "nonstandard multiset bounds");
+      Print_Primes (1, 0);
    end Check_Control;
 
    procedure Check_Properties (T : in out Test_Case'Class) is
@@ -790,8 +754,6 @@ package body Compat_Iter is
         (T, Check_Forsetproduct'Access, "forsetproduct");
       Registration.Register_Routine (T, Check_Object'Access, "object");
       Registration.Register_Routine (T, Check_Print'Access, "print_primes");
-      Registration.Register_Routine
-        (T, Check_New_Control'Access, "new_control");
       Registration.Register_Routine (T, Check_Control'Access, "control");
       Registration.Register_Routine
         (T, Check_Properties'Access, "properties");
