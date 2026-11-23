@@ -10,11 +10,11 @@ package Math_Prime_Util.Goldbach is
 
    --  Return the least prime p such that N-p is prime; undefined if absent.
    function Minimal_Goldbach_Pair (N : U64) return Int.Optional_U64
-     with Pre => True, Post => True;
+     with Post => (if N < 4 then not Minimal_Goldbach_Pair'Result.Defined);
    --  Count unordered prime pairs whose sum is N.
    function Goldbach_Pair_Count (N : U64) return U64
-     with Pre => True, Post => (if N < 4 then Goldbach_Pair_Count'Result = 0);
+     with Post => (if N < 4 then Goldbach_Pair_Count'Result = 0);
    --  Return smaller primes of unordered pairs in ascending order.
    function Goldbach_Pairs (N : U64) return Pair_Vectors.Vector
-     with Pre => True, Post => True;
+     with Post => (if N < 4 then Goldbach_Pairs'Result.Is_Empty);
 end Math_Prime_Util.Goldbach;
