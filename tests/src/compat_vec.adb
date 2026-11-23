@@ -251,31 +251,31 @@ package body Compat_Vec is
                         Actual := To_Unbounded_String
                           (if Flag then "1" else "0");
                      elsif Func = "set_is_disjoint" then
-                        Flag := Set_is_disjoint (X, Y);
+                        Flag := Set_Is_Disjoint (X, Y);
                         Actual := To_Unbounded_String
                           (if Flag then "1" else "0");
                      elsif Func = "set_is_equal" then
-                        Flag := Set_is_equal (X, Y);
+                        Flag := Set_Is_Equal (X, Y);
                         Actual := To_Unbounded_String
                           (if Flag then "1" else "0");
                      elsif Func = "set_is_subset" then
-                        Flag := Set_is_subset (X, Y);
+                        Flag := Set_Is_Subset (X, Y);
                         Actual := To_Unbounded_String
                           (if Flag then "1" else "0");
                      elsif Func = "set_is_proper_subset" then
-                        Flag := Set_is_proper_subset (X, Y);
+                        Flag := Set_Is_Proper_Subset (X, Y);
                         Actual := To_Unbounded_String
                           (if Flag then "1" else "0");
                      elsif Func = "set_is_superset" then
-                        Flag := Set_is_superset (X, Y);
+                        Flag := Set_Is_Superset (X, Y);
                         Actual := To_Unbounded_String
                           (if Flag then "1" else "0");
                      elsif Func = "set_is_proper_superset" then
-                        Flag := Set_is_proper_superset (X, Y);
+                        Flag := Set_Is_Proper_Superset (X, Y);
                         Actual := To_Unbounded_String
                           (if Flag then "1" else "0");
                      elsif Func = "set_is_proper_intersection" then
-                        Flag := Set_is_proper_intersection (X, Y);
+                        Flag := Set_Is_Proper_Intersection (X, Y);
                         Actual := To_Unbounded_String
                           (if Flag then "1" else "0");
                      elsif Func = "is_sidon_set" then
@@ -297,7 +297,7 @@ package body Compat_Vec is
                            Vecrsorti (A (1 .. NA));
                         end if;
                         Actual := To_Unbounded_String (Image (A (1 .. NA)));
-                     elsif Func = "vecextract" or Func = "vecextract_idx" then
+                     elsif Func = "vecextract" or else Func = "vecextract_idx" then
                         declare
                            Values : Optional_Array (1 .. NA + NB);
                            N : Natural := 0;

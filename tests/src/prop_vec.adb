@@ -103,7 +103,7 @@ package body Prop_Vec is
         [0, 1, 2, 2 ** 32 - 1, 2 ** 32 + 1, 2 ** 63 - 1,
          2 ** 63 + 1, I128 (U64'Last), -I128 (U64'Last),
          I128'First, I128'Last];
-      R : I128;
+      R : I128 := 0;
       Raised : Boolean := False;
    begin
       Assert (Vecmin (A).Value = I128'First, "minimum boundary");
