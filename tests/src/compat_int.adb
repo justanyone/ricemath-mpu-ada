@@ -126,6 +126,142 @@ package body Compat_Int is
       end loop;
    end Replay;
 
+   procedure Replay_Removal (Func : String) is
+      Cases : constant Case_Vectors.Vector :=
+        For_Function (Load ("arith"), Func);
+      Got : Unbounded_String;
+      V : Optional_U64;
+      R : Removal_Result;
+      O : Optional_I128;
+   begin
+      AUnit.Assertions.Assert (not Cases.Is_Empty, "missing " & Func);
+      for C of Cases loop
+         declare
+            N : constant I128 := I128'Value (To_String (C.Args (1)));
+            K : constant I128 := I128'Value (To_String (C.Args (2)));
+            Raised : Boolean := False;
+         begin
+            Got := To_Unbounded_String ("undef");
+            begin
+               if Func = "valuation" then
+                  V := Valuation (N, K);
+                  if V.Defined then
+                     Got := To_Unbounded_String (Image (I128 (V.Value)));
+                  end if;
+               elsif Func = "remove_factors" then
+                  O := Remove_Factors (N, K);
+                  if O.Defined then
+                     Got := To_Unbounded_String (Image (O.Value));
+                  end if;
+               else
+                  R := Remove_Factors_Exp (N, K);
+                  if R.Defined then
+                     Got := To_Unbounded_String
+                       (Image (R.Value) & " " & Image (I128 (R.Exponent)));
+                  end if;
+               end if;
+            exception
+               when Constraint_Error | Ada.Assertions.Assertion_Error =>
+                  Raised := True;
+            end;
+            AUnit.Assertions.Assert
+              (Raised = C.Error, Func & " error row" &
+               Positive'Image (C.Line_Number));
+            if not C.Error then
+               AUnit.Assertions.Assert
+                 (Got = C.Result, Func & " row" &
+                  Positive'Image (C.Line_Number) & " got " & To_String (Got));
+            end if;
+         end;
+      end loop;
+   end Replay_Removal;
+
+   procedure Test_Valuation (T : in out Test_Case'Class) is
+   begin
+      Replay_Removal ("valuation");
+   end Test_Valuation;
+
+   procedure Test_Remove_Factors (T : in out Test_Case'Class) is
+   begin
+      Replay_Removal ("remove_factors");
+   end Test_Remove_Factors;
+
+   procedure Test_Remove_Factors_Exp (T : in out Test_Case'Class) is
+   begin
+      Replay_Removal ("remove_factors_exp");
+   end Test_Remove_Factors_Exp;
+
+   procedure Test_Floor_Sum (T : in out Test_Case'Class) is
+      Cases : constant Case_Vectors.Vector :=
+        For_Function (Load ("bigint_sequences"), "floor_sum");
+      A : array (1 .. 4) of U64;
+      V, Expected : U128;
+      Raised : Boolean;
+      use type U128;
+   begin
+      for C of Cases loop
+         --  bigint_sequences.tsv:263,264 have N/A/B above U64;
+         --  row 265 has M above U64. These require the bigint tier.
+         if C.Line_Number not in 263 .. 265 then
+            for I in A'Range loop
+               AUnit.Assertions.Assert
+                 (Parse_U64 (To_String (C.Args (I)), A (I)),
+                  "floor_sum input");
+            end loop;
+            Raised := False;
+            begin
+               V := Floor_Sum (A (1), A (2), A (3), A (4));
+            exception
+               when Constraint_Error | Ada.Assertions.Assertion_Error =>
+                  Raised := True;
+            end;
+            AUnit.Assertions.Assert (Raised = C.Error, "floor_sum error");
+            if not C.Error then
+               AUnit.Assertions.Assert
+                 (Parse_U128 (To_String (C.Result), Expected),
+                  "floor_sum expected");
+               AUnit.Assertions.Assert (V = Expected, "floor_sum result");
+            end if;
+         end if;
+      end loop;
+      --  t/19-floor_sum.t: wide triangular and constant terms.
+      AUnit.Assertions.Assert
+        (Floor_Sum (6_074_001_001, 1, 1, 0) =
+           18_446_744_077_037_500_500, "wide triangular term");
+      AUnit.Assertions.Assert
+        (Floor_Sum (6_074_001_000, 1, 2, 0) =
+           36_893_488_141_926_999_000, "scaled triangular term");
+      AUnit.Assertions.Assert
+        (Floor_Sum (2, 1, 0, U64'Last) = 2 * U128 (U64'Last),
+         "wide constant term");
+      AUnit.Assertions.Assert
+        (Floor_Sum (U64'Last, U64'Last, 2, 0) = U128 (U64'Last / 2),
+         "wide intermediate");
+      Raised := False;
+      begin
+         V := Floor_Sum (U64'Last, 1, U64'Last, U64'Last);
+      exception
+         when Constraint_Error => Raised := True;
+      end;
+      AUnit.Assertions.Assert (Raised, "floor_sum overflow");
+      --  Deterministic bounded oracle exercises Euclidean reductions.
+      for N in U64 range 0 .. 12 loop
+         for M in U64 range 1 .. 9 loop
+            for AA in U64 range 0 .. 11 loop
+               for B in U64 range 0 .. 10 loop
+                  Expected := 0;
+                  for I in U64 range 1 .. N loop
+                     Expected := Expected + U128 ((AA * (I - 1) + B) / M);
+                  end loop;
+                  AUnit.Assertions.Assert
+                    (Floor_Sum (N, M, AA, B) = Expected,
+                     "floor_sum bounded oracle");
+               end loop;
+            end loop;
+         end loop;
+      end loop;
+   end Test_Floor_Sum;
+
    overriding function Name (T : Int_Case) return AUnit.Message_String is
    begin
       return AUnit.Format ("Compat_Int");
@@ -299,6 +435,15 @@ package body Compat_Int is
 
    overriding procedure Register_Tests (T : in out Int_Case) is
    begin
+      Registration.Register_Routine
+        (T, Test_Valuation'Access, "valuation");
+      Registration.Register_Routine
+        (T, Test_Remove_Factors'Access, "remove_factors");
+      Registration.Register_Routine
+        (T, Test_Remove_Factors_Exp'Access, "remove_factors_exp");
+      Registration.Register_Routine
+        (T, Test_Floor_Sum'Access, "floor_sum");
+
       Registration.Register_Routine
         (T, Test_Sqrtint'Access, "sqrtint");
       Registration.Register_Routine

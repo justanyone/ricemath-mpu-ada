@@ -36,6 +36,55 @@ package body Compat_Families is
    function Image (N : Int.Optional_U64) return String is
      (if N.Defined then Image (N.Value) else "undef");
 
+   procedure Replay_Predicates (Func : String) is
+      Cases : constant Case_Vectors.Vector :=
+        For_Function (Load ("families"), Func);
+      Got : Unbounded_String;
+      N, B : Int.I128;
+      K : U64;
+   begin
+      AUnit.Assertions.Assert (not Cases.Is_Empty, "missing " & Func);
+      for C of Cases loop
+         N := Int.I128'Value (To_String (C.Args (1)));
+         if Func = "next_chen_prime" then
+            Got := To_Unbounded_String (Image (Next_Chen_Prime (U64 (N))));
+         elsif Func = "is_gaussian_prime" then
+            B := Int.I128'Value (To_String (C.Args (2)));
+            --  XS.xs encodes this predicate as 2 for a proven prime.
+            Got := To_Unbounded_String
+              ((if Is_Gaussian_Prime (N, B) then "2" else "0"));
+         else
+            K := (if Natural (C.Args.Length) = 1 then 2
+                  else U64'Value (To_String (C.Args (2))));
+            Got := To_Unbounded_String
+              ((if Is_Sum_Of_Squares (N, K) then "1" else "0"));
+         end if;
+         AUnit.Assertions.Assert
+           (Got = C.Result, Func & " row" &
+            Positive'Image (C.Line_Number) & " got " & To_String (Got));
+      end loop;
+   end Replay_Predicates;
+
+   procedure Test_Next_Chen_Prime (T : in out Test_Case'Class) is
+   begin
+      Replay_Predicates ("next_chen_prime");
+      AUnit.Assertions.Assert
+        (not Next_Chen_Prime (18_446_744_073_709_551_437).Defined,
+         "last Chen prime");
+      AUnit.Assertions.Assert
+        (not Next_Chen_Prime (U64'Last).Defined, "Chen native limit");
+   end Test_Next_Chen_Prime;
+
+   procedure Test_Is_Gaussian_Prime (T : in out Test_Case'Class) is
+   begin
+      Replay_Predicates ("is_gaussian_prime");
+   end Test_Is_Gaussian_Prime;
+
+   procedure Test_Is_Sum_Of_Squares (T : in out Test_Case'Class) is
+   begin
+      Replay_Predicates ("is_sum_of_squares");
+   end Test_Is_Sum_Of_Squares;
+
    procedure Replay (Func : String) is
       Cases : constant Case_Vectors.Vector :=
         For_Function (Load ("families"), Func);
@@ -805,6 +854,13 @@ package body Compat_Families is
 
    overriding procedure Register_Tests (T : in out Families_Case) is
    begin
+      Registration.Register_Routine
+        (T, Test_Next_Chen_Prime'Access, "next_chen_prime");
+      Registration.Register_Routine
+        (T, Test_Is_Gaussian_Prime'Access, "is_gaussian_prime");
+      Registration.Register_Routine
+        (T, Test_Is_Sum_Of_Squares'Access, "is_sum_of_squares");
+
       Registration.Register_Routine
         (T, Test_Is_Powerful'Access, "is_powerful");
       Registration.Register_Routine
