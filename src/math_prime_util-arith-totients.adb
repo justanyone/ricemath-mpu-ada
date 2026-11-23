@@ -450,9 +450,27 @@ package body Math_Prime_Util.Arith.Totients is
          -447438528];
 
       --  util.c: hclassno and _count_class_div; 12 times H(X).
-      function Class_Number (X : U64) return U64;
-      function Class_Number (X : U64) return U64 is
-         H, D, B2, Bound, Corr : U64;
+      function Wide_Sqrt (X : U128) return U64;
+      function Wide_Sqrt (X : U128) return U64 is
+         Low : U64 := 0;
+         High : U64 := 2 ** 34;
+         Middle : U64;
+      begin
+         while Low + 1 < High loop
+            Middle := Low + (High - Low) / 2;
+            if U128 (Middle) ** 2 <= X then
+               Low := Middle;
+            else
+               High := Middle;
+            end if;
+         end loop;
+         return Low;
+      end Wide_Sqrt;
+
+      function Class_Number (X : U128) return U64;
+      function Class_Number (X : U128) return U64 is
+         H, Corr : U64;
+         D, B2, Bound : U128;
          Square : Boolean;
          F : Optional_U64;
       begin
@@ -463,9 +481,23 @@ package body Math_Prime_Util.Arith.Totients is
          end if;
          D := X mod 2;
          B2 := (X + 1) / 4;
-         Square := Int.Is_Square (B2);
-         F := Divisor_Sum (B2, 0);
-         H := F.Value / 2;
+         Bound := U128 (Wide_Sqrt (B2));
+         Square := Bound * Bound = B2;
+         if B2 <= U128 (U64'Last) then
+            F := Divisor_Sum (U64 (B2), 0);
+            H := F.Value / 2;
+         else
+            --  Same divisor-pair count beyond the native factor API.
+            H := 0;
+            for I in U128 range 1 .. Bound loop
+               if B2 mod I = 0 then
+                  H := H + 1;
+               end if;
+            end loop;
+            if Square then
+               H := H - 1;
+            end if;
+         end if;
          if D = 1 then
             H := 1 + (if Square then 1 else 0) + 2 * (H - 1);
          end if;
@@ -476,10 +508,10 @@ package body Math_Prime_Util.Arith.Totients is
             if B2 mod D = 0 then
                H := H + 1;
             end if;
-            if Int.Is_Square (B2) then
+            if U128 (Wide_Sqrt (B2)) ** 2 = B2 then
                H := H + 1;
             end if;
-            Bound := Int.Sqrtint (B2);
+            Bound := U128 (Wide_Sqrt (B2));
             if Bound * Bound = B2 then
                Bound := Bound - 1;
             end if;
@@ -504,19 +536,16 @@ package body Math_Prime_Util.Arith.Totients is
          if P < U64 (Table'Length) then
             return Conversion.To_Big_Integer (Table (Natural (P)));
          end if;
-         --  PP.pm: _tauprime. Class-number arguments must fit U64.
-         if P > U64'Last / 4 then
-            raise Constraint_Error with "tau class-number argument overflow";
-         end if;
+         --  PP.pm: _tauprime, with wide class-number arguments.
          for T in U64 range 1 .. Int.Sqrtint (P) loop
             T2 := T * T;
             V := P - T2;
             if V mod 4 = 0 then
-               T3 := 2 * Class_Number (V) + Class_Number (4 * V);
+               T3 := 2 * Class_Number (U128 (V)) + Class_Number (4 * U128 (V));
             elsif V mod 4 = 3 then
-               T3 := (if V mod 8 = 3 then 6 else 4) * Class_Number (V);
+               T3 := (if V mod 8 = 3 then 6 else 4) * Class_Number (U128 (V));
             else
-               T3 := Class_Number (4 * V);
+               T3 := Class_Number (4 * U128 (V));
             end if;
             Sum := Sum + B (T2) ** 3 *
               (4 * B (T2) ** 2 - 9 * BP * B (T2) + 7 * BP ** 2) * B (T3);

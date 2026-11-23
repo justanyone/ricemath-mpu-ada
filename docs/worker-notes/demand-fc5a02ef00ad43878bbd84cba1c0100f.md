@@ -18,3 +18,4 @@ Progress: BDD collection is blocked by missing pytest_bdd on this offline host; 
 Progress: all nine focused tests pass within the 59-second timeout; full gate launched. Restored reference Coleman shortcuts before list-overflow bounds and fixed one style diagnostic.
 Progress: full gate passed development build and is compiling release; focused native suite already passed all nine cases. pytest-bdd and gnatprove are absent on this host.
 Progress: gate release compilation is continuing; source whitespace checks pass and the latest inverse shortcut changes remain queued for validation rebuild.
+Progress: removed the artificial tau class-number argument limit using U128 intermediates; the algorithm now retains native input bounds without argument wrapping.
