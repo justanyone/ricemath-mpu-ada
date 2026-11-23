@@ -332,9 +332,10 @@ package body Compat_Vec is
       elsif Func = "setinsert" or else Func = "setinsert_set" then
          declare
             S : Int_Vector := L;
-            N : constant Integer := Setinsert (S, R);
          begin
-            pragma Unreferenced (N);
+            if Setinsert (S, R) < 0 then
+               raise Constraint_Error with "insert count";
+            end if;
             return Join (S);
          end;
       elsif Func = "setinsert_n" then
@@ -346,9 +347,10 @@ package body Compat_Vec is
       elsif Func = "setremove" or else Func = "setremove_set" then
          declare
             S : Int_Vector := L;
-            N : constant Integer := Setremove (S, R);
          begin
-            pragma Unreferenced (N);
+            if Setremove (S, R) < 0 then
+               raise Constraint_Error with "remove count";
+            end if;
             return Join (S);
          end;
       elsif Func = "setremove_n" then
@@ -360,9 +362,10 @@ package body Compat_Vec is
       elsif Func = "setinvert" or else Func = "setinvert_set" then
          declare
             S : Int_Vector := L;
-            N : constant Integer := Setinvert (S, R);
          begin
-            pragma Unreferenced (N);
+            if Setinvert (S, R) = Integer'First then
+               raise Constraint_Error with "invert count";
+            end if;
             return Join (S);
          end;
       elsif Func = "setinvert_n" then
