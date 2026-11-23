@@ -286,6 +286,9 @@ package body Math_Prime_Util.Vec is
       if Left.Length /= Right.Length then
          return False;
       end if;
+      if Left.Is_Empty then
+         return True;
+      end if;
       for I in Left.First_Index .. Left.Last_Index loop
          if Left (I) /= Right (I) then
             return False;
