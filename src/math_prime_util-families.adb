@@ -886,14 +886,17 @@ package body Math_Prime_Util.Families is
         [3, 5, 11, 17, 29];
       Lo : U64 := 0;
       Hi, C : U64 := 0;
+      Bound : U64;
    begin
       if N = 0 or else N > Max_Twin_Index then
          return (Defined => False);
       elsif N <= 5 then
          return (True, Small_Twins (Positive (N)));
       end if;
+      Bound := Nth_Twin_Prime_Approx (N).Value;
+      Bound := Bound + U64'Min (Max_Twin - Bound, Bound / 10 + 800);
       loop
-         Hi := Lo + U64'Min (Max_Twin - Lo, Window - 1);
+         Hi := Lo + U64'Min (Bound - Lo, Window - 1);
          declare
             V : constant Family_Vectors.Vector := Twin_Primes (Lo, Hi);
          begin
@@ -904,6 +907,9 @@ package body Math_Prime_Util.Families is
          end;
          exit when Hi = Max_Twin;
          Lo := Hi + 1;
+         if Lo > Bound then
+            Bound := Bound + U64'Min (Max_Twin - Bound, Window);
+         end if;
       end loop;
       return (Defined => False);
    end Nth_Twin_Prime;
@@ -1109,6 +1115,9 @@ package body Math_Prime_Util.Families is
    begin
       if N = 0 then
          return (Defined => False);
+      end if;
+      if N <= 200 then
+         return Nth_Semiprime_Approx (N);
       end if;
       Guess := Nth_Semiprime_Approx (N).Value;
       C := Semiprime_Count (Guess);
