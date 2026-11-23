@@ -1,5 +1,3 @@
-"""BDD bridge reusing the checked AUnit runner and status steps."""
-
 import pytest
 
 bdd = pytest.importorskip("pytest_bdd", reason="BDD scenarios require pytest-bdd")
