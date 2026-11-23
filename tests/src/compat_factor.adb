@@ -7,6 +7,7 @@ with AUnit.Test_Cases;
 with Fixture_Support;
 with Math_Prime_Util.Factor;
 with Math_Prime_Util.Primality;
+with Wide_Runner;
 
 package body Compat_Factor is
    use AUnit.Test_Cases;
@@ -407,8 +408,15 @@ package body Compat_Factor is
       Replay ("divisors");
    end Test_Divisors;
 
+   procedure Test_Wide (T : in out Test_Case'Class) is
+   begin
+      Wide_Runner;
+   end Test_Wide;
+
    overriding procedure Register_Tests (T : in out Factor_Case) is
    begin
+      Registration.Register_Routine
+        (T, Test_Wide'Access, "factor128 arithmetic boundaries");
       Registration.Register_Routine
         (T, Check_Fixtures'Access, "ecm_factor fixtures");
       Registration.Register_Routine
