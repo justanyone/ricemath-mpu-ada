@@ -1,4 +1,3 @@
-with Math_Prime_Util.Int;
 with Math_Prime_Util.Primality;
 with Math_Prime_Util.Sieve;
 
