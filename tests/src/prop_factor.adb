@@ -37,7 +37,7 @@ package body Prop_Factor is
          begin
             Product := Product * U128 (Pair.Prime) ** Pair.Exponent;
             Sum := Sum + Pair.Exponent;
-            Square_Free := Square_Free and Pair.Exponent = 1;
+            Square_Free := Square_Free and then Pair.Exponent = 1;
             Histogram (Pair.Exponent) := Histogram (Pair.Exponent) + 1;
             AUnit.Assertions.Assert
               (N = 0 or else (Pair.Prime > Last
