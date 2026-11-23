@@ -757,10 +757,9 @@ package body Math_Prime_Util.Families is
       return Sum;
    end Twin_Prime_Count;
 
-   function Twin_Prime_Count (High : U64) return U64
-     with SPARK_Mode => Off
-   is
-     (Twin_Prime_Count (0, High));
+   function Twin_Prime_Count (High : U64) return U64 is
+     (Twin_Prime_Count (0, High))
+     with SPARK_Mode => Off;
 
    subtype Wide is Long_Long_Float;
    package Wef is new Ada.Numerics.Generic_Elementary_Functions (Wide);
