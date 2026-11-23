@@ -1,5 +1,6 @@
 with Ada.Numerics.Long_Elementary_Functions;
 with Interfaces;
+with Math_Prime_Util.Sieve;
 
 package body Math_Prime_Util.Families is
    use Ada.Numerics.Long_Elementary_Functions;

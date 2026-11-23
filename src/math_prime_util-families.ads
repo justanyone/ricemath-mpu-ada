@@ -1,5 +1,6 @@
 with Ada.Containers.Vectors;
 with Math_Prime_Util.Int;
+with Math_Prime_Util.Primality;
 
 --  Lucky-number sieves and estimates from MPU 0.75.
 package Math_Prime_Util.Families is
@@ -51,4 +52,10 @@ package Math_Prime_Util.Families is
    --  lucky_numbers.c: nth_lucky_upper. Empirical upper value bound.
    function Nth_Lucky_Upper (N : U64) return Int.Optional_U64
      with Pre => True, Post => Nth_Lucky_Upper'Result.Defined = (N /= 0);
+
+   --  ramanujan_primes.c: is_ramanujan_prime. Test whether N is a
+   --  Ramanujan prime; may allocate a sieve and propagate Storage_Error.
+   function Is_Ramanujan_Prime (N : U64) return Boolean
+     with Pre => True,
+          Post => (if N < 2 then not Is_Ramanujan_Prime'Result);
 end Math_Prime_Util.Families;

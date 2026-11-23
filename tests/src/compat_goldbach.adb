@@ -34,15 +34,10 @@ package body Compat_Goldbach is
       Cases : constant Case_Vectors.Vector :=
         For_Function (Load ("families"), Func);
       N : Math_Prime_Util.U64;
-      Seen : Natural := 0;
       Got : Unbounded_String;
    begin
       AUnit.Assertions.Assert (not Cases.Is_Empty, "missing " & Func);
       for C of Cases loop
-         Seen := Seen + 1;
-         if Seen > 16 then
-            exit;
-         end if;
          N := Math_Prime_Util.U64'Value (To_String (C.Args (1)));
          if Func = "minimal_goldbach_pair" then
             Got := To_Unbounded_String (Image (Minimal_Goldbach_Pair (N)));
