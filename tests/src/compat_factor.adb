@@ -93,7 +93,7 @@ package body Compat_Factor is
           Factor_List'(1 => 49), "default B2 saturates without wrapping");
       AUnit.Assertions.Assert
         (Ecm_Factor (77, B1 => 0, B2 => 1, Curves => U64'Last) =
-          Ecm_Factor (77, B1 => 0, B2 => 1, Curves => 500),
+          Ecm_Factor (77, B1 => 0, B2 => 1, Curves => 400),
          "curve count is capped");
    end Check_Edges;
 

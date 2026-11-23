@@ -6,7 +6,7 @@ package Math_Prime_Util.Factor with SPARK_Mode => On is
    --  factor.c: tinyecm64_factor; XS.xs: ecm_factor wrapper.
    --  Strip 2, 3, 5, then attempt one ECM split (not full factorization).
    --  Bounds B1/B2 are inclusive prime limits; B2 = 0 means saturated
-   --  20 * B1. Curves is capped at the 500 fixed Suyama curves.
+   --  20 * B1. Curves is capped at the 400 fixed Suyama curves.
    --  Return sorted factors, [0] for zero, an empty list for one, or the
    --  unsplit cofactor on failure. Storage_Error may propagate for bounds
    --  too large to allocate stage-two tables. No randomness or shared state.

@@ -6,7 +6,7 @@ package body Math_Prime_Util.Factor is
    use type Int.Optional_U64;
 
    --  factor.c: ecm64_sigmas, in the original deterministic order.
-   Sigmas : constant array (Positive range 1 .. 500) of U64 :=
+   Sigmas : constant array (Positive range 1 .. 400) of U64 :=
      (11, 13, 17, 19, 23, 29, 31, 37, 41, 43,
       47, 53, 59, 61, 67, 71, 73, 79, 83, 89,
       103, 127, 139, 149, 151, 157, 163, 181, 191, 197,
@@ -168,7 +168,7 @@ package body Math_Prime_Util.Factor is
 
    --  factor.c: tinyecm64_stage2, baby steps and giant steps.
    function Stage_Two (Q : Point; A24, N, B1, B2 : U64) return U64 is
-      D : U64 := Int.Isqrt (B2 / 2);
+      D : U64 := Int.Sqrtint (B2 / 2);
       F, M, Hi, Lo, Idx : U64;
       Product : U64 := 1;
       Ok : Boolean;
