@@ -81,6 +81,9 @@ package body Compat_Vec_Folds is
    end Equal;
 
    procedure Check_Reduce (T : in out Test_Case'Class) is
+      Boundaries : constant Value_Array :=
+        [0, 1, 2, 2 ** 32 - 1, 2 ** 32 + 1,
+         2 ** 63 - 1, 2 ** 63 + 1, U64'Last];
       Calls : Natural := 0;
       function Count (A, B : U64) return U64 is
       begin
@@ -97,7 +100,12 @@ package body Compat_Vec_Folds is
               "26-vec.t:269 left fold product of squares");
       --  26-vec.t:271-272 skipped: negative result outside U64.
       --  26-vec.t:274-276 skipped: 2**64 bigint input outside U64.
-      Assert (Reduce ([U64'Last, 0]).Value = U64'Last, "U64 boundary");
+      for V of Boundaries loop
+         Assert (Reduce ([V, 0]).Value = V, "native boundary fold");
+         Equal (Slide ([V, 0]), [V], "native boundary slide");
+         Equal (Pairs ([V], [0]), [V], "native boundary pair");
+         Equal (Windows (1, 1, [V]), [V], "native boundary window");
+      end loop;
    end Check_Reduce;
 
    procedure Check_Slide (T : in out Test_Case'Class) is

@@ -7,3 +7,4 @@ Read XS/PP semantics; added native generic API with list-returning pair/window c
 Added five operation tests and nine native bigint_sets fixture rows; named all non-native skips. Alire requires XDG_RUNTIME_DIR under obj/tmp on this worker; building now.
 Development library build passed. Focused AUnit build is running; checks include empty/singleton lists, list and empty callback returns, arbitrary bounds, huge steps, canonical callback order, and input snapshots.
 Review found intermediate index additions could overflow for Positive'Last lower bounds. Reassociated those expressions and added maximum-index tests; gate has started.
+Both development and release build phases accept the new library. Added all specified U64 edge values to callback traversal tests; waiting for initial test-crate compilation before final validation.
