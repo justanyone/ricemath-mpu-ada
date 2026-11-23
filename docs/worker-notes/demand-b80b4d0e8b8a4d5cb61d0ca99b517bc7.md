@@ -14,3 +14,4 @@ The checked focused runner compiled but GNAT linking failed on a vector for-of r
 All ten focused AUnit iterator checks pass, including every new native fixture family and callback controls. Started the full declared gate and the five pytest-bdd scenarios.
 Reviewed source layout and fixture skip comments; diff whitespace checks pass. Full gate remains in progress; no tool scripts, fixtures, reference sources, generated status, or dependencies changed.
 Pytest-bdd collection is blocked by missing pytest_bdd in the installed Python environment; no dependency or network changes made. The same scenarios' underlying ten AUnit checks passed. Full gate is compiling development/release profiles.
+Development gate build passed. Release compilation is running; focused iterator tests remain green, while Python BDD execution requires the factory environment's pytest_bdd package.
