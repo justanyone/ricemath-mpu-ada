@@ -24,3 +24,4 @@ Progress: final focused runner reports 9/9 successful tests, zero failures/error
 Progress: final gate development build passed without new diagnostics; release and test stages are continuing.
 Progress: final gate development, release, and test builds all pass; waiting for the existing full-suite run. No further source edits are planned.
 Progress: the full-suite gate is still running; all final builds and the focused nine-test totient suite have passed. Waiting for the gate result without changing sources.
+Final: implemented all eight requested functions plus inverse_totient_count; all 9 focused tests pass under the 59-second limit, and tools/gate.sh prints == gate: green with 349/349 AUnit tests passing. BDD collection was attempted but pytest_bdd is absent; gnatprove is also unavailable. No generated STATUS.md, protected paths, dependencies, or git metadata were changed by this worker.
