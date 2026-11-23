@@ -183,6 +183,288 @@ package body Compat_Families is
       end loop;
    end Replay;
 
+   --  Native_Tier: rows outside U64 (arguments or results) await bigint.
+   --  Count_Limit: exact prime counts use the existing Count precondition.
+   --  Each skipped native overflow is asserted undefined below.
+   procedure Replay_Powers (Func : String) is
+      Cases : constant Case_Vectors.Vector :=
+        For_Function (Load ("families"), Func);
+      N, H, Expected : U64;
+      Signed : Int.I128;
+      Got : Unbounded_String;
+      O : Int.Optional_U64;
+      Skip : Boolean;
+   begin
+      AUnit.Assertions.Assert (not Cases.Is_Empty, "missing " & Func);
+      for C of Cases loop
+         Signed := Int.I128'Value (To_String (C.Args (1)));
+         Skip := Signed not in
+           -Int.I128 (U64'Last) .. Int.I128 (U64'Last);
+         N := (if Signed < 0 or Skip then 0 else U64 (Signed));
+         H := (if C.Args.Last_Index = 2 then
+                 U64'Value (To_String (C.Args (2))) else N);
+         if Func = "prime_power_count" and then
+           H > Math_Prime_Util.Count.Prime_Count_Limit
+         then
+            Skip := True;
+         end if;
+         --  Bigint_Index: MPU dispatches larger perfect-power indices to PP.
+         if Ada.Strings.Fixed.Index (Func, "nth_perfect_power") = 1 and then
+           N > 4_297_615_581
+         then
+            Skip := True;
+         end if;
+         --  Signed_Overflow: the next odd-power magnitude must fit U64.
+         if Func = "prev_perfect_power" and then
+           Signed < -18_446_724_184_312_856_124
+         then
+            Skip := True;
+         end if;
+         Got := Null_Unbounded_String;
+         O := (Defined => False);
+         if not Skip then
+            if Func = "prime_powers" then
+               declare
+                  V : constant Lucky_Vectors.Vector :=
+                    (if C.Args.Last_Index = 1 then Prime_Powers (N)
+                     else Prime_Powers (N, H));
+               begin
+                  for J in V.First_Index .. V.Last_Index loop
+                     if Length (Got) > 0 then
+                        Append (Got, " ");
+                     end if;
+                     Append (Got, Image (V.Element (J)));
+                  end loop;
+                  if V.Is_Empty then
+                     Got := To_Unbounded_String ("undef");
+                  end if;
+               end;
+            elsif Func = "is_prime_power_root" then
+               declare
+                  P : constant Prime_Power_Result := Prime_Power (N);
+               begin
+                  Got := To_Unbounded_String
+                    (Image (P.Exponent) & " " & Image (P.Prime));
+               end;
+            elsif Func = "is_prime_power" then
+               Got := To_Unbounded_String (Image (Is_Prime_Power (N)));
+            elsif Func = "is_perfect_power" then
+               Got := To_Unbounded_String
+                 ((if Is_Perfect_Power (Signed) then "1" else "0"));
+            elsif (Func = "next_perfect_power" and Signed < 0) or else
+              (Func = "prev_perfect_power" and Signed <= 0)
+            then
+               Got := To_Unbounded_String (Ada.Strings.Fixed.Trim
+                 (Int.I128'Image
+                   ((if Func = "next_perfect_power" then
+                       Next_Perfect_Power (Signed)
+                     else Prev_Perfect_Power (Signed))), Ada.Strings.Both));
+            elsif Func = "next_prime_power" then
+               O := Next_Prime_Power (N);
+            elsif Func = "prev_prime_power" then
+               O := Prev_Prime_Power (N);
+            elsif Func = "prime_power_count" then
+               Got := To_Unbounded_String
+                 (Image ((if C.Args.Last_Index = 1 then
+                            Prime_Power_Count (N)
+                  else Prime_Power_Count (N, H))));
+            elsif Func = "prime_power_count_approx" then
+               Got := To_Unbounded_String
+                 (Image (Prime_Power_Count_Approx (N)));
+            elsif Func = "prime_power_count_lower" then
+               Got := To_Unbounded_String
+                 (Image (Prime_Power_Count_Lower (N)));
+            elsif Func = "prime_power_count_upper" then
+               Got := To_Unbounded_String
+                 (Image (Prime_Power_Count_Upper (N)));
+            elsif Func = "nth_prime_power" then
+               O := Nth_Prime_Power (N);
+            elsif Func = "nth_prime_power_approx" then
+               O := Nth_Prime_Power_Approx (N);
+            elsif Func = "nth_prime_power_lower" then
+               O := Nth_Prime_Power_Lower (N);
+            elsif Func = "nth_prime_power_upper" then
+               O := Nth_Prime_Power_Upper (N);
+            elsif Func = "next_perfect_power" then
+               O := Next_Perfect_Power (N);
+            elsif Func = "prev_perfect_power" then
+               O := Prev_Perfect_Power (N);
+            elsif Func = "perfect_power_count" then
+               Got := To_Unbounded_String
+                 (Image ((if C.Args.Last_Index = 1 then
+                            Perfect_Power_Count (N)
+                  else Perfect_Power_Count (N, H))));
+            elsif Func = "perfect_power_count_approx" then
+               Got := To_Unbounded_String
+                 (Image (Perfect_Power_Count_Approx (N)));
+            elsif Func = "perfect_power_count_lower" then
+               Got := To_Unbounded_String
+                 (Image (Perfect_Power_Count_Lower (N)));
+            elsif Func = "perfect_power_count_upper" then
+               Got := To_Unbounded_String
+                 (Image (Perfect_Power_Count_Upper (N)));
+            elsif Func = "nth_perfect_power" then
+               O := Nth_Perfect_Power (N);
+            elsif Func = "nth_perfect_power_approx" then
+               O := Nth_Perfect_Power_Approx (N);
+            elsif Func = "nth_perfect_power_lower" then
+               O := Nth_Perfect_Power_Lower (N);
+            elsif Func = "nth_perfect_power_upper" then
+               O := Nth_Perfect_Power_Upper (N);
+            end if;
+            if Length (Got) = 0 then
+               Got := To_Unbounded_String (Image (O));
+               if not C.Undef and then
+                 not Parse_U64 (To_String (C.Result), Expected)
+               then
+                  AUnit.Assertions.Assert
+                    (not O.Defined, Func & " native overflow");
+                  Skip := True;
+               end if;
+            end if;
+            --  MPU_Li_Rounding: maximum-U64 bound rows use a less accurate
+            --  logarithmic integral. See docs/upstream-findings.md.
+            if N = U64'Last and then
+              (Func = "prime_power_count_lower" or else
+               Func = "prime_power_count_upper")
+            then
+               AUnit.Assertions.Assert
+                 (To_String (Got) =
+                    (if Func = "prime_power_count_lower" then
+                       "425656284125562281" else "425656284319202055"),
+                  "corrected Li power bound");
+               Skip := True;
+            end if;
+            if not Skip then
+               AUnit.Assertions.Assert
+                 (Got = C.Result, Func & " line" & C.Line_Number'Image &
+                  " expected " & To_String (C.Result) &
+                  " got " & To_String (Got));
+            end if;
+         end if;
+      end loop;
+   end Replay_Powers;
+
+   procedure Test_Prime_Powers (T : in out Test_Case'Class) is
+   begin
+      Replay_Powers ("prime_powers");
+   end Test_Prime_Powers;
+
+   procedure Test_Is_Prime_Power (T : in out Test_Case'Class) is
+   begin
+      Replay_Powers ("is_prime_power");
+   end Test_Is_Prime_Power;
+
+   procedure Test_Next_Prime_Power (T : in out Test_Case'Class) is
+   begin
+      Replay_Powers ("next_prime_power");
+   end Test_Next_Prime_Power;
+
+   procedure Test_Prev_Prime_Power (T : in out Test_Case'Class) is
+   begin
+      Replay_Powers ("prev_prime_power");
+   end Test_Prev_Prime_Power;
+
+   procedure Test_Is_Prime_Power_Root (T : in out Test_Case'Class) is
+   begin
+      Replay_Powers ("is_prime_power_root");
+   end Test_Is_Prime_Power_Root;
+
+   procedure Test_Prime_Power_Count (T : in out Test_Case'Class) is
+   begin
+      Replay_Powers ("prime_power_count");
+   end Test_Prime_Power_Count;
+
+   procedure Test_Prime_Power_Count_Approx (T : in out Test_Case'Class) is
+   begin
+      Replay_Powers ("prime_power_count_approx");
+   end Test_Prime_Power_Count_Approx;
+
+   procedure Test_Prime_Power_Count_Lower (T : in out Test_Case'Class) is
+   begin
+      Replay_Powers ("prime_power_count_lower");
+   end Test_Prime_Power_Count_Lower;
+
+   procedure Test_Prime_Power_Count_Upper (T : in out Test_Case'Class) is
+   begin
+      Replay_Powers ("prime_power_count_upper");
+   end Test_Prime_Power_Count_Upper;
+
+   procedure Test_Nth_Prime_Power (T : in out Test_Case'Class) is
+   begin
+      Replay_Powers ("nth_prime_power");
+   end Test_Nth_Prime_Power;
+
+   procedure Test_Nth_Prime_Power_Approx (T : in out Test_Case'Class) is
+   begin
+      Replay_Powers ("nth_prime_power_approx");
+   end Test_Nth_Prime_Power_Approx;
+
+   procedure Test_Nth_Prime_Power_Lower (T : in out Test_Case'Class) is
+   begin
+      Replay_Powers ("nth_prime_power_lower");
+   end Test_Nth_Prime_Power_Lower;
+
+   procedure Test_Nth_Prime_Power_Upper (T : in out Test_Case'Class) is
+   begin
+      Replay_Powers ("nth_prime_power_upper");
+   end Test_Nth_Prime_Power_Upper;
+
+   procedure Test_Is_Perfect_Power (T : in out Test_Case'Class) is
+   begin
+      Replay_Powers ("is_perfect_power");
+   end Test_Is_Perfect_Power;
+
+   procedure Test_Next_Perfect_Power (T : in out Test_Case'Class) is
+   begin
+      Replay_Powers ("next_perfect_power");
+   end Test_Next_Perfect_Power;
+
+   procedure Test_Prev_Perfect_Power (T : in out Test_Case'Class) is
+   begin
+      Replay_Powers ("prev_perfect_power");
+   end Test_Prev_Perfect_Power;
+
+   procedure Test_Perfect_Power_Count (T : in out Test_Case'Class) is
+   begin
+      Replay_Powers ("perfect_power_count");
+   end Test_Perfect_Power_Count;
+
+   procedure Test_Perfect_Power_Count_Approx (T : in out Test_Case'Class) is
+   begin
+      Replay_Powers ("perfect_power_count_approx");
+   end Test_Perfect_Power_Count_Approx;
+
+   procedure Test_Perfect_Power_Count_Lower (T : in out Test_Case'Class) is
+   begin
+      Replay_Powers ("perfect_power_count_lower");
+   end Test_Perfect_Power_Count_Lower;
+
+   procedure Test_Perfect_Power_Count_Upper (T : in out Test_Case'Class) is
+   begin
+      Replay_Powers ("perfect_power_count_upper");
+   end Test_Perfect_Power_Count_Upper;
+
+   procedure Test_Nth_Perfect_Power (T : in out Test_Case'Class) is
+   begin
+      Replay_Powers ("nth_perfect_power");
+   end Test_Nth_Perfect_Power;
+
+   procedure Test_Nth_Perfect_Power_Approx (T : in out Test_Case'Class) is
+   begin
+      Replay_Powers ("nth_perfect_power_approx");
+   end Test_Nth_Perfect_Power_Approx;
+
+   procedure Test_Nth_Perfect_Power_Lower (T : in out Test_Case'Class) is
+   begin
+      Replay_Powers ("nth_perfect_power_lower");
+   end Test_Nth_Perfect_Power_Lower;
+
+   procedure Test_Nth_Perfect_Power_Upper (T : in out Test_Case'Class) is
+   begin
+      Replay_Powers ("nth_perfect_power_upper");
+   end Test_Nth_Perfect_Power_Upper;
+
    procedure Test_Lucky_Numbers (T : in out Test_Case'Class) is
    begin
       Replay ("lucky_numbers");
@@ -356,6 +638,57 @@ package body Compat_Families is
         (T, Test_Nth_Lucky_Lower'Access, "nth_lucky_lower");
       Registration.Register_Routine
         (T, Test_Nth_Lucky_Upper'Access, "nth_lucky_upper");
+      Registration.Register_Routine
+        (T, Test_Prime_Powers'Access, "prime_powers");
+      Registration.Register_Routine
+        (T, Test_Is_Prime_Power'Access, "is_prime_power");
+      Registration.Register_Routine
+        (T, Test_Next_Prime_Power'Access, "next_prime_power");
+      Registration.Register_Routine
+        (T, Test_Prev_Prime_Power'Access, "prev_prime_power");
+      Registration.Register_Routine
+        (T, Test_Is_Prime_Power_Root'Access, "is_prime_power_root");
+      Registration.Register_Routine
+        (T, Test_Prime_Power_Count'Access, "prime_power_count");
+      Registration.Register_Routine
+        (T, Test_Prime_Power_Count_Approx'Access, "prime_power_count_approx");
+      Registration.Register_Routine
+        (T, Test_Prime_Power_Count_Lower'Access, "prime_power_count_lower");
+      Registration.Register_Routine
+        (T, Test_Prime_Power_Count_Upper'Access, "prime_power_count_upper");
+      Registration.Register_Routine
+        (T, Test_Nth_Prime_Power'Access, "nth_prime_power");
+      Registration.Register_Routine
+        (T, Test_Nth_Prime_Power_Approx'Access, "nth_prime_power_approx");
+      Registration.Register_Routine
+        (T, Test_Nth_Prime_Power_Lower'Access, "nth_prime_power_lower");
+      Registration.Register_Routine
+        (T, Test_Nth_Prime_Power_Upper'Access, "nth_prime_power_upper");
+      Registration.Register_Routine
+        (T, Test_Is_Perfect_Power'Access, "is_perfect_power");
+      Registration.Register_Routine
+        (T, Test_Next_Perfect_Power'Access, "next_perfect_power");
+      Registration.Register_Routine
+        (T, Test_Prev_Perfect_Power'Access, "prev_perfect_power");
+      Registration.Register_Routine
+        (T, Test_Perfect_Power_Count'Access, "perfect_power_count");
+      Registration.Register_Routine
+        (T, Test_Perfect_Power_Count_Approx'Access,
+         "perfect_power_count_approx");
+      Registration.Register_Routine
+        (T, Test_Perfect_Power_Count_Lower'Access,
+         "perfect_power_count_lower");
+      Registration.Register_Routine
+        (T, Test_Perfect_Power_Count_Upper'Access,
+         "perfect_power_count_upper");
+      Registration.Register_Routine
+        (T, Test_Nth_Perfect_Power'Access, "nth_perfect_power");
+      Registration.Register_Routine
+        (T, Test_Nth_Perfect_Power_Approx'Access, "nth_perfect_power_approx");
+      Registration.Register_Routine
+        (T, Test_Nth_Perfect_Power_Lower'Access, "nth_perfect_power_lower");
+      Registration.Register_Routine
+        (T, Test_Nth_Perfect_Power_Upper'Access, "nth_perfect_power_upper");
       Registration.Register_Routine
         (T, Test_Twin_Primes'Access, "twin_primes");
       Registration.Register_Routine
