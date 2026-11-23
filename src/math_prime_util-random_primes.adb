@@ -212,6 +212,7 @@ package body Math_Prime_Util.Random_Primes with SPARK_Mode => On is
    subtype Seed_Bytes is Byte_Array (0 .. 63);
    --  SHA-256 for fixed 512-bit seeds in RandomPrimes.pm.
    --  Two compression blocks: seed, then the SHA padding and 512-bit length.
+   function Hash (Seed : Seed_Bytes) return Digest;
    function Hash (Seed : Seed_Bytes) return Digest is
       use Interfaces;
       K : constant array (Natural range 0 .. 63) of Word :=
@@ -286,8 +287,8 @@ package body Math_Prime_Util.Random_Primes with SPARK_Mode => On is
    end Hash;
 
    --  RandomPrimes.pm: _seed_plus_one (big-endian, wrapping at 512 bits).
+   procedure Increment (Seed : in out Seed_Bytes);
    procedure Increment (Seed : in out Seed_Bytes) is
-      use type Byte;
    begin
       for I in reverse Seed'Range loop
          Seed (I) := Seed (I) + 1;
@@ -316,7 +317,6 @@ package body Math_Prime_Util.Random_Primes with SPARK_Mode => On is
      (Bits : Natural; Seed : in out Seed_Bytes;
       Counter : in out Natural; Value : out U64)
    is
-      use type Byte;
       H, H1 : Digest;
       C0, X, A, Z : U64;
       T, Candidate : U128;

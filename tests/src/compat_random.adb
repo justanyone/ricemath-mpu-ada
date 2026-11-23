@@ -18,6 +18,7 @@ procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
    use Math_Prime_Util;
    use Math_Prime_Util.Random;
    use type Byte;
+   use type U64;
    function Image (V : U64) return String is
      (Ada.Strings.Fixed.Trim (U64'Image (V), Ada.Strings.Both));
    function Decode (S : String) return Byte_Array is
