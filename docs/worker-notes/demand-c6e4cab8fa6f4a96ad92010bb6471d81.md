@@ -6,3 +6,4 @@ Checked existing ChaCha, PCG seed expansion, entropy binding, and fixture dispat
 Alire initially failed creating its runtime temporary file; setting XDG_RUNTIME_DIR to obj/tmp permits the offline build. Added stream-preservation checks for empty bytes, zero bits, modulus one and singleton ranges.
 The checked tests build succeeded. The existing gate contains development/release builds and AUnit only; additional proof/coverage/documentation executables are absent from the Alire environment.
 Tightened replay to exactly 731 native CSPRNG rows, with named exclusions retained. Kept all three Ada files at 400 lines total by combining no-op checks with seed replay. Preparing an ignored focused runner under tests/obj.
+Focused runner compiled successfully and is now executing all 731 fixture rows plus contracts. Started the declared tools/gate.sh with runtime temporaries confined to obj/tmp.
