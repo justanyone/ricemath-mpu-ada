@@ -9,7 +9,6 @@ package Math_Prime_Util.Modular with SPARK_Mode => On is
    use type U64;
    use type U128;
    subtype I128 is Int.I128;
-   use type I128;
    type Root_List is array (Positive range <>) of U64;
    type Cornacchia_Result (Defined : Boolean := False) is record
       case Defined is

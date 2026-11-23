@@ -2,8 +2,6 @@ with Math_Prime_Util.Errors;
 with Math_Prime_Util.Primality;
 
 package body Math_Prime_Util.Modular with SPARK_Mode => On is
-   use Int;
-   use type U128;
    use type Primality.Prime_Result;
    Empty : constant Root_List (1 .. 0) := [others => 0];
    Max_Roots : constant := 600_000_000;
