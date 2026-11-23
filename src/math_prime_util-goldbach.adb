@@ -10,6 +10,8 @@ package body Math_Prime_Util.Goldbach with SPARK_Mode => Off is
 
    function Is_Prime (N : U64) return Boolean is
      (Math_Prime_Util.Primality.Is_Prime (N) /= 0);
+   function Sieved_Pairs (N : U64) return Pair_Vectors.Vector;
+   function Walk_Pairs (N : U64) return Pair_Vectors.Vector;
 
    --  goldbach.c commented two-pointer scan over one prime list.
    --  Both members are at least 3, so 2 is not in the list.
