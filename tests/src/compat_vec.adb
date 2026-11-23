@@ -102,7 +102,7 @@ package body Compat_Vec is
       P : array (1 .. Integer'Max (N, 1)) of Pair;
       Tmp : Pair;
    begin
-      if Tokens.Length = 0 then
+      if N = 0 then
          return "";
       end if;
       if Natural (Tokens.Length) mod 2 /= 0 then
