@@ -1,8 +1,10 @@
+with Ada.Containers;
 with Ada.Numerics.Generic_Elementary_Functions;
 with Math_Prime_Util.Count;
 with Math_Prime_Util.Primality;
 
 package body Math_Prime_Util.Ramanujan is
+   use type Primality.Prime_Result;
    subtype Wide is Long_Long_Float;
    package Ef is new Ada.Numerics.Generic_Elementary_Functions (Wide);
    use Ef;
@@ -10,6 +12,7 @@ package body Math_Prime_Util.Ramanujan is
      [2, 11, 17, 29, 41, 47, 59, 67, 71, 97, 101, 107, 127,
       149, 151, 167, 179, 181, 227, 229, 233, 239, 241];
 
+   function Small_Count (N : U64) return U64;
    function Small_Count (N : U64) return U64 is
       R : U64 := 0;
    begin
@@ -21,19 +24,20 @@ package body Math_Prime_Util.Ramanujan is
    end Small_Count;
 
    --  prime_counts.c: ramanujan_axler returns double after wide arithmetic.
+   function Axler (N : U64; C, D : Wide) return U64;
    function Axler (N : U64; C, D : Wide) return U64 is
       X : constant Wide := Wide (N);
       L : constant Wide := Log (X);
       LL : constant Wide := Log (L);
       L2 : constant Wide := Log (2.0);
-      C1 : constant Wide := 2 * L2 * L2 + L2 + C;
-      C2 : constant Wide := L2 ** 3 + 2 * L2 * L2 + D;
+      C1 : constant Wide := 2.0 * L2 * L2 + L2 + C;
+      C2 : constant Wide := L2 ** 3 + 2.0 * L2 * L2 + D;
       U : constant Wide :=
-        (L2 * L * LL * LL - C1 * L * LL + C2 * L - L2 * L2 * LL
-         + L2 ** 3 + L2 * L2) /
+        (L2 * L * LL * LL - C1 * L * LL + C2 * L - L2.0 * L2 * LL
+         + L2 ** 3 + L2.0 * L2) /
         (L ** 4 + L ** 3 * LL - L ** 3 * L2 - L * L * L2);
       R : constant Long_Float := Long_Float
-        (2 * X * (1.0 + L2 / L - (L2 * LL - L2 * L2 - L2) / (L * L) + U));
+        (2.0 * X * (1.0 + L2 / L - (L2 * LL - L2.0 * L2 - L2) / (L * L) + U));
    begin
       return U64 (Long_Float'Floor (R));
    end Axler;
@@ -195,6 +199,7 @@ package body Math_Prime_Util.Ramanujan is
       Hi : U64 := Last;
       Mid, Rlo, Rhi, Rmid : U64;
       Iter : Natural := 0;
+      function Linear return U64;
       function Linear return U64 is
          Move : U64;
          Step : Long_Float;
@@ -374,7 +379,8 @@ package body Math_Prime_Util.Ramanujan is
    --  ramanujan_primes.c: n_range_ramanujan_primes, Noe's algorithm.
    --  Containers isolate allocation from the SPARK arithmetic routines.
    function Index_Range (First, Last : U64) return Sieve.Prime_Vectors.Vector
-     with SPARK_Mode => Off
+     with SPARK_Mode => Off;
+   function Index_Range (First, Last : U64) return Sieve.Prime_Vectors.Vector
    is
       use Sieve.Prime_Vectors;
       Lo : constant U64 := U64'Max (1, First);
@@ -406,7 +412,8 @@ package body Math_Prime_Util.Ramanujan is
       end if;
       declare
          Ps : constant Vector := Sieve.Primes (Start, Stop);
-         Half : constant Vector := Sieve.Primes ((Start + 1) / 2, (Stop + 1) / 2);
+         Half : constant Vector :=
+           Sieve.Primes ((Start + 1) / 2, (Stop + 1) / 2);
          Pi : Natural := 0;
          Qi : Natural := 0;
       begin
