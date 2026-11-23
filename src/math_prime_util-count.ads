@@ -4,12 +4,12 @@ with Math_Prime_Util.Int;
 package Math_Prime_Util.Count with SPARK_Mode => On is
    use type U64;
 
-   --  Largest High that Prime_Count accepts. The Lucy table holds
-   --  two arrays of Sqrt (High) entries on the heap.
-   Prime_Count_Limit : constant U64 := 20_000_000_000_000;
+   --  lmo.c: LMO_prime_count accepts every native argument. The
+   --  constant is U64'Last, the same range as MPU's UV prime_count.
+   Prime_Count_Limit : constant U64 := U64'Last;
 
-   --  Largest N that Nth_Prime accepts (pi (10**13) is below this).
-   Nth_Prime_Limit : constant U64 := 300_000_000_000;
+   --  prime_counts.c: MPU_MAX_PRIME_IDX. Largest N with an Nth_Prime.
+   Nth_Prime_Limit : constant U64 := 425_656_284_035_217_743;
 
    --  Largest index that Legendre_Phi accepts.
    Legendre_Index_Limit : constant Natural := 40;
@@ -30,18 +30,19 @@ package Math_Prime_Util.Count with SPARK_Mode => On is
           Post => (if Low > High or High < 2 then Sum_Primes'Result.Defined
                    and then Sum_Primes'Result.Value = 0);
 
-   --  lmo.c: LMO_count, Lucy_Hedgehog method with the
-   --  prime_counts.c entry point. Returns pi (High).
-   --  Dies on High above Prime_Count_Limit (Pre).
+   --  lmo.c: LMO_prime_count, extended LMO with prime_count_tables.h
+   --  lookups. Returns pi (High). Storage_Error may propagate from the
+   --  factor and phi tables.
    function Prime_Count (High : U64) return U64
-     with Pre => High <= Prime_Count_Limit,
+     with Pre => True,
           Post => (if High < 2 then Prime_Count'Result = 0)
                   and then Prime_Count'Result <= High;
 
-   --  prime_counts.c: prime_count_range. Count primes in Low .. High.
-   --  Reversed bounds return zero. Above Prime_Count_Limit, only ranges
-   --  of at most 100_001 integers are accepted (Assertion_Error with
-   --  contracts enabled). Storage_Error may propagate for prefix counts.
+   --  prime_counts.c: prime_count_range. Inclusive Low .. High.
+   --  Reversed bounds and High < 2 return zero. Narrow intervals use
+   --  the segmented sieve directly. Prime_Count_Limit is the full native
+   --  range, so every Low .. High is accepted. Storage_Error may
+   --  propagate for prefix counts.
    function Prime_Count (Low, High : U64) return U64
      with Pre => Low > High or else High <= Prime_Count_Limit
                    or else High - Low <= 100_000,
