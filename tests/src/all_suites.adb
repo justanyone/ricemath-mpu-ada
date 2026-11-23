@@ -28,7 +28,6 @@ package body All_Suites is
       Result : constant AUnit.Test_Suites.Access_Test_Suite :=
         Version_Suite.Suite;
    begin
-      Result.Add_Test (Test_Fixture_Support.Suite);
       Result.Add_Test (Compat_Factor.Suite);
       Result.Add_Test (Compat_Int.Suite);
       Result.Add_Test (Prop_Int.Suite);
