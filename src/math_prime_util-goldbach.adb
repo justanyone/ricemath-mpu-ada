@@ -14,6 +14,7 @@ package body Math_Prime_Util.Goldbach with SPARK_Mode => Off is
 
    function Sieved_Pairs (N : U64) return Pair_Vectors.Vector;
    function Walk_Pairs (N : U64) return Pair_Vectors.Vector;
+   function Odd_Or_Four (N : U64) return Pair_Vectors.Vector;
 
    --  goldbach.c commented two-pointer scan over one prime list.
    --  Both members are at least 3, so 2 is not in the list.
