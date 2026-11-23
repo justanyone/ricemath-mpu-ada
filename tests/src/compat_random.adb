@@ -45,12 +45,10 @@ procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
       return Result;
    end Hex;
 
-   procedure Replay;
    procedure Replay is
-      Cases : constant Case_Vectors.Vector := Load ("random");
       Count : Natural := 0;
    begin
-      for C of Cases loop
+      for C of Load ("random") loop
          declare
             F : constant String := To_String (C.Func);
             G : Generator;
@@ -59,144 +57,115 @@ procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
             Checked : Boolean := True;
             function Arg (I : Positive) return String is
               (To_String (C.Args (I)));
-            procedure Bytes (Length : Natural) is
-               Data : Byte_Array (1 .. Length);
+            procedure Add (S : String) is
+            begin
+               if Length (Actual) > 0 then
+                  Append (Actual, " ");
+               end if;
+               Append (Actual, S);
+            end Add;
+            procedure Number (Bits : Natural := 32) is
+            begin
+               Urandomb (G, Bits, V);
+               Add (Image (V));
+            end Number;
+            procedure Bytes (Size : Natural; Discard : Boolean := False) is
+               Data : Byte_Array (1 .. Size);
             begin
                Random_Bytes (G, Data);
-               Actual := To_Unbounded_String (Hex (Data));
+               if not Discard then
+                  Add (Hex (Data));
+               end if;
             end Bytes;
-            procedure Discard (Length : Natural) is
-               Data : Byte_Array (1 .. Length);
-            begin
-               Random_Bytes (G, Data);
-               AUnit.Assertions.Assert (Data'Length = Length, "draw length");
-            end Discard;
          begin
             Csrand (G, Decode (Arg (1)));
-            if F in "irand" | "irand32" | "srand42_irand" |
-              "blake_irand"
-            then
-               Irand (G, V);
-               Actual := To_Unbounded_String (Image (V));
-            elsif F in "irand64" | "tag_irand64" then
-               Urandomb (G, 64, V);
-               Actual := To_Unbounded_String (Image (V));
-            elsif F in "random_bytes" | "random_bytes_seq" |
-              "srand15_random_bytes4" | "blake_random_bytes7"
-            then
-               Bytes (Natural'Value (Arg (2)));
-            elsif F in "irand32_after_bytes" | "irand64_after_bytes" |
-              "random_bytes_len_tail" | "blake_irand_after7" |
-              "tag_irand_irand64"
-            then
-               if F = "blake_irand_after7" then
-                  Discard (7);
-               elsif F = "tag_irand_irand64" then
-                  Irand (G, V);
-               else
-                  Discard (Natural'Value (Arg (2)));
-               end if;
-               if F = "random_bytes_len_tail" then
-                  Bytes (8);
-               else
-                  Urandomb (G, (if F in "irand64_after_bytes" |
-                    "tag_irand_irand64" then 64 else 32), V);
-                  Actual := To_Unbounded_String (Image (V));
-               end if;
-            elsif F in "irand_seq" | "irand32_seq" | "irand64_seq" |
-              "urandomm_seq"
-            then
-               for I in 1 .. 20 loop
-                  if F = "urandomm_seq" then
-                     Urandomm (G, U64'Value (Arg (2)), V);
+            begin
+               if F in "irand" | "irand32" | "srand42_irand" |
+                 "blake_irand" | "irand64" | "tag_irand64"
+               then
+                  Number ((if F in "irand64" | "tag_irand64" then 64
+                           else 32));
+               elsif F in "random_bytes" | "random_bytes_seq" |
+                 "srand15_random_bytes4" | "blake_random_bytes7"
+               then
+                  Bytes (Natural'Value (Arg (2)));
+               elsif F in "irand32_after_bytes" | "irand64_after_bytes" |
+                 "random_bytes_len_tail" | "blake_irand_after7" |
+                 "tag_irand_irand64"
+               then
+                  if F = "tag_irand_irand64" then
+                     Irand (G, V);
                   else
-                     Urandomb (G, (if F = "irand64_seq" then 64 else 32), V);
+                     Bytes ((if F = "blake_irand_after7" then 7
+                             else Natural'Value (Arg (2))), True);
                   end if;
-                  if I > 1 then
-                     Append (Actual, " ");
-                  end if;
-                  Append (Actual, Image (V));
-               end loop;
-            elsif F = "mixed_seq" then
-               Irand (G, V);
-               Append (Actual, Image (V) & " ");
-               Urandomb (G, 64, V);
-               Append (Actual, Image (V) & " ");
-               declare
-                  Data : Byte_Array (1 .. 3);
-               begin
-                  Random_Bytes (G, Data);
-                  Append (Actual, Hex (Data) & " ");
-               end;
-               Irand (G, V);
-               Append (Actual, Image (V) & " ");
-               Urandomb (G, 5, V);
-               Append (Actual, Image (V) & " ");
-               Irand (G, V);
-               Append (Actual, Image (V));
-            elsif F = "urandomb" then
-               --  Bigint_Bits: >64 bits belongs to the later bigint tier.
-               Checked := Natural'Value (Arg (2)) <= 64;
-               if Checked then
-                  Urandomb (G, Natural'Value (Arg (2)), V);
-                  Actual := To_Unbounded_String (Image (V));
-               end if;
-            elsif F = "urandomm" then
-               --  Bigint_Modulus: native API accepts at most U64'Last.
-               Checked := Parse_U64 (Arg (2), A);
-               if Checked then
-                  if C.Error then
-                     begin
-                        Urandomm (G, A, V);
-                        AUnit.Assertions.Assert (False, "zero modulus");
-                     exception
-                        when Ada.Assertions.Assertion_Error => null;
-                     end;
-                     Actual := To_Unbounded_String ("ERROR");
+                  if F = "random_bytes_len_tail" then
+                     Bytes (8);
                   else
+                     Number ((if F in "irand64_after_bytes" |
+                       "tag_irand_irand64" then 64 else 32));
+                  end if;
+               elsif F in "irand_seq" | "irand32_seq" | "irand64_seq" |
+                 "urandomm_seq"
+               then
+                  for I in 1 .. 20 loop
+                     if F = "urandomm_seq" then
+                        Urandomm (G, U64'Value (Arg (2)), V);
+                        Add (Image (V));
+                     else
+                        Number ((if F = "irand64_seq" then 64 else 32));
+                     end if;
+                  end loop;
+               elsif F = "mixed_seq" then
+                  Number;
+                  Number (64);
+                  Bytes (3);
+                  Number;
+                  Number (5);
+                  Number;
+               elsif F = "urandomb" then
+                  --  Bigint_Bits: >64 bits belongs to the bigint tier.
+                  Checked := Natural'Value (Arg (2)) <= 64;
+                  if Checked then
+                     Number (Natural'Value (Arg (2)));
+                  end if;
+               elsif F = "urandomm" then
+                  --  Bigint_Modulus: native API stops at U64'Last.
+                  Checked := Parse_U64 (Arg (2), A);
+                  if Checked then
                      Urandomm (G, A, V);
-                     Actual := To_Unbounded_String (Image (V));
+                     Add (Image (V));
                   end if;
-               end if;
-            elsif F = "urandomr" then
-               --  Signed_Or_Bigint_Range: unsigned native tier only.
-               Checked := Parse_U64 (Arg (2), A)
-                 and then Parse_U64 (Arg (3), B);
-               if Checked then
-                  if A > B then
-                     begin
-                        Urandomr (G, A, B, V);
-                        AUnit.Assertions.Assert (False, "inverted range");
-                     exception
-                        when Ada.Assertions.Assertion_Error => null;
-                     end;
-                     Actual := To_Unbounded_String ("undef");
-                  else
+               elsif F = "urandomr" then
+                  --  Signed_Or_Bigint_Range: unsigned native tier only.
+                  Checked := Parse_U64 (Arg (2), A)
+                    and then Parse_U64 (Arg (3), B);
+                  if Checked then
                      Urandomr (G, A, B, V);
-                     Actual := To_Unbounded_String (Image (V));
+                     Add (Image (V));
                   end if;
+               else
+                  --  Other_Families: primes, shuffle, randperm, vecsample,
+                  --  floating rand/drand and cipher XOR are separate ports.
+                  Checked := False;
                end if;
-            else
-               --  Other_Families: random primes, shuffle, randperm,
-               --  vecsample, floating rand/drand and cipher plaintext XOR
-               --  are outside this integer CSPRNG port. Their named rows
-               --  remain in the immutable fixture for the respective ports.
-               Checked := False;
-            end if;
+            exception
+               when Ada.Assertions.Assertion_Error =>
+                  AUnit.Assertions.Assert
+                    (C.Error or C.Undef, "unexpected contract failure");
+                  Actual := C.Result;
+            end;
             if Checked then
                Count := Count + 1;
                AUnit.Assertions.Assert
                  (Actual = C.Result, F & " line" &
-                  Positive'Image (C.Line_Number) & " expected " &
-                  To_String (C.Result) & " got " & To_String (Actual));
+                  Positive'Image (C.Line_Number) & " got " &
+                  To_String (Actual));
             end if;
          end;
       end loop;
-      AUnit.Assertions.Assert
-        (Count > 600, "too few CSPRNG fixtures replayed");
+      AUnit.Assertions.Assert (Count > 600, "too few CSPRNG fixtures");
    end Replay;
-
-   procedure Contracts;
    procedure Contracts is
       type U64_Array is array (Positive range <>) of U64;
       G, H : Generator;
