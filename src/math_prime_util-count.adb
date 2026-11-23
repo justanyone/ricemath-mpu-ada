@@ -103,8 +103,9 @@ package body Math_Prime_Util.Count is
    begin
       if Low > High or High < 2 then
          return 0;
-      elsif Low <= 2 and High <= Prime_Count_Limit then
-         --  The whole interval is one extended-LMO prefix.
+      elsif Low <= 2 then
+         --  Extended LMO accepts every native prefix, so a start at or
+         --  below 2 is one prefix count.
          return Prime_Count (High);
       elsif High - Low <= 100_000 then
          --  prime_counts.c: prime_count_range. A narrow interval uses the
