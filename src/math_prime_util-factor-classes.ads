@@ -5,7 +5,7 @@ package Math_Prime_Util.Factor.Classes with SPARK_Mode => On is
    --  util.c: is_carmichael, Korselt's criterion. No errors.
    function Is_Carmichael (N : U64) return Boolean
      with Pre => True,
-          Post => (if Is_Carmichael'Result then N >= 561 and N mod 2 = 1);
+          Post => (if Is_Carmichael'Result then N >= 561 and then N mod 2 = 1);
 
    --  util.c: is_quasi_carmichael. Number of qualifying bases, including
    --  negative bases; zero for primes or non-square-free N. No errors.
@@ -22,13 +22,13 @@ package Math_Prime_Util.Factor.Classes with SPARK_Mode => On is
    --  No odd perfect number fits the native range. No errors.
    function Is_Perfect_Number (N : U64) return Boolean
      with Pre => True,
-          Post => (if Is_Perfect_Number'Result then N > 0 and N mod 2 = 0);
+          Post => (if Is_Perfect_Number'Result then N > 0 and then N mod 2 = 0);
 
    --  util.c: is_practical. Every integer <= N is a sum of distinct
    --  divisors of N. Includes one, excludes zero. No errors.
    function Is_Practical (N : U64) return Boolean
      with Pre => True,
-          Post => (if Is_Practical'Result then N = 1 or N mod 2 = 0);
+          Post => (if Is_Practical'Result then N = 1 or else N mod 2 = 0);
 
    --  util.c: is_smooth. No prime factor exceeds K; 0 and 1 always
    --  qualify, including K = 0. No errors.
