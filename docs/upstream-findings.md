@@ -46,7 +46,11 @@ Entries 15 to 24 are numbered in the order they were found, not by section.
 - How verified: PP returns -18446744073709551556. The XS and PP backends disagree.
   The other large fixture rows (`arith.tsv` lines for 2^64-2, 2^64-1, 2^63-25)
   have differences inside `i64` and are unchanged.
-- Port: corrected in `src/arith/abundance.rs`.
+- Port: corrected in `src/arith/abundance.rs`. The Ada port returns the exact
+  signed value using `Int.I128` in `src/math_prime_util-arith.adb`.
+- Ada test: `Compat_Arith.Fixtures` names and skips the wrapped expectation at
+  `arith.tsv:8419`, asserting -18446744073709551556 instead; `Boundaries`
+  independently checks the same signed boundary.
 - Test that skips the row: `abundance` in `tests/compat_arith.rs` (line 8419);
   the test asserts `None` directly.
 - Upstream test: `is(abundance("18446744073709551557"), "-18446744073709551556", "abundance large prime");`
