@@ -1,15 +1,21 @@
-with Ada.Containers;
 with Ada.Containers.Ordered_Maps;
 with Ada.Containers.Ordered_Sets;
 
 package body Math_Prime_Util.Vec is
-   use type Ada.Containers.Count_Type;
-   use type Big_Integer;
-
    package Big_Sets is new Ada.Containers.Ordered_Sets (Big_Integer);
    use type Big_Sets.Set;
    package Count_Maps is new Ada.Containers.Ordered_Maps
      (Key_Type => Big_Integer, Element_Type => Natural);
+
+   procedure Sort_Up (Items : in out Integer_Vectors.Vector);
+   procedure Reverse_Order (Items : in out Integer_Vectors.Vector);
+   function As_Set (Items : Integer_Vectors.Vector) return Big_Sets.Set;
+   function To_Vector (Items : Big_Sets.Set) return Integer_Vectors.Vector;
+   function Counts (Items : Integer_Vectors.Vector) return Count_Maps.Map;
+   function Missing
+     (Items : Integer_Vectors.Vector;
+      Start : Big_Integer;
+      Positive_Only : Boolean) return Big_Integer;
 
    procedure Sort_Up (Items : in out Integer_Vectors.Vector) is
    begin
@@ -434,12 +440,20 @@ package body Math_Prime_Util.Vec is
    function Set_Is_Superset (Left, Right : Integer_Vectors.Vector)
       return Boolean
    is
-     (Set_Is_Subset (Right, Left));
+      Container : constant Integer_Vectors.Vector := Right;
+      Member : constant Integer_Vectors.Vector := Left;
+   begin
+      return Set_Is_Subset (Container, Member);
+   end Set_Is_Superset;
 
    function Set_Is_Proper_Superset (Left, Right : Integer_Vectors.Vector)
       return Boolean
    is
-     (Set_Is_Proper_Subset (Right, Left));
+      Container : constant Integer_Vectors.Vector := Right;
+      Member : constant Integer_Vectors.Vector := Left;
+   begin
+      return Set_Is_Proper_Subset (Container, Member);
+   end Set_Is_Proper_Superset;
 
    function Set_Is_Proper_Intersection (Left, Right : Integer_Vectors.Vector)
       return Boolean
