@@ -1,4 +1,5 @@
-with Math_Prime_Util.Random_Entropy;
+with Ada.Streams;
+with Ada.Streams.Stream_IO;
 
 package body Math_Prime_Util.Random with SPARK_Mode => On is
    use Interfaces;
@@ -6,8 +7,7 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
    function Is_Seeded (G : Generator) return Boolean is (G.Seeded);
 
    function Load (Data : Byte_Array; Offset : Natural) return Word
-     with Pre => Offset <= Data'Length and then Data'Length - Offset >= 4
-;
+     with Pre => Offset <= Data'Length and then Data'Length - Offset >= 4;
    function Load (Data : Byte_Array; Offset : Natural) return Word is
       Result : Word := 0;
    begin
@@ -19,8 +19,7 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
    end Load;
 
    procedure Store (Data : in out Byte_Array; Offset : Natural; V : Word)
-     with Pre => Offset <= Data'Length and then Data'Length - Offset >= 4
-;
+     with Pre => Offset <= Data'Length and then Data'Length - Offset >= 4;
    procedure Store (Data : in out Byte_Array; Offset : Natural; V : Word) is
    begin
       for I in 0 .. 3 loop
@@ -81,10 +80,39 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
       end loop;
    end Csrand;
 
+   procedure Fill (Data : out Byte_Array)
+     with SPARK_Mode => Off;
+   --  entropy.c: get_entropy_bytes, using the operating-system source.
+   procedure Fill (Data : out Byte_Array) is
+      use Ada.Streams;
+      package IO renames Ada.Streams.Stream_IO;
+      File : IO.File_Type;
+      Buffer : Stream_Element_Array (1 .. Data'Length);
+      Last : Stream_Element_Offset;
+   begin
+      IO.Open (File, IO.In_File, "/dev/urandom");
+      IO.Read (File, Buffer, Last);
+      IO.Close (File);
+      if Last /= Buffer'Last then
+         raise Entropy_Error with "short operating-system entropy read";
+      end if;
+      for I in Data'Range loop
+         Data (I) := Byte (Buffer
+           (Stream_Element_Offset (I - Data'First) + 1));
+      end loop;
+   exception
+      when IO.Name_Error | IO.Use_Error | IO.Device_Error | IO.End_Error =>
+         if IO.Is_Open (File) then
+            IO.Close (File);
+         end if;
+         raise Entropy_Error with
+           "operating-system entropy unavailable";
+   end Fill;
+
    procedure Csrand (G : out Generator) is
       Seed : Byte_Array (0 .. 39);
    begin
-      Random_Entropy.Fill (Seed);
+      Fill (Seed);
       Csrand (G, Seed);
       for I in Seed'Range loop
          Seed (I) := 0;
