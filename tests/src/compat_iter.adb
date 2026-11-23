@@ -54,7 +54,7 @@ package body Compat_Iter is
       begin
          for V of Values loop
             if Length (Token) > 0 then
-               Append (Token, (if Func = "forpart" or Func = "forcomp"
+               Append (Token, (if Func = "forpart" or else Func = "forcomp"
                             then "+" else ","));
             end if;
             Append (Token, Image (V));
@@ -89,7 +89,7 @@ package body Compat_Iter is
          end if;
          B := A;
          Options := (others => <>);
-         if Func = "forpart" or Func = "forcomp" then
+         if Func = "forpart" or else Func = "forcomp" then
             for I in 2 .. Natural (C.Args.Length) loop
                declare
                   Token : constant String := To_String (C.Args (I));
@@ -127,14 +127,14 @@ package body Compat_Iter is
                   end if;
                end;
             end loop;
-         elsif Func /= "formultiperm" and Func /= "forsetproduct"
+         elsif Func /= "formultiperm" and then Func /= "forsetproduct"
            and then Natural (C.Args.Length) > 1 then
             Fits := Parse_U64 (To_String (C.Args (2)), B) and then Fits;
          end if;
          --  Skipped ERROR rows: undef, negative, fractional and text inputs
          --  cannot reach these typed Ada APIs. Bigint inputs require the
          --  bigint tier. Prime streams crossing U64 are skipped as a whole.
-         if (Func = "prime_iterator" or
+         if (Func = "prime_iterator" or else
              Func = "prime_iterator_object_iterate")
            and then not C.Error then
             declare
@@ -153,7 +153,7 @@ package body Compat_Iter is
                  and then Fits;
             end;
          end if;
-         if Func = "formultiperm" or Func = "forsetproduct" then
+         if Func = "formultiperm" or else Func = "forsetproduct" then
             Fits := True;
             for Arg of C.Args loop
                if Arg /= "|" then
@@ -191,7 +191,7 @@ package body Compat_Iter is
                Forcomp (Natural (A), Tuple'Access, Options);
             elsif Func = "forderange" then
                Forderange (Natural (A), Tuple'Access);
-            elsif Func = "formultiperm" or Func = "forsetproduct" then
+            elsif Func = "formultiperm" or else Func = "forsetproduct" then
                declare
                   Items : Value_Array (1 .. Natural (C.Args.Length));
                   Length : Natural := 0;
