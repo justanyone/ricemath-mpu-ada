@@ -1,6 +1,7 @@
 with Math_Prime_Util.Factor;
 with Math_Prime_Util.Primality;
 with Ada.Containers.Ordered_Maps;
+with Ada.Numerics.Big_Numbers.Big_Integers;
 
 package body Math_Prime_Util.Arith.Totients is
    use type Primality.Prime_Result;
@@ -302,3 +303,165 @@ package body Math_Prime_Util.Arith.Totients is
       end loop;
       return Sum;
    end Sumliouville;
+
+   function Ramanujan_Tau (N : U64) return Optional_I128 is
+      package Big renames Ada.Numerics.Big_Numbers.Big_Integers;
+      use Big;
+      package Conversion is new Signed_Conversions (I128);
+      function B (X : U64) return Big_Integer is
+        (Conversion.To_Big_Integer (I128 (X)));
+      Table : constant array (Natural range <>) of I128 :=
+        [0,
+         1,
+         -24,
+         252,
+         -1472,
+         4830,
+         -6048,
+         -16744,
+         84480,
+         -113643,
+         -115920,
+         534612,
+         -370944,
+         -577738,
+         401856,
+         1217160,
+         987136,
+         -6905934,
+         2727432,
+         10661420,
+         -7109760,
+         -4219488,
+         -12830688,
+         18643272,
+         21288960,
+         -25499225,
+         13865712,
+         -73279080,
+         24647168,
+         128406630,
+         -29211840,
+         -52843168,
+         -196706304,
+         134722224,
+         165742416,
+         -80873520,
+         167282496,
+         -182213314,
+         -255874080,
+         -145589976,
+         408038400,
+         308120442,
+         101267712,
+         -17125708,
+         -786948864,
+         -548895690,
+         -447438528];
+
+      --  util.c: hclassno and _count_class_div; 12 times H(X).
+      function Class_Number (X : U64) return U64 is
+         H, D, B2, Bound, Corr : U64;
+         Square : Boolean;
+         F : Optional_U64;
+      begin
+         if X mod 4 in 1 | 2 then
+            return 0;
+         elsif X = 3 then
+            return 4;
+         end if;
+         D := X mod 2;
+         B2 := (X + 1) / 4;
+         Square := Int.Is_Square (B2);
+         F := Divisor_Sum (B2, 0);
+         H := F.Value / 2;
+         if D = 1 then
+            H := 1 + (if Square then 1 else 0) + 2 * (H - 1);
+         end if;
+         D := D + 2;
+         loop
+            B2 := (X + D * D) / 4;
+            exit when 3 * B2 >= X;
+            if B2 mod D = 0 then
+               H := H + 1;
+            end if;
+            if Int.Is_Square (B2) then
+               H := H + 1;
+            end if;
+            Bound := Int.Sqrtint (B2);
+            if Bound * Bound = B2 then
+               Bound := Bound - 1;
+            end if;
+            for I in D + 1 .. Bound loop
+               if B2 mod I = 0 then
+                  H := H + 2;
+               end if;
+            end loop;
+            D := D + 2;
+         end loop;
+         Corr := (if 3 * B2 = X then 4
+                  elsif Square and then X mod 2 = 0 then 6 else 0);
+         return 12 * H + Corr;
+      end Class_Number;
+
+      function Tau_Prime (P : U64) return Big_Integer is
+         Sum : Big_Integer := To_Big_Integer (0);
+         BP : constant Big_Integer := B (P);
+         T2, V, T3 : U64;
+      begin
+         if P < U64 (Table'Length) then
+            return Conversion.To_Big_Integer (Table (Natural (P)));
+         end if;
+         --  PP.pm: _tauprime. Class-number arguments must fit U64.
+         if P > U64'Last / 4 then
+            raise Constraint_Error with "tau class-number argument overflow";
+         end if;
+         for T in U64 range 1 .. Int.Sqrtint (P) loop
+            T2 := T * T;
+            V := P - T2;
+            if V mod 4 = 0 then
+               T3 := 2 * Class_Number (V) + Class_Number (4 * V);
+            elsif V mod 4 = 3 then
+               T3 := (if V mod 8 = 3 then 6 else 4) * Class_Number (V);
+            else
+               T3 := Class_Number (4 * V);
+            end if;
+            Sum := Sum + B (T2) ** 3 *
+              (4 * B (T2) ** 2 - 9 * BP * B (T2) + 7 * BP ** 2) * B (T3);
+         end loop;
+         return 28 * BP ** 6 - 28 * BP ** 5 - 90 * BP ** 4 -
+           35 * BP ** 3 - 1 - 32 * (Sum / 3);
+      end Tau_Prime;
+
+      F : constant Factor.Factor_List := Factor.Factor (N);
+      Result : Big_Integer := To_Big_Integer (1);
+      Current, Previous, Next, TP, P11 : Big_Integer;
+      I : Natural := 1;
+      P : U64;
+   begin
+      if N < U64 (Table'Length) then
+         return (True, Table (Natural (N)));
+      end if;
+      while I <= F.Count loop
+         P := F.Value (I);
+         TP := Tau_Prime (P);
+         P11 := B (P) ** 11;
+         Previous := To_Big_Integer (1);
+         Current := TP;
+         I := I + 1;
+         while I <= F.Count and then F.Value (I) = P loop
+            Next := TP * Current - P11 * Previous;
+            Previous := Current;
+            Current := Next;
+            I := I + 1;
+         end loop;
+         Result := Result * Current;
+      end loop;
+      if Result < Conversion.To_Big_Integer (-2 ** 63)
+        or else Result > Conversion.To_Big_Integer (2 ** 63 - 1)
+      then
+         return (Defined => False);
+      end if;
+      return (True, Conversion.From_Big_Integer (Result));
+   end Ramanujan_Tau;
+end Math_Prime_Util.Arith.Totients;
