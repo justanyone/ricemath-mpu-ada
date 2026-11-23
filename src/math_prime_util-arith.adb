@@ -7,7 +7,8 @@ package body Math_Prime_Util.Arith with SPARK_Mode => On is
    --  fits U128. Cap intermediate products before any modular wrap.
    function Sigma (N, K : U64; Limit : U128) return U128
      with Pre => Limit in 1 .. U128'Last - 1
-   is
+;
+   function Sigma (N, K : U64; Limit : U128) return U128 is
       Factors : constant Factor.Factor_List := Factor.Factor (N);
       Product : U128 := 1;
       I : Positive := 1;
@@ -59,6 +60,7 @@ package body Math_Prime_Util.Arith with SPARK_Mode => On is
       return Product;
    end Sigma;
 
+   function Native (Value : U128) return Optional_U64;
    function Native (Value : U128) return Optional_U64 is
    begin
       if Value > U128 (U64'Last) then
