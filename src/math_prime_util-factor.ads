@@ -36,58 +36,48 @@ package Math_Prime_Util.Factor is
    --  XS.xs: factor_exp; factor.c: factorintp. Ascending prime/exponent
    --  pairs; (0, 1) for zero, empty for one. No errors.
    function Factor_Exp (N : U64) return Factor_Exp_Vectors.Vector
-     with Pre => True,
-          Post => Natural (Factor_Exp'Result.Length) <= Max_Factors;
+     with Post => Natural (Factor_Exp'Result.Length) <= Max_Factors;
 
    --  factor.c: prime_omega. Distinct prime count; 1 at zero. No errors.
    function Prime_Omega (N : U64) return Factor_Count
-     with Pre => True,
-          Post => (if N = 1 then Prime_Omega'Result = 0);
+     with Post => (if N = 1 then Prime_Omega'Result = 0);
 
-   --  factor.c: prime_bigomega. Count with multiplicity; 1 at zero.
-   --  No errors.
+   --  factor.c: prime_bigomega. Multiplicity count; 1 at zero. No errors.
    function Prime_Bigomega (N : U64) return Factor_Count
-     with Pre => True,
-          Post => (if N = 1 then Prime_Bigomega'Result = 0);
+     with Post => (if N = 1 then Prime_Bigomega'Result = 0);
 
    --  lib/Math/Prime/Util/PP.pm: prime_signature (list context).
    --  Exponents in descending order, empty at one. No errors.
    function Prime_Signature (N : U64) return U64_Vectors.Vector
-     with Pre => True,
-          Post => Natural (Prime_Signature'Result.Length) <= Max_Factors;
+     with Post => Natural (Prime_Signature'Result.Length) <= Max_Factors;
 
    --  util.c: is_square_free. True iff no squared prime divides N.
    --  False at zero, true at one. No errors.
    function Is_Square_Free (N : U64) return Boolean
-     with Pre => True,
-          Post => (if N = 0 then not Is_Square_Free'Result
+     with Post => (if N = 0 then not Is_Square_Free'Result
                    elsif N = 1 then Is_Square_Free'Result);
 
    --  util.c: is_semiprime. Exactly two prime factors with multiplicity.
    --  False below four. No errors.
    function Is_Semiprime (N : U64) return Boolean
-     with Pre => True,
-          Post => (if N < 4 then not Is_Semiprime'Result);
+     with Post => (if N < 4 then not Is_Semiprime'Result);
 
    --  util.c: is_almost_prime. Exactly K factors with multiplicity.
    --  K = 0 accepts only one; zero is always false. No errors.
    function Is_Almost_Prime (K, N : U64) return Boolean
-     with Pre => True,
-          Post => (if N = 0 then not Is_Almost_Prime'Result);
+     with Post => (if N = 0 then not Is_Almost_Prime'Result);
 
    --  omega_primes.c: is_omega_prime. Exactly K distinct prime factors.
    --  K = 0 accepts only one; zero is always false. No errors.
    function Is_Omega_Prime (K, N : U64) return Boolean
-     with Pre => True,
-          Post => (if N = 0 then not Is_Omega_Prime'Result);
+     with Post => (if N = 0 then not Is_Omega_Prime'Result);
 
    --  factor.c: cheb_factor; XS.xs preprocessing. Chebyshev split with
    --  smoothness bound B (zero selects 8 * floor(log2(N))**2).
    --  Initx = 0 selects 72. Returns the cofactor on failure. No errors.
    function Cheb_Factor
      (N : U64; B : U64 := 0; Initx : U64 := 0) return Factor_List
-     with Pre => True,
-          Post => Cheb_Factor'Result.Count <= Max_Factors
+     with Post => Cheb_Factor'Result.Count <= Max_Factors
             and then (if N = 1 then Cheb_Factor'Result.Count = 0
                       else Cheb_Factor'Result.Count >= 1);
 
