@@ -38,7 +38,8 @@ package body Compat_Arith is
               Positive'Image (C.Line_Number);
          begin
             if Func = "divisor_sum" or else Func = "aliquot_sum"
-              or else Func = "abundance" or else Func = "sopf" or else Func = "sopfr"
+              or else Func = "abundance" or else Func = "sopf"
+              or else Func = "sopfr"
             then
                Count := Count + 1;
                Assert (Parse_U64 (To_String (C.Args (1)), N), Context);
