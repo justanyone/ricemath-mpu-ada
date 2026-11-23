@@ -68,6 +68,22 @@ package body Compat_Factor is
       return To_String (Text);
    end Join;
 
+   function Join (V : Factor.Factor_Exp_Vectors.Vector) return String is
+      Text : Unbounded_String;
+   begin
+      for I in 1 .. Natural (V.Length) loop
+         if I > 1 then
+            Append (Text, " ");
+         end if;
+         Append (Text, Trim (V.Element (I).Prime) & "^"
+                 & Trim (U64 (V.Element (I).Exponent)));
+      end loop;
+      return To_String (Text);
+   end Join;
+
+   function Image (B : Boolean) return String is
+     (if B then "1" else "0");
+
    procedure Check_Fixtures (T : in out Test_Case'Class) is
       Cases : constant Case_Vectors.Vector :=
         For_Function (Load ("factor"), "ecm_factor");
@@ -221,6 +237,23 @@ package body Compat_Factor is
    --  Skipped: line 9700, trial_factor of 553402322211286548450,
    --  and any other row whose argument does not fit U64.
    --  The native API has no bigint tier. ERROR rows still run.
+   --  New API fixture skips: inputs outside native unsigned U64.
+   --  Above U64:
+   -- 1635, 1636, 1637, 1638, 1640, 1641, 1811, 1812, 1813, 1814, 1816,
+   -- 1817, 1827, 1828, 1829, 1830, 1832, 1833, 10279 .
+   --  Negative (including textual -0):
+   -- 7170, 7173, 7174, 7175, 7178, 7179, 7180, 7183, 7184, 7185, 7188,
+   -- 7189, 7190, 7193, 7194, 7195, 7198, 7199, 7200, 7203, 7204, 7205,
+   -- 7208, 7209, 7210, 7213, 7214, 7215, 7218, 7219, 7220, 7223, 7224,
+   -- 7225, 7228, 7229, 7230, 7233, 7234, 7235, 7238, 7239, 7240, 7243,
+   -- 7244, 7245, 7248, 7249, 7250, 7253, 7254, 7255, 7258, 7259, 7260,
+   -- 7263, 7264, 7265, 7268, 7269, 7270, 7273, 7274, 7275, 7278, 7279,
+   -- 7280, 7283, 7284, 7285, 7288, 7289, 7290, 7293, 7294, 7295, 7298,
+   -- 7299, 7300, 7303, 7304, 7305, 7308, 7309, 7862, 7863, 7864, 7865,
+   -- 7866, 7867, 7868, 7869, 7870, 7871, 7872, 7873, 7874, 7875, 7877,
+   -- 7879, 7881, 7883, 7885, 7887, 7889, 7891, 7893, 7895, 7897, 7899,
+   -- 7901, 7903, 7905, 7907, 7909, 7911, 7913, 7915, 7917, 7919, 7921,
+   -- 7923, 7925, 7927, 7929 .
    function Above_Native (C : Case_Record) return Boolean is
       Dummy : U64;
    begin
@@ -256,6 +289,24 @@ package body Compat_Factor is
       end if;
       if F = "factor" then
          return Join (Factor.Factor (N));
+      elsif F = "factor_exp" then
+         return Join (Factor.Factor_Exp (N));
+      elsif F = "prime_omega" then
+         return Trim (U64 (Factor.Prime_Omega (N)));
+      elsif F = "prime_bigomega" then
+         return Trim (U64 (Factor.Prime_Bigomega (N)));
+      elsif F = "prime_signature" then
+         return Join (Factor.Prime_Signature (N));
+      elsif F = "is_square_free" then
+         return Image (Factor.Is_Square_Free (N));
+      elsif F = "is_semiprime" then
+         return Image (Factor.Is_Semiprime (N));
+      elsif F = "is_almost_prime" then
+         return Image (Factor.Is_Almost_Prime (N, A));
+      elsif F = "is_omega_prime" then
+         return Image (Factor.Is_Omega_Prime (N, A));
+      elsif F = "cheb_factor" then
+         return Join (Factor.Cheb_Factor (N, A, B));
       elsif F = "trial_factor" then
          if Natural (C.Args.Length) < 2 then
             return Join (Factor.Trial_Factor (N));
@@ -408,6 +459,51 @@ package body Compat_Factor is
       Replay ("divisors");
    end Test_Divisors;
 
+   procedure Test_Factor_Exp (T : in out Test_Case'Class) is
+   begin
+      Replay ("factor_exp");
+   end Test_Factor_Exp;
+
+   procedure Test_Prime_Omega (T : in out Test_Case'Class) is
+   begin
+      Replay ("prime_omega");
+   end Test_Prime_Omega;
+
+   procedure Test_Prime_Bigomega (T : in out Test_Case'Class) is
+   begin
+      Replay ("prime_bigomega");
+   end Test_Prime_Bigomega;
+
+   procedure Test_Prime_Signature (T : in out Test_Case'Class) is
+   begin
+      Replay ("prime_signature");
+   end Test_Prime_Signature;
+
+   procedure Test_Is_Square_Free (T : in out Test_Case'Class) is
+   begin
+      Replay ("is_square_free");
+   end Test_Is_Square_Free;
+
+   procedure Test_Is_Semiprime (T : in out Test_Case'Class) is
+   begin
+      Replay ("is_semiprime");
+   end Test_Is_Semiprime;
+
+   procedure Test_Is_Almost_Prime (T : in out Test_Case'Class) is
+   begin
+      Replay ("is_almost_prime");
+   end Test_Is_Almost_Prime;
+
+   procedure Test_Is_Omega_Prime (T : in out Test_Case'Class) is
+   begin
+      Replay ("is_omega_prime");
+   end Test_Is_Omega_Prime;
+
+   procedure Test_Cheb_Factor (T : in out Test_Case'Class) is
+   begin
+      Replay ("cheb_factor");
+   end Test_Cheb_Factor;
+
    procedure Test_Wide (T : in out Test_Case'Class) is
    begin
       Wide_Runner;
@@ -415,6 +511,24 @@ package body Compat_Factor is
 
    overriding procedure Register_Tests (T : in out Factor_Case) is
    begin
+      Registration.Register_Routine
+        (T, Test_Factor_Exp'Access, "factor_exp");
+      Registration.Register_Routine
+        (T, Test_Prime_Omega'Access, "prime_omega");
+      Registration.Register_Routine
+        (T, Test_Prime_Bigomega'Access, "prime_bigomega");
+      Registration.Register_Routine
+        (T, Test_Prime_Signature'Access, "prime_signature");
+      Registration.Register_Routine
+        (T, Test_Is_Square_Free'Access, "is_square_free");
+      Registration.Register_Routine
+        (T, Test_Is_Semiprime'Access, "is_semiprime");
+      Registration.Register_Routine
+        (T, Test_Is_Almost_Prime'Access, "is_almost_prime");
+      Registration.Register_Routine
+        (T, Test_Is_Omega_Prime'Access, "is_omega_prime");
+      Registration.Register_Routine
+        (T, Test_Cheb_Factor'Access, "cheb_factor");
       Registration.Register_Routine
         (T, Test_Wide'Access, "factor128 arithmetic boundaries");
       Registration.Register_Routine
