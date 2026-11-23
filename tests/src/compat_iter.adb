@@ -284,6 +284,36 @@ package body Compat_Iter is
          Push (Value);
          Lastfor (Context);
       end First;
+      procedure First_Over_100
+        (Value : U64; Context : in out Loop_Context) is
+      begin
+         if Value > 100 then
+            Push (Value);
+            Lastfor (Context);
+         end if;
+      end First_Over_100;
+      procedure Composite_Over_2000
+        (Value : U64; Context : in out Loop_Context) is
+      begin
+         Got := To_Unbounded_String (Image (Value));
+         if Value > 2000 then
+            Lastfor (Context);
+         end if;
+      end Composite_Over_2000;
+      procedure Composite_Value
+        (Value : U64; Context : in out Loop_Context) is
+      begin
+         Push (Value);
+      end Composite_Value;
+      procedure Stop_Outer
+        (Value : U64; Context : in out Loop_Context) is
+      begin
+         if Value >= 7 then
+            Lastfor (Context);
+         end if;
+         Push (Value);
+         Forcomposites (Value, Composite_Value'Access);
+      end Stop_Outer;
       procedure First_Tuple
         (Values : Value_Array; Context : in out Loop_Context) is
       begin
@@ -321,6 +351,12 @@ package body Compat_Iter is
             Forprimes (100, Outer'Access);
          elsif C.Func = "lastfor_forprimes_forcomposites" then
             Forprimes (100, Outer_Composite'Access);
+         elsif C.Func = "lastfor_nested_ge7" then
+            Forprimes (20, Stop_Outer'Access);
+         elsif C.Func = "lastfor_forprimes_first_gt_100" then
+            Forprimes (1000, First_Over_100'Access);
+         elsif C.Func = "lastfor_forcomposites_gt2000" then
+            Forcomposites (20000, Composite_Over_2000'Access);
          elsif C.Func = "lastfor_forpart_len4" then
             Forpart (7, Parts'Access);
             Got := To_Unbounded_String (Image (U64 (Count)));
