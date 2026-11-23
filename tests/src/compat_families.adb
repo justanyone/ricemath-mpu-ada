@@ -7,7 +7,6 @@ with Fixture_Support;
 with Math_Prime_Util.Families;
 with Math_Prime_Util.Int;
 with Math_Prime_Util.Ramanujan;
-with Math_Prime_Util.Sieve;
 
 package body Compat_Families is
    use AUnit.Test_Cases;
@@ -42,37 +41,32 @@ package body Compat_Families is
       for C of Cases loop
          N := U64'Value (To_String (C.Args (1)));
          Got := Null_Unbounded_String;
-         if Func = "lucky_numbers" then
+         if Func = "lucky_numbers" or else Func = "ramanujan_primes" then
             declare
-               V : constant Lucky_Vectors.Vector :=
-                 (if Natural (C.Args.Length) = 1 then Lucky_Numbers (N)
-                  else Lucky_Numbers
-                    (N, U64'Value (To_String (C.Args (2)))));
-            begin
-               for J in V.First_Index .. V.Last_Index loop
+               --  Both native vector instances use Natural indices and U64.
+               procedure Append_Value (Value : U64) is
+               begin
                   if Length (Got) > 0 then
                      Append (Got, " ");
                   end if;
-                  Append (Got, Image (V.Element (J)));
-               end loop;
-               if V.Is_Empty then
-                  Got := To_Unbounded_String ("undef");
+                  Append (Got, Image (Value));
+               end Append_Value;
+               High : constant U64 :=
+                 (if Natural (C.Args.Length) = 1 then N
+                  else U64'Value (To_String (C.Args (2))));
+               Low : constant U64 :=
+                 (if Natural (C.Args.Length) = 1 then 0 else N);
+            begin
+               if Func = "lucky_numbers" then
+                  for V of Lucky_Numbers (Low, High) loop
+                     Append_Value (V);
+                  end loop;
+               else
+                  for V of Ramanujan_Primes (Low, High) loop
+                     Append_Value (V);
+                  end loop;
                end if;
-            end;
-         elsif Func = "ramanujan_primes" then
-            declare
-               V : constant Sieve.Prime_Vectors.Vector :=
-                 (if Natural (C.Args.Length) = 1 then Ramanujan_Primes (N)
-                  else Ramanujan_Primes
-                    (N, U64'Value (To_String (C.Args (2)))));
-            begin
-               for J in V.First_Index .. V.Last_Index loop
-                  if Length (Got) > 0 then
-                     Append (Got, " ");
-                  end if;
-                  Append (Got, Image (V.Element (J)));
-               end loop;
-               if V.Is_Empty then
+               if Length (Got) = 0 then
                   Got := To_Unbounded_String ("undef");
                end if;
             end;
