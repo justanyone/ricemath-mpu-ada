@@ -9,6 +9,9 @@ package body Math_Prime_Util.Int with SPARK_Mode => On is
       V : I128 := N;
       E : U64 := 0;
    begin
+      if K <= 1 then
+         raise Constraint_Error with "remove_factors: K must exceed one";
+      end if;
       if N = 0 then
          return (Defined => False);
       end if;
@@ -45,6 +48,9 @@ package body Math_Prime_Util.Int with SPARK_Mode => On is
       Sum : U128 := 0;
       Y, W, Top, Temp : U128;
    begin
+      if M = 0 then
+         raise Constraint_Error with "floor_sum: zero modulus";
+      end if;
       if NN = 0 then
          return 0;
       end if;
