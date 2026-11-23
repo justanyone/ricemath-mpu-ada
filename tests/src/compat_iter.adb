@@ -128,7 +128,8 @@ package body Compat_Iter is
                end;
             end loop;
          elsif Func /= "formultiperm" and then Func /= "forsetproduct"
-           and then Natural (C.Args.Length) > 1 then
+           and then Natural (C.Args.Length) > 1
+         then
             Fits := Parse_U64 (To_String (C.Args (2)), B) and then Fits;
          end if;
          --  Skipped ERROR rows: undef, negative, fractional and text inputs
@@ -136,7 +137,8 @@ package body Compat_Iter is
          --  bigint tier. Prime streams crossing U64 are skipped as a whole.
          if (Func = "prime_iterator" or else
              Func = "prime_iterator_object_iterate")
-           and then not C.Error then
+           and then not C.Error
+         then
             declare
                Tokens : constant String := To_String (C.Result);
                Start : Positive := Tokens'First;
@@ -166,7 +168,8 @@ package body Compat_Iter is
          --  iter.tsv 372,374,376,378: invalid typed composition options.
          --  iter.tsv 537,540,543: object streams exceed U64.
          --  iter.tsv 546,549,552: invalid typed object starts.
-         if Fits and then not C.Error then
+         if Fits and then not C.Error
+         then
             if Func = "forprimes" then
                if Natural (C.Args.Length) = 1 then
                   Forprimes (A, Scalar'Access);
@@ -193,7 +196,8 @@ package body Compat_Iter is
                Forderange (Natural (A), Tuple'Access);
             elsif Func = "formultiperm" or else Func = "forsetproduct" then
                declare
-                  Items : Value_Array (1 .. Natural (C.Args.Length));
+                  Items : Value_Array (1 .. Natural (C.Args.Length)) :=
+                    [others => 0];
                   Length : Natural := 0;
                   Lists : Value_List_Vectors.Vector;
                begin
@@ -610,7 +614,7 @@ package body Compat_Iter is
             Forderange (0, First_Tuple'Access);
             Got := To_Unbounded_String (Image (U64 (Count)));
          elsif C.Func = "lastfor_formultiperm_empty" then
-            Formultiperm ((1 .. 0 => 0), First_Tuple'Access);
+            Formultiperm ([1 .. 0 => 0], First_Tuple'Access);
             Got := To_Unbounded_String (Image (U64 (Count)));
          elsif C.Func = "lastfor_forcomb_sum11" then
             Forcomb (7, 4, Combination'Access);
