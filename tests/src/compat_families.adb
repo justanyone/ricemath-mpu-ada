@@ -185,6 +185,226 @@ package body Compat_Families is
       end loop;
    end Replay;
 
+   function Wide_Image (N : U128) return String is
+     (Ada.Strings.Fixed.Trim (U128'Image (N), Ada.Strings.Both));
+
+   --  Native_Input_Only: skip named bigint inputs in is_powerful,
+   --  powerful_count and powerfree_part; these belong to the bigint tier.
+   --  Native_Result_Only: nth_powerful(11938036,3) exceeds U64; assert
+   --  undefined below instead of comparing MPU's bigint fallback.
+   procedure Replay_Powers (Func : String) is
+      Cases : constant Case_Vectors.Vector :=
+        For_Function (Load ("families"), Func);
+      N, K, High, Expected : U64;
+      Got : Unbounded_String;
+      Negative, Native, Skip : Boolean;
+   begin
+      AUnit.Assertions.Assert (not Cases.Is_Empty, "missing " & Func);
+      for C of Cases loop
+         declare
+            Arg : constant String := To_String (C.Args (1));
+         begin
+            Negative := Arg (Arg'First) = '-';
+            Native := Parse_U64
+              ((if Negative then Arg (Arg'First + 1 .. Arg'Last) else Arg), N);
+         end;
+         K := 2;
+         Skip := not Native;
+         if not Native then
+            AUnit.Assertions.Assert
+              (Func = "is_powerful" or else Func = "powerful_count"
+               or else Func = "powerfree_part", "unexpected bigint input");
+         end if;
+         if Native then
+            if Natural (C.Args.Length) >= 2 then
+               if not Parse_U64 (To_String (C.Args (2)), K) then
+                  --  Negative_Exponent: unsigned Ada types reject -1 before
+                  --  entry. The fixture's ERROR is the equivalent boundary.
+                  AUnit.Assertions.Assert (C.Error, "negative exponent");
+                  Skip := True;
+               end if;
+            end if;
+            if K > Powerfree_Exponent'Last and then
+              (Func = "is_powerfree" or else Func = "powerfree_count"
+               or else Func = "powerfree_sum" or else Func = "powerfree_part"
+               or else Func = "powerfree_part_sum" or else
+               Func = "nth_powerfree")
+            then
+               --  Exponent_Constraint: the subtype enforces UINT32_MAX.
+               begin
+                  Got := To_Unbounded_String (Image (Powerfree_Count (N, K)));
+                  AUnit.Assertions.Assert (False, "exponent accepted");
+               exception
+                  when Constraint_Error =>
+                     AUnit.Assertions.Assert (C.Error, "exponent error row");
+               end;
+               Skip := True;
+            end if;
+            if Negative and then Func = "nth_powerfree" then
+               --  Negative_Index: a U64 index cannot represent this input.
+               AUnit.Assertions.Assert (C.Error, "negative index");
+               Skip := True;
+            end if;
+         end if;
+         if not Skip then
+            if Func = "powerful_numbers" then
+               High := (if Natural (C.Args.Length) = 1 then N else K);
+               K := 2;
+               if Natural (C.Args.Length) >= 3 then
+                  if not Parse_U64 (To_String (C.Args (3)), K) then
+                     --  Negative_List_Exponent: Ada rejects this at the
+                     --  unsigned argument boundary, like the XS wrapper.
+                     AUnit.Assertions.Assert
+                       (C.Error, "negative list exponent");
+                     Skip := True;
+                  end if;
+               end if;
+               Got := Null_Unbounded_String;
+               declare
+                  Values : constant Family_Vectors.Vector :=
+                    (if Skip then Family_Vectors.Empty_Vector else
+                       Powerful_Numbers
+                         ((if Natural (C.Args.Length) = 1 then 1 else N),
+                          High, K));
+               begin
+                  for I in Values.First_Index .. Values.Last_Index loop
+                     if Length (Got) > 0 then
+                        Append (Got, " ");
+                     end if;
+                     Append (Got, Image (Values.Element (I)));
+                  end loop;
+               end;
+               if Length (Got) = 0 then
+                  Got := To_Unbounded_String ("undef");
+               end if;
+            elsif Negative and then
+              (Func = "is_powerful" or else Func = "powerful_count"
+               or else Func = "sumpowerful" or else Func = "powerfree_count"
+               or else Func = "powerfree_sum" or else
+               Func = "powerfree_part_sum")
+            then
+               --  Negative_Range: XS returns zero for a negative bound.
+               --  Our unsigned API represents that empty prefix by zero.
+               N := 0;
+               Got := To_Unbounded_String
+                 ((if Func = "is_powerful" then
+                     (if Is_Powerful (N, K) then "1" else "0")
+                   elsif Func = "powerful_count" then
+                     Image (Powerful_Count (N, K))
+                   elsif Func = "sumpowerful" then
+                     Wide_Image (Sumpowerful (N, K))
+                   elsif Func = "powerfree_count" then
+                     Image (Powerfree_Count (N, K))
+                   elsif Func = "powerfree_sum" then
+                     Wide_Image (Powerfree_Sum (N, K))
+                   else Wide_Image (Powerfree_Part_Sum (N, K))));
+            elsif Func = "is_powerful" then
+               Got := To_Unbounded_String
+                 ((if Is_Powerful (N, K) then "1" else "0"));
+            elsif Func = "powerful_count" then
+               Got := To_Unbounded_String (Image (Powerful_Count (N, K)));
+            elsif Func = "nth_powerful" then
+               Got := To_Unbounded_String (Image (Nth_Powerful (N, K)));
+               if To_String (C.Result) /= "undef" and then
+                 not Parse_U64 (To_String (C.Result), Expected)
+               then
+                  AUnit.Assertions.Assert
+                    (Got = "undef", "native nth overflow");
+                  Skip := True;
+               end if;
+            elsif Func = "sumpowerful" then
+               Got := To_Unbounded_String (Wide_Image (Sumpowerful (N, K)));
+            elsif Func = "is_powerfree" then
+               Got := To_Unbounded_String
+                 ((if Is_Powerfree (N, K) then "1" else "0"));
+            elsif Func = "powerfree_count" then
+               Got := To_Unbounded_String (Image (Powerfree_Count (N, K)));
+            elsif Func = "powerfree_sum" then
+               Got := To_Unbounded_String (Wide_Image (Powerfree_Sum (N, K)));
+            elsif Func = "powerfree_part" then
+               Got := To_Unbounded_String
+                 ((if Negative then "-" else "") &
+                  Image (Powerfree_Part (N, K)));
+            elsif Func = "powerfree_part_sum" then
+               Got := To_Unbounded_String
+                 (Wide_Image (Powerfree_Part_Sum (N, K)));
+            elsif Func = "nth_powerfree" then
+               Got := To_Unbounded_String (Image (Nth_Powerfree (N, K)));
+            else
+               Got := To_Unbounded_String
+                 ((if Negative then "-" else "") &
+                  Image (Squarefree_Kernel (N)));
+            end if;
+            if not Skip then
+               AUnit.Assertions.Assert
+                 (Got = C.Result, Func & " line" & C.Line_Number'Image &
+                  " expected " & To_String (C.Result) &
+                  " got " & To_String (Got));
+            end if;
+         end if;
+      end loop;
+   end Replay_Powers;
+
+   procedure Test_Is_Powerful (T : in out Test_Case'Class) is
+   begin
+      Replay_Powers ("is_powerful");
+   end Test_Is_Powerful;
+
+   procedure Test_Powerful_Count (T : in out Test_Case'Class) is
+   begin
+      Replay_Powers ("powerful_count");
+   end Test_Powerful_Count;
+
+   procedure Test_Nth_Powerful (T : in out Test_Case'Class) is
+   begin
+      Replay_Powers ("nth_powerful");
+   end Test_Nth_Powerful;
+
+   procedure Test_Sumpowerful (T : in out Test_Case'Class) is
+   begin
+      Replay_Powers ("sumpowerful");
+   end Test_Sumpowerful;
+
+   procedure Test_Powerful_Numbers (T : in out Test_Case'Class) is
+   begin
+      Replay_Powers ("powerful_numbers");
+   end Test_Powerful_Numbers;
+
+   procedure Test_Is_Powerfree (T : in out Test_Case'Class) is
+   begin
+      Replay_Powers ("is_powerfree");
+   end Test_Is_Powerfree;
+
+   procedure Test_Powerfree_Count (T : in out Test_Case'Class) is
+   begin
+      Replay_Powers ("powerfree_count");
+   end Test_Powerfree_Count;
+
+   procedure Test_Powerfree_Sum (T : in out Test_Case'Class) is
+   begin
+      Replay_Powers ("powerfree_sum");
+   end Test_Powerfree_Sum;
+
+   procedure Test_Powerfree_Part (T : in out Test_Case'Class) is
+   begin
+      Replay_Powers ("powerfree_part");
+   end Test_Powerfree_Part;
+
+   procedure Test_Powerfree_Part_Sum (T : in out Test_Case'Class) is
+   begin
+      Replay_Powers ("powerfree_part_sum");
+   end Test_Powerfree_Part_Sum;
+
+   procedure Test_Nth_Powerfree (T : in out Test_Case'Class) is
+   begin
+      Replay_Powers ("nth_powerfree");
+   end Test_Nth_Powerfree;
+
+   procedure Test_Squarefree_Kernel (T : in out Test_Case'Class) is
+   begin
+      Replay_Powers ("squarefree_kernel");
+   end Test_Squarefree_Kernel;
+
    procedure Test_Lucky_Numbers (T : in out Test_Case'Class) is
    begin
       Replay ("lucky_numbers");
@@ -585,6 +805,30 @@ package body Compat_Families is
 
    overriding procedure Register_Tests (T : in out Families_Case) is
    begin
+      Registration.Register_Routine
+        (T, Test_Is_Powerful'Access, "is_powerful");
+      Registration.Register_Routine
+        (T, Test_Powerful_Count'Access, "powerful_count");
+      Registration.Register_Routine
+        (T, Test_Nth_Powerful'Access, "nth_powerful");
+      Registration.Register_Routine
+        (T, Test_Sumpowerful'Access, "sumpowerful");
+      Registration.Register_Routine
+        (T, Test_Powerful_Numbers'Access, "powerful_numbers");
+      Registration.Register_Routine
+        (T, Test_Is_Powerfree'Access, "is_powerfree");
+      Registration.Register_Routine
+        (T, Test_Powerfree_Count'Access, "powerfree_count");
+      Registration.Register_Routine
+        (T, Test_Powerfree_Sum'Access, "powerfree_sum");
+      Registration.Register_Routine
+        (T, Test_Powerfree_Part'Access, "powerfree_part");
+      Registration.Register_Routine
+        (T, Test_Powerfree_Part_Sum'Access, "powerfree_part_sum");
+      Registration.Register_Routine
+        (T, Test_Nth_Powerfree'Access, "nth_powerfree");
+      Registration.Register_Routine
+        (T, Test_Squarefree_Kernel'Access, "squarefree_kernel");
       Registration.Register_Routine
         (T, Test_Factor_Families'Access, "factor families");
       Registration.Register_Routine
