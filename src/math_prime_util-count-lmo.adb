@@ -55,9 +55,7 @@ package body Math_Prime_Util.Count.Lmo with SPARK_Mode => On is
 
    --  The sieve's primality walk has a checked interface for the kernel.
    function Previous (X : U64) return U64
-     with Pre => X > 3, Post => Previous'Result < X;
-   function Previous (X : U64) return U64
-     with SPARK_Mode => Off
+     with SPARK_Mode => Off, Pre => X > 3, Post => Previous'Result < X
    is
    begin
       return Sieve.Prev_Prime (X).Value;
@@ -72,10 +70,7 @@ package body Math_Prime_Util.Count.Lmo with SPARK_Mode => On is
        and then Initial_M >= 1 and then K2 > 0
        and then Ft'First = 0 and then Ps'First = 0
        and then Ft'Last >= 1 and then Ps'Last > Ft'Last,
-          Post => Result <= N;
-   procedure Compute
-     (N, N2, Initial_M : U64; K2, Initial_K3 : Natural;
-      Ft : in out Factors; Ps : in out Words; Result : out U64)
+          Post => Result <= N
    is
       M : U64 := Initial_M;
       Bound : constant Natural := Ft'Last * 2;
@@ -166,7 +161,6 @@ package body Math_Prime_Util.Count.Lmo with SPARK_Mode => On is
          Indices : Naturals (0 .. K3 + 1) := [others => End_Factor];
          Bits : Words (0 .. Segment_Words) := [others => 0];
          Counts : Naturals (0 .. Segment_Words + 1) := [others => 0];
-         Word_Counts : Naturals (0 .. Segment_Words) := [others => 0];
          Phi_Total : U64 := 0;
          Size : Natural;
 
@@ -176,7 +170,6 @@ package body Math_Prime_Util.Count.Lmo with SPARK_Mode => On is
          begin
             if (Bits (W) and Mask) /= 0 then
                Bits (W) := Bits (W) and not Mask;
-               Word_Counts (W) := Word_Counts (W) - 1;
             end if;
          end Clear;
 
@@ -200,7 +193,7 @@ package body Math_Prime_Util.Count.Lmo with SPARK_Mode => On is
             end loop;
             Counts (0) := 0;
             for W in 0 .. (Size + 63) / 64 - 1 loop
-               Counts (W + 1) := Counts (W) + Word_Counts (W);
+               Counts (W + 1) := Counts (W) + Natural (Bit_Count (Bits (W)));
             end loop;
             Totals (Last) := Totals (Last) +
               U64 (Counts ((Size + 63) / 64));
@@ -230,7 +223,6 @@ package body Math_Prime_Util.Count.Lmo with SPARK_Mode => On is
             Least := N / Finish;
             Size := Natural ((Finish - Start + 1) / 2);
             Bits := [others => 0];
-            Word_Counts := [others => 0];
             --  The period divides the full segment length (3*5*7*11).
             for B in 0 .. Size - 1 loop
                declare
@@ -241,7 +233,6 @@ package body Math_Prime_Util.Count.Lmo with SPARK_Mode => On is
                   then
                      Bits (B / 64) := Bits (B / 64) or
                        Interfaces.Shift_Left (U64'(1), B mod 64);
-                     Word_Counts (B / 64) := Word_Counts (B / 64) + 1;
                   end if;
                end;
             end loop;

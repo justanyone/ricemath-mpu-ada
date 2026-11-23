@@ -128,9 +128,9 @@ package body Prop_Count is
       end loop;
       --  Exercise LMO above the table crossover against an independent
       --  segmented enumeration, then check both neighbors of its last prime.
-      for I in 1 .. 3 loop
+      for I in 1 .. 4 loop
          Seed := Seed * 6_364_136_223_846_793_005 + 1;
-         N := 66_000_000 + Seed mod 1_000_000;
+         N := (if I = 1 then 299_999 else 300_000 + Seed mod 1_000_000);
          declare
             Ps : constant Sieve.Prime_Vectors.Vector := Sieve.Primes (N);
             P : constant U64 := Ps.Last_Element;

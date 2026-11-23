@@ -3,3 +3,4 @@ Reduce the implementation change to the 400-line budget while retaining the requ
 Investigate the gnatcheck report failure and run the declared gate plus focused tests.
 Keep all work inside this checkout; leave commit and push operations to the launcher.
 Reduced sparse lookup data to the first MPU table and lowered LMO crossover to 300,000; next verify the kernel at that boundary. gnatcheck is absent from the Alire environment.
+Initial builds found no Ada compiler on PATH; supplied the already installed Alire GNAT bin directory without changing settings. Removed duplicate declarations and per-word count storage; property inputs now cover the reduced crossover.
