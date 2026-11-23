@@ -27,7 +27,7 @@ package body Compat_Factor is
    begin
       AUnit.Assertions.Assert (Natural (Cases.Length) = 57, "ECM rows");
       for C of Cases loop
-         Args := (0, 4_000, 0, 100);
+         Args := [0, 4_000, 0, 100];
          for I in 1 .. Natural (C.Args.Length) loop
             AUnit.Assertions.Assert
               (Parse_U64 (To_String (C.Args (I)), Args (I)),
@@ -59,9 +59,11 @@ package body Compat_Factor is
 
    procedure Check_Edges (T : in out Test_Case'Class) is
       Inputs : constant Factor_List :=
-        (0, 1, 2, 2 ** 32 - 1, 2 ** 32, 2 ** 32 + 1,
-         2 ** 63 - 1, 2 ** 63, 2 ** 63 + 1, U64'Last);
+        [0, 1, 2, 2 ** 32 - 1, 2 ** 32, 2 ** 32 + 1,
+         2 ** 63 - 1, 2 ** 63, 2 ** 63 + 1, U64'Last];
       Product : U128;
+      Seed : U64 := 16#EC_075#;
+      N : U64;
    begin
       for N of Inputs loop
          declare
@@ -75,6 +77,28 @@ package body Compat_Factor is
                   "sorted ECM result");
             end loop;
             AUnit.Assertions.Assert (Product = U128 (N), "ECM product");
+         end;
+      end loop;
+      --  Seeded decomposition law, including ECM exhaustion: every result
+      --  must multiply back to its input even if it is not fully factored.
+      for Trial in 1 .. 128 loop
+         Seed := Seed * 6_364_136_223_846_793_005 + 1;
+         N := Seed mod 2 ** 32;
+         declare
+            Got : constant Factor_List :=
+              Ecm_Factor (N, B1 => 50, B2 => 500, Curves => 3);
+         begin
+            Product := 1;
+            for I in Got'Range loop
+               Product := Product * U128 (Got (I));
+               AUnit.Assertions.Assert
+                 (I = Got'First or else Got (I - 1) <= Got (I),
+                  "seed=16#EC_075# trial" & Integer'Image (Trial));
+            end loop;
+            AUnit.Assertions.Assert
+              (Product = U128 (N),
+               "seed=16#EC_075# trial" & Integer'Image (Trial)
+               & " N=" & U64'Image (N));
          end;
       end loop;
       AUnit.Assertions.Assert
