@@ -36,7 +36,6 @@ package body Math_Prime_Util.Iter is
 
    function Value (Cursor : Prime_Object) return Int.Optional_U64 is
      (Cursor.Current);
-
    function Peek (Cursor : Prime_Object) return Int.Optional_U64 is
      (if Cursor.Current.Defined then
          Sieve.Next_Prime (Cursor.Current.Value)
