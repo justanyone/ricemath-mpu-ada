@@ -17,3 +17,5 @@ All eleven isolated factor-class tests passed within 60 seconds: nine fixture fu
 Reviewed native edge handling and recurrence bounds after isolated success; no fixture edits or generated status changes. Awaiting the already-running full gate.
 - 2026-11-23T22:31:19Z launcher: no commit for 60 s; 611 s elapsed. Files changed so far: docs/worker-notes/demand-e37e6f07d68b4068989dc9fcbc9fcfff.md, src/math_prime_util-factor-classes.adb, src/math_prime_util-factor-classes.ads, tests/src/all_suites.adb, tests/src/compat_factor_classes.adb, tests/src/compat_factor_classes.ads.
 Full gate remains in tests-run with buffered output; focused suite is green. Waiting for the complete project verdict without changing unrelated packages.
+tools/test.sh completed successfully: 351/351 project tests passed, including the new suite. Gate run began later and is still awaiting its test summary.
+Completed: tools/gate.sh printed == gate: green; 351/351 tests passed with zero failures/errors. All nine public APIs, native fixture replay, named skips, laws and boundary tests are complete.
