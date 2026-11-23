@@ -1,6 +1,9 @@
+with Ada.Containers.Vectors;
+with Math_Prime_Util.Int;
 with Math_Prime_Util.Primality;
 with Math_Prime_Util.Sieve;
 
+--  Goldbach representations from Math::Prime::Util 0.75.
 package body Math_Prime_Util.Goldbach is
    use type Math_Prime_Util.Primality.Prime_Result;
    use Math_Prime_Util.Sieve;
