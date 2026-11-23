@@ -22,7 +22,7 @@ package Math_Prime_Util.Families with SPARK_Mode => On is
    --  division and can be slow when they have no small prime divisor.
    function Is_Gaussian_Prime (A, B : Int.Native_I128) return Boolean
      with Pre => True,
-          Post => (if A = 0 and B = 0 then
+          Post => (if A = 0 and then B = 0 then
                      not Is_Gaussian_Prime'Result);
 
    --  PP.pm: is_sum_of_squares. Represent abs N by K nonnegative squares

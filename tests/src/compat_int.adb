@@ -170,22 +170,18 @@ package body Compat_Int is
             " got " & To_String (Got));
       end loop;
    end Replay_Removal;
-
    procedure Test_Valuation (T : in out Test_Case'Class) is
    begin
       Replay_Removal ("valuation");
    end Test_Valuation;
-
    procedure Test_Remove_Factors (T : in out Test_Case'Class) is
    begin
       Replay_Removal ("remove_factors");
    end Test_Remove_Factors;
-
    procedure Test_Remove_Factors_Exp (T : in out Test_Case'Class) is
    begin
       Replay_Removal ("remove_factors_exp");
    end Test_Remove_Factors_Exp;
-
    procedure Test_Floor_Sum (T : in out Test_Case'Class) is
       Cases : constant Case_Vectors.Vector :=
         For_Function (Load ("bigint_sequences"), "floor_sum");
@@ -254,7 +250,6 @@ package body Compat_Int is
          end loop;
       end loop;
    end Test_Floor_Sum;
-
    overriding function Name (T : Int_Case) return AUnit.Message_String is
    begin
       return AUnit.Format ("Compat_Int");
