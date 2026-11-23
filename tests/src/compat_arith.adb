@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 with Ada.Assertions;
 with Ada.Strings;
 with Ada.Strings.Fixed;
@@ -11,35 +10,20 @@ with Math_Prime_Util.Int;
 
 package body Compat_Arith is
    use AUnit.Test_Cases;
-=======
-with AUnit.Assertions;
-with AUnit.Test_Cases;
-with Ada.Strings.Unbounded;
-with Fixture_Support;
-with Math_Prime_Util.Arith;
-
-package body Compat_Arith is
-   use AUnit.Test_Cases;
    use AUnit.Assertions;
->>>>>>> origin/dev-mpuada-001
    use Ada.Strings.Unbounded;
    use Fixture_Support;
    use Math_Prime_Util;
    use Math_Prime_Util.Arith;
-<<<<<<< HEAD
    use Math_Prime_Util.Int;
-   use type U64;
-=======
    use type U64;
    use type I128;
    use type AUnit.Message_String;
->>>>>>> origin/dev-mpuada-001
 
    type Arith_Case is new Test_Case with null record;
    overriding function Name (T : Arith_Case) return AUnit.Message_String;
    overriding procedure Register_Tests (T : in out Arith_Case);
 
-<<<<<<< HEAD
    function Image (N : I128) return String is
      (Ada.Strings.Fixed.Trim (I128'Image (N), Ada.Strings.Both));
 
@@ -170,30 +154,6 @@ package body Compat_Arith is
       AUnit.Assertions.Assert (Exp_Mangoldt (0) = 1, "Mangoldt zero");
    end Test_Properties;
 
-   overriding function Name (T : Arith_Case)
-      return AUnit.Message_String is
-=======
-   overriding function Name (T : Arith_Case) return AUnit.Message_String is
->>>>>>> origin/dev-mpuada-001
-   begin
-      return AUnit.Format ("Compat_Arith");
-   end Name;
-
-<<<<<<< HEAD
-   overriding procedure Register_Tests (T : in out Arith_Case) is
-   begin
-      Registration.Register_Routine
-        (T, Test_Euler_Phi'Access, "euler_phi");
-      Registration.Register_Routine
-        (T, Test_Jordan_Totient'Access, "jordan_totient");
-      Registration.Register_Routine (T, Test_Moebius'Access, "moebius");
-      Registration.Register_Routine (T, Test_Mertens'Access, "mertens");
-      Registration.Register_Routine (T, Test_Liouville'Access, "liouville");
-      Registration.Register_Routine
-        (T, Test_Exp_Mangoldt'Access, "exp_mangoldt");
-      Registration.Register_Routine
-        (T, Test_Properties'Access, "arithmetic identities and boundaries");
-=======
    procedure Fixtures (T : in out Test_Case'Class) is
       Cases : constant Case_Vectors.Vector := Load ("arith");
       Count : Natural := 0;
@@ -318,13 +278,25 @@ package body Compat_Arith is
       end loop;
    end Properties;
 
+   overriding function Name (T : Arith_Case) return AUnit.Message_String is
+   begin
+      return AUnit.Format ("Compat_Arith");
+   end Name;
+
    overriding procedure Register_Tests (T : in out Arith_Case) is
       use AUnit.Test_Cases.Registration;
    begin
+      Register_Routine (T, Test_Euler_Phi'Access, "euler_phi");
+      Register_Routine (T, Test_Jordan_Totient'Access, "jordan_totient");
+      Register_Routine (T, Test_Moebius'Access, "moebius");
+      Register_Routine (T, Test_Mertens'Access, "mertens");
+      Register_Routine (T, Test_Liouville'Access, "liouville");
+      Register_Routine (T, Test_Exp_Mangoldt'Access, "exp_mangoldt");
+      Register_Routine
+        (T, Test_Properties'Access, "arithmetic identities and boundaries");
       Register_Routine (T, Fixtures'Access, "arith fixtures");
       Register_Routine (T, Boundaries'Access, "arith boundaries");
       Register_Routine (T, Properties'Access, "arith seeded properties");
->>>>>>> origin/dev-mpuada-001
    end Register_Tests;
 
    function Suite return AUnit.Test_Suites.Access_Test_Suite is
