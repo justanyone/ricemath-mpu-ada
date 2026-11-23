@@ -38,7 +38,7 @@ package body Compat_Goldbach is
    begin
       AUnit.Assertions.Assert (not Cases.Is_Empty, "missing " & Func);
       for C of Cases loop
-         --  families.tsv has one argument above U64'Last; native calls skip it.
+         --  Skip the families.tsv argument that is wider than U64.
          if Parse_U64 (To_String (C.Args (1)), N) then
             if Func = "minimal_goldbach_pair" then
                Got := To_Unbounded_String (Image (Minimal_Goldbach_Pair (N)));
@@ -61,8 +61,10 @@ package body Compat_Goldbach is
                end;
             end if;
             AUnit.Assertions.Assert
-              (Got = C.Result, Func & " line" & C.Line_Number'Image &
-               " expected " & To_String (C.Result) & " got " & To_String (Got));
+              (Got = C.Result,
+               Func & " line" & C.Line_Number'Image &
+               " expected " & To_String (C.Result) &
+               " got " & To_String (Got));
          end if;
       end loop;
    end Replay;
