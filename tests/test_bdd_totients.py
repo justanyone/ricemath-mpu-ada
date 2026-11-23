@@ -8,10 +8,10 @@ scenarios("features/totients.feature")
 ROOT = Path(__file__).resolve().parent
 
 
-# This family uses the shared checked AUnit runner with its suite filter.
+# This family uses the focused checked AUnit runner.
 @given("the checked totient test runner is built", target_fixture="totient_runner")
 def totient_runner():
-    runner = ROOT / "bin" / "test_runner"
+    runner = ROOT / "bin" / "totients_runner"
     assert runner.is_file(), "Build the tests crate with Alire first"
     return runner.resolve()
 
@@ -20,7 +20,7 @@ def totient_runner():
 @when("the totient compatibility suite runs", target_fixture="totient_result")
 def totient_result(totient_runner):
     return subprocess.run(
-        ["nice", "-n", "10", str(totient_runner), "-s", "Compat_Totients"],
+        ["nice", "-n", "10", str(totient_runner)],
         cwd=ROOT,
         capture_output=True,
         text=True,
