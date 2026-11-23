@@ -98,6 +98,9 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
       D : U64 := N;
       R : U64 := 1;
       Backwards : Boolean := False;
+      Prime : Boolean;
+      F : Factors;
+      Bound, Current, Previous : U64 := 0;
    begin
       if M = 0 then
          return (Defined => False);
@@ -107,9 +110,26 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
          return (True, 1);
       end if;
       --  factmod.c: Wilson's theorem shortens products near a prime M.
-      if N > M / 2 and then Primality.Is_Prime (M) /= 0 then
+      Prime := Primality.Is_Prime (M) /= 0;
+      if N > M / 2 and then Prime then
          D := M - N - 1;
          Backwards := True;
+      end if;
+      if D > 100 and then not Prime then
+         --  factmod.c: max(p*e) bounds the Kempner number of M.
+         F := Factorize (M);
+         for I in 1 .. F.Count loop
+            if F.Values (I) = Previous then
+               Current := Current + Previous;
+            else
+               Previous := F.Values (I);
+               Current := Previous;
+            end if;
+            Bound := U64'Max (Bound, Current);
+         end loop;
+         if N >= Bound then
+            return (True, 0);
+         end if;
       end if;
       for I in U64 range 2 .. D loop
          R := Mul (R, I, M);
@@ -489,7 +509,7 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
          return 20;
       end if;
       --  util.c: _pisano_prime_power. The period divides P-1 for
-      --  quadratic residues of 5, and then 2*(P+1) otherwise.
+      --  quadratic residues of 5, and 2*(P+1) otherwise.
       if P mod 5 = 1 or else P mod 5 = 4 then
          Bound := P - 1;
          Candidate := U128 (Bound);

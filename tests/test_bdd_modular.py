@@ -28,6 +28,6 @@ def run_modular_suite(runner):
 @then("all native modular fixture rows and boundary properties pass")
 def modular_suite_passes(result):
     assert result.returncode == 0, result.stdout + result.stderr
-    assert "Failed Tests: 0" in result.stdout, result.stdout
+    assert "Failed Assertions: 0" in result.stdout, result.stdout
     assert "Unexpected Errors: 0" in result.stdout, result.stdout
-    assert "Total Tests Run: 6" in result.stdout, result.stdout
+    assert "Total Tests Run:   6" in result.stdout, result.stdout
