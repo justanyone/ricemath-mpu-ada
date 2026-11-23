@@ -1,6 +1,7 @@
 # Worker notes: demand-638cad56fe5b44d3b9eee24e7e51fde0
 
 - Plan: the merge of goldbach-misc into dev-mpuada-001 left conflict markers only in src/math_prime_util-families.adb with-clauses. Keep origin's with order and goldbach's Math_Prime_Util.Sieve with, because the body renames Sieve. Leave the auto-merged ads comment, goldbach package, and tests. Then build and run the goldbach and families tests.
+- Resolved the with-clause markers. Minimal Goldbach now walks Next_Prime so large fixture rows do not sieve to N/2. The compat test skips the one argument wider than U64. Next: development build and the test runner.
 
 - 2026-11-23T12:17:08Z launcher: no commit for 60 s; 90 s elapsed. Files changed so far: src/math_prime_util-families.adb, src/math_prime_util-families.ads, src/math_prime_util-random.adb, src/math_prime_util-random.ads, tests/src/compat_families.adb, tests/src/compat_random.adb, tests/src/families_runner.adb, tests/src/prop_families.adb, tests/src/test_fixture_support.adb.
 - 2026-11-23T12:18:09Z launcher: no commit for 60 s; 150 s elapsed. Files changed so far: docs/worker-notes/demand-638cad56fe5b44d3b9eee24e7e51fde0.md, src/math_prime_util-families.adb, src/math_prime_util-families.ads, src/math_prime_util-random.adb, src/math_prime_util-random.ads, tests/src/compat_families.adb, tests/src/compat_random.adb, tests/src/families_runner.adb, tests/src/prop_families.adb, tests/src/test_fixture_support.adb.
