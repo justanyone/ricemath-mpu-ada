@@ -346,7 +346,8 @@ package body Compat_Iter is
          Ada.Text_IO.Close (File);
          Ada.Text_IO.Open (File, Ada.Text_IO.In_File, Path);
          for I in Expected.First_Index .. Expected.Last_Index loop
-            Assert (not Ada.Text_IO.End_Of_File (File), "missing printed prime");
+            Assert
+              (not Ada.Text_IO.End_Of_File (File), "missing printed prime");
             Assert (Ada.Text_IO.Get_Line (File) = Image (Expected.Element (I)),
                "printed prime");
          end loop;
@@ -582,7 +583,8 @@ package body Compat_Iter is
             Selected := False;
          end if;
          if Selected then
-            Assert (Got = C.Result, To_String (C.Func) & " got " & To_String (Got));
+            Assert
+              (Got = C.Result, To_String (C.Func) & " got " & To_String (Got));
          end if;
       end loop;
       --  Boundary intervals never wrap, even when a callback stops early.

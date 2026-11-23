@@ -4,3 +4,5 @@ Reduce duplication and resolve lint findings, then run focused tests and the gat
 Reused the ECM bounded runner for a parameterized iterator BDD bridge; reducing repeated registration and assertions next.
 Ruff and Vulture pass for the rewritten bridge. Offline pytest-bdd installation has no cached distribution; focused Alire build is running.
 Shared partition/composition traversal follows PP.pm _forcompositions; permutations now share fixed-point filtering. Reused existing AUnit control callbacks and stream assembly.
+Found iterator tests absent from the normal suite/build list; adding the existing suite and focused main so the gate exercises the requested APIs.
+Correction: All_Suites already registers Compat_Iter. Reusing powers_runner with its existing name filter avoids adding another build target; direct iterator compilation succeeded.

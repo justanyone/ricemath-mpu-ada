@@ -9,8 +9,8 @@ scenarios("features/iter.feature")
 
 
 def iterator_runner():
-    runner = Path(__file__).resolve().parent / "bin/iter_runner"
-    assert runner.is_file(), "Build iter_runner.adb with the tests Alire project"
+    runner = Path(__file__).resolve().parent / "bin/powers_runner"
+    assert runner.is_file(), "Build the tests Alire project"
     return runner
 
 
