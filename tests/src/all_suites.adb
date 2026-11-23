@@ -1,6 +1,7 @@
 with Compat_Primality;
 with Prop_Primality;
 with Compat_Families;
+with Compat_Goldbach;
 with Prop_Families;
 with Version_Suite;
 with Test_Fixture_Support;
@@ -47,6 +48,7 @@ package body All_Suites is
       Result.Add_Test (Compat_Primality.Suite);
       Result.Add_Test (Prop_Primality.Suite);
       Result.Add_Test (Compat_Families.Suite);
+      Result.Add_Test (Compat_Goldbach.Suite);
       Result.Add_Test (Prop_Families.Suite);
       return Result;
    end Suite;
