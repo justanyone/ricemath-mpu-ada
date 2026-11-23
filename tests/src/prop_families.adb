@@ -78,8 +78,98 @@ package body Prop_Families is
       end loop;
    end Concurrent_Calls;
 
+   procedure Twin_Semi_Laws (T : in out Test_Case'Class) is
+      type U64_Array is array (Positive range <>) of U64;
+      Seed : U64 := 20_261_123;
+      N, P, Factors, Rest, D : U64;
+      Twins, Semis : Family_Vectors.Vector;
+      function Trial_Prime (X : U64) return Boolean;
+      function Trial_Prime (X : U64) return Boolean is
+         Divisor : U64 := 2;
+      begin
+         if X < 2 then
+            return False;
+         end if;
+         while Divisor <= X / Divisor loop
+            if X mod Divisor = 0 then
+               return False;
+            end if;
+            Divisor := Divisor + 1;
+         end loop;
+         return True;
+      end Trial_Prime;
+   begin
+      for I in 1 .. 40 loop
+         Seed := Seed * 6_364_136_223_846_793_005 + 1;
+         N := Seed mod 400;
+         Twins := Twin_Primes (N, N + 100);
+         Semis := Semi_Primes (N, N + 100);
+         AUnit.Assertions.Assert
+           (Twin_Prime_Count (N, N + 100) = U64 (Twins.Length)
+            and then Semiprime_Count (N, N + 100) = U64 (Semis.Length),
+            "list/count seed 20261123");
+         for X in N .. N + 100 loop
+            Rest := X;
+            Factors := 0;
+            D := 2;
+            while Rest > 1 and then D <= Rest / D loop
+               while Rest mod D = 0 loop
+                  Factors := Factors + 1;
+                  Rest := Rest / D;
+               end loop;
+               D := D + 1;
+            end loop;
+            if Rest > 1 then
+               Factors := Factors + 1;
+            end if;
+            AUnit.Assertions.Assert
+              (Semis.Contains (X) = (Factors = 2)
+               and then Twins.Contains (X) =
+                 (Trial_Prime (X) and then Trial_Prime (X + 2)),
+               "independent trial division seed 20261123");
+         end loop;
+         N := 1 + Seed mod 200;
+         P := Nth_Twin_Prime (N).Value;
+         AUnit.Assertions.Assert
+           (Twin_Prime_Count (P) = N and then
+            Twin_Prime_Count (P - 1) = N - 1,
+            "twin nth inverse seed 20261123");
+         P := Nth_Semiprime (N).Value;
+         AUnit.Assertions.Assert
+           (Semiprime_Count (P) = N and then
+            Semiprime_Count (P - 1) = N - 1,
+            "semi nth inverse seed 20261123");
+      end loop;
+      AUnit.Assertions.Assert
+        (Twin_Primes (11, 11).Contains (11)
+         and then Semi_Primes (49, 49).Contains (49)
+         and then Semi_Primes (8, 8).Is_Empty
+         and then Twin_Primes (10, 0).Is_Empty
+         and then Semi_Primes (10, 0).Is_Empty
+         and then Twin_Prime_Count (10, 0) = 0
+         and then Semiprime_Count (10, 0) = 0,
+         "inclusive partner, squares, multiplicity and reversed bounds");
+      for X of U64_Array'[0, 1, 2, 2 ** 32 - 1, 2 ** 32, 2 ** 32 + 1,
+                 2 ** 63 - 1, 2 ** 63, 2 ** 63 + 1, U64'Last] loop
+         AUnit.Assertions.Assert
+           (Twin_Prime_Count_Approx (X) <= X
+            and then Semiprime_Count_Approx (X) <= X,
+            "native approximation boundaries");
+      end loop;
+      AUnit.Assertions.Assert
+        (Twin_Primes (U64'Last - 1, U64'Last).Is_Empty
+         and then Semi_Primes (U64'Last - 1, U64'Last).Is_Empty
+         and then not Nth_Twin_Prime (U64'Last).Defined
+         and then not Nth_Semiprime_Approx (U64'Last).Defined
+         and then Nth_Semiprime_Approx (1_701_748_900_850_019_777).Value =
+           18_446_744_073_709_551_601,
+         "native overflow and maximum semiprime");
+   end Twin_Semi_Laws;
+
    overriding procedure Register_Tests (T : in out Families_Case) is
    begin
+      Registration.Register_Routine
+        (T, Twin_Semi_Laws'Access, "twin and semiprime laws");
       Registration.Register_Routine (T, Laws'Access, "lucky laws");
       Registration.Register_Routine
         (T, Concurrent_Calls'Access, "concurrent repeated sieves");
