@@ -67,52 +67,163 @@ package body Math_Prime_Util.Factor with SPARK_Mode => On is
       return Values (1 .. Count);
    end Trial_Factor;
 
-   --  factor.c: pbrent_factor (portable, non-Montgomery branch).
+   --  factor.c pbrent_factor, USE_MONTMATH branch. The fixture oracle
+   --  is built that way, so short round limits must follow the same
+   --  polynomial. Redc63/Redc64 copy the x86-64 mulredc assembly.
+   Word : constant U128 := U128'(2) ** 64;
+
+   function Bit_Length (Value : U64) return Natural is
+      Bits : Natural := 0;
+      X : U64 := Value;
+   begin
+      while X > 0 loop
+         Bits := Bits + 1;
+         X := X / 2;
+      end loop;
+      return Bits;
+   end Bit_Length;
+
+   function Mont_Inverse (N : U64) return U64 is
+      Ret : U64 := (3 * N) xor 2;
+   begin
+      for I in 1 .. 4 loop
+         Ret := Ret * (2 - N * Ret);
+      end loop;
+      return 0 - Ret;
+   end Mont_Inverse;
+
+   function Mont_One (N : U64) return U64 is
+     (U64 (Word mod U128 (N)));
+
+   function Redc63 (A, B, N, Npi : U64) return U64 is
+      T : constant U128 := U128 (A) * U128 (B);
+      Lo : constant U64 := U64 (T mod Word);
+      Hi : constant U64 := U64 (T / Word);
+      M : constant U64 := Lo * Npi;
+      P : constant U128 := U128 (M) * U128 (N);
+      P_Lo : constant U64 := U64 (P mod Word);
+      P_Hi : constant U64 := U64 (P / Word);
+      Sum_Lo : constant U64 := P_Lo + Lo;
+      Carry1 : constant U64 := (if Sum_Lo < Lo then 1 else 0);
+      Sum_Hi : constant U64 :=
+        U64 ((U128 (P_Hi) + U128 (Hi) + U128 (Carry1)) mod Word);
+      Rdx : U64;
+      Rax : U64;
+   begin
+      if Sum_Hi < N then
+         Rdx := Sum_Hi - N;
+         Rax := N;
+      else
+         Rdx := Sum_Hi - N;
+         Rax := 0;
+      end if;
+      return Rdx + Rax;
+   end Redc63;
+
+   function Redc64 (A, B, N, Npi : U64) return U64 is
+      T : constant U128 := U128 (A) * U128 (B);
+      Lo : constant U64 := U64 (T mod Word);
+      Hi : constant U64 := U64 (T / Word);
+      M : constant U64 := Lo * Npi;
+      P : constant U128 := U128 (M) * U128 (N);
+      P_Lo : constant U64 := U64 (P mod Word);
+      P_Hi : constant U64 := U64 (P / Word);
+      Sum_Lo : constant U64 := P_Lo + Lo;
+      Carry1 : constant U64 := (if Sum_Lo < Lo then 1 else 0);
+      Wide : constant U128 :=
+        U128 (P_Hi) + U128 (Hi) + U128 (Carry1);
+      Sum_Hi : constant U64 := U64 (Wide mod Word);
+      Carry2 : constant U64 := U64 (Wide / Word);
+      R12 : constant U64 := (if Carry2 = 0 then N else 0);
+      Rdx : U64;
+      Rax : U64;
+   begin
+      if Sum_Hi < N then
+         Rdx := Sum_Hi - N;
+         Rax := R12;
+      else
+         Rdx := Sum_Hi - N;
+         Rax := 0;
+      end if;
+      return Rdx + Rax;
+   end Redc64;
+
+   function Mont_Mul (X, Y, N, Npi : U64) return U64 is
+     (if N < 2 ** 63 then Redc63 (X, Y, N, Npi)
+      else Redc64 (X, Y, N, Npi));
+
+   function Inner_Limit (N : U64) return U64 is
+      Bits : constant Natural := Bit_Length (N);
+   begin
+      if Bits <= 31 then
+         return 32;
+      elsif Bits <= 35 then
+         return 64;
+      elsif Bits <= 40 then
+         return 160;
+      elsif Bits <= 52 then
+         return 256;
+      else
+         return 320;
+      end if;
+   end Inner_Limit;
+
    function Brent (N, Rounds, A : U64) return U64 is
       Left : U64 := Rounds;
       R : U64 := 1;
-      X, Y : U64 := 1;
-      Saved, Batch, Remaining, Product, D : U64;
-      C : U64 := A mod N;
-      Failures : Natural := 0;
+      Npi : constant U64 := Mont_Inverse (N);
+      One : constant U64 := Mont_One (N);
+      Inner : constant U64 := Inner_Limit (N);
+      X : U64 := One;
+      Y : U64 := One;
+      C : U64 := Int.Mulmod (A, One, N).Value;
+      Saved, Batch, Remaining, D : U64;
+      Failures : Natural := 6;
    begin
       while Left > 0 loop
          Remaining := U64'Min (R, Left);
          D := 1;
-         Saved := X;
+         Y := X;
          while Remaining > 0 loop
-            Batch := U64'Min (Remaining, 32);
+            Batch := U64'Min (Remaining, Inner);
             Saved := X;
             Remaining := Remaining - Batch;
             Left := Left - Batch;
-            Product := 1;
-            for I in 1 .. Batch loop
-               X := Step (X, C, N);
-               Product := U64
-                 (U128 (Product) * U128 (Difference (X, Y)) mod U128 (N));
+            X := Mont_Mul (X, X + C, N, Npi);
+            D := Difference (X, Y);
+            Batch := Batch - 1;
+            while Batch > 0 loop
+               X := Mont_Mul (X, X + C, N, Npi);
+               D := Mont_Mul (D, Difference (X, Y), N, Npi);
+               Batch := Batch - 1;
             end loop;
-            D := Int.Gcd (Product, N);
+            D := Int.Gcd (D, N);
             exit when D /= 1;
          end loop;
-         if D = N then
-            X := Saved;
-            for I in 1 .. R loop
-               X := Step (X, C, N);
-               D := Int.Gcd (Difference (X, Y), N);
-               exit when D /= 1;
-            end loop;
-         end if;
-         if D > 1 and D < N then
-            return D;
-         elsif D = N then
-            exit when Failures = 6;
-            Failures := Failures + 1;
-            Y := U64 ((U128 (Y) + 11) mod U128 (N));
-            X := Y;
-            C := U64 ((U128 (C) + 1) mod U128 (N));
+         if D = 1 then
+            R := R * 2;
          else
-            R := U64'Min (R, U64'Last / 2) * 2;
-            Y := X;
+            if D = N then
+               X := Saved;
+               loop
+                  X := Mont_Mul (X, X + C, N, Npi);
+                  D := Int.Gcd (Difference (X, Y), N);
+                  exit when D /= 1 or else R = 0;
+                  R := R - 1;
+               end loop;
+            end if;
+            if D > 1 and then D < N then
+               return D;
+            elsif D = 0 or else D = N then
+               exit when Failures = 0;
+               Failures := Failures - 1;
+               X := One;
+               Y := One;
+               C := Int.Addmod
+                 (C, Int.Mulmod (11, One, N).Value, N).Value;
+            else
+               return N;
+            end if;
          end if;
       end loop;
       return N;
