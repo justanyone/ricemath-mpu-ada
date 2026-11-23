@@ -1,4 +1,3 @@
-with Ada.Assertions;
 with Ada.Strings;
 with Ada.Strings.Fixed;
 with Ada.Strings.Unbounded;
@@ -171,3 +170,149 @@ package body Compat_Vec_Folds is
       Equal (Windows (1, 2, Value_Array'(7 => 1, 8 => 2)), [1, 2],
              "window non-one bound");
    end Check_Windows;
+
+   procedure Check_Set (T : in out Test_Case'Class) is
+      B : aliased constant Value_Array := [3, 5, 7];
+      C : aliased constant Value_Array := [5, 7, 9];
+      Exponents : aliased constant Value_Array := [2, 3, 5];
+      Empty : aliased constant Value_Array := [];
+      Left : Value_Array := [1, 2];
+      Right : aliased Value_Array := [10, 20];
+      function Snapshot (A, B : U64) return U64 is
+      begin
+         Left := [0, 0];
+         Right := [0, 0];
+         return A + B;
+      end Snapshot;
+      function Snap_Set is new Setbinop (Snapshot);
+      Calls : Natural := 0;
+      function Ordered (A, B : U64) return U64 is
+      begin
+         Calls := Calls + 1;
+         Assert (A = (if Calls <= 2 then 1 else 2), "sorted left");
+         Assert (B = (if Calls mod 2 = 1 then 1 else 2), "sorted right");
+         return A + B;
+      end Ordered;
+      function Ordered_Set is new Setbinop (Ordered);
+   begin
+      Equal (Set_Add ([], B'Access), [], "26-setbinop.t:12 empty");
+      Equal (Set_Add ([2, 4, 6]), [4, 6, 8, 10, 12], "26-setbinop.t:14");
+      Equal (Set_Add ([2, 4, 6, 8], B'Access), [5, 7, 9, 11, 13, 15],
+             "26-setbinop.t:18");
+      --  26-setbinop.t:22 skipped: negative results outside U64.
+      Equal (Set_Sub ([1, 2, 3], C'Access), [2, 3, 4, 5, 6, 7, 8],
+             "26-setbinop.t:26");
+      Equal (Set_Weighted ([1, 2, 3], C'Access),
+             [11, 12, 13, 15, 16, 17, 19, 20, 21], "26-setbinop.t:30");
+      Equal (Set_Mod ([3, 7, 14]), [0, 1, 2], "26-setbinop.t:34");
+      Equal (Set_Power ([2, 3, 5, 7, 11, 13], Exponents'Access),
+             [4, 8, 9, 25, 27, 32, 49, 121, 125, 169, 243, 343,
+              1331, 2197, 3125, 16807, 161051, 371293], "26-setbinop.t:39");
+      --  26-setbinop.t:48-50 skipped: A-A has negative results.
+      Equal (Snap_Set (Left, Right'Access), [11, 12, 21, 22],
+             "26-setbinop.t:56-57 snapshots");
+      Equal (Set_Add ([1], Empty'Access), [], "explicit empty right");
+      Equal (Ordered_Set ([2, 1, 2]), [2, 3, 4], "canonical callbacks");
+      Assert (Calls = 4, "each canonical Cartesian pair once");
+      Equal (Set_Add ([U64'Last], Empty'Access), [], "native maximum");
+   end Check_Set;
+
+   function Parse_Set (Text : String; Fits : out Boolean)
+      return Value_Array
+   is
+      Buffer : Value_Array (1 .. Text'Length);
+      Count : Natural := 0;
+      Start : Positive := Text'First;
+      Value : U64;
+   begin
+      Fits := True;
+      if Text = "-" then
+         return [];
+      end if;
+      for I in Text'First .. Text'Last + 1 loop
+         if I > Text'Last or else Text (I) = ',' then
+            if not Fixture_Support.Parse_U64 (Text (Start .. I - 1), Value)
+            then
+               Fits := False;
+               return [];
+            end if;
+            Count := Count + 1;
+            Buffer (Count) := Value;
+            Start := I + 1;
+         end if;
+      end loop;
+      return Buffer (1 .. Count);
+   end Parse_Set;
+
+   function Image (Items : Value_Array) return String is
+      Text : Unbounded_String;
+   begin
+      for V of Items loop
+         if Length (Text) > 0 then
+            Append (Text, " ");
+         end if;
+         Append (Text, Ada.Strings.Fixed.Trim
+                   (U64'Image (V), Ada.Strings.Both));
+      end loop;
+      return To_String (Text);
+   end Image;
+
+   --  bigint_sets.tsv skipped rows (input outside U64):
+   --  84, 102, 120, 138, 156, 174, 260, 278.
+   --  296, 314, 332, 350, 436, 454, 472, 490.
+   --  508, 526, 558, 576, 594, 612, 630, 648.
+   --  666, 684, 702, 734, 752, 770, 788, 806.
+   --  824, 842, 860, 878, 910, 928, 946, 964.
+   --  982, 1000, 1018, 1036, 1054, 1086, 1104, 1122.
+   --  1140, 1158, 1176, 1194, 1212, 1230, 1260, 1278.
+   --  1296, 1314, 1332, 1350, 1368, 1386, 1404, 1436.
+   --  1454, 1472, 1490, 1508, 1526, 1544, 1562, 1580.
+
+   procedure Check_Fixtures (T : in out Test_Case'Class) is
+      Cases : constant Fixture_Support.Case_Vectors.Vector :=
+        Fixture_Support.For_Function
+          (Fixture_Support.Load ("bigint_sets"), "setbinop");
+      Count : Natural := 0;
+      Fits_Left, Fits_Right : Boolean;
+   begin
+      for C of Cases loop
+         declare
+            Left : constant Value_Array :=
+              Parse_Set (To_String (C.Args (1)), Fits_Left);
+            Right : aliased constant Value_Array :=
+              Parse_Set (To_String (C.Args (2)), Fits_Right);
+         begin
+            if Fits_Left and Fits_Right then
+               declare
+                  Got : constant Value_Array := Set_Add (Left, Right'Access);
+               begin
+                  Assert ((if C.Undef then Got'Length = 0
+                           else Image (Got) = To_String (C.Result)),
+                          "bigint_sets.tsv:" & Positive'Image (C.Line_Number));
+                  Count := Count + 1;
+               end;
+            end if;
+         end;
+      end loop;
+      Assert (Count = 9, "all nine native fixture rows replayed");
+   end Check_Fixtures;
+
+   overriding function Name (T : Fold_Case) return AUnit.Message_String is
+     (AUnit.Format ("Compat_Vec_Folds"));
+   overriding procedure Register_Tests (T : in out Fold_Case) is
+   begin
+      Registration.Register_Routine (T, Check_Reduce'Access, "vecreduce");
+      Registration.Register_Routine (T, Check_Slide'Access, "vecslide");
+      Registration.Register_Routine (T, Check_Pairs'Access, "vecpairwise");
+      Registration.Register_Routine (T, Check_Windows'Access, "vecwindow");
+      Registration.Register_Routine (T, Check_Set'Access, "setbinop");
+      Registration.Register_Routine (T, Check_Fixtures'Access, "fixtures");
+   end Register_Tests;
+   function Suite return AUnit.Test_Suites.Access_Test_Suite is
+      Result : constant AUnit.Test_Suites.Access_Test_Suite :=
+        new AUnit.Test_Suites.Test_Suite;
+   begin
+      Result.Add_Test (new Fold_Case);
+      return Result;
+   end Suite;
+end Compat_Vec_Folds;
