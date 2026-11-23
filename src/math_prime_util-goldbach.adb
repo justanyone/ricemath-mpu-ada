@@ -1,10 +1,16 @@
+with Interfaces;
 with Math_Prime_Util.Primality;
 with Math_Prime_Util.Sieve;
 
 package body Math_Prime_Util.Goldbach with SPARK_Mode => Off is
+   use type Interfaces.Unsigned_8;
    --  families.tsv goldbach_pair_count reaches 60119912. Larger even
    --  arguments are walked prime by prime so the sieve stays bounded.
    Sieve_Limit : constant U64 := 100_000_000;
+
+   function Is_Prime (N : U64) return Boolean;
+   function Sieved_Pairs (N : U64) return Pair_Vectors.Vector;
+   function Walk_Pairs (N : U64) return Pair_Vectors.Vector;
 
    function Is_Prime (N : U64) return Boolean is
      (Math_Prime_Util.Primality.Is_Prime (N) /= 0);
