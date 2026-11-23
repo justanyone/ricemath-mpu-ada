@@ -58,6 +58,9 @@ package body Compat_Families is
             end;
          elsif Func = "is_lucky" then
             Got := To_Unbounded_String ((if Is_Lucky (N) then "1" else "0"));
+         elsif Func = "is_ramanujan_prime" then
+            Got := To_Unbounded_String
+              ((if Is_Ramanujan_Prime (N) then "1" else "0"));
          elsif Func = "lucky_count" then
             Got := To_Unbounded_String
               (Image ((if Natural (C.Args.Length) = 1 then Lucky_Count (N)
@@ -93,6 +96,11 @@ package body Compat_Families is
    begin
       Replay ("is_lucky");
    end Test_Is_Lucky;
+
+   procedure Test_Is_Ramanujan_Prime (T : in out Test_Case'Class) is
+   begin
+      Replay ("is_ramanujan_prime");
+   end Test_Is_Ramanujan_Prime;
 
 
    procedure Test_Lucky_Count (T : in out Test_Case'Class) is
@@ -141,6 +149,8 @@ package body Compat_Families is
         (T, Test_Lucky_Numbers'Access, "lucky_numbers");
       Registration.Register_Routine
         (T, Test_Is_Lucky'Access, "is_lucky");
+      Registration.Register_Routine
+        (T, Test_Is_Ramanujan_Prime'Access, "is_ramanujan_prime");
       Registration.Register_Routine
         (T, Test_Lucky_Count'Access, "lucky_count");
       Registration.Register_Routine

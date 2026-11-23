@@ -659,4 +659,56 @@ package body Math_Prime_Util.Families is
          Factor := Factor + 1;
       end loop;
    end Is_Lucky;
+
+   function Is_Ramanujan_Prime (N : U64) return Boolean is
+      use type Math_Prime_Util.Primality.Prime_Result;
+      D : U64;
+   begin
+      if Math_Prime_Util.Primality.Is_Prime (N) = 0 then
+         return False;
+      elsif N < 17 then
+         return N = 2 or else N = 11;
+      elsif Math_Prime_Util.Primality.Is_Prime (N / 2 + 1) /= 0 then
+         return False;
+      end if;
+
+      --  ramanujan_primes.c: the prime gap gives a finite pretest window.
+      if N > U64'Last - 16 then
+         D := (U64'Last - N + 14) / 2;
+      else
+         declare
+            Next : constant Int.Optional_U64 := Math_Prime_Util.Sieve.Next_Prime (N);
+         begin
+            D := (Next.Value - N) / 2;
+         end;
+      end if;
+      if D >= 2 then
+         for I in 2 .. D loop
+            if Math_Prime_Util.Primality.Is_Prime (N / 2 + I) /= 0 then
+               return False;
+            end if;
+         end loop;
+      end if;
+
+      --  Ramanujan primes are exactly the primes where pi(x)-pi(x/2)
+      --  reaches a new record at x=N; this bounded prefix scan is exact.
+      declare
+         Primes : constant Math_Prime_Util.Sieve.Prime_Vectors.Vector :=
+           Math_Prime_Util.Sieve.Primes (N);
+         Count, Previous, Best : U64 := 0;
+      begin
+         for P of Primes loop
+            if P > N / 2 then
+               Count := Count + 1;
+            end if;
+            if P = N then
+               return Count > Best;
+            elsif P > 2 then
+               Previous := Count;
+               Best := U64'Max (Best, Previous);
+            end if;
+         end loop;
+      end;
+      return False;
+   end Is_Ramanujan_Prime;
 end Math_Prime_Util.Families;
