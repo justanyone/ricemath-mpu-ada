@@ -5,6 +5,7 @@ with Compat_Families;
 with Prop_Families;
 with Version_Suite;
 with Test_Fixture_Support;
+with Compat_Iter;
 with Compat_Count;
 with Prop_Count;
 with Compat_Int;
@@ -30,6 +31,7 @@ package body All_Suites is
         Version_Suite.Suite;
    begin
       Result.Add_Test (Test_Fixture_Support.Suite);
+      Result.Add_Test (Compat_Iter.Suite);
       Result.Add_Test (Compat_Int.Suite);
       Result.Add_Test (Compat_Modular.Suite);
       Result.Add_Test (Prop_Int.Suite);
