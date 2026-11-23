@@ -17,4 +17,17 @@ package Math_Prime_Util.Proving with SPARK_Mode => On is
      with Pre => True,
           Post => Is_Provable_Prime'Result in 0 | 2
             and then (if N < 2 then Is_Provable_Prime'Result = 0);
+
+   --  PrimalityProving.pm: _small_cert. Return an MPU 1.0 Small certificate
+   --  for a native prime, or the empty string for a composite. No errors.
+   function Prime_Certificate (N : U64) return String
+     with Pre => True,
+          Post => (if N < 2 then Prime_Certificate'Result'Length = 0);
+
+   --  Check a decimal MPU 1.0 certificate containing one Small or BLS5
+   --  proof for a U64 candidate. Malformed, unsupported, or non-native
+   --  certificates return False; no parsing exceptions are propagated.
+   function Verify_Prime (Certificate : String) return Boolean
+     with Pre => Certificate'Last < Integer'Last,
+          Post => (if Certificate'Length = 0 then not Verify_Prime'Result);
 end Math_Prime_Util.Proving;
