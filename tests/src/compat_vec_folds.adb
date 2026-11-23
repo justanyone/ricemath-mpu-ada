@@ -167,6 +167,8 @@ package body Compat_Vec_Folds is
       Equal (Input, [1, 2, 3, 4], "26-vec.t:623,667 no aliases");
       Equal (Windows (Positive'Last, 1, Input), [1], "huge step");
       Equal (Windows (1, Positive'Last, Input), [], "huge size");
+      Equal (Windows (1, 1, Value_Array'(Positive'Last => 42)),
+             [42], "maximum index window");
       Equal (Windows (1, 2, Value_Array'(7 => 1, 8 => 2)), [1, 2],
              "window non-one bound");
    end Check_Windows;
@@ -211,6 +213,8 @@ package body Compat_Vec_Folds is
       --  26-setbinop.t:48-50 skipped: A-A has negative results.
       Equal (Snap_Set (Left, Right'Access), [11, 12, 21, 22],
              "26-setbinop.t:56-57 snapshots");
+      Equal (Set_Mod (Value_Array'(Positive'Last => 1)), [2],
+             "maximum index canonical set");
       Equal (Set_Add ([1], Empty'Access), [], "explicit empty right");
       Equal (Ordered_Set ([2, 1, 2]), [2, 3, 4], "canonical callbacks");
       Assert (Calls = 4, "each canonical Cartesian pair once");

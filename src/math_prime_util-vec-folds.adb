@@ -27,12 +27,12 @@ package body Math_Prime_Util.Vec.Folds with SPARK_Mode => On is
       end loop;
       Sorting.Sort (Values);
       for V of Values loop
-         if Count = 0 or else Sorted (Sorted'First + Count - 1) /= V then
+         if Count = 0 or else Sorted (Sorted'First + (Count - 1)) /= V then
             Sorted (Sorted'First + Count) := V;
             Count := Count + 1;
          end if;
       end loop;
-      return Sorted (Sorted'First .. Sorted'First + Count - 1);
+      return Sorted (Sorted'First .. Sorted'First + (Count - 1));
    end Canonical;
 
    function Vecreduce (Items : Value_Array) return Int.Optional_U64 is
@@ -53,7 +53,7 @@ package body Math_Prime_Util.Vec.Folds with SPARK_Mode => On is
         (1 .. (if Items'Length = 0 then 0 else Items'Length - 1));
    begin
       for I in Result'Range loop
-         Result (I) := Block (Items (Items'First + I - 1),
+         Result (I) := Block (Items (Items'First + (I - 1)),
                               Items (Items'First + I));
       end loop;
       return Result;
@@ -83,7 +83,7 @@ package body Math_Prime_Util.Vec.Folds with SPARK_Mode => On is
       end if;
       loop
          for V of Block (Items (Items'First + Offset ..
-                                Items'First + Offset + Size - 1))
+                                Items'First + Offset + (Size - 1)))
          loop
             Result.Append (V);
          end loop;
