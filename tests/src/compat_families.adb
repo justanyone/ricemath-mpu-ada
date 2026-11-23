@@ -6,6 +6,7 @@ with Ada.Strings.Unbounded;
 with Fixture_Support;
 with Math_Prime_Util.Families;
 with Math_Prime_Util.Int;
+with Math_Prime_Util.Powers;
 with Math_Prime_Util.Sieve;
 
 package body Compat_Families is
@@ -15,6 +16,9 @@ package body Compat_Families is
    use Math_Prime_Util;
    use type U64;
    use Math_Prime_Util.Families;
+   use type U128;
+   use type Int.I128;
+   package Powers renames Math_Prime_Util.Powers;
    type Families_Case is new Test_Case with null record;
    overriding function Name (T : Families_Case)
       return AUnit.Message_String;
@@ -29,6 +33,12 @@ package body Compat_Families is
      (Ada.Strings.Fixed.Trim (U64'Image (N), Ada.Strings.Both));
    function Image (N : Int.Optional_U64) return String is
      (if N.Defined then Image (N.Value) else "undef");
+   function Image (N : U128) return String is
+     (Ada.Strings.Fixed.Trim (U128'Image (N), Ada.Strings.Both));
+   function Image (N : Powers.Optional_U128) return String is
+     (if N.Defined then Image (N.Value) else "undef");
+   function Image (N : Int.I128) return String is
+     (Ada.Strings.Fixed.Trim (Int.I128'Image (N), Ada.Strings.Both));
 
    procedure Replay (Func : String) is
       Cases : constant Case_Vectors.Vector :=
