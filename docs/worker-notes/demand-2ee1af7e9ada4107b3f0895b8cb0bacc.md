@@ -20,3 +20,4 @@ Full gate tests and bounded focused run remain active; no additional implementat
 Awaiting the focused timeout verdict before deciding whether the exact upstream square-free sieve meets the owner runtime guardrail.
 Focused suite timed out at 60.02 seconds. Added named-routine selection to the dedicated runner to isolate runtime instead of weakening fixture coverage.
 Replaced controlled-vector operations inside the prime segment sieve with a fixed odd-slot array, retaining segmented Eratosthenes and prime-square marking to reduce runtime without per-value square-free tests.
+Rebuilding optimized square-free sieve and running the selected edge test. Stopped the earlier gate run because it used the pre-optimization library.
