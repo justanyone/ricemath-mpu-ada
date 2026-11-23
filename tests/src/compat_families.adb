@@ -366,7 +366,7 @@ package body Compat_Families is
       end loop;
       for N of Odds loop
          P := Minimal_Goldbach_Pair (N);
-         if Primality.Is_Prime (N - 2) = 2 then
+         if Math_Prime_Util.Primality.Is_Prime (N - 2) = 2 then
             AUnit.Assertions.Assert
               (P.Defined and then P.Value = 2 and then
                Goldbach_Pair_Count (N) = 1 and then
@@ -383,8 +383,8 @@ package body Compat_Families is
          P := Minimal_Goldbach_Pair (N);
          AUnit.Assertions.Assert
            (P.Defined and then P.Value <= N / 2 and then
-            Primality.Is_Prime (P.Value) = 2 and then
-            Primality.Is_Prime (N - P.Value) = 2,
+            Math_Prime_Util.Primality.Is_Prime (P.Value) = 2 and then
+            Math_Prime_Util.Primality.Is_Prime (N - P.Value) = 2,
             "even goldbach minimal edge");
       end loop;
    end Goldbach_Laws;
