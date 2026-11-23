@@ -15,30 +15,47 @@ package Math_Prime_Util.Modular with SPARK_Mode => On is
    end record;
 
    --  sqrtmod: a root of A modulo N, minimized against its negative.
-   --  Undefined for N = 0 or else no root. A is reduced modulo N.
+   --  Undefined for N = 0 or no root. A is reduced modulo N.
    function Sqrtmod (A : I128; N : U64) return Int.Optional_U64
      with Pre => True,
           Post => (if Sqrtmod'Result.Defined then N > 0 and then
-                     Sqrtmod'Result.Value <= N / 2);
+                     Sqrtmod'Result.Value <= N / 2 and then
+                     Int.Sqrmod (Sqrtmod'Result.Value, N).Value =
+                       U64 (A mod I128 (N)));
 
-   --  allsqrtmod: all square roots, sorted; empty for N = 0 or else no root.
+   --  allsqrtmod: all square roots, sorted; empty for N = 0 or no root.
    --  Raises Errors.Maximum_Roots_Exceeded above MPU's 600000000 root cap.
    function Allsqrtmod (A : I128; N : U64) return Root_List
      with Pre => True,
-          Post => (for all R of Allsqrtmod'Result => R < N);
+          Post => (for all R of Allsqrtmod'Result =>
+                     R < N and then Int.Sqrmod (R, N).Value =
+                       U64 (A mod I128 (N)));
 
    --  rootmod: one K-th root; negative K first inverts A modulo N.
-   --  Undefined for N = 0, no inverse, or else no root; K = 0 uses x**0 = 1.
+   --  Undefined for N = 0, no inverse, or no root; K = 0 uses x**0 = 1.
    function Rootmod (A, K : I128; N : U64) return Int.Optional_U64
      with Pre => K in -I128 (U64'Last) .. I128 (U64'Last),
           Post => (if Rootmod'Result.Defined then
-                     N > 0 and then Rootmod'Result.Value < N);
+                     N > 0 and then Rootmod'Result.Value < N and then
+                     (if K >= 0 then
+                        Int.Powmod (Rootmod'Result.Value, U64 (K), N).Value
+                          = U64 (A mod I128 (N))
+                      else Int.Mulmod
+                        (Int.Powmod (Rootmod'Result.Value, U64 (-K), N).Value,
+                         U64 (A mod I128 (N)), N).Value = 1 mod N));
 
    --  allrootmod: all K-th roots sorted, with the same domain as Rootmod.
    --  Empty for undefined results; Errors.Maximum_Roots_Exceeded at the cap.
    function Allrootmod (A, K : I128; N : U64) return Root_List
      with Pre => K in -I128 (U64'Last) .. I128 (U64'Last),
-          Post => (for all R of Allrootmod'Result => R < N);
+          Post => (for all R of Allrootmod'Result =>
+                     R < N and then
+                     (if K >= 0 then
+                        Int.Powmod (R, U64 (K), N).Value =
+                          U64 (A mod I128 (N))
+                      else Int.Mulmod
+                        (Int.Powmod (R, U64 (-K), N).Value,
+                         U64 (A mod I128 (N)), N).Value = 1 mod N));
 
    --  util.c: cornacchia. Solve X**2 + D*Y**2 = N in native integers.
    --  Undefined if no solution exists; N = 0 returns (0, 0).
