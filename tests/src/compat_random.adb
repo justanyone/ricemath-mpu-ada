@@ -124,12 +124,12 @@ procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
             end if;
          end;
       end loop;
-      AUnit.Assertions.Assert (Count > 600, "too few CSPRNG fixtures");
+      AUnit.Assertions.Assert (Count = 731, "CSPRNG fixture count changed");
    end Replay;
    procedure Contracts is
       G, H : Generator;
       A, B : Byte_Array (17 .. 80);
-      V, Expected : U64;
+      V : U64;
       Raised : Boolean;
       Empty : Byte_Array (1 .. 0);
    begin
@@ -144,23 +144,17 @@ procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
          AUnit.Assertions.Assert (Raised, "invalid draw accepted");
          Csrand (G);
       end loop;
-      --  Given a seeded stream, no-op draws preserve its next word.
-      Csrand (G, [0]);
-      Csrand (H, [0]);
-      Random_Bytes (G, Empty);
-      Urandomb (G, 0, V);
-      Urandomm (G, 1, V);
-      Urandomr (G, U64'Last, U64'Last, V);
-      Irand (G, V);
-      Irand (H, Expected);
-      AUnit.Assertions.Assert (V = Expected, "no-op consumed stream bytes");
-      --  Partial-word seeds, nonzero array bounds and deterministic replay.
+      --  Partial seeds and nonzero bounds; no-op draws preserve the stream.
       for Size in 0 .. 41 loop
          declare
             Seed : constant Byte_Array (1 .. Size) := [others => 0];
          begin
             Csrand (G, Seed);
             Csrand (H, Seed);
+            Random_Bytes (G, Empty);
+            Urandomb (G, 0, V);
+            Urandomm (G, 1, V);
+            Urandomr (G, U64'Last, U64'Last, V);
             Random_Bytes (G, A);
             Random_Bytes (H, B);
             AUnit.Assertions.Assert (A = B, "seed replay mismatch");
