@@ -8,3 +8,5 @@ Development library build passed. The first direct focused build lacked generate
 Both tests crate and focused Families runner compiled successfully. Running the focused suite with a 60-second timeout and the repository gate, using only build-directory runtime/temp paths.
 Focused Families suite passed all 28 tests, including both branches' fixture and property suites; no failures or errors. Development gate build passed; release build and complete regression suite are next.
 Release and complete tests-crate builds passed. Full gate regression runner is in progress; final whitespace and conflict-marker checks are clean. No source changes outside the four conflict files were needed.
+Full regression runner remains active without a report yet; all focused Families tests and both library build profiles have passed. Waiting for the gate verdict before final handoff.
+COMPLETE: tools/gate.sh is green: development and release builds passed, and all 218 regression tests passed with zero failed assertions or unexpected errors. All four conflicts are resolved, both branches' implementations and test registrations are retained, and the launcher handles the commit.
