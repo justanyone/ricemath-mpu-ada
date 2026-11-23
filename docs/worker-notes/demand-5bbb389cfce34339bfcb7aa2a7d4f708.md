@@ -5,3 +5,5 @@ Fix the failing `math_prime_util_tests` gprbuild (exit 4 / compilation failed) o
 Plan: read the test project and the prime-util sources the context pack points at, reproduce the compile error, fix only the code that makes those tests fail, then rerun the focused gprbuild and the rest of the gate if it stays fast.
 
 Guardrails: no Petri change, no settings files, no logfile reads, no git writes, no full-board reads. Keep deletions if the head removed a file and port additions onto the replacement.
+
+Tried: read factor.ads/adb and compat_factor; the branch adds those five files vs dev-mpuada-001. Next: alr/gprbuild to capture the compiler errors (style and types).
