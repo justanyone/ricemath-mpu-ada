@@ -6,6 +6,7 @@ package body Prop_Families is
    use AUnit.Test_Cases;
    use Math_Prime_Util;
    use type U64;
+   use type U128;
    use Math_Prime_Util.Families;
    use type Lucky_Vectors.Vector;
    type Families_Case is new Test_Case with null record;
@@ -196,8 +197,116 @@ package body Prop_Families is
          "first twin pair has lower member three");
    end Twin_Empty_Prefix;
 
+   --  Given seeded small ranges, compare with independent trial division.
+   procedure Power_Laws (T : in out Test_Case'Class) is
+      type U64_Array is array (Positive range <>) of U64;
+      Seed : U64 := 20_261_123;
+      N, Rest, D, E, Part, Kernel, Powerful, Free : U64;
+      Powerful_Sum, Free_Sum, Part_Sum : U128;
+      Is_Full, Is_Free : Boolean;
+   begin
+      for K in U64 range 0 .. 5 loop
+         Powerful := 0;
+         Free := 0;
+         Powerful_Sum := 0;
+         Free_Sum := 0;
+         Part_Sum := 0;
+         for X in U64 range 1 .. 180 loop
+            Rest := X;
+            D := 2;
+            Part := 1;
+            Kernel := 1;
+            Is_Full := True;
+            Is_Free := True;
+            while Rest > 1 loop
+               E := 0;
+               while Rest mod D = 0 loop
+                  E := E + 1;
+                  Rest := Rest / D;
+               end loop;
+               if E > 0 then
+                  Kernel := Kernel * D;
+                  Is_Full := Is_Full and then E >= K;
+                  Is_Free := Is_Free and then E < K;
+                  if K >= 2 then
+                     Part := Part * D ** Natural (E mod K);
+                  else
+                     Part := 0;
+                  end if;
+               end if;
+               D := D + 1;
+            end loop;
+            if Is_Full then
+               Powerful := Powerful + 1;
+               Powerful_Sum := Powerful_Sum + U128 (X);
+            end if;
+            if Is_Free then
+               Free := Free + 1;
+               Free_Sum := Free_Sum + U128 (X);
+            end if;
+            Part_Sum := Part_Sum + U128 (Part);
+            AUnit.Assertions.Assert
+              (Is_Powerful (X, K) = Is_Full
+               and then Is_Powerfree (X, K) = Is_Free
+               and then Powerful_Count (X, K) = Powerful
+               and then Powerfree_Count (X, K) = Free
+               and then Powerfree_Sum (X, K) = Free_Sum
+               and then Powerfree_Part (X, K) = Part
+               and then Powerfree_Part_Sum (X, K) = Part_Sum
+               and then Squarefree_Kernel (X) = Kernel,
+               "independent powers K=" & K'Image & " X=" & X'Image);
+            if K > 0 then
+               AUnit.Assertions.Assert
+                 (Sumpowerful (X, K) = Powerful_Sum,
+                  "independent powerful sum");
+            end if;
+         end loop;
+      end loop;
+      for K in U64 range 2 .. 5 loop
+         for I in 1 .. 16 loop
+            Seed := Seed * 6_364_136_223_846_793_005 + 1;
+            N := 1 + Seed mod 100;
+            D := Nth_Powerful (N, K).Value;
+            E := Nth_Powerfree (N, K).Value;
+            AUnit.Assertions.Assert
+              (Is_Powerful (D, K) and then Powerful_Count (D, K) = N
+               and then Powerful_Count (D - 1, K) = N - 1
+               and then Is_Powerfree (E, K)
+               and then Powerfree_Count (E, K) = N
+               and then Powerfree_Count (E - 1, K) = N - 1,
+               "power nth/count seed 20261123");
+         end loop;
+         AUnit.Assertions.Assert
+           (U64 (Powerful_Numbers (1, 1_000, K).Length) =
+              Powerful_Count (1_000, K), "power list/count");
+      end loop;
+      AUnit.Assertions.Assert
+        (not Is_Powerful (0) and then not Is_Powerfree (0), "zero");
+      for X of U64_Array'[0, 1, 2, 2 ** 32 - 1, 2 ** 32 + 1,
+                            2 ** 63 - 1, 2 ** 63 + 1, U64'Last] loop
+         AUnit.Assertions.Assert
+           (Is_Powerful (X, 64) = (X = 1)
+            and then Is_Powerfree (X, 64) = (X /= 0)
+            and then Powerfree_Part (X, 64) = X
+            and then Powerfree_Count (X, 64) = X
+            and then Powerfree_Sum (X, 64) = U128 (X) * (U128 (X) + 1) / 2,
+            "native power boundaries");
+      end loop;
+      AUnit.Assertions.Assert
+        (not Nth_Powerful (0).Defined
+         and then not Nth_Powerfree (0).Defined
+         and then not Nth_Powerfree (3, 1).Defined
+         and then not Nth_Powerful (2, 64).Defined
+         and then Powerful_Numbers (10, 1).Is_Empty
+         and then Powerful_Numbers (0, 0).Is_Empty
+         and then Sumpowerful (100, 0) = Sumpowerful (100, 2),
+         "empty ranges and undefined indices");
+   end Power_Laws;
+
    overriding procedure Register_Tests (T : in out Families_Case) is
    begin
+      Registration.Register_Routine
+        (T, Power_Laws'Access, "powerful and powerfree laws");
       Registration.Register_Routine
         (T, Twin_Empty_Prefix'Access, "twin empty prefix");
       Registration.Register_Routine
