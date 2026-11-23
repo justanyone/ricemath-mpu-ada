@@ -5,7 +5,7 @@ with Ada.Numerics.Long_Elementary_Functions;
 
 package body Math_Prime_Util.Int with SPARK_Mode => On is
    --  Proof skipped: gnatprove is not installed in the Alire environment.
-   function Remove_Factors_Exp (N, K : I128) return Removal_Result is
+   function Remove_Factors_Exp (N, K : Native_I128) return Removal_Result is
       V : I128 := N;
       E : U64 := 0;
    begin
@@ -21,20 +21,17 @@ package body Math_Prime_Util.Int with SPARK_Mode => On is
       end loop;
       return (True, V, E);
    end Remove_Factors_Exp;
-
-   function Remove_Factors (N, K : I128) return Optional_I128 is
+   function Remove_Factors (N, K : Native_I128) return Optional_I128 is
       R : constant Removal_Result := Remove_Factors_Exp (N, K);
    begin
       return (if R.Defined then (True, R.Value) else (Defined => False));
    end Remove_Factors;
-
-   function Valuation (N, K : I128) return Optional_U64 is
+   function Valuation (N, K : Native_I128) return Optional_U64 is
       R : constant Removal_Result := Remove_Factors_Exp (N, K);
    begin
       return (if R.Defined then (True, R.Exponent)
               else (Defined => False));
    end Valuation;
-
    function Floor_Sum (N, M, A, B : U64) return U128 is
       NN : U128 := U128 (N);
       MM : U128 := U128 (M);
@@ -77,7 +74,6 @@ package body Math_Prime_Util.Int with SPARK_Mode => On is
       end loop;
       return Sum;
    end Floor_Sum;
-
    function Gcd (A, B : U64) return U64 is
       X : U64 := A;
       Y : U64 := B;

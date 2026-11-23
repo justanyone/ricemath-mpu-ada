@@ -20,16 +20,15 @@ package Math_Prime_Util.Families with SPARK_Mode => On is
    --  XS.xs / PP.pm: is_gaussian_prime. Test A+B*i using absolute
    --  native coordinates. No errors; norms beyond U64 use exact trial
    --  division and can be slow when they have no small prime divisor.
-   function Is_Gaussian_Prime (A, B : Int.I128) return Boolean
-     with Pre => A in -Int.I128 (U64'Last) .. Int.I128 (U64'Last)
-       and B in -Int.I128 (U64'Last) .. Int.I128 (U64'Last),
+   function Is_Gaussian_Prime (A, B : Int.Native_I128) return Boolean
+     with Pre => True,
           Post => (if A = 0 and B = 0 then
                      not Is_Gaussian_Prime'Result);
 
    --  PP.pm: is_sum_of_squares. Represent abs N by K nonnegative squares
    --  (zero terms allowed). Native magnitudes only; no errors.
-   function Is_Sum_Of_Squares (N : Int.I128; K : U64 := 2) return Boolean
-     with Pre => N in -Int.I128 (U64'Last) .. Int.I128 (U64'Last),
+   function Is_Sum_Of_Squares (N : Int.Native_I128; K : U64 := 2) return Boolean
+     with Pre => True,
           Post => (if K >= 4 then Is_Sum_Of_Squares'Result);
 
    --  lucky_numbers.c: lucky_sieve_range. Inclusive; reversed is empty.

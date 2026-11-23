@@ -31,9 +31,6 @@ package body Math_Prime_Util.Families is
       Max_Chen : constant U64 := 18_446_744_073_709_551_437;
       P : Int.Optional_U64;
    begin
-      if N >= Max_Chen then
-         return (Defined => False);
-      end if;
       P := Prime_Sieve.Next_Prime (N);
       while P.Defined and then P.Value <= Max_Chen loop
          if Primality.Is_Chen_Prime (P.Value) then
@@ -44,7 +41,7 @@ package body Math_Prime_Util.Families is
       return (Defined => False);
    end Next_Chen_Prime;
 
-   function Is_Gaussian_Prime (A, B : Int.I128) return Boolean is
+   function Is_Gaussian_Prime (A, B : Int.Native_I128) return Boolean is
       X : constant U64 := U64 (abs A);
       Y : constant U64 := U64 (abs B);
       XX : constant U128 := U128 (X) ** 2;
@@ -79,7 +76,7 @@ package body Math_Prime_Util.Families is
       return True;
    end Is_Gaussian_Prime;
 
-   function Is_Sum_Of_Squares (N : Int.I128; K : U64 := 2)
+   function Is_Sum_Of_Squares (N : Int.Native_I128; K : U64 := 2)
       return Boolean
    is
       V : U64 := U64 (abs N);
@@ -106,14 +103,9 @@ package body Math_Prime_Util.Families is
          return False;
       end if;
       F := Factor.Factor (V);
-      for P of F.Value (1 .. F.Count) loop
-         if P mod 4 = 3 and then
-           Int.Valuation (Int.I128 (V), Int.I128 (P)).Value mod 2 = 1
-         then
-            return False;
-         end if;
-      end loop;
-      return True;
+      return (for all P of F.Value (1 .. F.Count) =>
+                P mod 4 /= 3 or else
+                  Int.Valuation (Int.I128 (V), Int.I128 (P)).Value mod 2 = 0);
    end Is_Sum_Of_Squares;
 
    function Trunc (X : F64) return U64 with SPARK_Mode => On;

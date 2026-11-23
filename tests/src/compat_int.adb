@@ -175,7 +175,6 @@ package body Compat_Int is
       end loop;
    end Replay_Removal;
 
-
    procedure Test_Valuation (T : in out Test_Case'Class) is
    begin
       Replay_Removal ("valuation");
