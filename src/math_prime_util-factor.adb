@@ -1114,157 +1114,17 @@ package body Math_Prime_Util.Factor is
    end Prime_Signature;
 
    function Is_Square_Free (N : U64) return Boolean is
-      --  util.c: _isf, square-free bits for integers 0 .. 255.
-      Table : constant array (0 .. 7) of U32 :=
-        [3_840_601_326, 1_856_556_782, 3_941_394_158, 2_362_371_810,
-         3_970_362_990, 3_471_729_898, 4_008_603_310, 3_938_642_668];
-      Pairs : Factor_Exp_Vectors.Vector;
-   begin
-      if N < 256 then
-         return (Table (Natural (N / 32))
-                 and 2 ** Natural (N mod 32)) /= 0;
-      end if;
-      for I in 1 .. 12 loop
-         declare
-            Square : constant U64 := Small (I) * Small (I);
-         begin
-            if I >= 7 and then Square > N then
-               return True;
-            end if;
-            if N mod Square = 0 then
-               return False;
-            end if;
-         end;
-      end loop;
-      Pairs := Factor_Exp (N);
-      for I in 1 .. Natural (Pairs.Length) loop
-         if Pairs.Element (I).Exponent /= 1 then
-            return False;
-         end if;
-      end loop;
-      return True;
-   end Is_Square_Free;
+     (N /= 0 and then
+        (for all Pair of Factor_Exp (N) => Pair.Exponent = 1));
 
    function Is_Semiprime (N : U64) return Boolean is
-      P : U64 := 7;
-      Cube_Root : U64;
-      Split : Factor_List;
-   begin
-      if N < 6 then
-         return N = 4;
-      end if;
-      for I in 1 .. 3 loop
-         if N mod Small (I) = 0 then
-            return Primality.Is_Prime (N / Small (I)) = 2;
-         end if;
-      end loop;
-      Cube_Root := Int.Rootint (N, 3);
-      for I in 4 .. 59 loop
-         P := Small (I);
-         exit when P > Cube_Root;
-         if N mod P = 0 then
-            return Primality.Is_Prime (N / P) = 2;
-         end if;
-      end loop;
-      if Primality.Is_Prime (N) = 2 then
-         return False;
-      elsif P > Cube_Root then
-         return True;
-      elsif Int.Is_Square (N) then
-         return Primality.Is_Prime (Int.Sqrtint (N)) = 2;
-      end if;
-      --  The existing full factor engine supplies factor_one's split.
-      Split := Factor (N);
-      return Split.Count = 2;
-   end Is_Semiprime;
-
-   --  Compare with p**k without overflowing (ipowsafe in util.c).
-   function Below_Power (N, P, K : U64) return Boolean;
-
-   function Below_Power (N, P, K : U64) return Boolean is
-      Power : U64 := 1;
-   begin
-      for I in 1 .. K loop
-         if Power > N / P then
-            return True;
-         end if;
-         Power := Power * P;
-      end loop;
-      return N < Power;
-   end Below_Power;
+     (Prime_Bigomega (N) = 2);
 
    function Is_Almost_Prime (K, N : U64) return Boolean is
-      Left : U64 := K;
-      Rest : U64 := N;
-      P : U64 := 11;
-      Sp : Positive := 5;
-   begin
-      if K = 0 then
-         return N = 1;
-      elsif K = 1 then
-         return Primality.Is_Prime (N) = 2;
-      elsif K = 2 then
-         return Is_Semiprime (N);
-      elsif K >= 64 or else N / 2 ** Natural (K) = 0 then
-         return False;
-      end if;
-      for I in 1 .. 4 loop
-         while Left > 0 and then Rest mod Small (I) = 0 loop
-            Left := Left - 1;
-            Rest := Rest / Small (I);
-         end loop;
-      end loop;
-      if Left >= 5 then
-         while Left > 1 and then Rest > 1 and then Sp < Prime_Count loop
-            P := Small (Sp);
-            if Below_Power (Rest, P, Left) then
-               return False;
-            end if;
-            while Left > 0 and then Rest mod P = 0 loop
-               Left := Left - 1;
-               Rest := Rest / P;
-            end loop;
-            Sp := Sp + 1;
-         end loop;
-         P := Small (Sp);
-      end if;
-      if Left = 0 then
-         return Rest = 1;
-      elsif Left = 1 then
-         return Primality.Is_Prime (Rest) = 2;
-      elsif Left = 2 then
-         return Is_Semiprime (Rest);
-      elsif Below_Power (Rest, P, Left) then
-         return False;
-      end if;
-      return U64 (Prime_Bigomega (Rest)) = Left;
-   end Is_Almost_Prime;
+     (N /= 0 and then K = U64 (Prime_Bigomega (N)));
 
    function Is_Omega_Prime (K, N : U64) return Boolean is
-      Left : U64 := K;
-      Rest : U64 := N;
-   begin
-      if N <= 1 then
-         return N = 1 and then K = 0;
-      end if;
-      for I in 1 .. 5 loop
-         if Left > 0 and then Rest mod Small (I) = 0 then
-            Left := Left - 1;
-            loop
-               Rest := Rest / Small (I);
-               exit when Rest mod Small (I) /= 0;
-            end loop;
-         end if;
-      end loop;
-      if Rest = 1 or else Left = 0 then
-         return Rest = 1 and then Left = 0;
-      elsif Left = 1 then
-         return Prime_Omega (Rest) = 1;
-      elsif Below_Power (Rest, 13, Left) then
-         return False;
-      end if;
-      return U64 (Prime_Omega (Rest)) = Left;
-   end Is_Omega_Prime;
+     (N /= 0 and then K = U64 (Prime_Omega (N)));
 
    function Cheb_Factor
      (N : U64; B : U64 := 0; Initx : U64 := 0) return Factor_List
