@@ -24,7 +24,6 @@ package body Math_Prime_Util.Count.Lmo with SPARK_Mode => On is
    Segment_Words : constant := 1155 * 13;
    Segment_Size : constant := Segment_Words * 128;
 
-   function Make_Phi return Naturals;
    function Make_Phi return Naturals is
       Result : Naturals (0 .. Wheel) := [others => 0];
    begin
@@ -44,7 +43,6 @@ package body Math_Prime_Util.Count.Lmo with SPARK_Mode => On is
      (X / Wheel * U64 (Phi_Table (Wheel)) +
       U64 (Phi_Table (Natural (X mod Wheel))));
 
-   function Bit_Count (Value : U64) return U64;
    function Bit_Count (Value : U64) return U64 is
       B : U64 := Value;
    begin
@@ -70,7 +68,7 @@ package body Math_Prime_Util.Count.Lmo with SPARK_Mode => On is
    procedure Compute
      (N, N2, Initial_M : U64; K2, Initial_K3 : Natural;
       Ft : in out Factors; Ps : in out Words; Result : out U64)
-     with Pre => N >= 66_000_000 and then N2 = Int.Sqrtint (N)
+     with Pre => N >= 300_000 and then N2 = Int.Sqrtint (N)
        and then Initial_M >= 1 and then K2 > 0
        and then Ft'First = 0 and then Ps'First = 0
        and then Ft'Last >= 1 and then Ps'Last > Ft'Last,
@@ -172,7 +170,6 @@ package body Math_Prime_Util.Count.Lmo with SPARK_Mode => On is
          Phi_Total : U64 := 0;
          Size : Natural;
 
-         procedure Clear (B : Natural);
          procedure Clear (B : Natural) is
             W : constant Natural := B / 64;
             Mask : constant U64 := Interfaces.Shift_Left (U64'(1), B mod 64);
@@ -183,7 +180,6 @@ package body Math_Prime_Util.Count.Lmo with SPARK_Mode => On is
             end if;
          end Clear;
 
-         procedure Remove (First, Last : Natural);
          procedure Remove (First, Last : Natural) is
             P, V : U64;
          begin
@@ -210,7 +206,6 @@ package body Math_Prime_Util.Count.Lmo with SPARK_Mode => On is
               U64 (Counts ((Size + 63) / 64));
          end Remove;
 
-         function Sieve_Phi (X : U64) return U64;
          function Sieve_Phi (X : U64) return U64 is
             B : constant Natural := Natural ((X - Start + 1) / 2);
             Mask : constant U64 :=
@@ -309,7 +304,7 @@ package body Math_Prime_Util.Count.Lmo with SPARK_Mode => On is
       M, Result : U64;
       use Storage;
    begin
-      if N < 66_000_000 then
+      if N < 300_000 then
          declare
             Anchor, Value : U64;
          begin
