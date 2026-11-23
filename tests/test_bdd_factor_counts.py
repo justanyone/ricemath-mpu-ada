@@ -1,7 +1,6 @@
 """Reuse the checked AUnit runner and acceptance checks for factor tests."""
 
 from pytest_bdd import given, parsers, scenarios, then, when
-
 from test_bdd_powers import powers_runner, run_selected, selected_test_passes
 
 scenarios("features/factor_counts.feature")
