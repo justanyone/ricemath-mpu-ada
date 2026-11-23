@@ -1,81 +1,36 @@
-"""BDD entry point; build tests/bin/iter_runner with the tests Alire project."""
-from pathlib import Path
-import subprocess
-import time
+"""BDD bridge reusing the bounded native runner from the ECM tests."""
 
-import pytest
-from pytest_bdd import given, scenarios, then, when
+from pathlib import Path
+
+from pytest_bdd import given, parsers, scenarios, then, when
+from test_bdd_ecm_factor import run_case
 
 scenarios("features/iter.feature")
 
 
-# A shared runner avoids rebuilding or rerunning the Ada suite per scenario.
-@pytest.fixture(scope="module")
-def iterator_result():
-    root = Path(__file__).resolve().parents[1]
-    started = time.monotonic()
-    result = subprocess.run(
-        ["nice", "-n", "10", str(root / "tests/bin/iter_runner")],
-        cwd=root, capture_output=True, text=True, timeout=55, check=True,
-    )
-    return result.stdout, time.monotonic() - started
-
-
-# No existing BDD steps exist; this step identifies the compiled Ada harness.
-@given("the checked Ada iterator runner is built")
-def checked_runner():
+def iterator_runner():
     runner = Path(__file__).resolve().parent / "bin/iter_runner"
-    assert runner.is_file(), "Build iter_runner.adb in the tests Alire project"
+    assert runner.is_file(), "Build iter_runner.adb with the tests Alire project"
+    return runner
 
 
-# This step shares the same checked Ada execution between both scenarios.
-@when("the iterator compatibility suite runs", target_fixture="iterator_run")
-def run_iterators(iterator_result):
-    return iterator_result
-
-
-# Fixture replay is the observable compatibility outcome of this scenario.
-@then("all native iterator fixture rows pass within one minute")
-def fixture_compatibility(iterator_run):
-    output, elapsed = iterator_run
-    assert "OK Compat_Iter : fixtures" in output, output
-    assert "Failed Assertions: 0" in output, output
-    assert "Unexpected Errors: 0" in output, output
+def iterator_passes(iterator_run, names):
+    result, elapsed = iterator_run
+    assert result.returncode == 0, result.stdout + result.stderr
+    for name in names.split(", "):
+        assert f"OK Compat_Iter : {name}" in result.stdout, result.stdout
+    for summary in ("Failed Assertions: 0", "Unexpected Errors: 0"):
+        assert summary in result.stdout, result.stdout
     assert elapsed < 60
 
 
-# The control test covers nested contexts, exceptions, and U64 exhaustion.
-@then("loop termination, callback exceptions, and native boundaries pass")
-def callback_control(iterator_run):
-    output, _ = iterator_run
-    assert "OK Compat_Iter : control" in output, output
-    assert "Failed Assertions: 0" in output, output
-    assert "Unexpected Errors: 0" in output, output
-
-
-# The existing runner step is reused; these assertions cover the new APIs.
-@then("compositions, derangements, multisets, and products match fixtures")
-def combinatorial_compatibility(iterator_run):
-    output, _ = iterator_run
-    for name in ("forcomp", "forderange", "formultiperm", "forsetproduct"):
-        assert f"OK Compat_Iter : {name}" in output, output
-    assert "Failed Assertions: 0" in output, output
-    assert "Unexpected Errors: 0" in output, output
-
-
-# Object navigation needs a distinct observable result from callback loops.
-@then("prime object iteration and navigation pass")
-def prime_object_compatibility(iterator_run):
-    output, _ = iterator_run
-    assert "OK Compat_Iter : object" in output, output
-    assert "Failed Assertions: 0" in output, output
-    assert "Unexpected Errors: 0" in output, output
-
-
-# File output is checked line by line inside the Ada harness.
-@then("printed prime lines match the sieve")
-def printed_primes(iterator_run):
-    output, _ = iterator_run
-    assert "OK Compat_Iter : print_primes" in output, output
-    assert "Failed Assertions: 0" in output, output
-    assert "Unexpected Errors: 0" in output, output
+# Justification: locate the iterator harness; execution reuses the ECM helper.
+given("the checked Ada iterator runner is built", target_fixture="runner")(
+    iterator_runner
+)
+# Justification: the existing bounded subprocess helper also runs this AUnit suite.
+when("the iterator compatibility suite runs", target_fixture="iterator_run")(run_case)
+# Justification: one parameterized assertion proves each iterator scenario's outcome.
+then(parsers.parse("the iterator checks {names} pass within one minute"))(
+    iterator_passes
+)

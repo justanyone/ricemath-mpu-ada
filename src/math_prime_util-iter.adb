@@ -343,8 +343,8 @@ package body Math_Prime_Util.Iter is
       end loop;
    end Forcomb;
 
-   procedure Forperm
-     (N : Natural;
+   procedure Permutations
+     (N : Natural; Derange : Boolean;
       Process : not null access procedure
         (Values : Value_Array; Context : in out Loop_Context))
    is
@@ -359,7 +359,9 @@ package body Math_Prime_Util.Iter is
             Process (Values, Context);
          else
             for V in 1 .. N loop
-               if not Used (V) then
+               if not Used (V) and then
+                 (not Derange or else V /= Length + 1)
+               then
                   Used (V) := True;
                   Values (Length + 1) := U64 (V - 1);
                   Visit (Length + 1);
@@ -371,7 +373,23 @@ package body Math_Prime_Util.Iter is
       end Visit;
    begin
       Visit (0);
+   end Permutations;
+   procedure Forperm
+     (N : Natural;
+      Process : not null access procedure
+        (Values : Value_Array; Context : in out Loop_Context)) is
+   begin
+      Permutations (N, False, Process);
    end Forperm;
+
+   procedure Forderange
+     (N : Natural;
+      Process : not null access procedure
+        (Values : Value_Array; Context : in out Loop_Context)) is
+   begin
+      Permutations (N, True, Process);
+   end Forderange;
+
    procedure Forcomp
      (N : Natural;
       Process : not null access procedure
@@ -431,36 +449,6 @@ package body Math_Prime_Util.Iter is
          exit when Context.Stop;
       end loop;
    end Forcomp;
-
-   procedure Forderange
-     (N : Natural;
-      Process : not null access procedure
-        (Values : Value_Array; Context : in out Loop_Context))
-   is
-      Context : Loop_Context := (Active => True, Stop => False);
-      Values : Value_Array (1 .. N);
-      Used : array (1 .. N) of Boolean := (others => False);
-      procedure Visit (Length : Natural);
-
-      procedure Visit (Length : Natural) is
-      begin
-         if Length = N then
-            Process (Values, Context);
-         else
-            for V in 1 .. N loop
-               if not Used (V) and then V /= Length + 1 then
-                  Used (V) := True;
-                  Values (Length + 1) := U64 (V - 1);
-                  Visit (Length + 1);
-                  Used (V) := False;
-                  exit when Context.Stop;
-               end if;
-            end loop;
-         end if;
-      end Visit;
-   begin
-      Visit (0);
-   end Forderange;
 
    procedure Formultiperm
      (Items : Value_Array;
