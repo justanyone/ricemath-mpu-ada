@@ -110,28 +110,6 @@ package body Math_Prime_Util.Count is
         (if Low < 2 then 0 else Prime_Count (Low - 1));
    end Prime_Count;
 
-   function Prime_Count (Low, High : U64) return U64 is
-      P : Int.Optional_U64;
-      Result : U64 := 0;
-   begin
-      if Low > High or High < 2 then
-         return 0;
-      elsif Low <= 2 and High <= Prime_Count_Limit then
-         return Prime_Count (High);
-      elsif High - Low > 100_000 then
-         return Prime_Count (High) - Prime_Count (Low - 1);
-      end if;
-      --  prime_counts.c: prime_count_range selects a direct prime walk
-      --  for narrow intervals, avoiding two expensive prefix counts.
-      --  Next_Prime reports native overflow without wrapping around.
-      P := Sieve.Next_Prime (U64'Max (Low, 2) - 1);
-      while P.Defined and then P.Value <= High loop
-         Result := Result + 1;
-         P := Sieve.Next_Prime (P.Value);
-      end loop;
-      return Result;
-   end Prime_Count;
-
    function Legendre_Phi (X : U64; A : Natural) return U64 is
       type Prime_List is array (Positive range <>) of U64;
 
