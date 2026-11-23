@@ -66,7 +66,7 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [x] `convergents` -> `Convergents`
 - [ ] `cornacchia` -> `Cornacchia`
 - [x] `crootint` -> `Crootint`
-- [x] `csrand` -> `Csrand`
+- [ ] `csrand` -> `Csrand`
 - [ ] `dedekind_psi` -> `Dedekind_Psi`
 - [x] `digital_root` -> `Digital_Root`
 - [x] `divint` -> `Divint`
@@ -128,7 +128,7 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `inverse_sigma0_count` -> `Inverse_Sigma0_Count`
 - [ ] `inverse_totient` -> `Inverse_Totient`
 - [x] `invmod` -> `Invmod`
-- [x] `irand` -> `Irand`
+- [ ] `irand` -> `Irand`
 - [ ] `irand32` -> `Irand32`
 - [ ] `irand64` -> `Irand64`
 - [ ] `is_aks_prime` -> `Is_Aks_Prime`
@@ -266,12 +266,12 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [x] `nth_ramanujan_prime_approx` -> `Nth_Ramanujan_Prime_Approx`
 - [x] `nth_ramanujan_prime_lower` -> `Nth_Ramanujan_Prime_Lower`
 - [x] `nth_ramanujan_prime_upper` -> `Nth_Ramanujan_Prime_Upper`
-- [x] `nth_semiprime` -> `Nth_Semiprime`
-- [x] `nth_semiprime_approx` -> `Nth_Semiprime_Approx`
+- [ ] `nth_semiprime` -> `Nth_Semiprime`
+- [ ] `nth_semiprime_approx` -> `Nth_Semiprime_Approx`
 - [x] `nth_stern_brocot` -> `Nth_Stern_Brocot`
 - [x] `nth_stern_diatomic` -> `Nth_Stern_Diatomic`
-- [x] `nth_twin_prime` -> `Nth_Twin_Prime`
-- [x] `nth_twin_prime_approx` -> `Nth_Twin_Prime_Approx`
+- [ ] `nth_twin_prime` -> `Nth_Twin_Prime`
+- [ ] `nth_twin_prime_approx` -> `Nth_Twin_Prime_Approx`
 - [x] `numtoperm` -> `Numtoperm`
 - [ ] `omega_prime_count` -> `Omega_Prime_Count`
 - [ ] `omega_primes` -> `Omega_Primes`
@@ -332,7 +332,7 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `ramanujan_sum` -> `Ramanujan_Sum`
 - [ ] `ramanujan_tau` -> `Ramanujan_Tau`
 - [ ] `rand` -> `Rand`
-- [x] `random_bytes` -> `Random_Bytes`
+- [ ] `random_bytes` -> `Random_Bytes`
 - [ ] `random_factored_integer` -> `Random_Factored_Integer`
 - [ ] `random_maurer_prime` -> `Random_Maurer_Prime`
 - [ ] `random_maurer_prime_with_cert` -> `Random_Maurer_Prime_With_Cert`
@@ -359,9 +359,9 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `rootmod` -> `Rootmod`
 - [ ] `rough_count` -> `Rough_Count`
 - [x] `rshiftint` -> `Rshiftint`
-- [x] `semiprime_count` -> `Semiprime_Count`
-- [x] `semiprime_count_approx` -> `Semiprime_Count_Approx`
-- [x] `semi_primes` -> `Semi_Primes`
+- [ ] `semiprime_count` -> `Semiprime_Count`
+- [ ] `semiprime_count_approx` -> `Semiprime_Count_Approx`
+- [ ] `semi_primes` -> `Semi_Primes`
 - [x] `setbinop` -> `Setbinop`
 - [x] `setcontains` -> `Setcontains`
 - [x] `setcontainsany` -> `Setcontainsany`
@@ -410,12 +410,12 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [x] `toset` -> `Toset`
 - [x] `tozeckendorf` -> `Tozeckendorf`
 - [ ] `trial_factor` -> `Trial_Factor`
-- [x] `twin_prime_count` -> `Twin_Prime_Count`
-- [x] `twin_prime_count_approx` -> `Twin_Prime_Count_Approx`
-- [x] `twin_primes` -> `Twin_Primes`
-- [x] `urandomb` -> `Urandomb`
-- [x] `urandomm` -> `Urandomm`
-- [x] `urandomr` -> `Urandomr`
+- [ ] `twin_prime_count` -> `Twin_Prime_Count`
+- [ ] `twin_prime_count_approx` -> `Twin_Prime_Count_Approx`
+- [ ] `twin_primes` -> `Twin_Primes`
+- [ ] `urandomb` -> `Urandomb`
+- [ ] `urandomm` -> `Urandomm`
+- [ ] `urandomr` -> `Urandomr`
 - [ ] `valuation` -> `Valuation`
 - [x] `vecall` -> `Vecall`
 - [x] `vecany` -> `Vecany`
