@@ -9,3 +9,4 @@ Added fixture replay for all 25 power-family names, signed perfect powers, nativ
 Development build passes after visibility fixes. Running the complete Families fixture replay next; native counts retain Count limits and overflow results are checked explicitly.
 Cached toolchain now compiles the implementation. Tests currently fail at the linker; inspecting the exact missing libraries before retrying focused replay.
 Resolved a GNAT vector iterator link failure by using the established indexed iteration style; focused Families replay is building and running.
+Added seeded membership/count/nth/neighbor laws and two pytest-bdd scenarios. pytest-bdd is absent on this offline worker; Ada assertions are run directly through the same runner.

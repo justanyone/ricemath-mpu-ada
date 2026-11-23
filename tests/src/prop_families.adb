@@ -1,6 +1,7 @@
 with AUnit.Assertions;
 with AUnit.Test_Cases;
 with Math_Prime_Util.Families;
+with Math_Prime_Util.Powers;
 
 package body Prop_Families is
    use AUnit.Test_Cases;
@@ -53,6 +54,56 @@ package body Prop_Families is
            18_446_744_073_709_551_517, "estimate saturation");
    end Laws;
 
+   procedure Power_Laws (T : in out Test_Case'Class) is
+      use Math_Prime_Util.Powers;
+      Seed : U64 := 20_261_123;
+      N, P, C : U64;
+      Count_Prime, Count_Perfect : U64 := 0;
+   begin
+      for X in U64 range 1 .. 1_000 loop
+         if Is_Prime_Power (X) > 0 then
+            Count_Prime := Count_Prime + 1;
+         end if;
+         if Is_Perfect_Power (X) then
+            Count_Perfect := Count_Perfect + 1;
+         end if;
+         AUnit.Assertions.Assert
+           (Prime_Power_Count (X) = Count_Prime and then
+            Perfect_Power_Count (X) = Count_Perfect,
+            "power membership/count seed 20261123" & X'Image);
+      end loop;
+      for I in 1 .. 64 loop
+         Seed := Seed * 6_364_136_223_846_793_005 + 1;
+         N := 1 + Seed mod 100_000;
+         P := Next_Perfect_Power (N).Value;
+         C := Perfect_Power_Count (N);
+         AUnit.Assertions.Assert
+           (P > N and then Is_Perfect_Power (P) and then
+            Perfect_Power_Count (P) = C + 1 and then
+            Nth_Perfect_Power (C + 1).Value = P,
+            "perfect neighbor/nth seed 20261123" & N'Image);
+         P := Next_Prime_Power (N).Value;
+         C := Prime_Power_Count (N);
+         AUnit.Assertions.Assert
+           (P > N and then Is_Prime_Power (P) > 0 and then
+            Prime_Power_Count (P) = C + 1 and then
+            Nth_Prime_Power (C + 1).Value = P,
+            "prime neighbor/nth seed 20261123" & N'Image);
+      end loop;
+      AUnit.Assertions.Assert
+        (not Next_Perfect_Power (U64'Last).Defined and then
+         not Next_Prime_Power (U64'Last).Defined and then
+         not Prev_Prime_Power (U64 (2)).Defined and then
+         not Prev_Perfect_Power (U64 (0)).Defined,
+         "power native boundaries");
+      AUnit.Assertions.Assert
+        (Is_Perfect_Power (U64 (0)) and then
+         Is_Perfect_Power (U64 (1)) and then
+         Perfect_Power_Count (2 ** 32) = 67_227 and then
+         Perfect_Power_Count (U64'Last) = 4_297_615_581,
+         "power zero and word boundaries");
+   end Power_Laws;
+
    procedure Concurrent_Calls (T : in out Test_Case'Class) is
       task type Worker is
          entry Check (Success : out Boolean);
@@ -80,6 +131,7 @@ package body Prop_Families is
 
    overriding procedure Register_Tests (T : in out Families_Case) is
    begin
+      Registration.Register_Routine (T, Power_Laws'Access, "power laws");
       Registration.Register_Routine (T, Laws'Access, "lucky laws");
       Registration.Register_Routine
         (T, Concurrent_Calls'Access, "concurrent repeated sieves");
