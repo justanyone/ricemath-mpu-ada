@@ -32,7 +32,8 @@ package body Compat_Factor is
          end if;
          Append
            (Text,
-            Ada.Strings.Fixed.Trim (Values (Index)'Image, Ada.Strings.Left));
+            Ada.Strings.Fixed.Trim
+              (U64'Image (Values.Element (Index)), Ada.Strings.Left));
       end loop;
       return To_String (Text);
    end Show;
@@ -65,7 +66,7 @@ package body Compat_Factor is
       N : constant U64 := Arg (C, 1);
    begin
       if F = "factor" then
-         return Factor (N);
+         return Math_Prime_Util.Factor.Factor (N);
       elsif F = "divisors" then
          if Natural (C.Args.Length) = 1 then
             return Divisors (N);
