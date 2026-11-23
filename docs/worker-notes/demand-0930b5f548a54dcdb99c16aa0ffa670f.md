@@ -13,3 +13,4 @@ Next: locate vec/set sources, the fixture, compat_vec.adb, and the gate command.
 - 2026-11-23T17:09:21Z launcher: no commit for 60 s; 392 s elapsed. Files changed so far: docs/worker-notes/demand-0930b5f548a54dcdb99c16aa0ffa670f.md.
 - 2026-11-23T17:10:22Z launcher: no commit for 60 s; 452 s elapsed. Files changed so far: docs/worker-notes/demand-0930b5f548a54dcdb99c16aa0ffa670f.md.
 - 2026-11-23T17:11:22Z launcher: no commit for 60 s; 512 s elapsed. Files changed so far: docs/worker-notes/demand-0930b5f548a54dcdb99c16aa0ffa670f.md.
+- 2026-11-23T17:12:22Z launcher: no commit for 60 s; 572 s elapsed. Files changed so far: docs/worker-notes/demand-0930b5f548a54dcdb99c16aa0ffa670f.md.
