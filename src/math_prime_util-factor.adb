@@ -8,7 +8,6 @@ package body Math_Prime_Util.Factor is
    use type Interfaces.C.double;
    use type Int.I128;
    use type Primality.Prime_Result;
-   use type Ada.Containers.Count_Type;
    subtype C_Double is Interfaces.C.double;
    subtype U32 is Interfaces.Unsigned_32;
    use type U32;
@@ -186,8 +185,10 @@ package body Math_Prime_Util.Factor is
             F := 2_017;
          end if;
       end if;
-      if F > 2_011 and then Distance (F mod 30) <= U64'Last - F then
-         F := F + Distance (F mod 30);
+      if F > 2_011
+        and then Distance (Natural (F mod 30)) <= U64'Last - F
+      then
+         F := F + Distance (Natural (F mod 30));
       end if;
       if M > 1 and then F /= 0 and then F <= M / F and then F <= Lim then
          Limit := Int.Sqrtint (M);
@@ -208,11 +209,11 @@ package body Math_Prime_Util.Factor is
                   Limit := Int.Sqrtint (M);
                end if;
             end if;
-            if F > U64'Last - Advance (W) then
+            if F > U64'Last - Advance (Natural (W)) then
                exit;
             end if;
-            F := F + Advance (W);
-            W := Next_W (W);
+            F := F + Advance (Natural (W));
+            W := Next_W (Natural (W));
          end loop;
       end if;
       if M /= 1 then
@@ -953,7 +954,6 @@ package body Math_Prime_Util.Factor is
    is
       V : Factor_Vectors.Vector;
       Rest : U64;
-      P : Pair;
    begin
       V := Prepare (N, Rest);
       if Rest <= 1 then
@@ -1093,7 +1093,7 @@ package body Math_Prime_Util.Factor is
       return Result;
    end Factor;
 
-   function Trial_Factor (N : U64; Last : U64)
+   function Trial_Factor (N : U64; Last : U64 := 0)
       return Factor_Vectors.Vector
    is
       V : Factor_Vectors.Vector;
@@ -1112,39 +1112,41 @@ package body Math_Prime_Util.Factor is
       return V;
    end Trial_Factor;
 
-   function Fermat_Factor (N : U64; Rounds : U64)
+   function Fermat_Factor (N : U64; Rounds : U64 := 64_000_000)
       return Factor_Vectors.Vector
    is (Apply (N, Do_Fermat, Rounds, 0));
 
-   function Holf_Factor (N : U64; Rounds : U64)
+   function Holf_Factor (N : U64; Rounds : U64 := 8_000_000)
       return Factor_Vectors.Vector
    is (Apply (N, Do_Holf, Rounds, 0));
 
-   function Squfof_Factor (N : U64; Rounds : U64)
+   function Squfof_Factor (N : U64; Rounds : U64 := 4_000_000)
       return Factor_Vectors.Vector
    is (Apply (N, Do_Squfof, Rounds, 0));
 
-   function Lehman_Factor (N : U64; Trial : U64)
+   function Lehman_Factor (N : U64; Trial : U64 := 1)
       return Factor_Vectors.Vector
    is (Apply (N, Do_Lehman, Trial, 0));
 
-   function Prho_Factor (N : U64; Rounds : U64)
+   function Prho_Factor (N : U64; Rounds : U64 := 4_000_000)
       return Factor_Vectors.Vector
    is (Apply (N, Do_Prho, Rounds, 0));
 
-   function Pbrent_Factor (N : U64; Rounds : U64; A : U64)
+   function Pbrent_Factor
+     (N : U64; Rounds : U64 := 4_000_000; A : U64 := 1)
       return Factor_Vectors.Vector
    is (Apply (N, Do_Pbrent, Rounds, A));
 
-   function Pminus1_Factor (N : U64; B1 : U64; B2 : U64)
+   function Pminus1_Factor
+     (N : U64; B1 : U64 := 1_000_000; B2 : U64 := 0)
       return Factor_Vectors.Vector
    is (Apply (N, Do_Pminus1, B1, B2));
 
-   function Pplus1_Factor (N : U64; B1 : U64)
+   function Pplus1_Factor (N : U64; B1 : U64 := 200)
       return Factor_Vectors.Vector
    is (Apply (N, Do_Pplus1, B1, 0));
 
-   function Divisors (N : U64; Max_D : U64)
+   function Divisors (N : U64; Max_D : U64 := U64'Last)
       return Factor_Vectors.Vector
    is
       Fac, Res : Factor_Vectors.Vector;
