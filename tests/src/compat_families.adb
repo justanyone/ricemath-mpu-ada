@@ -254,7 +254,8 @@ package body Compat_Families is
                   if not Parse_U64 (To_String (C.Args (3)), K) then
                      --  Negative_List_Exponent: Ada rejects this at the
                      --  unsigned argument boundary, like the XS wrapper.
-                     AUnit.Assertions.Assert (C.Error, "negative list exponent");
+                     AUnit.Assertions.Assert
+                       (C.Error, "negative list exponent");
                      Skip := True;
                   end if;
                end if;

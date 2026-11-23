@@ -189,7 +189,7 @@ package Math_Prime_Util.Families with SPARK_Mode => On is
    function Powerful_Count (N : U64; K : U64 := 2) return U64
      with Pre => True, Post => Powerful_Count'Result <= N;
    --  powerful.c: nth_powerful. One-based; zero or native overflow undefined.
-   --  K = 0 follows the MPU Perl fallback and means K = 2.
+   --  K <= 1 returns N, following the MPU Perl fallback.
    function Nth_Powerful (N : U64; K : U64 := 2) return Int.Optional_U64
      with Pre => True,
           Post => (if N = 0 then not Nth_Powerful'Result.Defined);
