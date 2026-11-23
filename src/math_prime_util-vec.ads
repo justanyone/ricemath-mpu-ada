@@ -116,4 +116,71 @@ package Math_Prime_Util.Vec with SPARK_Mode => On is
    function Is_Sidon_Set (A : Integer_Array) return Boolean;
    --  Whether no pair sum belongs to A; signed inputs are permitted.
    function Is_Sumfree_Set (A : Integer_Array) return Boolean;
+
+   --  Whether the predicate holds for every value; empty input is true.
+   generic
+      with function Predicate (V : I128) return Boolean;
+   function Vecall (A : Integer_Array) return Boolean;
+
+   --  Whether the predicate holds for some value; empty input is false.
+   generic
+      with function Predicate (V : I128) return Boolean;
+   function Vecany (A : Integer_Array) return Boolean;
+
+   --  Whether the predicate holds for no value; empty input is true.
+   generic
+      with function Predicate (V : I128) return Boolean;
+   function Vecnone (A : Integer_Array) return Boolean;
+
+   --  Whether the predicate fails for some value; empty input is false.
+   generic
+      with function Predicate (V : I128) return Boolean;
+   function Vecnotall (A : Integer_Array) return Boolean;
+
+   --  First matching value, undefined if no value matches.
+   generic
+      with function Predicate (V : I128) return Boolean;
+   function Vecfirst (A : Integer_Array) return Optional_Value;
+
+   --  Zero-based index of the first match, or minus one.
+   generic
+      with function Predicate (V : I128) return Boolean;
+   function Vecfirstidx (A : Integer_Array) return I128;
+
+   --  Left fold; empty input is undefined; callback exceptions propagate.
+   generic
+      with function Operation (A, B : I128) return I128;
+   function Vecreduce (A : Integer_Array) return Optional_Value;
+
+   --  Scalar callback for consecutive overlapping pairs; empty for <2 items.
+   generic
+      with function Operation (A, B : I128) return I128;
+   function Vecslide (A : Integer_Array) return Integer_Array;
+
+   --  Flatten callback results for corresponding pairs; ignore unmatched tails.
+   generic
+      with function Operation (A, B : I128) return Integer_Array;
+   function Vecpairwise (A, B : Integer_Array) return Integer_Array;
+
+   --  Flatten complete windows; step and size are positive element counts.
+   generic
+      with function Operation (A : Integer_Array) return Integer_Array;
+   function Vecwindow (A : Integer_Array; Step, Size : Positive)
+      return Integer_Array;
+
+   --  Sorted distinct callback results over the Cartesian product.
+   --  One-list form uses only pairs i<=j, as in XS.xs: setbinop.
+   generic
+      with function Operation (A, B : I128) return I128;
+   function Setbinop (A, B : Integer_Array) return Integer_Array
+     with Pre => B'Length = 0 or else
+       A'Length <= Natural'Last / B'Length;
+
+   --  Sample without replacement, preserving input order, in element units.
+   --  Draw must return a uniform integer in 1..Upper; bad draws raise.
+   --  K>=length returns the entire list. RNG state belongs to the caller.
+   generic
+      with function Draw (Upper : Positive) return Positive;
+   function Vecsample (A : Integer_Array; K : Natural) return Integer_Array
+     with Post => Vecsample'Result'Length = Natural'Min (A'Length, K);
 end Math_Prime_Util.Vec;

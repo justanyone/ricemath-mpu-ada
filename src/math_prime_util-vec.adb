@@ -235,8 +235,8 @@ package body Math_Prime_Util.Vec with SPARK_Mode => On is
       --  xs_set.c: xs_set_op. Select union/intersection/difference members,
       --  then use sort.c's sort-and-deduplicate invariant for the result.
       for V of X loop
-         if (Has (Y, V) and Op in Union_Op | Intersect_Op)
-           or (not Has (Y, V) and Op /= Intersect_Op)
+         if (Has (Y, V) and then Op in Union_Op | Intersect_Op)
+           or else (not Has (Y, V) and then Op /= Intersect_Op)
          then
             N := N + 1;
             R (N) := V;
@@ -268,18 +268,18 @@ package body Math_Prime_Util.Vec with SPARK_Mode => On is
    function Set_Is_Disjoint (A, B : Integer_Array) return Boolean is
      (not Setcontainsany (A, B));
    function Set_Is_Equal (A, B : Integer_Array) return Boolean is
-     (Setcontains (A, B) and Setcontains (B, A));
+     (Setcontains (A, B) and then Setcontains (B, A));
    function Set_Is_Subset (A, B : Integer_Array) return Boolean is
      (Setcontains (A, B));
    function Set_Is_Proper_Subset (A, B : Integer_Array) return Boolean is
-     (Setcontains (A, B) and not Setcontains (B, A));
+     (Setcontains (A, B) and then not Setcontains (B, A));
    function Set_Is_Superset (A, B : Integer_Array) return Boolean is
      (Setcontains (B, A));
    function Set_Is_Proper_Superset (A, B : Integer_Array) return Boolean is
-     (Setcontains (B, A) and not Setcontains (A, B));
+     (Setcontains (B, A) and then not Setcontains (A, B));
    function Set_Is_Proper_Intersection (A, B : Integer_Array) return Boolean is
-     (Setcontainsany (A, B) and not Setcontains (A, B)
-      and not Setcontains (B, A));
+     (Setcontainsany (A, B) and then not Setcontains (A, B)
+      and then not Setcontains (B, A));
    function Setinsert (A, B : Integer_Array) return Natural is
      (Setminus (B, A)'Length);
    function Setremove (A, B : Integer_Array) return Natural is
@@ -337,4 +337,137 @@ package body Math_Prime_Util.Vec with SPARK_Mode => On is
       end loop;
       return True;
    end Is_Sumfree_Set;
+
+   function Vecall (A : Integer_Array) return Boolean is
+     (for all V of A => Predicate (V));
+
+   function Vecany (A : Integer_Array) return Boolean is
+     (for some V of A => Predicate (V));
+
+   function Vecnone (A : Integer_Array) return Boolean is
+     (for all V of A => not Predicate (V));
+
+   function Vecnotall (A : Integer_Array) return Boolean is
+     (for some V of A => not Predicate (V));
+
+   function Vecfirst (A : Integer_Array) return Optional_Value is
+   begin
+      for V of A loop
+         if Predicate (V) then
+            return (True, V);
+         end if;
+      end loop;
+      return (Defined => False);
+   end Vecfirst;
+
+   function Vecfirstidx (A : Integer_Array) return I128 is
+   begin
+      for I in A'Range loop
+         if Predicate (A (I)) then
+            return I128 (I - A'First);
+         end if;
+      end loop;
+      return -1;
+   end Vecfirstidx;
+
+   function Vecreduce (A : Integer_Array) return Optional_Value is
+      R : I128;
+   begin
+      if A'Length = 0 then
+         return (Defined => False);
+      end if;
+      R := A (A'First);
+      for I in A'Range loop
+         if I > A'First then
+            R := Operation (R, A (I));
+         end if;
+      end loop;
+      return (True, R);
+   end Vecreduce;
+
+   function Vecslide (A : Integer_Array) return Integer_Array is
+      R : Integer_Array (1 .. Natural'Max (1, A'Length) - 1);
+   begin
+      for I in R'Range loop
+         R (I) := Operation (A (A'First + I - 1), A (A'First + I));
+      end loop;
+      return R;
+   end Vecslide;
+
+   function Vecpairwise (A, B : Integer_Array) return Integer_Array is
+      N : constant Natural := Natural'Min (A'Length, B'Length);
+      function Tail (Offset : Natural) return Integer_Array is
+      begin
+         if Offset = N then
+            return [];
+         end if;
+         declare
+            Part : constant Integer_Array :=
+              Operation (A (A'First + Offset), B (B'First + Offset));
+         begin
+            return Part & Tail (Offset + 1);
+         end;
+      end Tail;
+   begin
+      return Tail (0);
+   end Vecpairwise;
+
+   function Vecwindow (A : Integer_Array; Step, Size : Positive)
+      return Integer_Array
+   is
+      function Tail (Offset : Natural) return Integer_Array is
+      begin
+         if Size > A'Length - Offset then
+            return [];
+         end if;
+         declare
+            Part : constant Integer_Array := Operation
+              (A (A'First + Offset .. A'First + Offset + Size - 1));
+         begin
+            if Step > A'Length - Offset then
+               return Part;
+            end if;
+            return Part & Tail (Offset + Step);
+         end;
+      end Tail;
+   begin
+      return Tail (0);
+   end Vecwindow;
+
+   function Setbinop (A, B : Integer_Array) return Integer_Array is
+      X : constant Integer_Array := Toset (A);
+      Y : constant Integer_Array := Toset (B);
+      R : Integer_Array (1 .. X'Length * Y'Length);
+      N : Natural := 0;
+   begin
+      for V of X loop
+         for W of Y loop
+            N := N + 1;
+            R (N) := Operation (V, W);
+         end loop;
+      end loop;
+      return Toset (R);
+   end Setbinop;
+
+   function Vecsample (A : Integer_Array; K : Natural) return Integer_Array is
+      R : Integer_Array (1 .. Natural'Min (K, A'Length));
+      N : Natural := 0;
+      Remaining : Natural := A'Length;
+      Pick : Positive;
+   begin
+      --  XS.xs: vecsample, ordered selection without replacement.
+      for V of A loop
+         exit when N = R'Length;
+         Pick := Draw (Remaining);
+         if Pick > Remaining then
+            raise Constraint_Error with "sample draw outside range";
+         end if;
+         if Pick <= R'Length - N then
+            N := N + 1;
+            R (N) := V;
+         end if;
+         Remaining := Remaining - 1;
+      end loop;
+      return R;
+   end Vecsample;
 end Math_Prime_Util.Vec;
