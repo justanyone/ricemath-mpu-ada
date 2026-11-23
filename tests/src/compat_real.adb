@@ -74,10 +74,13 @@ package body Compat_Real is
                   end if;
                   Actual := Number (S);
                end;
-            elsif Func = "bernreal" then
-               Actual := Bernreal (Natural (X));
-            elsif Func = "harmreal" then
-               Actual := Harmreal (Natural (X));
+            elsif Func = "bernreal" or else Func = "harmreal" then
+               --  Natural conversion does not raise when checks are suppressed.
+               if X < 0.0 then
+                  raise Constraint_Error;
+               end if;
+               Actual := (if Func = "bernreal" then Bernreal (Natural (X))
+                          else Harmreal (Natural (X)));
             else
                raise Program_Error;
             end if;
