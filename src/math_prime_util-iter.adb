@@ -69,7 +69,8 @@ package body Math_Prime_Util.Iter is
    end Iterate;
 
    procedure Print_Primes
-     (Low, High : U64; File : Ada.Text_IO.File_Type)
+     (Low, High : U64;
+      File : Ada.Text_IO.File_Type := Ada.Text_IO.Standard_Output)
    is
       pragma SPARK_Mode (Off);
       package Number_IO is new Ada.Text_IO.Modular_IO (U64);
@@ -434,7 +435,7 @@ package body Math_Prime_Util.Iter is
         (Values : Value_Array; Context : in out Loop_Context))
    is
       Keys : Value_Array (1 .. Items'Length) := Items;
-      Counts : Multiplicities (Keys'Range) := (others => 0);
+      Counts : Multiplicities (Keys'Range) := [others => 0];
       Distinct : Natural := 0;
       --  Perl sorts hash keys as strings, including numeric values.
       function Less (Left, Right : U64) return Boolean is
