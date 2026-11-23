@@ -72,17 +72,15 @@ package body Compat_Count is
             AUnit.Assertions.Assert
               (Parse_U64 (To_String (C.Args (2)), High), "prime_count high");
          end if;
-         if not C.Undef and then High <= Pc.Prime_Count_Limit then
+         if not C.Undef then
             AUnit.Assertions.Assert
               (Parse_U64 (To_String (C.Result), Expected),
                "prime_count result");
             --  A range row counts primes in Low .. High; an empty range
             --  (Low > High) has no primes.
             AUnit.Assertions.Assert
-              ((if Low > High then 0 else
-                  Pc.Prime_Count (High) -
-                  (if Low <= 1 then 0 else Pc.Prime_Count (Low - 1))) =
-                Expected,
+              ((if C.Args.Last_Index = 1 then Pc.Prime_Count (High)
+                 else Pc.Prime_Count (Low, High)) = Expected,
                "prime_count row" & Positive'Image (C.Line_Number));
          end if;
       end loop;
