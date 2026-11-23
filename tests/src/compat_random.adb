@@ -133,7 +133,6 @@ procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
       Raised : Boolean;
       Empty : Byte_Array (1 .. 0);
    begin
-      --  Unseeded and oversized draws must fail before consuming bytes.
       for Bits of Natural_Array'[32, 65] loop
          Raised := False;
          begin
@@ -144,7 +143,6 @@ procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
          AUnit.Assertions.Assert (Raised, "invalid draw accepted");
          Csrand (G);
       end loop;
-      --  Partial seeds and nonzero bounds; no-op draws preserve the stream.
       for Size in 0 .. 41 loop
          declare
             Seed : constant Byte_Array (1 .. Size) := [others => 0];
@@ -159,7 +157,6 @@ procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
             Random_Bytes (H, B);
             AUnit.Assertions.Assert (A = B, "seed replay mismatch");
             if Size = 40 then
-               --  chacha.c: _test_core, published ChaCha20 zero-key vector.
                AUnit.Assertions.Assert (Hex (A) =
                  "76b8e0ada0f13d90405d6ae55386bd28b" &
                  "dd219b8a08ded1aa836efcc8b770dc7da" &
