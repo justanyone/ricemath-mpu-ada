@@ -1,7 +1,7 @@
 with Math_Prime_Util.Factor;
 with Math_Prime_Util.Primality;
 
-package body Math_Prime_Util.Arith with SPARK_Mode => On is
+package body Math_Prime_Util.Arith is
    use type U128;
 
    --  Sigma_1 (N) / N <= H_N < 65 for native N (dyadic groups).
