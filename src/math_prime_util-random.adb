@@ -42,8 +42,9 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
       end Next;
       Ignored : Word;
    begin
-      for I in 0 .. Natural'Min (Seed'Length, 40) - 1 loop
-         Key (I) := Seed (Seed'First + I);
+      for I in Seed'Range loop
+         exit when I - Seed'First >= 40;
+         Key (I - Seed'First) := Seed (I);
       end loop;
       if Seed'Length < 40 then
          State := 0;
