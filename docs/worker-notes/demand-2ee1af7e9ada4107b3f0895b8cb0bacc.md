@@ -24,3 +24,4 @@ Rebuilding optimized square-free sieve and running the selected edge test. Stopp
 Selected edge test passed in 0.42 seconds, including chunk crossing and K=63. Correcting one U64 conversion in the optimized prime-segment bound.
 Added Lastfor checks for short and segmented square-free factor paths and for the integer sieve after two; optimized focused run is in progress.
 Restored the XS native semiprime narrow-range threshold ladder, preventing huge sieving-prime allocation for short high ranges; preparing the final gate run.
+Square-free integer fixture replay passed in 39.54 seconds, including U64 maximum. The optimized segment buffer satisfies the one-minute guardrail without skipping native rows.
