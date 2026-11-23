@@ -6,3 +6,4 @@ Ruff and Vulture pass for the rewritten bridge. Offline pytest-bdd installation 
 Shared partition/composition traversal follows PP.pm _forcompositions; permutations now share fixed-point filtering. Reused existing AUnit control callbacks and stream assembly.
 Found iterator tests absent from the normal suite/build list; adding the existing suite and focused main so the gate exercises the requested APIs.
 Correction: All_Suites already registers Compat_Iter. Reusing powers_runner with its existing name filter avoids adding another build target; direct iterator compilation succeeded.
+All nine focused iterator tests passed. Sharing multiset multiplicity traversal with ordinary/derangement permutations to reduce the remaining budget excess.

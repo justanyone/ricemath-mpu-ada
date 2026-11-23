@@ -379,29 +379,29 @@ package body Math_Prime_Util.Iter is
       end loop;
    end Forcomb;
 
+   type Multiplicities is array (Positive range <>) of Natural;
    procedure Permutations
-     (N : Natural; Derange : Boolean;
+     (Keys : Value_Array; Counts : in out Multiplicities;
+      N : Natural; Derange : Boolean;
       Process : not null access procedure
         (Values : Value_Array; Context : in out Loop_Context))
    is
       Context : Loop_Context := (Active => True, Stop => False);
       Values : Value_Array (1 .. N);
-      Used : array (1 .. N) of Boolean := (others => False);
       procedure Visit (Length : Natural);
-
       procedure Visit (Length : Natural) is
       begin
          if Length = N then
             Process (Values, Context);
          else
-            for V in 1 .. N loop
-               if not Used (V) and then
-                 (not Derange or else V /= Length + 1)
+            for I in Keys'Range loop
+               if Counts (I) > 0 and then
+                 (not Derange or else Keys (I) /= U64 (Length))
                then
-                  Used (V) := True;
-                  Values (Length + 1) := U64 (V - 1);
+                  Counts (I) := Counts (I) - 1;
+                  Values (Length + 1) := Keys (I);
                   Visit (Length + 1);
-                  Used (V) := False;
+                  Counts (I) := Counts (I) + 1;
                   exit when Context.Stop;
                end if;
             end loop;
@@ -413,17 +413,23 @@ package body Math_Prime_Util.Iter is
    procedure Forperm
      (N : Natural;
       Process : not null access procedure
-        (Values : Value_Array; Context : in out Loop_Context)) is
+        (Values : Value_Array; Context : in out Loop_Context))
+   is
+      Keys : constant Value_Array := [for I in 1 .. N => U64 (I - 1)];
+      Counts : Multiplicities (1 .. N) := [others => 1];
    begin
-      Permutations (N, False, Process);
+      Permutations (Keys, Counts, N, False, Process);
    end Forperm;
 
    procedure Forderange
      (N : Natural;
       Process : not null access procedure
-        (Values : Value_Array; Context : in out Loop_Context)) is
+        (Values : Value_Array; Context : in out Loop_Context))
+   is
+      Keys : constant Value_Array := [for I in 1 .. N => U64 (I - 1)];
+      Counts : Multiplicities (1 .. N) := [others => 1];
    begin
-      Permutations (N, True, Process);
+      Permutations (Keys, Counts, N, True, Process);
    end Forderange;
 
    procedure Formultiperm
@@ -431,31 +437,11 @@ package body Math_Prime_Util.Iter is
       Process : not null access procedure
         (Values : Value_Array; Context : in out Loop_Context))
    is
-      Context : Loop_Context := (Active => True, Stop => False);
       Keys : Value_Array (1 .. Items'Length) := Items;
-      Counts : array (Keys'Range) of Natural := (others => 0);
-      Values : Value_Array (Keys'Range);
+      Counts : Multiplicities (Keys'Range) := (others => 0);
       Distinct : Natural := 0;
       Temp : U64;
       J : Positive;
-      procedure Visit (Length : Natural);
-
-      procedure Visit (Length : Natural) is
-      begin
-         if Length = Values'Length then
-            Process (Values, Context);
-         else
-            for I in 1 .. Distinct loop
-               if Counts (I) > 0 then
-                  Counts (I) := Counts (I) - 1;
-                  Values (Length + 1) := Keys (I);
-                  Visit (Length + 1);
-                  Counts (I) := Counts (I) + 1;
-                  exit when Context.Stop;
-               end if;
-            end loop;
-         end if;
-      end Visit;
    begin
       --  Perl sorts hash keys as strings, including numeric values.
       for I in 2 .. Keys'Last loop
@@ -475,7 +461,8 @@ package body Math_Prime_Util.Iter is
          end if;
          Counts (Distinct) := Counts (Distinct) + 1;
       end loop;
-      Visit (0);
+      Permutations
+        (Keys (1 .. Distinct), Counts, Items'Length, False, Process);
    end Formultiperm;
 
    procedure Forsetproduct

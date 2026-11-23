@@ -117,22 +117,19 @@ package Math_Prime_Util.Iter with SPARK_Mode => On is
      (N : Natural;
       Process : not null access procedure
         (Parts : Value_Array; Context : in out Loop_Context);
-      Options : Partition_Options := (others => <>))
-     with Pre => True, Post => True;
+      Options : Partition_Options := (others => <>));
    --  XS.xs: forderange. Lexical permutations without fixed points.
    --  Zero visits the empty tuple; one visits none. Workspace may fail.
    procedure Forderange
      (N : Natural;
       Process : not null access procedure
-        (Values : Value_Array; Context : in out Loop_Context))
-     with Pre => True, Post => True;
+        (Values : Value_Array; Context : in out Loop_Context));
    --  PP.pm: formultiperm, _multiset_permutations. Distinct permutations
    --  in decimal-string order; empty visits once. Storage_Error may occur.
    procedure Formultiperm
      (Items : Value_Array;
       Process : not null access procedure
-        (Values : Value_Array; Context : in out Loop_Context))
-     with Pre => True, Post => True;
+        (Values : Value_Array; Context : in out Loop_Context));
    package Value_List_Vectors is new Ada.Containers.Indefinite_Vectors
      (Index_Type => Positive, Element_Type => Value_Array);
    --  XS.xs: forsetproduct. Cartesian product, last list changing fastest.
@@ -140,29 +137,22 @@ package Math_Prime_Util.Iter with SPARK_Mode => On is
    procedure Forsetproduct
      (Lists : Value_List_Vectors.Vector;
       Process : not null access procedure
-        (Values : Value_Array; Context : in out Loop_Context))
-     with Pre => True, Post => True;
+        (Values : Value_Array; Context : in out Loop_Context));
    type Prime_Object is tagged private;
    --  Util.pm: prime_iterator_object; PrimeIterator.pm: new, rewind.
    --  Start at the first prime >= Start; undefined beyond native primes.
-   function Prime_Iterator_Object (Start : U64 := 2) return Prime_Object
-     with Pre => True, Post => True;
+   function Prime_Iterator_Object (Start : U64 := 2) return Prime_Object;
    --  PrimeIterator.pm: value. Current prime, undefined at native overflow.
-   function Value (Cursor : Prime_Object) return Int.Optional_U64
-     with Pre => True, Post => True;
+   function Value (Cursor : Prime_Object) return Int.Optional_U64;
    --  PrimeIterator.pm: next. Advance, remaining undefined at overflow.
-   procedure Next (Cursor : in out Prime_Object)
-     with Pre => True, Post => True;
+   procedure Next (Cursor : in out Prime_Object);
    --  PrimeIterator.pm: prev. Move back, clamped at two. From native
    --  overflow return to the largest native prime. No errors.
-   procedure Prev (Cursor : in out Prime_Object)
-     with Pre => True, Post => True;
+   procedure Prev (Cursor : in out Prime_Object);
    --  PrimeIterator.pm: peek. Successor without changing the position.
-   function Peek (Cursor : Prime_Object) return Int.Optional_U64
-     with Pre => True, Post => True;
+   function Peek (Cursor : Prime_Object) return Int.Optional_U64;
    --  PrimeIterator.pm: rewind. Reset to the first prime >= Start.
-   procedure Rewind (Cursor : in out Prime_Object; Start : U64 := 2)
-     with Pre => True, Post => True;
+   procedure Rewind (Cursor : in out Prime_Object; Start : U64 := 2);
    --  PrimeIterator.pm: iterate. Return current prime, then advance.
    procedure Iterate
      (Cursor : in out Prime_Object; Result : out Int.Optional_U64)
