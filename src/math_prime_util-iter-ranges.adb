@@ -130,6 +130,24 @@ package body Math_Prime_Util.Iter.Ranges is
       Context : Loop_Context := (Active => True, Stop => False);
       First : U64 := U64'Max (4, Low);
       Bound : constant U64 := U64'Min (High, 18_446_744_073_709_551_601);
+      --  semi_primes.c: _semiprimelist (native 64-bit table).
+      Small : constant Value_Array :=
+        [0, 4, 6, 9, 10, 14, 15, 21, 22, 25, 26, 33,
+         34, 35, 38, 39, 46, 49, 51, 55, 57, 58, 62, 65,
+         69, 74, 77, 82, 85, 86, 87, 91, 93, 94, 95, 106,
+         111, 115, 118, 119, 121, 122, 123, 129, 133, 134, 141, 142,
+         143, 145, 146, 155, 158, 159, 161, 166, 169, 177, 178, 183,
+         185, 187, 194, 201, 202, 203, 205, 206, 209, 213, 214, 215,
+         217, 218, 219, 221, 226, 235, 237, 247, 249, 253, 254, 259,
+         262, 265, 267, 274, 278, 287, 289, 291, 295, 298, 299, 301,
+         302, 303, 305, 309, 314, 319, 321, 323, 326, 327, 329, 334,
+         335, 339, 341, 346, 355, 358, 361, 362, 365, 371, 377, 381,
+         382, 386, 391, 393, 394, 395, 398, 403, 407, 411, 413, 415,
+         417, 422, 427, 437, 445, 446, 447, 451, 453, 454, 458, 466,
+         469, 471, 473, 478, 481, 482, 485, 489, 493, 497, 501, 502,
+         505, 511, 514, 515, 517, 519, 526, 527, 529, 533, 535, 537,
+         538, 542, 543, 545, 551, 553, 554, 559, 562, 565, 566, 573,
+         579, 581, 583, 586, 589, 591, 597, 611, 614, 622, 623];
       Last : U64;
    begin
       --  XS.xs: forsemiprimes uses individual tests for short ranges.
@@ -163,6 +181,15 @@ package body Math_Prime_Util.Iter.Ranges is
          end loop;
          return;
       end if;
+      if Bound <= Small (Small'Last) then
+         for V of Small loop
+            if V >= First and then V <= Bound then
+               Process (V, Context);
+               exit when Context.Stop;
+            end if;
+         end loop;
+         return;
+      end if;
       while First <= Bound loop
          Last := First + U64'Min (Bound - First, 50_000_000 - 1);
          declare
@@ -171,7 +198,8 @@ package body Math_Prime_Util.Iter.Ranges is
               (Index_Type => Natural, Element_Type => Factor_Count);
             Counts : Count_Vectors.Vector;
             Root : constant U64 := Int.Sqrtint (Last);
-            Q, Offset : U64;
+            Q, Offset, Prime_High : U64;
+            Prime_Low : U64 := 2;
             procedure Mark (Start, Step : U64);
 
             procedure Mark (Start, Step : U64) is
@@ -192,12 +220,19 @@ package body Math_Prime_Util.Iter.Ranges is
               (0, Ada.Containers.Count_Type (Last - First + 1));
             --  semi_primes.c: range_semiprime_sieve / MARKSEMI. A number
             --  marked exactly once is semiprime; prime squares start at p*p.
-            for P of Sieve.Primes (Root) loop
-               Q := P * P;
-               Mark (Q, P);
-               if Q <= Last / 2 then
-                  Mark (2 * Q, Q);
-               end if;
+            while Prime_Low <= Root loop
+               Prime_High := (if Prime_Low = 2 then U64'Min (Root, 30_000)
+                              else Prime_Low + U64'Min
+                                (Root - Prime_Low, 30 * 32_768 - 1));
+               for P of Sieve.Primes (Prime_Low, Prime_High) loop
+                  Q := P * P;
+                  Mark (Q, P);
+                  if Q <= Last / 2 then
+                     Mark (2 * Q, Q);
+                  end if;
+               end loop;
+               exit when Prime_High = Root;
+               Prime_Low := Prime_High + 1;
             end loop;
             for I in Counts.First_Index .. Counts.Last_Index loop
                if Counts (I) = 1 then

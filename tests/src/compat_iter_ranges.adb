@@ -182,6 +182,8 @@ package body Compat_Iter_Ranges is
       Check (9);
       Forsemiprimes (10000, Stop'Access);
       Check (4);
+      Forsemiprimes (500, Stop'Access);
+      Check (4);
       Foralmostprimes (3, 10000, Stop'Access);
       Check (8);
       Forsquarefree (0, 3, Stop_Factors'Access);
