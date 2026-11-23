@@ -14,3 +14,4 @@ Link failure traced to an implicit vector reference in the new for-of test loop;
 First gate passed all 346 tests; final source edits are rebuilding before focused checks and a final gate.
 All nine focused iterator cases pass (0.033–0.397 seconds each); use a default File argument to remove the stdout wrapper.
 Final simplifications retain empty-composition and empty-product checks; run the final gate after compilation.
+Final edits complete: focused checks and pyright pass; BDD skips without pytest-bdd, gnatcheck unavailable; final gate running.
