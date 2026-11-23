@@ -111,6 +111,13 @@ package body Math_Prime_Util.Factor is
    function Abs_Diff (A, B : U64) return U64 is
      (if A > B then A - B else B - A);
 
+   function Sqrt_Lf (X : Lf) return Lf is
+     (Ada.Numerics.Long_Elementary_Functions.Sqrt (X));
+
+   --  C casts of double to UV truncate toward zero.
+   function Trunc_U64 (X : Lf) return U64 is
+     (U64 (Lf'Truncation (X)));
+
    function Mont_Inverse (N : U64) return U64 is
       Inv : U64 := (3 * N) xor 2;
    begin
@@ -381,8 +388,7 @@ package body Math_Prime_Util.Factor is
          end if;
       end if;
       for I in 1 .. Budget loop
-         S := U64
-           (Lf'Sqrt (Lf (N) * Lf (I))) + 1;
+         S := Trunc_U64 (Sqrt_Lf (Lf (N) * Lf (I))) + 1;
          M := Mul_Mod (S, S, N);
          if Int.Is_Square (M) then
             Root := Int.Sqrtint (M);
@@ -450,12 +456,13 @@ package body Math_Prime_Util.Factor is
    function Raw_Brent (N, Rounds, A0 : U64) return Factor_List is
       Npi : constant U64 := Mont_Inverse (N);
       Mont1 : constant U64 := Mont_One (N);
-      Bits : constant U64 := 64 - U64 (Int.Logint (N, 2));
+      --  factor.c: BITS_PER_WORD - clz. Floor log plus one.
+      Nbits : constant U64 := Int.Logint (N, 2) + 1;
       Inner : constant U64 :=
-        (if Bits <= 31 then 32
-         elsif Bits <= 35 then 64
-         elsif Bits <= 40 then 160
-         elsif Bits <= 52 then 256
+        (if Nbits <= 31 then 32
+         elsif Nbits <= 35 then 64
+         elsif Nbits <= 40 then 160
+         elsif Nbits <= 52 then 256
          else 320);
       A : U64 := Mont_In (A0, N);
       F : U64 := 1;
@@ -859,7 +866,7 @@ package body Math_Prime_Util.Factor is
                      State (I).It := 0;
                      State (I).Mult := U32 (Mult);
                      State (I).Imax := U32
-                       (Lf (Lf'Sqrt (Lf (Sqrt_N)) / 16.0));
+                       (Trunc_U64 (Sqrt_Lf (Lf (Sqrt_N)) / 16.0));
                      if State (I).Imax < 20 then
                         State (I).Imax := 20;
                      end if;
@@ -897,7 +904,7 @@ package body Math_Prime_Util.Factor is
    is
       Tune : constant Lf := (if N >= 2 ** 36 then 3.5 else 5.0);
       Cube : constant U64 := Int.Rootint (N, 3);
-      B : U64 := U64 (Tune * Lf (1 + Cube));
+      B : U64 := Trunc_U64 (Tune * Lf (1 + Cube));
       Cut : U64;
       Idx : Natural := 2;
       P : U64;
@@ -909,7 +916,7 @@ package body Math_Prime_Util.Factor is
       if N mod 2 = 0 then
          return Found (N, 2);
       end if;
-      Cut := U64 (0.1 * Lf (B));
+      Cut := Trunc_U64 (0.1 * Lf (B));
       if Cut < 84 then
          Cut := 84;
       elsif Cut > 65535 then
@@ -926,7 +933,7 @@ package body Math_Prime_Util.Factor is
       if N >= 8_796_393_022_207 then
          return One (N);
       end if;
-      Bred := U64 (Lf (B) / (Tune * Tune * Tune));
+      Bred := Trunc_U64 (Lf (B) / (Tune * Tune * Tune));
       KN := 0;
       for K in 1 .. Bred loop
          if K mod 2 = 1 then
@@ -944,17 +951,17 @@ package body Math_Prime_Util.Factor is
             return One (N);
          end if;
          KN4 := KN * 4;
-         X := Lf'Sqrt (Lf (KN));
-         AA := U64 (X);
+         X := Sqrt_Lf (Lf (KN));
+         AA := Trunc_U64 (X);
          if AA * AA = KN then
             return Found (N, Int.Gcd (AA, N));
          end if;
          X := X * 2.0;
-         AA := U64 (X + 0.9999999665);
+         AA := Trunc_U64 (X + 0.9999999665);
          BB := AA mod Inc;
          BB := AA + (Inc + Res - BB) mod Inc;
          CC := BB * BB - KN4;
-         UU := U64 (X + Lf (B * B) / (2.0 * X));
+         UU := Trunc_U64 (X + Lf (B * B) / (2.0 * X));
          AA := BB;
          while AA <= UU loop
             if Int.Is_Square (CC) then
@@ -1178,8 +1185,9 @@ package body Math_Prime_Util.Factor is
       Cap : U64 := Limit;
       L : Factor_List;
       Acc : U64_Vectors.Vector;
-      Prior, Mult, Next : U64;
-      Mark : Ada.Containers.Count_Type;
+      P, E, Mult, Next : U64;
+      Base : Ada.Containers.Count_Type;
+      Idx : Natural;
       type Buf is array (Positive range <>) of U64;
       procedure Sort_Buf is new Ada.Containers.Generic_Array_Sort
         (Positive, U64, Buf);
@@ -1196,28 +1204,28 @@ package body Math_Prime_Util.Factor is
       end if;
       L := Factor (N);
       Acc.Append (1);
-      Prior := 0;
-      Mult := 1;
-      for I in 1 .. L.Count loop
-         if L.Value (I) /= Prior then
-            Prior := L.Value (I);
-            Mult := 1;
-         end if;
-         if Prior > Cap then
-            exit;
-         end if;
-         if Mult > U64'Last / Prior then
-            exit;
-         end if;
-         Mult := Mult * Prior;
-         Mark := Acc.Length;
-         for S in 1 .. Positive (Mark) loop
-            if Acc (S) <= Cap / Mult then
-               Next := Acc (S) * Mult;
-               if Next <= Cap then
-                  Acc.Append (Next);
+      Idx := 1;
+      while Idx <= L.Count loop
+         P := L.Value (Idx);
+         E := 0;
+         while Idx <= L.Count and then L.Value (Idx) = P loop
+            E := E + 1;
+            Idx := Idx + 1;
+         end loop;
+         exit when P > Cap;
+         Base := Acc.Length;
+         Mult := 1;
+         for Ignore in 1 .. E loop
+            exit when Mult > U64'Last / P;
+            Mult := Mult * P;
+            for S in 1 .. Positive (Base) loop
+               if Acc (S) <= Cap / Mult then
+                  Next := Acc (S) * Mult;
+                  if Next <= Cap then
+                     Acc.Append (Next);
+                  end if;
                end if;
-            end if;
+            end loop;
          end loop;
       end loop;
       declare
