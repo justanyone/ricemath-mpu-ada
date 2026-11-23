@@ -121,11 +121,11 @@ package body Compat_Families is
                     (if C.Args.Last_Index = 1 then Prime_Powers (N)
                      else Prime_Powers (N, H));
                begin
-                  for X of V loop
+                  for J in V.First_Index .. V.Last_Index loop
                      if Length (Got) > 0 then
                         Append (Got, " ");
                      end if;
-                     Append (Got, Image (X));
+                     Append (Got, Image (V.Element (J)));
                   end loop;
                   if V.Is_Empty then
                      Got := To_Unbounded_String ("undef");
