@@ -152,7 +152,7 @@ procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
             exception
                when Ada.Assertions.Assertion_Error =>
                   AUnit.Assertions.Assert
-                    (C.Error or C.Undef, "unexpected contract failure");
+                    (C.Error or else C.Undef, "unexpected contract failure");
                   Actual := C.Result;
             end;
             if Checked then

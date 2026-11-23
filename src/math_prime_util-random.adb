@@ -9,14 +9,10 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
    function Load (Data : Byte_Array; Offset : Natural) return Word
      with Pre => Offset <= Data'Length and then Data'Length - Offset >= 4;
    function Load (Data : Byte_Array; Offset : Natural) return Word is
-      Result : Word := 0;
-   begin
-      for I in 0 .. 3 loop
-         Result := Result or Shift_Left
-           (Word (Data (Data'First + Offset + I)), 8 * I);
-      end loop;
-      return Result;
-   end Load;
+     (Word (Data (Data'First + Offset))
+      or Shift_Left (Word (Data (Data'First + Offset + 1)), 8)
+      or Shift_Left (Word (Data (Data'First + Offset + 2)), 16)
+      or Shift_Left (Word (Data (Data'First + Offset + 3)), 24));
 
    procedure Store (Data : in out Byte_Array; Offset : Natural; V : Word)
      with Pre => Offset <= Data'Length and then Data'Length - Offset >= 4;
@@ -73,21 +69,16 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
       G.Buffer := [others => 0];
       G.Position := 1024;
       G.Seeded := True;
-      for I in Key'Range loop
-         Key (I) := 0;
-      end loop;
+      Key := [others => 0];
    end Csrand;
 
-   procedure Fill (Data : out Byte_Array)
-     with SPARK_Mode => Off;
    --  entropy.c: get_entropy_bytes, using the operating-system source.
-   procedure Fill (Data : out Byte_Array)
-     with SPARK_Mode => Off
-   is
+   procedure Csrand (G : out Generator) with SPARK_Mode => Off is
       use Ada.Streams;
       package IO renames Ada.Streams.Stream_IO;
       File : IO.File_Type;
-      Buffer : Stream_Element_Array (1 .. Data'Length);
+      Buffer : Stream_Element_Array (1 .. 40);
+      Seed : Byte_Array (1 .. 40);
       Last : Stream_Element_Offset;
    begin
       IO.Open (File, IO.In_File, "/dev/urandom");
@@ -96,27 +87,17 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
       if Last /= Buffer'Last then
          raise Entropy_Error with "short operating-system entropy read";
       end if;
-      for I in Data'Range loop
-         Data (I) := Byte (Buffer
-           (Stream_Element_Offset (I - Data'First) + 1));
+      for I in Seed'Range loop
+         Seed (I) := Byte (Buffer (Stream_Element_Offset (I)));
       end loop;
+      Csrand (G, Seed);
+      Seed := [others => 0];
    exception
       when IO.Name_Error | IO.Use_Error | IO.Device_Error | IO.End_Error =>
          if IO.Is_Open (File) then
             IO.Close (File);
          end if;
-         raise Entropy_Error with
-           "operating-system entropy unavailable";
-   end Fill;
-
-   procedure Csrand (G : out Generator) is
-      Seed : Byte_Array (0 .. 39);
-   begin
-      Fill (Seed);
-      Csrand (G, Seed);
-      for I in Seed'Range loop
-         Seed (I) := 0;
-      end loop;
+         raise Entropy_Error with "operating-system entropy unavailable";
    end Csrand;
 
    --  chacha.c: QUARTERROUND, chacha_core, increment_chacha_counter.
