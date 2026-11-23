@@ -1,7 +1,5 @@
 with Math_Prime_Util.Sieve;
 with Math_Prime_Util.Count;
-with Math_Prime_Util.Real;
-with Math_Prime_Util.Primality;
 with Ada.Numerics.Generic_Elementary_Functions;
 with Ada.Numerics.Long_Elementary_Functions;
 with Interfaces;
@@ -687,14 +685,17 @@ package body Math_Prime_Util.Families is
       112551549250, 111732637241, 111012321565, 1082549061370, 1050759497170,
       1030883829367, 1016473645857, 1005206830409, 995980796683, 988183329733,
       981441437376, 975508027029, 9527651328494, 9264843314051, 9100153493509,
-      8980561036751, 8886953365929, 8810223086411, 8745329823109, 8689179566509,
-      8639748641098, 84499489470819, 82302056642520, 80922166953330, 79918799449753,
-      79132610984280, 78487688897426, 77941865286827, 77469296499217, 77053075040105,
+      8980561036751, 8886953365929, 8810223086411, 8745329823109,
+      8689179566509,
+      8639748641098, 84499489470819, 82302056642520, 80922166953330,
+      79918799449753,
+      79132610984280, 78487688897426, 77941865286827, 77469296499217,
+      77053075040105,
       754527610498466, 735967887462370, 724291736697048];
 
    function Twin_Primes (Low, High : U64) return Family_Vectors.Vector is
       Result : Family_Vectors.Vector;
-      Last : constant U64 := U64'MIn (High, Max_Twin);
+      Last : constant U64 := U64'Min (High, Max_Twin);
       Lo, Hi, Previous : U64;
    begin
       if Low > Last then
@@ -702,9 +703,9 @@ package body Math_Prime_Util.Families is
       end if;
       Lo := Low;
       loop
-         Hi := Lo + U64'MIn (Last - Lo, Window - 1);
+         Hi := Lo + U64'Min (Last - Lo, Window - 1);
          Previous := 0;
-         for P of Sieve.Primes (Lo, Hi + 2) loop
+         for P of Math_Prime_Util.Sieve.Primes (Lo, Hi + 2) loop
             if Previous >= Lo and then Previous <= Hi
               and then P - Previous = 2
             then
@@ -722,7 +723,7 @@ package body Math_Prime_Util.Families is
      (Twin_Primes (0, High));
 
    function Twin_Prime_Count (Low, High : U64) return U64 is
-      Last : constant U64 := U64'MIn (High, Max_Twin);
+      Last : constant U64 := U64'Min (High, Max_Twin);
       Lo : U64 := Low;
       Hi, Sum : U64 := 0;
       Base : U64 := 10_000_000;
@@ -745,7 +746,7 @@ package body Math_Prime_Util.Families is
          end loop;
       end if;
       loop
-         Hi := Lo + U64'MIn (Last - Lo, Window - 1);
+         Hi := Lo + U64'Min (Last - Lo, Window - 1);
          Sum := Sum + U64 (Twin_Primes (Lo, Hi).Length);
          exit when Hi = Last;
          Lo := Hi + 1;
@@ -756,15 +757,35 @@ package body Math_Prime_Util.Families is
    function Twin_Prime_Count (High : U64) return U64 is
      (Twin_Prime_Count (0, High));
 
+   subtype Wide is Long_Long_Float;
+   package Wef is new Ada.Numerics.Generic_Elementary_Functions (Wide);
+
+   --  real.c: positive Ei series, preserving C long-double evaluation.
+   function Ei (X : Wide) return Wide;
+   function Ei (X : Wide) return Wide is
+      Term : Wide := X;
+      Sum : Wide := 0.577215664901532860606512090082402431
+        + Wef.Log (X);
+      Old : Wide;
+   begin
+      for K in 1 .. 1_000 loop
+         Old := Sum;
+         Sum := Sum + Term / Wide (K);
+         exit when Sum = Old;
+         Term := Term * X / Wide (K + 1);
+      end loop;
+      return Sum;
+   end Ei;
+
    function Twin_Prime_Count_Approx (N : U64) return U64 is
-      X : constant F64 := F64 (N);
-      L, Li2, Fm : F64;
+      X : constant Wide := Wide (N);
+      L, Li2, Fm : Wide;
    begin
       if N < 2_000 then
          return Twin_Prime_Count (N);
       end if;
-      L := Log (X);
-      Li2 := Real.Exponentialintegral (L) + 2.8853900817779268147198494
+      L := Wef.Log (X);
+      Li2 := Ei (L) + 2.8853900817779268147198494
         - X / L;
       if N < 32_000_000 then
          if N < 4_000 then Fm := 0.2952;
@@ -790,9 +811,10 @@ package body Math_Prime_Util.Families is
             Fm := 0.2983 + (X - 16_000_000.0) *
               (0.2961 - 0.2983) / (32_000_000.0 - 16_000_000.0);
          end if;
-         Li2 := Li2 * Fm * Log (12.0 + L);
+         Li2 := Li2 * Fm * Wef.Log (12.0 + L);
       end if;
-      return Trunc (1.32032363169373914785562422 * Li2 + 0.5);
+      return U64 (Wide'Floor
+        (1.32032363169373914785562422 * Li2 + 0.5));
    end Twin_Prime_Count_Approx;
 
    --  inverse_interpolate: binary refinement of a monotone estimate.
@@ -857,7 +879,7 @@ package body Math_Prime_Util.Families is
          return (True, Small_Twins (Positive (N)));
       end if;
       loop
-         Hi := Lo + U64'MIn (Max_Twin - Lo, Window - 1);
+         Hi := Lo + U64'Min (Max_Twin - Lo, Window - 1);
          declare
             V : constant Family_Vectors.Vector := Twin_Primes (Lo, Hi);
          begin
@@ -878,8 +900,9 @@ package body Math_Prime_Util.Families is
    function Semi_Window (Low, High : U64) return Family_Vectors.Vector is
       type Marker is range 0 .. 2;
       type Marker_Array is array (Natural range <>) of Marker;
-      Marks : Marker_Array (0 .. Natural (High - Low)) := (others => 0);
+      Marks : Marker_Array (0 .. Natural (High - Low)) := [others => 0];
       Result : Family_Vectors.Vector;
+      procedure Mark (Start, Stride : U64);
       procedure Mark (Start, Stride : U64) is
          J : U64 := Start;
          R : U64;
@@ -894,13 +917,13 @@ package body Math_Prime_Util.Families is
          end if;
          while J <= High loop
             Marks (Natural (J - Low)) :=
-              Marker'MIn (2, Marks (Natural (J - Low)) + 1);
+              Marker'Min (2, Marks (Natural (J - Low)) + 1);
             exit when High - J < Stride;
             J := J + Stride;
          end loop;
       end Mark;
    begin
-      for P of Sieve.Primes (Int.Sqrtint (High)) loop
+      for P of Math_Prime_Util.Sieve.Primes (Int.Sqrtint (High)) loop
          Mark (P * P, P);
          if P * P <= High / 2 then
             Mark (2 * P * P, P * P);
@@ -915,14 +938,14 @@ package body Math_Prime_Util.Families is
    end Semi_Window;
 
    function Semi_Primes (Low, High : U64) return Family_Vectors.Vector is
-      Lo : U64 := U64'MIn (Max_Semi, U64'Max (4, Low));
-      Last : constant U64 := U64'MIn (High, Max_Semi);
+      Lo : U64 := U64'Min (Max_Semi, U64'Max (4, Low));
+      Last : constant U64 := U64'Min (High, Max_Semi);
       Hi : U64;
       Result : Family_Vectors.Vector;
    begin
       if Low > Last or Lo > Last then return Result; end if;
       loop
-         Hi := Lo + U64'MIn (Last - Lo, Window - 1);
+         Hi := Lo + U64'Min (Last - Lo, Window - 1);
          Result.Append (Semi_Window (Lo, Hi));
          exit when Hi = Last;
          Lo := Hi + 1;
@@ -936,7 +959,7 @@ package body Math_Prime_Util.Families is
    function Semiprime_Count (High : U64) return U64 is
       Sum, Index : U64 := 0;
    begin
-      for P of Sieve.Primes (Int.Sqrtint (High)) loop
+      for P of Math_Prime_Util.Sieve.Primes (Int.Sqrtint (High)) loop
          Sum := Sum + Count.Prime_Count (High / P) - Index;
          Index := Index + 1;
       end loop;
@@ -945,7 +968,7 @@ package body Math_Prime_Util.Families is
 
    function Semiprime_Count (Low, High : U64) return U64 is
       Lo : U64 := U64'Max (4, Low);
-      Last : constant U64 := U64'MIn (High, Max_Semi);
+      Last : constant U64 := U64'Min (High, Max_Semi);
       Hi, Sum : U64 := 0;
    begin
       if Low > Last or Lo > Last then return 0; end if;
@@ -953,7 +976,7 @@ package body Math_Prime_Util.Families is
          return Semiprime_Count (High);
       end if;
       loop
-         Hi := Lo + U64'MIn (Last - Lo, Window - 1);
+         Hi := Lo + U64'Min (Last - Lo, Window - 1);
          Sum := Sum + U64 (Semi_Window (Lo, Hi).Length);
          exit when Hi = Last;
          Lo := Hi + 1;
@@ -1005,7 +1028,7 @@ package body Math_Prime_Util.Families is
       Value := (X / Logn) * Series;
       --  C evaluates the final +0.5L in extended precision.
       Res := U64 (Long_Long_Float'Floor (Long_Long_Float (Value) + 0.5));
-      return U64'MIn (Max_Semi_Index, U64'Max (Res, Min_Count (L - 3)));
+      return U64'Min (Max_Semi_Index, U64'Max (Res, Min_Count (L - 3)));
    end Semiprime_Count_Approx;
 
    function Nth_Semiprime_Approx (N : U64) return Int.Optional_U64 is
