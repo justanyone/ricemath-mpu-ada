@@ -1,7 +1,6 @@
 with Ada.Containers;
 
 package body Math_Prime_Util.Vec with SPARK_Mode => Off is
-   use type Ada.Containers.Count_Type;
    use type Int_Vector;
 
    function Less (L, R : BI.Big_Integer) return Boolean is (L < R);
