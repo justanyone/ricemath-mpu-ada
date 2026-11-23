@@ -157,7 +157,7 @@ package Math_Prime_Util.Vec with SPARK_Mode => On is
       with function Operation (A, B : I128) return I128;
    function Vecslide (A : Integer_Array) return Integer_Array;
 
-   --  Flatten callback results for corresponding pairs; ignore unmatched tails.
+   --  Flatten callback results for corresponding pairs. Ignore unmatched tails.
    generic
       with function Operation (A, B : I128) return Integer_Array;
    function Vecpairwise (A, B : Integer_Array) return Integer_Array;
