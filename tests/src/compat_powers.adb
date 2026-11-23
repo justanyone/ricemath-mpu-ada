@@ -37,6 +37,24 @@ package body Compat_Powers is
                   "is_prime_power fixture" & C.Line_Number'Image);
                Checked := Checked + 1;
             end if;
+         elsif C.Func = "nth_prime_power_lower"
+           or else C.Func = "nth_prime_power_upper"
+           or else C.Func = "nth_prime_power_approx"
+         then
+            if Parse_U64 (To_String (C.Args (1)), N)
+              and then N > 0 and then N <= 1_000_000
+            then
+               P := (if C.Func = "nth_prime_power_lower" then
+                        Nth_Prime_Power_Lower (N)
+                     elsif C.Func = "nth_prime_power_upper" then
+                        Nth_Prime_Power_Upper (N)
+                     else Nth_Prime_Power_Approx (N));
+               AUnit.Assertions.Assert
+                 (P.Defined and then
+                  P.Value = U64'Value (To_String (C.Result)),
+                  To_String (C.Func) & " fixture" & C.Line_Number'Image
+                  & " got" & P.Value'Image);
+            end if;
          end if;
       end loop;
       AUnit.Assertions.Assert (Checked > 0, "classification fixtures missing");

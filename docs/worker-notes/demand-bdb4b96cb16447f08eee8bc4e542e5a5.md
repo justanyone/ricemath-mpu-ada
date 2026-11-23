@@ -7,3 +7,4 @@ Reproduced missing Inverse placeholder, invisible Unsigned_8 comparisons, and il
 Development library build passes. Added Compat_Powers regression tests and BDD scenarios for classification, inverse bounds, negative perfect powers, and U64/wide boundaries; building the test crate next.
 Test build is compiling the full checked Ada suite; local Python lacks pytest-bdd, so the same BDD-selected Ada checks will be run directly if no installed environment is available.
 The checked test build has compiled Compat_Powers without errors; focused runner invocation was too early (binary not linked yet). The declared gate has passed development and is building release; waiting for test linking before retrying focused checks.
+Focused Compat_Powers passes both tests (prime 0.107 s, perfect below 0.001 s). Added native nth-bound fixture checks through index 1,000,000 to verify the replacement inverse against committed outputs before final gate completion.
