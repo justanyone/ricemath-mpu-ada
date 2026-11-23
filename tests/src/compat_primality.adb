@@ -46,7 +46,7 @@ package body Compat_Primality is
          return (if Is_Bpsw_Prime (N) then 2 else 0);
       elsif F = "is_pseudoprime" then
          if Natural (C.Args.Length) = 1 then
-            return Boolean'Pos (Is_Pseudoprime (N, 2));
+            return Boolean'Pos (Is_Pseudoprime (N));
          end if;
          for J in 2 .. Natural (C.Args.Length) loop
             A := U64'Value (To_String (C.Args (J)));
@@ -55,7 +55,7 @@ package body Compat_Primality is
          return Boolean'Pos (B);
       elsif F = "is_euler_pseudoprime" then
          if Natural (C.Args.Length) = 1 then
-            return Boolean'Pos (Is_Euler_Pseudoprime (N, 2));
+            return Boolean'Pos (Is_Euler_Pseudoprime (N));
          end if;
          for J in 2 .. Natural (C.Args.Length) loop
             A := U64'Value (To_String (C.Args (J)));
@@ -64,7 +64,7 @@ package body Compat_Primality is
          return Boolean'Pos (B);
       elsif F = "is_strong_pseudoprime" then
          if Natural (C.Args.Length) = 1 then
-            return Boolean'Pos (Is_Strong_Pseudoprime (N, 2));
+            return Boolean'Pos (Is_Strong_Pseudoprime (N));
          end if;
          for J in 2 .. Natural (C.Args.Length) loop
             A := U64'Value (To_String (C.Args (J)));
