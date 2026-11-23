@@ -2,7 +2,6 @@ with Ada.Containers.Indefinite_Holders;
 with Ada.Numerics.Long_Elementary_Functions;
 with Interfaces;
 with Math_Prime_Util.Int;
-with Math_Prime_Util.Count.Tables;
 with Math_Prime_Util.Sieve;
 
 package body Math_Prime_Util.Count.Lmo with SPARK_Mode => On is
@@ -19,11 +18,35 @@ package body Math_Prime_Util.Count.Lmo with SPARK_Mode => On is
       package Factor_Holders is new Ada.Containers.Indefinite_Holders
         (Factors);
    end Storage;
+   --  MPU prime_count_tables.h: step_counts_0 and NSTEP_SEARCH(0).
+   type Counts is array (Natural range <>) of U64;
+   Steps_0 : constant Counts :=
+     [208, 134, 115, 102, 97, 91, 77, 89, 74, 65, 74, 67,
+      64, 66, 64, 52, 57, 59, 63, 56, 44, 52, 44, 55,
+      46, 50, 44, 46, 41, 44, 52, 49, 34, 42, 39, 31,
+      43, 34, 37, 37, 43, 36, 39, 32, 30, 46, 37, 27,
+      29, 38, 44, 27, 22, 35, 22, 25, 28, 30, 34, 37,
+      22, 34, 27, 25, 28, 29, 21, 24, 24, 41, 20, 22,
+      21, 30, 25, 21, 42, 6, 17, 20, 28, 26, 32, 20,
+      16, 18, 20, 17, 26, 28, 26, 15, 19, 26, 20, 0,
+      27, 4, 23, 5];
+   procedure Lookup (N : U64; Anchor, Value : out U64);
+   procedure Lookup (N : U64; Anchor, Value : out U64) is
+      Last : constant Natural := Natural (U64'Min
+        (N / 3000, U64 (Steps_0'Length)));
+   begin
+      Anchor := U64 (Last) * 3000;
+      Value := (if Last = 0 then 0 else 3);
+      for K in 1 .. Last loop
+         Value := Value + 219 + Steps_0 (K - 1);
+      end loop;
+   end Lookup;
    C : constant := 6;
    Wheel : constant := 30_030;
    Segment_Words : constant := 1155 * 13;
    Segment_Size : constant := Segment_Words * 128;
 
+   function Make_Phi return Naturals;
    function Make_Phi return Naturals is
       Result : Naturals (0 .. Wheel) := [others => 0];
    begin
@@ -43,6 +66,7 @@ package body Math_Prime_Util.Count.Lmo with SPARK_Mode => On is
      (X / Wheel * U64 (Phi_Table (Wheel)) +
       U64 (Phi_Table (Natural (X mod Wheel))));
 
+   function Bit_Count (Value : U64) return U64;
    function Bit_Count (Value : U64) return U64 is
       B : U64 := Value;
    begin
@@ -55,7 +79,9 @@ package body Math_Prime_Util.Count.Lmo with SPARK_Mode => On is
 
    --  The sieve's primality walk has a checked interface for the kernel.
    function Previous (X : U64) return U64
-     with SPARK_Mode => Off, Pre => X > 3, Post => Previous'Result < X
+     with Pre => X > 3, Post => Previous'Result < X;
+   function Previous (X : U64) return U64
+     with SPARK_Mode => Off
    is
    begin
       return Sieve.Prev_Prime (X).Value;
@@ -70,7 +96,10 @@ package body Math_Prime_Util.Count.Lmo with SPARK_Mode => On is
        and then Initial_M >= 1 and then K2 > 0
        and then Ft'First = 0 and then Ps'First = 0
        and then Ft'Last >= 1 and then Ps'Last > Ft'Last,
-          Post => Result <= N
+          Post => Result <= N;
+   procedure Compute
+     (N, N2, Initial_M : U64; K2, Initial_K3 : Natural;
+      Ft : in out Factors; Ps : in out Words; Result : out U64)
    is
       M : U64 := Initial_M;
       Bound : constant Natural := Ft'Last * 2;
@@ -164,15 +193,15 @@ package body Math_Prime_Util.Count.Lmo with SPARK_Mode => On is
          Phi_Total : U64 := 0;
          Size : Natural;
 
+         procedure Clear (B : Natural);
          procedure Clear (B : Natural) is
             W : constant Natural := B / 64;
             Mask : constant U64 := Interfaces.Shift_Left (U64'(1), B mod 64);
          begin
-            if (Bits (W) and Mask) /= 0 then
-               Bits (W) := Bits (W) and not Mask;
-            end if;
+            Bits (W) := Bits (W) and not Mask;
          end Clear;
 
+         procedure Remove (First, Last : Natural);
          procedure Remove (First, Last : Natural) is
             P, V : U64;
          begin
@@ -199,6 +228,7 @@ package body Math_Prime_Util.Count.Lmo with SPARK_Mode => On is
               U64 (Counts ((Size + 63) / 64));
          end Remove;
 
+         function Sieve_Phi (X : U64) return U64;
          function Sieve_Phi (X : U64) return U64 is
             B : constant Natural := Natural ((X - Start + 1) / 2);
             Mask : constant U64 :=
@@ -299,7 +329,7 @@ package body Math_Prime_Util.Count.Lmo with SPARK_Mode => On is
          declare
             Anchor, Value : U64;
          begin
-            Tables.Lookup (N, Anchor, Value);
+            Lookup (N, Anchor, Value);
             return Value + U64 (Sieve.Primes (Anchor + 1, N).Length);
          end;
       end if;
