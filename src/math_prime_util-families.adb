@@ -1,5 +1,7 @@
 with Ada.Numerics.Long_Elementary_Functions;
 with Interfaces;
+with Math_Prime_Util.Sieve;
+with Math_Prime_Util.Count;
 
 package body Math_Prime_Util.Families is
    use Ada.Numerics.Long_Elementary_Functions;
@@ -658,4 +660,302 @@ package body Math_Prime_Util.Families is
          Factor := Factor + 1;
       end loop;
    end Is_Lucky;
+   --  almost_primes.c: _genkap, _cs; omega_primes.c:
+   --  _omega_prime_gen_rec and _omega_prime_count_rec2. Enumerate ordered
+   --  prime factorizations once; count the last prime with pi rather than
+   --  materializing it. All state belongs to this call.
+   procedure Factor_Family
+     (K : Natural; Low, High : U64; Distinct, Listing : Boolean;
+      Values : out Family_Vectors.Vector; Total : out U64);
+
+   procedure Factor_Family
+     (K : Natural; Low, High : U64; Distinct, Listing : Boolean;
+      Values : out Family_Vectors.Vector; Total : out U64)
+   is
+      Cache_High : constant U64 := U64' Min (High, 1_000_000);
+      Pr : constant Sieve.Prime_Vectors.Vector := Sieve.Primes (Cache_High);
+      package Sorting is new Family_Vectors.Generic_Sorting;
+
+      function Pi (N : U64) return U64;
+      function Pi (N : U64) return U64 is
+         L : Natural := 0;
+         H : Natural := Natural (Pr.Length);
+         M : Natural;
+      begin
+         if N > Cache_High then
+            return Count.Prime_Count (N);
+         end if;
+         while L < H loop
+            M := L + (H - L) / 2;
+            if Pr.Element (M) <= N then
+               L := M + 1;
+            else
+               H := M;
+            end if;
+         end loop;
+         return U64 (L);
+      end Pi;
+
+      function Next (P : U64) return U64;
+      function Next (P : U64) return U64 is
+         I : constant U64 := Pi (P);
+         R : Int.Optional_U64;
+      begin
+         if I < U64 (Pr.Length) then
+            return Pr.Element (Natural (I));
+         end if;
+         R := Sieve.Next_Prime (P);
+         return (if R.Defined then R.Value else 0);
+      end Next;
+
+      --  Minimum possible product of the remaining ordered factors.
+      function Fits (Left : Positive; P, Limit : U64) return Boolean;
+      function Fits (Left : Positive; P, Limit : U64) return Boolean is
+         Product : U64 := 1;
+         Q : U64 := P;
+      begin
+         for I in 1 .. Left loop
+            if Q = 0 or else Q > Limit / Product then
+               return False;
+            end if;
+            Product := Product * Q;
+            if Distinct and then I < Left then
+               Q := Next (Q);
+            end if;
+         end loop;
+         return True;
+      end Fits;
+
+      procedure Last (M, P : U64);
+      procedure Last (M, P : U64) is
+         Upper : constant U64 := High / M;
+         Lower : constant U64 := Low / M + (if Low mod M = 0 then 0 else 1);
+         E : Positive := 1;
+         A, B : U64;
+         Power : Int.Optional_U64;
+      begin
+         loop
+            B := Int.Rootint (Upper, U64 (E));
+            exit when B < P;
+            A := U64' Max (P, Int.Crootint (Lower, U64 (E)));
+            if A <= B then
+               if Listing then
+                  for Q of Sieve.Primes (A, B) loop
+                     Power := Int.Powint (Q, U64 (E));
+                     if Power.Defined then
+                        Values.Append (M * Power.Value);
+                        Total := Total + 1;
+                     end if;
+                  end loop;
+               else
+                  Total := Total + Pi (B) - Pi (A - 1);
+               end if;
+            end if;
+            exit when not Distinct or else E = 63;
+            E := E + 1;
+         end loop;
+      end Last;
+
+      procedure Recurse (Left : Positive; M, Start : U64);
+      procedure Recurse (Left : Positive; M, Start : U64) is
+         P : U64 := Start;
+         T, Next_P : U64;
+      begin
+         if Left = 1 then
+            Last (M, Start);
+            return;
+         end if;
+         while Fits (Left, P, High / M) loop
+            Next_P := (if Distinct then Next (P) else P);
+            T := M * P;
+            loop
+               exit when not Fits (Left - 1, Next_P, High / T);
+               Recurse (Left - 1, T, Next_P);
+               exit when not Distinct or else T > High / P;
+               T := T * P;
+            end loop;
+            P := Next (P);
+            exit when P = 0;
+         end loop;
+      end Recurse;
+   begin
+      Values.Clear;
+      Total := 0;
+      if Low > High or else High = 0 then
+         return;
+      elsif K = 0 then
+         if Low <= 1 then
+            Total := 1;
+            if Listing then
+               Values.Append (1);
+            end if;
+         end if;
+      elsif K < 64 and then (not Distinct or else K < 16) then
+         Recurse (K, 1, 2);
+         if Listing then
+            Sorting.Sort (Values);
+         end if;
+      end if;
+   end Factor_Family;
+
+   --  almost_primes.c: range_almost_prime_sieve; omega_primes.c:
+   --  sieve_omega_primes. Bounded segments track residual factors and
+   --  avoid recursive work below a narrow interval's lower endpoint.
+   function Factor_Range (K : Natural; Low, High : U64; Distinct : Boolean)
+      return Family_Vectors.Vector;
+   function Factor_Range (K : Natural; Low, High : U64; Distinct : Boolean)
+      return Family_Vectors.Vector
+   is
+      Values : Family_Vectors.Vector;
+      Total : U64;
+   begin
+      if Low > High or else High = 0 then
+         return Values;
+      end if;
+      if K = 0 or else K >= 64 or else (Distinct and then K >= 16)
+        or else High < 100_000_000 or else High - Low > 5_000_000
+        or else (Distinct and then K >= 8)
+      then
+         Factor_Family (K, Low, High, Distinct, True, Values, Total);
+         return Values;
+      end if;
+      declare
+         subtype Index is Natural range 0 .. Natural (High - Low);
+         type Residual_Array is array (Index) of U64;
+         type Count_Array is array (Index) of Natural range 0 .. 64;
+         Residual : Residual_Array;
+         Counts : Count_Array := [others => 0];
+         Offset : U64;
+      begin
+         for I in Index loop
+            Residual (I) := Low + U64 (I);
+         end loop;
+         for P of Sieve.Primes (Int.Sqrtint (High)) loop
+            Offset := (if Low mod P = 0 then 0 else P - Low mod P);
+            while Offset <= High - Low loop
+               declare
+                  I : constant Index := Index (Offset);
+               begin
+                  if Residual (I) > 1 then
+                     Counts (I) := Counts (I) + 1;
+                     Residual (I) := Residual (I) / P;
+                     while Residual (I) mod P = 0 loop
+                        if not Distinct then
+                           Counts (I) := Counts (I) + 1;
+                        end if;
+                        Residual (I) := Residual (I) / P;
+                     end loop;
+                  end if;
+               end;
+               exit when P > High - Low - Offset;
+               Offset := Offset + P;
+            end loop;
+         end loop;
+         for I in Index loop
+            if Residual (I) > 1 then
+               Counts (I) := Counts (I) + 1;
+            end if;
+            if Low + U64 (I) >= 1 and then Counts (I) = K then
+               Values.Append (Low + U64 (I));
+            end if;
+         end loop;
+      end;
+      return Values;
+   end Factor_Range;
+
+   function Almost_Primes (K : Natural; Low, High : U64)
+      return Family_Vectors.Vector is
+     (Factor_Range (K, Low, High, False));
+
+   function Almost_Primes (K : Natural; High : U64)
+      return Family_Vectors.Vector is (Almost_Primes (K, 1, High));
+
+   function Omega_Primes (K : Natural; Low, High : U64)
+      return Family_Vectors.Vector is
+     (Factor_Range (K, Low, High, True));
+
+   function Omega_Primes (K : Natural; High : U64)
+      return Family_Vectors.Vector is (Omega_Primes (K, 1, High));
+
+   function Family_Count (K : Natural; High : U64; Distinct : Boolean)
+      return U64;
+   function Family_Count (K : Natural; High : U64; Distinct : Boolean)
+      return U64 is
+      Values : Family_Vectors.Vector;
+      Total : U64;
+   begin
+      Factor_Family (K, 1, High, Distinct, False, Values, Total);
+      return Total;
+   end Family_Count;
+
+   function Almost_Prime_Count (K : Natural; High : U64) return U64 is
+     (Family_Count (K, High, False));
+
+   function Omega_Prime_Count (K : Natural; High : U64) return U64 is
+     (Family_Count (K, High, True));
+
+   function Almost_Prime_Count (K : Natural; Low, High : U64) return U64 is
+   begin
+      if Low > High then
+         return 0;
+      elsif High - Low <= 100_000 then
+         return U64 (Almost_Primes (K, Low, High).Length);
+      end if;
+      return Almost_Prime_Count (K, High) -
+        (if Low <= 1 then 0 else Almost_Prime_Count (K, Low - 1));
+   end Almost_Prime_Count;
+
+   function Omega_Prime_Count (K : Natural; Low, High : U64) return U64 is
+   begin
+      if Low > High then
+         return 0;
+      elsif High - Low <= 100_000 then
+         return U64 (Omega_Primes (K, Low, High).Length);
+      end if;
+      return Omega_Prime_Count (K, High) -
+        (if Low <= 1 then 0 else Omega_Prime_Count (K, Low - 1));
+   end Omega_Prime_Count;
+
+   function Family_Nth (K : Natural; N : U64; Distinct : Boolean)
+      return Int.Optional_U64;
+   function Family_Nth (K : Natural; N : U64; Distinct : Boolean)
+      return Int.Optional_U64 is
+      Low : U64 := 1;
+      High : U64 := 2;
+      Mid : U64;
+   begin
+      if N = 0 or else K >= 64 or else (Distinct and then K >= 16) then
+         return (Defined => False);
+      elsif K = 0 then
+         return (if N = 1 then (True, 1) else (Defined => False));
+      elsif not Distinct and then K = 1 then
+         return (True, Count.Nth_Prime (N));
+      end if;
+      while Family_Count (K, High, Distinct) < N loop
+         Low := High + 1;
+         if High > U64'Last / 2 then
+            High := U64'Last;
+            if Family_Count (K, High, Distinct) < N then
+               return (Defined => False);
+            end if;
+            exit;
+         end if;
+         High := High * 2;
+      end loop;
+      while Low < High loop
+         Mid := Low + (High - Low) / 2;
+         if Family_Count (K, Mid, Distinct) < N then
+            Low := Mid + 1;
+         else
+            High := Mid;
+         end if;
+      end loop;
+      return (True, Low);
+   end Family_Nth;
+
+   function Nth_Almost_Prime (K : Natural; N : U64)
+      return Int.Optional_U64 is (Family_Nth (K, N, False));
+
+   function Nth_Omega_Prime (K : Natural; N : U64)
+      return Int.Optional_U64 is (Family_Nth (K, N, True));
 end Math_Prime_Util.Families;
