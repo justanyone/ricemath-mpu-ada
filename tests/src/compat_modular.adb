@@ -558,7 +558,7 @@ package body Compat_Modular is
          AUnit.Assertions.Assert
            (Kronecker (I128 (Edge), 1) = 1 and then
             Kronecker (-1, I128 (Edge)) =
-              (if Edge mod 4 in 0 | 1 then 1 else -1),
+              (if Edge mod 2 = 0 or else Edge mod 4 = 1 then 1 else -1),
             "symbol native boundaries");
          R := Divmod (I128 (Edge), -1, U64'Last);
          AUnit.Assertions.Assert
