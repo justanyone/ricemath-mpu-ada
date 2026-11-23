@@ -45,8 +45,8 @@ procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
       return Result;
    end Hex;
 
-   procedure Replay (T : in out Test_Case'Class);
-   procedure Replay (T : in out Test_Case'Class) is
+   procedure Replay;
+   procedure Replay is
       Cases : constant Case_Vectors.Vector := Load ("random");
       Count : Natural := 0;
    begin
@@ -196,8 +196,8 @@ procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
         (Count > 600, "too few CSPRNG fixtures replayed");
    end Replay;
 
-   procedure Contracts (T : in out Test_Case'Class);
-   procedure Contracts (T : in out Test_Case'Class) is
+   procedure Contracts;
+   procedure Contracts is
       type U64_Array is array (Positive range <>) of U64;
       G, H : Generator;
       A, B : Byte_Array (17 .. 80);
@@ -277,6 +277,7 @@ procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
    end Contracts;
 
 begin
-   Replay (T);
-   Contracts (T);
+   AUnit.Assertions.Assert (T.Name.all'Length > 0, "random test has a name");
+   Replay;
+   Contracts;
 end Compat_Random;
