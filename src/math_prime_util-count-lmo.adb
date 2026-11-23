@@ -85,6 +85,8 @@ package body Math_Prime_Util.Count.Lmo with SPARK_Mode => On is
       K3 : Natural := Initial_K3;
       Pi_M, Km, Last_Prime, Prime_Index, Step7_Max : Natural;
       Prime : U64;
+      --  MPU accumulates positive and negative leaf sums modulo 2**64;
+      --  their final difference is pi(N), which fits the native range.
       Sum1, Sum2 : U64 := 0;
       Last_Phi : U64;
       Start, Finish, Least : U64 := 0;

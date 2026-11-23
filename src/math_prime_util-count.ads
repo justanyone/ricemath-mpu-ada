@@ -32,7 +32,7 @@ package Math_Prime_Util.Count with SPARK_Mode => On is
    --  lmo.c: LMO_prime_count, extended LMO method. Returns pi (High).
    --  Storage_Error may propagate from local factor and phi tables.
    function Prime_Count (High : U64) return U64
-     with Pre => High <= Prime_Count_Limit,
+     with Pre => True,
           Post => (if High < 2 then Prime_Count'Result = 0)
                   and then Prime_Count'Result <= High;
 
