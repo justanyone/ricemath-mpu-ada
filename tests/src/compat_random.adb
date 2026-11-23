@@ -148,8 +148,18 @@ package body Compat_Random is
                --  Bigint_Modulus: native API accepts at most U64'Last.
                Checked := Parse_U64 (Arg (2), A);
                if Checked then
-                  Urandomm (G, A, V);
-                  Actual := To_Unbounded_String (Image (V));
+                  if C.Error then
+                     begin
+                        Urandomm (G, A, V);
+                        AUnit.Assertions.Assert (False, "zero modulus");
+                     exception
+                        when Ada.Assertions.Assertion_Error => null;
+                     end;
+                     Actual := To_Unbounded_String ("ERROR");
+                  else
+                     Urandomm (G, A, V);
+                     Actual := To_Unbounded_String (Image (V));
+                  end if;
                end if;
             elsif F = "urandomr" then
                --  Signed_Or_Bigint_Range: unsigned native tier only.
@@ -231,7 +241,7 @@ package body Compat_Random is
          "3b8f41518a11cc387b669b2ee6586", "ChaCha20 zero vector");
       --  Seed 42: bounded draws at each native arithmetic boundary.
       Csrand (G, [42, 0, 0, 0]);
-      for N of U64_Array'[0, 1, 2, 2 ** 32 - 1, 2 ** 32,
+      for N of U64_Array'[1, 2, 2 ** 32 - 1, 2 ** 32,
                           2 ** 32 + 1, 2 ** 63 - 1, 2 ** 63,
                           2 ** 63 + 1, U64'Last]
       loop
@@ -255,7 +265,13 @@ package body Compat_Random is
       AUnit.Assertions.Assert (Raised, "too many bits accepted");
       Csrand (H, [1, 2, 3]);
       Urandomb (G, 0, V);
-      Urandomm (G, 0, V);
+      Raised := False;
+      begin
+         Urandomm (G, 0, V);
+      exception
+         when Ada.Assertions.Assertion_Error => Raised := True;
+      end;
+      AUnit.Assertions.Assert (Raised, "zero modulus accepted");
       Urandomm (G, 1, V);
       Urandomr (G, U64'Last, U64'Last, V);
       Random_Bytes (G, A);

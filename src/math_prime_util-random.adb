@@ -95,8 +95,8 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
    procedure Refill (G : in out Generator);
    procedure Refill (G : in out Generator) is
       X : State_Array;
-      procedure Quarter (A, B, C, D : Natural);
-      procedure Quarter (A, B, C, D : Natural) is
+      procedure Quarter (A, B, C, D : State_Index);
+      procedure Quarter (A, B, C, D : State_Index) is
       begin
          X (A) := X (A) + X (B);
          X (D) := Rotate_Left (X (D) xor X (A), 16);
@@ -150,7 +150,8 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
    end Irand;
 
    --  chacha_irand64 places the first 32-bit draw in the HIGH word.
-   procedure Draw_64 (G : in out Generator; Value : out U64);
+   procedure Draw_64 (G : in out Generator; Value : out U64)
+     with Pre => Is_Seeded (G);
    procedure Draw_64 (G : in out Generator; Value : out U64) is
       A, B : U64;
    begin

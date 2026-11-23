@@ -39,11 +39,12 @@ package Math_Prime_Util.Random with SPARK_Mode => On is
      with Pre => Is_Seeded (G) and then Bits <= 64,
           Post => (if Bits < 64 then Value < 2 ** Bits);
 
-   --  Draw uniformly below Modulus; zero or one returns zero without a draw.
+   --  Draw uniformly below Modulus; one returns zero without a draw.
+   --  A zero modulus violates the precondition.
    procedure Urandomm
      (G : in out Generator; Modulus : U64; Value : out U64)
-     with Pre => Is_Seeded (G),
-          Post => (if Modulus <= 1 then Value = 0 else Value < Modulus);
+     with Pre => Is_Seeded (G) and then Modulus > 0,
+          Post => (if Modulus = 1 then Value = 0 else Value < Modulus);
 
    --  Draw uniformly in the inclusive interval Low .. High.
    --  An inverted interval violates the precondition.
@@ -53,7 +54,8 @@ package Math_Prime_Util.Random with SPARK_Mode => On is
           Post => Value in Low .. High;
 
 private
-   type State_Array is array (Natural range 0 .. 15) of Word;
+   subtype State_Index is Natural range 0 .. 15;
+   type State_Array is array (State_Index) of Word;
    type Generator is limited record
       State : State_Array := [others => 0];
       Buffer : Byte_Array (0 .. 1023) := [others => 0];
