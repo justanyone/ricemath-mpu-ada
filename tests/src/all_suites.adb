@@ -21,6 +21,7 @@ with Prop_Lucas;
 
 with Compat_Real;
 with Prop_Real;
+with Compat_Vec;
 
 package body All_Suites is
    function Suite return AUnit.Test_Suites.Access_Test_Suite is
