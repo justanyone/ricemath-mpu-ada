@@ -18,7 +18,7 @@ package Math_Prime_Util.Modular with SPARK_Mode => On is
    --  Undefined for N = 0 or else no root. A is reduced modulo N.
    function Sqrtmod (A : I128; N : U64) return Int.Optional_U64
      with Pre => True,
-          Post => (if Sqrtmod'Result.Defined then N > 0 and then then
+          Post => (if Sqrtmod'Result.Defined then N > 0 and then
                      Sqrtmod'Result.Value <= N / 2);
 
    --  allsqrtmod: all square roots, sorted; empty for N = 0 or else no root.
@@ -32,7 +32,7 @@ package Math_Prime_Util.Modular with SPARK_Mode => On is
    function Rootmod (A, K : I128; N : U64) return Int.Optional_U64
      with Pre => K in -I128 (U64'Last) .. I128 (U64'Last),
           Post => (if Rootmod'Result.Defined then
-                     N > 0 and then then Rootmod'Result.Value < N);
+                     N > 0 and then Rootmod'Result.Value < N);
 
    --  allrootmod: all K-th roots sorted, with the same domain as Rootmod.
    --  Empty for undefined results; Errors.Maximum_Roots_Exceeded at the cap.
@@ -45,9 +45,9 @@ package Math_Prime_Util.Modular with SPARK_Mode => On is
    function Cornacchia (D, N : U64) return Cornacchia_Result
      with Pre => True,
           Post => (if Cornacchia'Result.Defined then
-            U128 (Cornacchia'Result.X) ** 2 <= U128 (N) and then then
+            U128 (Cornacchia'Result.X) ** 2 <= U128 (N) and then
             (if D > 0 then U128 (Cornacchia'Result.Y) ** 2 <=
-               U128 (N) / U128 (D)) and then then
+               U128 (N) / U128 (D)) and then
             U128 (Cornacchia'Result.X) ** 2 + U128 (D) *
               U128 (Cornacchia'Result.Y) ** 2 = U128 (N));
 end Math_Prime_Util.Modular;

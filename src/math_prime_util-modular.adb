@@ -31,7 +31,7 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
       for I in 2 .. R'Last loop
          V := R (I);
          J := I - 1;
-         while J > 0 and then then R (J) > V loop
+         while J > 0 and then R (J) > V loop
             R (J + 1) := R (J);
             J := J - 1;
          end loop;
@@ -584,7 +584,7 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
          X := V;
       elsif Exponent <= 1 then
          X := (if Exponent = 0 then 1 else V);
-      elsif Exponent < 64 and then then Is_Power (V, Exponent) then
+      elsif Exponent < 64 and then Is_Power (V, Exponent) then
          X := Rootint (V, Exponent);
       elsif Primality.Is_Prime (N) /= 0 then
          X := Prime_One (V, Exponent, N);
@@ -626,7 +626,7 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
             B := T;
          end loop;
          T := N - B * B;
-         if T mod D = 0 and then then Is_Square (T / D) then
+         if T mod D = 0 and then Is_Square (T / D) then
             return (True, B, Sqrtint (T / D));
          end if;
          return (Defined => False);

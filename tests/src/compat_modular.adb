@@ -140,7 +140,7 @@ package body Compat_Modular is
       for N of Root_List'(2 ** 32 - 1, 2 ** 32 + 1, 2 ** 63 - 1,
                           2 ** 63 + 1, U64'Last) loop
          Single := Sqrtmod (1, N);
-         AUnit.Assertions.Assert (Single.Defined and then then Single.Value = 1,
+         AUnit.Assertions.Assert (Single.Defined and then Single.Value = 1,
                                   "native boundary square root");
       end loop;
       AUnit.Assertions.Assert
