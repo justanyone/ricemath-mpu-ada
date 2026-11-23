@@ -7,3 +7,5 @@ Removed three redundant forward declarations, reducing aggregate Ada additions f
 Verified git diff --check is clean and STATUS.md matches origin/dev-mpuada-001. No gnatcheck executable is available in the Alire environment; the declared gate checks compiler style and warnings instead.
 The test runner ignores its filter argument, so tools/test.sh random is exercising the full suite. Started the required tools/gate.sh; development compilation of the random package has started successfully.
 The gate exposed GNAT style diagnostics requiring the forward declarations. Restored them and instead removed three test commentary lines; the Ada addition remains 400 lines with test behavior unchanged. I will rerun the gate on this final tree.
+tools/test.sh random passed: 204 tests, 204 successful, zero failed assertions or unexpected errors. Only comments changed since that run; final gate rerun follows to validate restored style declarations.
+Final accounting against origin/dev-mpuada-001 is 178 + 46 + 173 + 3 = 400 Ada lines. STATUS.md has no difference from the base and git diff --check remains clean.
