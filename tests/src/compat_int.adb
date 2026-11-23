@@ -133,48 +133,48 @@ package body Compat_Int is
       V : Optional_U64;
       R : Removal_Result;
       O : Optional_I128;
+      N, K : I128;
+      Raised : Boolean;
    begin
       AUnit.Assertions.Assert (not Cases.Is_Empty, "missing " & Func);
       for C of Cases loop
-         declare
-            N : constant I128 := I128'Value (To_String (C.Args (1)));
-            K : constant I128 := I128'Value (To_String (C.Args (2)));
-            Raised : Boolean := False;
+         N := I128'Value (To_String (C.Args (1)));
+         K := I128'Value (To_String (C.Args (2)));
+         Raised := False;
+         Got := To_Unbounded_String ("undef");
          begin
-            Got := To_Unbounded_String ("undef");
-            begin
-               if Func = "valuation" then
-                  V := Valuation (N, K);
-                  if V.Defined then
-                     Got := To_Unbounded_String (Image (I128 (V.Value)));
-                  end if;
-               elsif Func = "remove_factors" then
-                  O := Remove_Factors (N, K);
-                  if O.Defined then
-                     Got := To_Unbounded_String (Image (O.Value));
-                  end if;
-               else
-                  R := Remove_Factors_Exp (N, K);
-                  if R.Defined then
-                     Got := To_Unbounded_String
-                       (Image (R.Value) & " " & Image (I128 (R.Exponent)));
-                  end if;
+            if Func = "valuation" then
+               V := Valuation (N, K);
+               if V.Defined then
+                  Got := To_Unbounded_String (Image (I128 (V.Value)));
                end if;
-            exception
-               when Constraint_Error | Ada.Assertions.Assertion_Error =>
-                  Raised := True;
-            end;
-            AUnit.Assertions.Assert
-              (Raised = C.Error, Func & " error row" &
-               Positive'Image (C.Line_Number));
-            if not C.Error then
-               AUnit.Assertions.Assert
-                 (Got = C.Result, Func & " row" &
-                  Positive'Image (C.Line_Number) & " got " & To_String (Got));
+            elsif Func = "remove_factors" then
+               O := Remove_Factors (N, K);
+               if O.Defined then
+                  Got := To_Unbounded_String (Image (O.Value));
+               end if;
+            else
+               R := Remove_Factors_Exp (N, K);
+               if R.Defined then
+                  Got := To_Unbounded_String
+                    (Image (R.Value) & " " & Image (I128 (R.Exponent)));
+               end if;
             end if;
+         exception
+            when Constraint_Error | Ada.Assertions.Assertion_Error =>
+               Raised := True;
          end;
+         AUnit.Assertions.Assert
+           (Raised = C.Error, Func & " error row" &
+            Positive'Image (C.Line_Number));
+         if not C.Error then
+            AUnit.Assertions.Assert
+              (Got = C.Result, Func & " row" &
+               Positive'Image (C.Line_Number) & " got " & To_String (Got));
+         end if;
       end loop;
    end Replay_Removal;
+
 
    procedure Test_Valuation (T : in out Test_Case'Class) is
    begin

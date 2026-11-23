@@ -2458,6 +2458,7 @@ package body Math_Prime_Util.Families is
 
    function Is_Powerful (N : U64; K : U64 := 2) return Boolean is
       F : Factor.Factor_List;
+      I, J : Natural;
    begin
       if N <= 1 then
          return N = 1;
@@ -2485,6 +2486,7 @@ package body Math_Prime_Util.Families is
       return Boolean
    is
       F : Factor.Factor_List;
+      I, J : Natural;
    begin
       if N <= 1 or else K < 2 then
          return N = 1;
@@ -2509,6 +2511,7 @@ package body Math_Prime_Util.Families is
    function Squarefree_Kernel (N : U64) return U64 is
       F : constant Factor.Factor_List := Factor.Factor (N);
       P : U64 := 1;
+      I, J : Natural;
    begin
       for I in 1 .. F.Count loop
          if I = 1 or else F.Value (I) /= F.Value (I - 1) then
@@ -2523,6 +2526,7 @@ package body Math_Prime_Util.Families is
    is
       F : Factor.Factor_List;
       P : U64 := 1;
+      I, J : Natural;
    begin
       if N <= 1 or else K < 2 then
          return (if N = 1 then 1 else 0);

@@ -17,6 +17,7 @@ package body Compat_Families is
    use Fixture_Support;
    use Math_Prime_Util;
    use type U64;
+   use type Int.I128;
    use Math_Prime_Util.Families;
    use Math_Prime_Util.Goldbach;
    use type Ada.Containers.Count_Type;
@@ -35,28 +36,6 @@ package body Compat_Families is
      (Ada.Strings.Fixed.Trim (U64'Image (N), Ada.Strings.Both));
    function Image (N : Int.Optional_U64) return String is
      (if N.Defined then Image (N.Value) else "undef");
-
-   procedure Replay (Func : String);
-
-   procedure Test_Next_Chen_Prime (T : in out Test_Case'Class) is
-   begin
-      Replay ("next_chen_prime");
-      AUnit.Assertions.Assert
-        (not Next_Chen_Prime (18_446_744_073_709_551_437).Defined,
-         "last Chen prime");
-      AUnit.Assertions.Assert
-        (not Next_Chen_Prime (U64'Last).Defined, "Chen native limit");
-   end Test_Next_Chen_Prime;
-
-   procedure Test_Is_Gaussian_Prime (T : in out Test_Case'Class) is
-   begin
-      Replay ("is_gaussian_prime");
-   end Test_Is_Gaussian_Prime;
-
-   procedure Test_Is_Sum_Of_Squares (T : in out Test_Case'Class) is
-   begin
-      Replay ("is_sum_of_squares");
-   end Test_Is_Sum_Of_Squares;
 
    procedure Replay (Func : String) is
       Cases : constant Case_Vectors.Vector :=
@@ -221,6 +200,26 @@ package body Compat_Families is
          end if;
       end loop;
    end Replay;
+
+   procedure Test_Next_Chen_Prime (T : in out Test_Case'Class) is
+   begin
+      Replay ("next_chen_prime");
+      AUnit.Assertions.Assert
+        (not Next_Chen_Prime (18_446_744_073_709_551_437).Defined,
+         "last Chen prime");
+      AUnit.Assertions.Assert
+        (not Next_Chen_Prime (U64'Last).Defined, "Chen native limit");
+   end Test_Next_Chen_Prime;
+
+   procedure Test_Is_Gaussian_Prime (T : in out Test_Case'Class) is
+   begin
+      Replay ("is_gaussian_prime");
+   end Test_Is_Gaussian_Prime;
+
+   procedure Test_Is_Sum_Of_Squares (T : in out Test_Case'Class) is
+   begin
+      Replay ("is_sum_of_squares");
+   end Test_Is_Sum_Of_Squares;
 
    function Wide_Image (N : U128) return String is
      (Ada.Strings.Fixed.Trim (U128'Image (N), Ada.Strings.Both));
