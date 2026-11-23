@@ -133,9 +133,7 @@ package body Compat_Iter is
          then
             Fits := Parse_U64 (To_String (C.Args (2)), B) and then Fits;
          end if;
-         --  Skipped ERROR rows: undef, negative, fractional and text inputs
-         --  cannot reach these typed Ada APIs. Bigint inputs require the
-         --  bigint tier. Prime streams crossing U64 are skipped as a whole.
+         --  Skip unrepresentable ERROR inputs and streams crossing U64.
          if (Func = "prime_iterator" or else
              Func = "prime_iterator_object_iterate")
            and then not C.Error

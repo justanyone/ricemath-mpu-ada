@@ -259,12 +259,10 @@ package body Math_Prime_Util.Iter is
       Max_Length : constant Natural := Natural'Min (N, Options.Nmax);
       Max_Part : constant Natural := Natural'Min (N, Options.Amax);
    begin
-      if N = 0 then
-         if Options.Nmin <= 1 then
-            Process (Parts (1 .. 0), Context);
-         end if;
-         return;
-      elsif Min_Length > Max_Length or else Min_Part > Max_Part then
+      if N = 0 and then Options.Nmin <= 1 then
+         Process (Parts (1 .. 0), Context);
+      end if;
+      if Min_Length > Max_Length or else Min_Part > Max_Part then
          return;
       end if;
       --  PP.pm: _forcompositions, iterative lexical composition traversal.
