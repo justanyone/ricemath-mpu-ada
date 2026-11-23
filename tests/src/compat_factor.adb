@@ -45,14 +45,14 @@ package body Compat_Factor is
 
    function Join (V : Factor.U64_Vectors.Vector) return String is
       Text : Unbounded_String;
-      First : Boolean := True;
    begin
-      for D of V loop
-         if not First then
+      --  Element, not "for of": the library is built with -gnatp, and a
+      --  reference iterator then asks for a finalizer the archive lacks.
+      for I in 1 .. Natural (V.Length) loop
+         if I > 1 then
             Append (Text, " ");
          end if;
-         First := False;
-         Append (Text, Trim (D));
+         Append (Text, Trim (V.Element (Positive (I))));
       end loop;
       return To_String (Text);
    end Join;
