@@ -7,8 +7,8 @@ package body Math_Prime_Util.Arith with SPARK_Mode => On is
    --  This bound also keeps conversion to the signed I128 type exact.
    Wide_Limit : constant U128 := U128 (U64'Last) * 128;
 
-   --  A native integer has at most N divisors, each at most N, so sigma
-   --  fits U128. Cap intermediate products before any modular wrap.
+   --  A native integer has at most N divisors, each at most N, so sigma_1
+   --  fits U128. Cap higher-power sums before any modular wrap.
    function Sigma (N, K : U64; Limit : U128) return U128
      with Pre => Limit in 1 .. U128'Last - 1,
           Post => Sigma'Result <= Limit + 1;
