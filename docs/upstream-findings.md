@@ -499,6 +499,7 @@ Math::Prime::Util::PP::random_safe_prime(65)` raises
 ERROR. Its replay skips value equality for this named row and checks the correct
 65-bit safe prime form: both p and (p-1)/2 must pass primality tests.
 
+<<<<<<< HEAD
 ## MPU_Li_Rounding: maximum native prime-power bounds
 
 `families.tsv` rows for `prime_power_count_lower/upper (2**64-1)`
@@ -516,3 +517,19 @@ skips exact counts beyond Count.Prime_Count_Limit. Bigint_Index skips
 nth-perfect-power indices above 4297615581, where MPU uses its Perl
 bigint fallback. Signed_Overflow skips negative predecessors whose
 next odd-power magnitude cannot fit U64. Fixtures remain unchanged.
+=======
+### Ada native Li precision (compatibility limit, not an MPU defect)
+
+`families.tsv` rows 2624 and 2641 evaluate the lower and upper Ramanujan
+count bounds at 2^64 - 1. The native-overflow fallback uses respectively
+`prime_count_lower(n) / 3` and `prime_count_upper(n) / 2` from
+`ramanujan_primes.c`. Ada Count evaluates Li with its convergent Ei series;
+MPU uses its own Li evaluator. On the installed x86-64 GNAT toolchain the
+results are 141885427974027788 and 212828142057859307, versus fixture values
+141885427974027780 and 212828142057859296. Both remain conservative bounds.
+`Compat_Families.Replay` names this exception `Native_Max_Li_Precision`,
+skips exact equality on only these two rows, and checks a maximum difference
+of 16 integer units. `Compat_Families.Ramanujan_Laws` also checks the native
+boundary bounds against the count approximation. Fixtures are unchanged;
+this records a numerical compatibility limit, not a mathematical correction.
+>>>>>>> origin/dev-mpuada-001
