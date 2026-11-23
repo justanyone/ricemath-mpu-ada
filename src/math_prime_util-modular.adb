@@ -696,6 +696,27 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
          end if;
          return (Defined => False);
       end if;
+      --  util.c: corn_all. On large composites, try modular roots first.
+      if N >= 2 ** 53 then
+         declare
+            Roots : constant Root_List := Allsqrtmod (-I128 (D), N);
+         begin
+            for I in 1 .. Roots'Length / 2 loop
+               A := N;
+               B := U64'Max (Roots (I), N - Roots (I));
+               Limit := Sqrtint (N);
+               while B > Limit loop
+                  T := A mod B;
+                  A := B;
+                  B := T;
+               end loop;
+               T := N - B * B;
+               if T > 0 and then T mod D = 0 and then Is_Square (T / D) then
+                  return (True, B, Sqrtint (T / D));
+               end if;
+            end loop;
+         end;
+      end if;
       Limit := Sqrtint (N / D);
       for Y in U64 range 0 .. Limit loop
          T := N - D * Y * Y;

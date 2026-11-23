@@ -148,6 +148,13 @@ package body Compat_Modular is
          Sqrtmod (I128'Last, 1).Value = 0 and then
          Sqrtmod (I128 (2) ** 64, 1).Value = 0,
          "wide signed input reduction");
+      declare
+         R : constant Cornacchia_Result := Cornacchia (1, 2 ** 54);
+      begin
+         AUnit.Assertions.Assert
+           (R.Defined and then R.X = 2 ** 27 and then R.Y = 0,
+            "large composite Cornacchia fallback");
+      end;
       AUnit.Assertions.Assert
         (Allrootmod (2, -1, 4)'Length = 0, "noninvertible negative exponent");
       begin
