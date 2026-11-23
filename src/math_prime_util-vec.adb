@@ -220,7 +220,7 @@ package body Math_Prime_Util.Vec with SPARK_Mode => Off is
       M : Big_Integer := Mask;
       Len : constant Natural := Natural (Items.Length);
       I : Natural := 0;
-      Out : Int_List;
+      Picked : Int_List;
    begin
       if Mask < 0 then
          raise Constraint_Error with "vecextract negative mask";
@@ -228,28 +228,29 @@ package body Math_Prime_Util.Vec with SPARK_Mode => Off is
       while M /= 0 loop
          if M mod 2 /= 0 then
             if I >= Len then
-               if Out.Is_Empty then
-                  return (Defined => False, Items => Int_Vectors.Empty_Vector);
+               if Picked.Is_Empty then
+                  return (Defined => False,
+                          Items => Int_Vectors.Empty_Vector);
                end if;
             else
-               Out.Append (Items (I + 1));
+               Picked.Append (Items (I + 1));
             end if;
          end if;
          M := M / 2;
          I := I + 1;
       end loop;
-      return (Defined => True, Items => Out);
+      return (Defined => True, Items => Picked);
    end Vecextract;
 
    function Vecextract
      (Items : Int_List; Indexes : Int_List) return List_Result
    is
       Len : constant Big_Integer := To_Big_Integer (Natural (Items.Length));
-      Out : Int_List;
+      Picked : Int_List;
       J : Big_Integer;
    begin
       if Indexes.Is_Empty then
-         return (Defined => True, Items => Out);
+         return (Defined => True, Items => Picked);
       end if;
       for Ix of Indexes loop
          J := Ix;
@@ -257,14 +258,15 @@ package body Math_Prime_Util.Vec with SPARK_Mode => Off is
             J := Len + J;
          end if;
          if J < 0 or else J >= Len then
-            if Out.Is_Empty then
-               return (Defined => False, Items => Int_Vectors.Empty_Vector);
+            if Picked.Is_Empty then
+               return (Defined => False,
+                       Items => Int_Vectors.Empty_Vector);
             end if;
          else
-            Out.Append (Items (To_Integer (J) + 1));
+            Picked.Append (Items (To_Integer (J) + 1));
          end if;
       end loop;
-      return (Defined => True, Items => Out);
+      return (Defined => True, Items => Picked);
    end Vecextract;
 
    function Vecequal (Left, Right : Int_List) return Boolean is
