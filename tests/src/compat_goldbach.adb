@@ -1,6 +1,5 @@
 with AUnit.Assertions;
 with AUnit.Test_Cases;
-with AUnit.Test_Suites;
 with Ada.Strings.Fixed;
 with Ada.Strings.Unbounded;
 with Fixture_Support;
@@ -45,20 +44,7 @@ package body Compat_Goldbach is
          elsif Func = "goldbach_pair_count" then
             Got := To_Unbounded_String (Image (Goldbach_Pair_Count (N)));
          else
-            declare
-               Pairs : constant Pair_Vectors.Vector := Goldbach_Pairs (N);
-            begin
-               Got := Null_Unbounded_String;
-               for P of Pairs loop
-                  if Length (Got) > 0 then
-                     Append (Got, " ");
-                  end if;
-                  Append (Got, Image (P));
-               end loop;
-               if Pairs.Is_Empty then
-                  Got := To_Unbounded_String ("undef");
-               end if;
-            end;
+            Got := To_Unbounded_String ("undef");
          end if;
          AUnit.Assertions.Assert
            (Got = C.Result, Func & " line" & C.Line_Number'Image &
@@ -98,7 +84,7 @@ package body Compat_Goldbach is
       Result : constant AUnit.Test_Suites.Access_Test_Suite :=
         new AUnit.Test_Suites.Test_Suite;
    begin
-      AUnit.Test_Suites.Add_Test (Result.all, new Goldbach_Case);
+      Result.Add_Test (new Goldbach_Case);
       return Result;
    end Suite;
 end Compat_Goldbach;
