@@ -19,6 +19,7 @@ with Prop_Rational;
 with Compat_Lucas;
 with Prop_Lucas;
 
+with Compat_Arith;
 with Compat_Real;
 with Prop_Real;
 
@@ -29,6 +30,7 @@ package body All_Suites is
    begin
       Result.Add_Test (Test_Fixture_Support.Suite);
       Result.Add_Test (Compat_Int.Suite);
+      Result.Add_Test (Compat_Arith.Suite);
       Result.Add_Test (Prop_Int.Suite);
       Result.Add_Test (Compat_Combinat.Suite);
       Result.Add_Test (Prop_Combinat.Suite);
