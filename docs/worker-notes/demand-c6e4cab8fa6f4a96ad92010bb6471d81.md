@@ -3,3 +3,4 @@ Read the plan, status, oracle, and test registration before choosing the smalles
 Keep generated STATUS.md unchanged and stay within the requested Ada line budget.
 Run focused random tests and the declared gate; record any environmental blockers here.
 Checked existing ChaCha, PCG seed expansion, entropy binding, and fixture dispatch against the C oracle; building baseline tests before selecting a regression.
+Alire initially failed creating its runtime temporary file; setting XDG_RUNTIME_DIR to obj/tmp permits the offline build. Added stream-preservation checks for empty bytes, zero bits, modulus one and singleton ranges.

@@ -129,8 +129,9 @@ procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
    procedure Contracts is
       G, H : Generator;
       A, B : Byte_Array (17 .. 80);
-      V : U64;
+      V, Expected : U64;
       Raised : Boolean;
+      Empty : Byte_Array (1 .. 0);
    begin
       --  Unseeded and oversized draws must fail before consuming bytes.
       for Bits of Natural_Array'[32, 65] loop
@@ -143,6 +144,16 @@ procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
          AUnit.Assertions.Assert (Raised, "invalid draw accepted");
          Csrand (G);
       end loop;
+      --  Given a seeded stream, no-op draws preserve its next word.
+      Csrand (G, [0]);
+      Csrand (H, [0]);
+      Random_Bytes (G, Empty);
+      Urandomb (G, 0, V);
+      Urandomm (G, 1, V);
+      Urandomr (G, U64'Last, U64'Last, V);
+      Irand (G, V);
+      Irand (H, Expected);
+      AUnit.Assertions.Assert (V = Expected, "no-op consumed stream bytes");
       --  Partial-word seeds, nonzero array bounds and deterministic replay.
       for Size in 0 .. 41 loop
          declare
