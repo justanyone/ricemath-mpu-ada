@@ -1,6 +1,5 @@
 with Ada.Containers.Vectors;
 with Math_Prime_Util.Int;
-with Math_Prime_Util.Primality;
 
 --  Lucky-number sieves and estimates from MPU 0.75.
 package Math_Prime_Util.Families is
@@ -55,6 +54,11 @@ package Math_Prime_Util.Families is
 
    --  ramanujan_primes.c: is_ramanujan_prime. Test whether N is a
    --  Ramanujan prime; may allocate a sieve and propagate Storage_Error.
+   function Is_Ramanujan_Prime (N : U64) return Boolean
+     with Pre => True,
+          Post => (if N < 2 then not Is_Ramanujan_Prime'Result);
+   --  ramanujan_primes.c: is_ramanujan_prime. Test membership; allocation
+   --  failures propagate as Storage_Error.
    function Is_Ramanujan_Prime (N : U64) return Boolean
      with Pre => True,
           Post => (if N < 2 then not Is_Ramanujan_Prime'Result);

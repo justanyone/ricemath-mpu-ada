@@ -690,25 +690,26 @@ package body Math_Prime_Util.Families is
          end loop;
       end if;
 
-      --  Ramanujan primes are exactly the primes where pi(x)-pi(x/2)
-      --  reaches a new record at x=N; this bounded prefix scan is exact.
+      --  ramanujan_primes.c: compare pi(x)-pi(x/2) with prior records.
       declare
          Primes : constant Math_Prime_Util.Sieve.Prime_Vectors.Vector :=
            Math_Prime_Util.Sieve.Primes (N);
-         Count, Previous, Best : U64 := 0;
+         Best : U64 := 0;
       begin
          for P of Primes loop
-            if P > N / 2 then
-               Count := Count + 1;
-            end if;
-            if P = N then
-               return Count > Best;
-            elsif P > 2 then
-               Previous := Count;
-               Best := U64'Max (Best, Previous);
+            exit when P >= N;
+            if P mod 2 = 1 then
+               declare
+                  Difference : constant U64 :=
+                    U64 (Math_Prime_Util.Sieve.Primes (P).Length)
+                    - U64 (Math_Prime_Util.Sieve.Primes (P / 2).Length);
+               begin
+                  Best := U64' Max (Best, Difference);
+               end;
             end if;
          end loop;
+         return U64 (Primes.Length)
+           - U64 (Math_Prime_Util.Sieve.Primes (N / 2).Length) > Best;
       end;
-      return False;
    end Is_Ramanujan_Prime;
 end Math_Prime_Util.Families;
