@@ -248,6 +248,12 @@ package body Math_Prime_Util.Iter is
      (N : Natural; Ordered : Boolean;
       Process : not null access procedure
         (Parts : Value_Array; Context : in out Loop_Context);
+      Options : Partition_Options := (others => <>));
+
+   procedure Partitions
+     (N : Natural; Ordered : Boolean;
+      Process : not null access procedure
+        (Parts : Value_Array; Context : in out Loop_Context);
       Options : Partition_Options := (others => <>))
    is
       Context : Loop_Context := (Active => True, Stop => False);
@@ -377,6 +383,12 @@ package body Math_Prime_Util.Iter is
    end Forcomb;
 
    type Multiplicities is array (Positive range <>) of Natural;
+   procedure Permutations
+     (Keys : Value_Array; Counts : in out Multiplicities;
+      N : Natural; Derange : Boolean;
+      Process : not null access procedure
+        (Values : Value_Array; Context : in out Loop_Context));
+
    procedure Permutations
      (Keys : Value_Array; Counts : in out Multiplicities;
       N : Natural; Derange : Boolean;

@@ -8,3 +8,4 @@ Found iterator tests absent from the normal suite/build list; adding the existin
 Correction: All_Suites already registers Compat_Iter. Reusing powers_runner with its existing name filter avoids adding another build target; direct iterator compilation succeeded.
 All nine focused iterator tests passed. Sharing multiset multiplicity traversal with ordinary/derangement permutations to reduce the remaining budget excess.
 Focused iterator tests passed before the final multiplicity refactor; gate is running. Python BDD remains blocked by missing pytest-bdd, while Ruff/Vulture checks pass.
+Final review: Ruff/Vulture and whitespace checks pass. Added helper specs for GNAT style. Change reduction is substantial but still exceeds the requested 400-line budget; pytest-bdd and gnatcheck are unavailable here.
