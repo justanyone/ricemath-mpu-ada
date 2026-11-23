@@ -4,3 +4,4 @@ Add deterministic fixture coverage and public contracts; preserve generated STAT
 Run focused tests and the declared gate, recording any toolchain limitations.
 Read C recursive construction and counting; factor package is absent, so use existing prime and integer primitives. Next implement exact lists/counts/nth and replay their fixtures.
 Implemented exact recursive lists/counts/nth and narrow factor sieving. Alire needs XDG_RUNTIME_DIR redirected into obj/tmp on this host; checking compilation next.
+Exact fixture replay written. First build fails because Alire/gprbuild cannot locate an Ada compiler; checking local toolchain availability while adding bounds and edge coverage.

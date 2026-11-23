@@ -134,8 +134,86 @@ package body Compat_Families is
       Replay ("nth_lucky_upper");
    end Test_Nth_Lucky_Upper;
 
+
+   --  Given the committed MPU family rows, when each native list, count,
+   --  or nth API runs, then its serialized result equals the fixture.
+   procedure Test_Factor_Families (T : in out Test_Case'Class) is
+      K : Natural;
+      Low, High : U64;
+      Actual : Unbounded_String;
+      V : Family_Vectors.Vector;
+      R : Int.Optional_U64;
+      N : U64;
+   begin
+      for C of Load ("families") loop
+         declare
+            F : constant String := To_String (C.Func);
+         begin
+            if F in "almost_primes" | "omega_primes" |
+              "almost_prime_count" | "omega_prime_count" |
+              "nth_almost_prime" | "nth_omega_prime"
+            then
+               if C.Error then
+                  --  Negative factor counts are rejected by Ada's Natural
+                  --  parameter subtype before entering the public function.
+                  declare
+                     Rejected : Boolean := False;
+                  begin
+                     begin
+                        N := Almost_Prime_Count
+                          (Natural'Value (To_String (C.Args (1))), 100);
+                     exception
+                        when Constraint_Error => Rejected := True;
+                     end;
+                     AUnit.Assertions.Assert (Rejected, "negative K");
+                  end;
+               else
+                  K := Natural'Value (To_String (C.Args (1)));
+                  High := U64'Value (To_String (C.Args (2)));
+                  Actual := Null_Unbounded_String;
+                  if F in "almost_primes" | "omega_primes" then
+                     Low := 1;
+                     if Natural (C.Args.Length) = 3 then
+                        Low := High;
+                        High := U64'Value (To_String (C.Args (3)));
+                     end if;
+                     V := (if F = "almost_primes" then
+                             Almost_Primes (K, Low, High)
+                           else Omega_Primes (K, Low, High));
+                     for X of V loop
+                        if Length (Actual) > 0 then
+                           Append (Actual, " ");
+                        end if;
+                        Append (Actual, Image (X));
+                     end loop;
+                     if V.Is_Empty then
+                        Actual := To_Unbounded_String ("undef");
+                     end if;
+                  elsif F in "almost_prime_count" | "omega_prime_count" then
+                     N := (if F = "almost_prime_count" then
+                             Almost_Prime_Count (K, High)
+                           else Omega_Prime_Count (K, High));
+                     Actual := To_Unbounded_String (Image (N));
+                  else
+                     R := (if F = "nth_almost_prime" then
+                             Nth_Almost_Prime (K, High)
+                           else Nth_Omega_Prime (K, High));
+                     Actual := To_Unbounded_String (Image (R));
+                  end if;
+                  AUnit.Assertions.Assert
+                    (Actual = C.Result, F & " line" & C.Line_Number'Image &
+                     " expected " & To_String (C.Result) & " got " &
+                     To_String (Actual));
+               end if;
+            end if;
+         end;
+      end loop;
+   end Test_Factor_Families;
+
    overriding procedure Register_Tests (T : in out Families_Case) is
    begin
+      Registration.Register_Routine
+        (T, Test_Factor_Families'Access, "factor families");
       Registration.Register_Routine
         (T, Test_Lucky_Numbers'Access, "lucky_numbers");
       Registration.Register_Routine
