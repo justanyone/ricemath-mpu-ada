@@ -529,24 +529,24 @@ package body Math_Prime_Util.Iter is
          return;
       end if;
       for J in Values'Range loop
-         if Snapshot (J)'Length = 0 then
+         if Snapshot.Element (J)'Length = 0 then
             return;
          end if;
-         Indices (J) := Snapshot (J)'First;
+         Indices (J) := Snapshot.Element (J)'First;
       end loop;
       loop
          for J in Values'Range loop
-            Values (J) := Snapshot (J) (Indices (J));
+            Values (J) := Snapshot.Element (J) (Indices (J));
          end loop;
          Process (Values, Context);
          exit when Context.Stop;
          I := Values'Last;
          while I > 0 loop
-            if Indices (I) < Snapshot (I)'Last then
+            if Indices (I) < Snapshot.Element (I)'Last then
                Indices (I) := Indices (I) + 1;
                exit;
             end if;
-            Indices (I) := Snapshot (I)'First;
+            Indices (I) := Snapshot.Element (I)'First;
             I := I - 1;
          end loop;
          exit when I = 0;

@@ -297,6 +297,8 @@ package body Compat_Iter is
    procedure Check_Object (T : in out Test_Case'Class) is
       Cursor : Prime_Object := Prime_Iterator_Object;
       P : Int.Optional_U64;
+      procedure Expect (N : U64);
+
       procedure Expect (N : U64) is
       begin
          P := Value (Cursor);
@@ -350,6 +352,8 @@ package body Compat_Iter is
    procedure Check_Print (T : in out Test_Case'Class) is
       File : Ada.Text_IO.File_Type;
       Path : constant String := "obj/iter-primes.txt";
+      procedure Check (Low, High : U64);
+
       procedure Check (Low, High : U64) is
          Expected : constant Sieve.Prime_Vectors.Vector :=
            Sieve.Primes (Low, High);
@@ -375,6 +379,77 @@ package body Compat_Iter is
       Check (20, 10);
       Check (0, 1);
    end Check_Print;
+
+   procedure Check_New_Control (T : in out Test_Case'Class) is
+      Calls : Natural := 0;
+      Lists : Value_List_Vectors.Vector;
+      Callback_Error : exception;
+      Raised : Boolean;
+      Got : Unbounded_String;
+      procedure Stop
+        (Values : Value_Array; Context : in out Loop_Context);
+      procedure Fail
+        (Values : Value_Array; Context : in out Loop_Context);
+      procedure Collect
+        (Values : Value_Array; Context : in out Loop_Context);
+
+      procedure Stop
+        (Values : Value_Array; Context : in out Loop_Context) is
+      begin
+         Calls := Calls + 1;
+         Lastfor (Context);
+      end Stop;
+
+      procedure Fail
+        (Values : Value_Array; Context : in out Loop_Context) is
+      begin
+         raise Callback_Error;
+      end Fail;
+
+      procedure Collect
+        (Values : Value_Array; Context : in out Loop_Context) is
+      begin
+         for V of Values loop
+            Append (Got, Image (V) & " ");
+         end loop;
+      end Collect;
+   begin
+      --  Each new loop stops after its first callback.
+      Forcomp (12, Stop'Access);
+      Forderange (8, Stop'Access);
+      Formultiperm ([1, 1, 2, 2], Stop'Access);
+      Lists.Append (Value_Array'(3 .. 4 => U64'Last));
+      Lists.Append (Value_Array'[0, 1]);
+      Forsetproduct (Lists, Stop'Access);
+      AUnit.Assertions.Assert (Calls = 4, "new loop lastfor");
+      --  Exceptions propagate and leave later loops independently usable.
+      for Kind in 1 .. 4 loop
+         Raised := False;
+         begin
+            case Kind is
+               when 1 => Forcomp (4, Fail'Access);
+               when 2 => Forderange (4, Fail'Access);
+               when 3 => Formultiperm ([1, 2], Fail'Access);
+               when 4 => Forsetproduct (Lists, Fail'Access);
+            end case;
+         exception
+            when Callback_Error => Raised := True;
+         end;
+         AUnit.Assertions.Assert (Raised, "callback exception swallowed");
+      end loop;
+      Calls := 0;
+      Forsetproduct (Lists, Stop'Access);
+      AUnit.Assertions.Assert (Calls = 1, "loop after callback exception");
+      --  Numeric Perl hash keys sort by decimal spelling, not magnitude.
+      Formultiperm ([2, 10], Collect'Access);
+      AUnit.Assertions.Assert (Got = "10 2 2 10 ", "multiset key order");
+      Got := Null_Unbounded_String;
+      Formultiperm (Value_Array'(4 .. 5 => U64'Last), Collect'Access);
+      AUnit.Assertions.Assert
+        (Got = Image (U64'Last) & " " & Image (U64'Last) & " ",
+         "nonstandard multiset bounds");
+      Print_Primes (1, 0);
+   end Check_New_Control;
 
    procedure Check_Control (T : in out Test_Case'Class) is
       Rows : constant Case_Vectors.Vector := Load ("iter");
@@ -710,6 +785,8 @@ package body Compat_Iter is
         (T, Check_Forsetproduct'Access, "forsetproduct");
       Registration.Register_Routine (T, Check_Object'Access, "object");
       Registration.Register_Routine (T, Check_Print'Access, "print_primes");
+      Registration.Register_Routine
+        (T, Check_New_Control'Access, "new_control");
       Registration.Register_Routine (T, Check_Control'Access, "control");
       Registration.Register_Routine
         (T, Check_Properties'Access, "properties");
