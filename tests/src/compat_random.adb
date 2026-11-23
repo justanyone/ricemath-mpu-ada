@@ -32,12 +32,12 @@ procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
    function Hex (Data : Byte_Array) return String is
       Hex_Alphabet : constant String := "0123456789abcdef";
       Result : String (1 .. 2 * Data'Length);
-      P : Positive := 1;
    begin
-      for B of Data loop
-         Result (P) := Hex_Alphabet (Natural (B / 16) + 1);
-         Result (P + 1) := Hex_Alphabet (Natural (B mod 16) + 1);
-         P := P + 2;
+      for I in 1 .. Data'Length loop
+         Result (2 * I - 1) := Hex_Alphabet
+           (Natural (Data (Data'First + I - 1) / 16) + 1);
+         Result (2 * I) := Hex_Alphabet
+           (Natural (Data (Data'First + I - 1) mod 16) + 1);
       end loop;
       return Result;
    end Hex;
@@ -57,10 +57,7 @@ procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
               (To_String (C.Args (I)));
             procedure Add (S : String) is
             begin
-               if Length (Actual) > 0 then
-                  Append (Actual, " ");
-               end if;
-               Append (Actual, S);
+               Append (Actual, (if Length (Actual) > 0 then " " else "") & S);
             end Add;
             procedure Bytes (Size : Natural; Discard : Boolean := False) is
                Data : Byte_Array (1 .. Size);
@@ -129,7 +126,7 @@ procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
                exception
                   when Ada.Assertions.Assertion_Error =>
                      AUnit.Assertions.Assert
-                       (C.Error or else C.Undef, "unexpected contract failure");
+                       (C.Error or else C.Undef, "unexpected contract error");
                      Actual := C.Result;
                end;
                Count := Count + 1;
@@ -144,17 +141,17 @@ procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
       G, H : Generator;
       A, B : Byte_Array (17 .. 80);
       V : U64;
+      Raised : Boolean;
    begin
       --  Unseeded and oversized draws must fail before consuming bytes.
       for Bits of Natural_Array'[32, 65] loop
+         Raised := False;
          begin
             Urandomb (G, Bits, V);
-            AUnit.Assertions.Assert (False, "invalid draw accepted");
          exception
-            when Ada.Assertions.Assertion_Error =>
-               AUnit.Assertions.Assert
-                 (not Is_Seeded (G) or else Bits = 65, "wrong rejection");
+            when Ada.Assertions.Assertion_Error => Raised := True;
          end;
+         AUnit.Assertions.Assert (Raised, "invalid draw accepted");
          Csrand (G);
       end loop;
       --  Partial-word seeds, nonzero array bounds and deterministic replay.

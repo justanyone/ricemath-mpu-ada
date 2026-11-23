@@ -15,8 +15,8 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
       or Shift_Left (Word (Data (Data'First + Offset + 3)), 24));
 
    procedure Store (Data : in out Byte_Array; Offset : Natural; V : Word)
-     with Pre => Offset <= Data'Length and then Data'Length - Offset >= 4;
-   procedure Store (Data : in out Byte_Array; Offset : Natural; V : Word) is
+     with Pre => Offset <= Data'Length and then Data'Length - Offset >= 4
+   is
    begin
       for I in 0 .. 3 loop
          Data (Data'First + Offset + I) :=
@@ -177,20 +177,12 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
       if Modulus <= 1 then
          Value := 0;
          return;
-      elsif Modulus <= 16#FFFF_FFFF# then
-         Minimum := U64 ((-Word (Modulus)) mod Word (Modulus));
-      elsif Modulus = 2 ** 32 then
-         Irand (G, Value);
-         return;
-      else
-         Minimum := (-Modulus) mod Modulus;
       end if;
+      Minimum := (if Modulus < 2 ** 32
+        then U64 ((-Word (Modulus)) mod Word (Modulus))
+        else (-Modulus) mod Modulus);
       loop
-         if Modulus <= 16#FFFF_FFFF# then
-            Irand (G, Value);
-         else
-            Urandomb (G, 64, Value);
-         end if;
+         Urandomb (G, (if Modulus <= 2 ** 32 then 32 else 64), Value);
          exit when Value >= Minimum;
       end loop;
       Value := Value mod Modulus;

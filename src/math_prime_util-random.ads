@@ -1,6 +1,5 @@
 with Interfaces;
 
---  MPU 0.75 chacha.c and csprng.c, using caller-owned state.
 package Math_Prime_Util.Random with SPARK_Mode => On is
    use type U64;
    subtype Byte is Interfaces.Unsigned_8;
@@ -10,13 +9,11 @@ package Math_Prime_Util.Random with SPARK_Mode => On is
      with Volatile_Components;
    type Generator is limited private;
 
-   --  Keep one context per task, or synchronize access when sharing it.
 
    --  Whether a seed has been supplied. A new generator cannot emit bytes.
    function Is_Seeded (G : Generator) return Boolean;
 
-   --  Seed from bytes; short seeds use MPU's PCG expansion and are insecure.
-   --  At least 16 unpredictable bytes are needed for a secure seed.
+   --  Seed bytes; short seeds use insecure PCG. Use >=16 unpredictable bytes.
    procedure Csrand (G : out Generator; Seed : Byte_Array)
      with Post => Is_Seeded (G);
 
@@ -39,15 +36,13 @@ package Math_Prime_Util.Random with SPARK_Mode => On is
      with Pre => Is_Seeded (G) and then Bits <= 64,
           Post => (if Bits < 64 then Value < 2 ** Bits);
 
-   --  Draw uniformly below Modulus; one returns zero without a draw.
-   --  A zero modulus violates the precondition.
+   --  Draw below nonzero Modulus; one returns zero without consuming bytes.
    procedure Urandomm
      (G : in out Generator; Modulus : U64; Value : out U64)
      with Pre => Is_Seeded (G) and then Modulus > 0,
           Post => (if Modulus = 1 then Value = 0 else Value < Modulus);
 
-   --  Draw uniformly in the inclusive interval Low .. High.
-   --  An inverted interval violates the precondition.
+   --  Draw in inclusive Low .. High; requires Low <= High.
    procedure Urandomr
      (G : in out Generator; Low, High : U64; Value : out U64)
      with Pre => Is_Seeded (G) and then Low <= High,
