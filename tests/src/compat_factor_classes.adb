@@ -113,7 +113,7 @@ package body Compat_Factor_Classes is
          Native := Parse_U64 (To_String (C.Args (1)), N);
          K := 0;
          if Natural (C.Args.Length) = 2 then
-            Native := Parse_U64 (To_String (C.Args (2)), K) and Native;
+            Native := Parse_U64 (To_String (C.Args (2)), K) and then Native;
          end if;
          if Native and then Parse_U64 (To_String (C.Result), Expected) then
             if Func = "is_carmichael" then
