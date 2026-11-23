@@ -12,3 +12,4 @@ Gate development, release, and test builds pass; full test run is active. Expand
 Expanded focused tests pass (prime 0.357 s, perfect below 0.001 s), including committed inverse fixture outputs. Full gate is still running; no generated STATUS.md changes or source whitespace errors observed.
 No further source changes needed after focused regressions. Running existing family property tests directly while the full gate finishes; pytest-bdd execution remains unavailable on this host.
 Existing Prop_Families suite passes all six tests. Waiting for the declared full gate to report its summary; no further edits are planned.
+Finished: tools/gate.sh is green, 304/304 tests passed with zero failures/errors; focused expanded Compat_Powers and all six Prop_Families checks pass. Python BDD wrappers could not run because pytest-bdd is absent; their underlying Ada regressions passed directly. STATUS.md and fixtures remain unchanged.
