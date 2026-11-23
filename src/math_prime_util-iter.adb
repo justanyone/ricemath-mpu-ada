@@ -285,16 +285,13 @@ package body Math_Prime_Util.Iter is
             K := K - 1;
          end loop;
          exit when Parts (1) > U64 (Max_Part);
-         Selected := K + 1 >= Min_Length;
-         for I in 1 .. K + 1 loop
-            Selected := Selected and then Parts (I) >= U64 (Min_Part)
-              and then Parts (I) <= U64 (Max_Part);
-            if Options.Prime /= Any_Part then
-               Selected := Selected and then
+         Selected := K + 1 >= Min_Length and then
+           (for all I in 1 .. K + 1 =>
+              Parts (I) >= U64 (Min_Part) and then
+              Parts (I) <= U64 (Max_Part) and then
+              (Options.Prime = Any_Part or else
                  ((Primality.Is_Prime (Parts (I)) /= 0) =
-                  (Options.Prime = Prime_Part));
-            end if;
-         end loop;
+                  (Options.Prime = Prime_Part))));
          if Selected then
             Process (Parts (1 .. K + 1), Context);
          end if;

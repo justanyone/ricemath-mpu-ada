@@ -297,8 +297,7 @@ package body Compat_Iter is
       Expect (Value (Cursor), 31);
       Prev (Cursor);
       Expect (Value (Cursor), 29);
-      P := Peek (Cursor);
-      Expect (P, 31);
+      Expect (Peek (Cursor), 31);
       Expect (Value (Cursor), 29);
       Iterate (Cursor, P);
       Expect (P, 29);
@@ -320,16 +319,13 @@ package body Compat_Iter is
       Rewind (Cursor, 18446744073709551557);
       Expect (Value (Cursor), 18446744073709551557);
       Next (Cursor);
-      P := Value (Cursor);
-      Assert (not P.Defined, "object wrapped");
+      Assert (not Value (Cursor).Defined, "object wrapped");
       Next (Cursor);
-      P := Peek (Cursor);
-      Assert (not P.Defined, "exhausted peek");
+      Assert (not Peek (Cursor).Defined, "exhausted peek");
       Prev (Cursor);
       Expect (Value (Cursor), 18446744073709551557);
       Rewind (Cursor, U64'Last);
-      P := Value (Cursor);
-      Assert (not P.Defined, "rewind beyond prime");
+      Assert (not Value (Cursor).Defined, "rewind beyond prime");
       Replay ("prime_iterator_object_iterate");
    end Check_Object;
    procedure Check_Print (T : in out Test_Case'Class) is
