@@ -5,6 +5,7 @@ The branch already contains origin/dev-mpuada-001. I will verify the vec and set
 Why: the launcher says the port is already on the branch and this session should verify and fix tests, not re-port from scratch.
 
 Next: locate vec/set sources, the fixture, compat_vec.adb, and the gate command.
+- The port is not in src/. A numeric model of sort.c / xs_set.c / PP vec and set matches vec.tsv except leading-zero spellings on vecmin, vecmax, vecuniq, and vecsingleton (upstream finding 5) and vecfreq hash order (finding 12). Next: write Math_Prime_Util.Vec and compat_vec.adb.
 - 2026-11-23T17:04:20Z launcher: no commit for 60 s; 90 s elapsed. Files changed so far: docs/worker-notes/demand-0930b5f548a54dcdb99c16aa0ffa670f.md.
 - 2026-11-23T17:05:21Z launcher: no commit for 60 s; 151 s elapsed. Files changed so far: docs/worker-notes/demand-0930b5f548a54dcdb99c16aa0ffa670f.md.
 - 2026-11-23T17:06:21Z launcher: no commit for 60 s; 211 s elapsed. Files changed so far: docs/worker-notes/demand-0930b5f548a54dcdb99c16aa0ffa670f.md.
