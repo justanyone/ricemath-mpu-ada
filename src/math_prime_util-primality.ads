@@ -13,18 +13,22 @@ package Math_Prime_Util.Primality with SPARK_Mode => On is
    end record;
 
    --  util.c: is_prime.
-   --  Native integer input; returns the MPU primality result.
+   --  Native unsigned integer input; returns 0 for composites and 2 for
+   --  primes. The native tier never returns 1 (probable prime). No errors.
    function Is_Prime
      (N : U64) return Prime_Result
      with Pre => True,
-          Post => (if N < 2 then Is_Prime'Result = 0);
+          Post => Is_Prime'Result in 0 | 2
+            and then (if N < 2 then Is_Prime'Result = 0);
 
    --  primality.c: is_prob_prime.
-   --  Native integer input; returns the MPU primality result.
+   --  Native unsigned integer input; returns 0 for composites and 2 for
+   --  primes. The native tier never returns 1 (probable prime). No errors.
    function Is_Prob_Prime
      (N : U64) return Prime_Result
      with Pre => True,
-          Post => (if N < 2 then Is_Prob_Prime'Result = 0);
+          Post => Is_Prob_Prime'Result in 0 | 2
+            and then (if N < 2 then Is_Prob_Prime'Result = 0);
 
    --  primality.c: BPSW.
    --  Tests the supplied integer; no mutable shared state.
@@ -33,27 +37,30 @@ package Math_Prime_Util.Primality with SPARK_Mode => On is
      with Pre => True,
           Post => (if N < 2 then not Is_Bpsw_Prime'Result);
 
-   --  primality.c: is_pseudoprime.
+   --  primality.c: is_pseudoprime; default base from XS.xs.
    --  Tests the supplied integer; no mutable shared state.
-   --  A must be at least 2; invalid bases fail the precondition.
+   --  A defaults to 2 and must be at least 2; invalid bases fail
+   --  the precondition.
    function Is_Pseudoprime
-     (N, A : U64) return Boolean
+     (N : U64; A : U64 := 2) return Boolean
      with Pre => A >= 2,
           Post => (if N < 2 then not Is_Pseudoprime'Result);
 
-   --  primality.c: is_euler_pseudoprime.
+   --  primality.c: is_euler_pseudoprime; default base from XS.xs.
    --  Tests the supplied integer; no mutable shared state.
-   --  A must be at least 2; invalid bases fail the precondition.
+   --  A defaults to 2 and must be at least 2; invalid bases fail
+   --  the precondition.
    function Is_Euler_Pseudoprime
-     (N, A : U64) return Boolean
+     (N : U64; A : U64 := 2) return Boolean
      with Pre => A >= 2,
           Post => (if N < 2 then not Is_Euler_Pseudoprime'Result);
 
-   --  primality.c: is_strong_pseudoprime.
+   --  primality.c: is_strong_pseudoprime; default base from XS.xs.
    --  Tests the supplied integer; no mutable shared state.
-   --  A must be at least 2; invalid bases fail the precondition.
+   --  A defaults to 2 and must be at least 2; invalid bases fail
+   --  the precondition.
    function Is_Strong_Pseudoprime
-     (N, A : U64) return Boolean
+     (N : U64; A : U64 := 2) return Boolean
      with Pre => A >= 2,
           Post => (if N < 2 then not Is_Strong_Pseudoprime'Result);
 

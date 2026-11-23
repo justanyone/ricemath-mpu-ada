@@ -51,9 +51,9 @@ package body Compat_Count is
       end loop;
    end Check_Sums;
 
-   --  Rows above the limits of Count (Prime_Count_Limit 2 * 10**13,
-   --  Nth_Prime_Limit, Legendre_Index_Limit) are skipped: the full LMO
-   --  method for arguments up to 2**64 needs tables not ported yet.
+   --  Prime-count rows include narrow intervals across the native range.
+   --  Nth-prime and phi rows above Nth_Prime_Limit and
+   --  Legendre_Index_Limit remain skipped pending the full LMO port.
    --  Rows with undef results are skipped: a Pre check rejects them.
    procedure Check_Prime_Count (T : in out Test_Case'Class) is
       Cases : constant Case_Vectors.Vector :=
@@ -72,17 +72,15 @@ package body Compat_Count is
             AUnit.Assertions.Assert
               (Parse_U64 (To_String (C.Args (2)), High), "prime_count high");
          end if;
-         if not C.Undef and then High <= Pc.Prime_Count_Limit then
+         if not C.Undef then
             AUnit.Assertions.Assert
               (Parse_U64 (To_String (C.Result), Expected),
                "prime_count result");
             --  A range row counts primes in Low .. High; an empty range
             --  (Low > High) has no primes.
             AUnit.Assertions.Assert
-              ((if Low > High then 0 else
-                  Pc.Prime_Count (High) -
-                  (if Low <= 1 then 0 else Pc.Prime_Count (Low - 1))) =
-                Expected,
+              ((if C.Args.Last_Index = 1 then Pc.Prime_Count (High)
+                 else Pc.Prime_Count (Low, High)) = Expected,
                "prime_count row" & Positive'Image (C.Line_Number));
          end if;
       end loop;
