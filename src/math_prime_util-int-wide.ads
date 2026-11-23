@@ -18,8 +18,8 @@ package Math_Prime_Util.Int.Wide with SPARK_Mode => On is
    --  gcd128: greatest common divisor in integer units; Gcd (0, 0) = 0.
    function Gcd (A, B : U128) return U128
      with Pre => True,
-          Post => (if Gcd'Result = 0 then A = 0 and B = 0
-                   else A mod Gcd'Result = 0 and B mod Gcd'Result = 0);
+          Post => (if Gcd'Result = 0 then A = 0 and then B = 0
+                   else A mod Gcd'Result = 0 and then B mod Gcd'Result = 0);
 
    --  isqrt128: floor square root in integer units, with no error cases.
    function Sqrtint (N : U128) return U64

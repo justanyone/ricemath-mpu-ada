@@ -25,7 +25,7 @@ package body Math_Prime_Util.Int.Wide with SPARK_Mode => On is
          Y := Temp;
       end if;
       while Y > 0 loop
-         pragma Loop_Invariant (X < N and R < N);
+         pragma Loop_Invariant (X < N and then R < N);
          pragma Loop_Variant (Decreases => Y);
          if Y mod 2 = 1 then
             R := Addmod (R, X, N);
