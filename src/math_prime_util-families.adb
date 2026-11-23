@@ -1,4 +1,5 @@
 with Math_Prime_Util.Count;
+with Math_Prime_Util.Factor;
 with Math_Prime_Util.Primality;
 with Ada.Numerics.Generic_Elementary_Functions;
 with Ada.Numerics.Long_Elementary_Functions;
@@ -2316,4 +2317,506 @@ package body Math_Prime_Util.Families is
          end loop;
       end if;
    end Nth_Semiprime;
+   --  powerfree.c: range Mobius values, using an Eratosthenes sieve.
+   --  Two marks an untouched prime candidate; final values are -1, 0, 1.
+   type Mu_Value is range -2 .. 2 with Size => 8;
+   package Mu_Vectors is new Ada.Containers.Vectors
+     (Index_Type => Natural, Element_Type => Mu_Value);
+   package Mertens_Vectors is new Ada.Containers.Vectors
+     (Index_Type => Natural, Element_Type => Integer);
+   use type Int.I128;
+   package Wide_Vectors is new Ada.Containers.Vectors
+     (Index_Type => Natural, Element_Type => Int.I128);
+
+   function Mobius_Table (Limit : U64) return Mu_Vectors.Vector;
+   function Mobius_Table (Limit : U64) return Mu_Vectors.Vector is
+      M : Mu_Vectors.Vector;
+      J, Square : U64;
+   begin
+      M.Set_Length (Ada.Containers.Count_Type (Limit + 1));
+      for I in 0 .. Natural (Limit) loop
+         M (I) := 2;
+      end loop;
+      M (0) := 0;
+      if Limit >= 1 then
+         M (1) := 1;
+      end if;
+      for P in U64 range 2 .. Limit loop
+         if M (Natural (P)) = 2 then
+            J := P;
+            while J <= Limit loop
+               if M (Natural (J)) = 2 then
+                  M (Natural (J)) := -1;
+               else
+                  M (Natural (J)) := -M (Natural (J));
+               end if;
+               exit when J > Limit - P;
+               J := J + P;
+            end loop;
+            if P <= Limit / P then
+               Square := P * P;
+               J := Square;
+               while J <= Limit loop
+                  M (Natural (J)) := 0;
+                  exit when J > Limit - Square;
+                  J := J + Square;
+               end loop;
+            end if;
+         end if;
+      end loop;
+      return M;
+   end Mobius_Table;
+
+   function Is_Powerful (N : U64; K : U64 := 2) return Boolean is
+      F : Factor.Factor_List;
+      I, J : Natural;
+   begin
+      if N <= 1 then
+         return N = 1;
+      elsif K <= 1 then
+         return True;
+      elsif K >= 64 then
+         return False;
+      end if;
+      F := Factor.Factor (N);
+      I := 1;
+      while I <= F.Count loop
+         J := I + 1;
+         while J <= F.Count and then F.Value (J) = F.Value (I) loop
+            J := J + 1;
+         end loop;
+         if U64 (J - I) < K then
+            return False;
+         end if;
+         I := J;
+      end loop;
+      return True;
+   end Is_Powerful;
+
+   function Is_Powerfree (N : U64; K : Powerfree_Exponent := 2)
+      return Boolean
+   is
+      F : Factor.Factor_List;
+      I, J : Natural;
+   begin
+      if N <= 1 or else K < 2 then
+         return N = 1;
+      elsif K >= 64 then
+         return True;
+      end if;
+      F := Factor.Factor (N);
+      I := 1;
+      while I <= F.Count loop
+         J := I + 1;
+         while J <= F.Count and then F.Value (J) = F.Value (I) loop
+            J := J + 1;
+         end loop;
+         if U64 (J - I) >= K then
+            return False;
+         end if;
+         I := J;
+      end loop;
+      return True;
+   end Is_Powerfree;
+
+   function Squarefree_Kernel (N : U64) return U64 is
+      F : constant Factor.Factor_List := Factor.Factor (N);
+      P : U64 := 1;
+   begin
+      for I in 1 .. F.Count loop
+         if I = 1 or else F.Value (I) /= F.Value (I - 1) then
+            P := P * F.Value (I);
+         end if;
+      end loop;
+      return P;
+   end Squarefree_Kernel;
+
+   function Powerfree_Part (N : U64; K : Powerfree_Exponent := 2)
+      return U64
+   is
+      F : Factor.Factor_List;
+      P : U64 := 1;
+      I, J : Natural;
+   begin
+      if N <= 1 or else K < 2 then
+         return (if N = 1 then 1 else 0);
+      elsif K >= 64 then
+         return N;
+      end if;
+      F := Factor.Factor (N);
+      I := 1;
+      while I <= F.Count loop
+         J := I + 1;
+         while J <= F.Count and then F.Value (J) = F.Value (I) loop
+            J := J + 1;
+         end loop;
+         P := P * F.Value (I) ** Natural (U64 (J - I) mod K);
+         I := J;
+      end loop;
+      return P;
+   end Powerfree_Part;
+
+   --  powerful.c: _pcr. Canonical decomposition into a K-th power and
+   --  pairwise coprime squarefree bases at exponents K+1 .. 2*K-1.
+   function Powerful_Rec
+     (N, K, Product, R : U64; Mu : Mu_Vectors.Vector) return U64;
+   function Powerful_Rec
+     (N, K, Product, R : U64; Mu : Mu_Vectors.Vector) return U64
+   is
+      Limit : constant U64 := Int.Rootint (N / Product, R);
+      Sum : U64 := 0;
+   begin
+      if R = K then
+         return Limit;
+      end if;
+      for I in U64 range 1 .. Limit loop
+         if Mu (Natural (I)) /= 0 and then Int.Gcd (Product, I) = 1 then
+            Sum := Sum + Powerful_Rec
+              (N, K, Product * I ** Natural (R), R - 1, Mu);
+         end if;
+      end loop;
+      return Sum;
+   end Powerful_Rec;
+
+   function Powerful_Count (N : U64; K : U64 := 2) return U64 is
+   begin
+      if N <= 1 or else K <= 1 then
+         return N;
+      elsif K >= 64 then
+         return 1;
+      end if;
+      declare
+         Mu : constant Mu_Vectors.Vector :=
+           Mobius_Table (Int.Rootint (N, K + 1));
+      begin
+         return Powerful_Rec (N, K, 1, 2 * K - 1, Mu);
+      end;
+   end Powerful_Count;
+
+   function Nth_Powerful (N : U64; K : U64 := 2)
+      return Int.Optional_U64
+   is
+      Power : constant U64 := K;
+      Low : U64 := 1;
+      High : U64 := N;
+      Mid : U64;
+   begin
+      if N = 0 then
+         return (Defined => False);
+      elsif N = 1 or else Power <= 1 then
+         return (True, N);
+      elsif Power >= 64 then
+         return (Defined => False);
+      end if;
+      --  Bracket by doubling rather than depending on floating estimates.
+      while Powerful_Count (High, Power) < N loop
+         if High = U64'Last then
+            return (Defined => False);
+         end if;
+         High := (if High > U64'Last / 2 then U64'Last else High * 2);
+      end loop;
+      declare
+         Mu : constant Mu_Vectors.Vector :=
+           Mobius_Table (Int.Rootint (High, Power + 1));
+      begin
+         while Low < High loop
+            Mid := Low + (High - Low) / 2;
+            if Powerful_Rec (Mid, Power, 1, 2 * Power - 1, Mu) < N then
+               Low := Mid + 1;
+            else
+               High := Mid;
+            end if;
+         end loop;
+      end;
+      return (True, Low);
+   end Nth_Powerful;
+
+   function Triangular (N : U64) return U128;
+   function Triangular (N : U64) return U128 is
+     (U128 (N) * (U128 (N) + 1) / 2);
+
+   function Power_Sum (N, R : U64) return U128;
+   function Power_Sum (N, R : U64) return U128 is
+      V : constant U128 := U128 (N);
+      Sum : U128 := 0;
+   begin
+      if R = 1 then
+         return Triangular (N);
+      elsif R = 2 then
+         return V * (V + 1) * (2 * V + 1) / 6;
+      elsif R = 3 then
+         return Triangular (N) ** 2;
+      end if;
+      for I in U64 range 1 .. N loop
+         Sum := Sum + U128 (I) ** Natural (R);
+      end loop;
+      return Sum;
+   end Power_Sum;
+
+   function Powerful_Sum_Rec
+     (N, K, Product, R : U64; Mu : Mu_Vectors.Vector) return U128;
+   function Powerful_Sum_Rec
+     (N, K, Product, R : U64; Mu : Mu_Vectors.Vector) return U128
+   is
+      Limit : constant U64 := Int.Rootint (N / Product, R);
+      Sum : U128 := 0;
+   begin
+      if R = K then
+         return U128 (Product) * Power_Sum (Limit, R);
+      end if;
+      for I in U64 range 1 .. Limit loop
+         if Mu (Natural (I)) /= 0 and then Int.Gcd (Product, I) = 1 then
+            Sum := Sum + Powerful_Sum_Rec
+              (N, K, Product * I ** Natural (R), R - 1, Mu);
+         end if;
+      end loop;
+      return Sum;
+   end Powerful_Sum_Rec;
+
+   function Sumpowerful (N : U64; K : U64 := 2) return U128 is
+      Power : constant U64 := K;
+   begin
+      if N <= 1 then
+         return U128 (N);
+      elsif Power <= 1 then
+         return Triangular (N);
+      elsif Power >= 64 then
+         return 1;
+      end if;
+      declare
+         Mu : constant Mu_Vectors.Vector :=
+           Mobius_Table (Int.Rootint (N, Power + 1));
+      begin
+         return Powerful_Sum_Rec (N, Power, 1, 2 * Power - 1, Mu);
+      end;
+   end Sumpowerful;
+
+   function Powerful_Numbers (Low, High : U64; K : U64 := 2)
+      return Family_Vectors.Vector
+   is
+      Result : Family_Vectors.Vector;
+      procedure Generate (Product, R : U64);
+      procedure Generate (Product, R : U64) is
+         First : U64 := 1;
+         Last : constant U64 := Int.Rootint (High / Product, R);
+      begin
+         if R = K then
+            if Low > Product then
+               First := Int.Crootint
+                 (Low / Product + (if Low mod Product = 0 then 0 else 1), R);
+            end if;
+            for I in First .. Last loop
+               Result.Append (Product * I ** Natural (R));
+            end loop;
+         else
+            for I in U64 range 1 .. Last loop
+               if Int.Gcd (Product, I) = 1 and then Is_Powerfree (I) then
+                  Generate (Product * I ** Natural (R), R - 1);
+               end if;
+            end loop;
+         end if;
+      end Generate;
+      package Sorting is new Family_Vectors.Generic_Sorting;
+      V : U64 := U64'Max (Low, 1);
+   begin
+      if V > High then
+         return Result;
+      elsif K <= 1 or else High - V < 100 then
+         loop
+            if Is_Powerful (V, K) then
+               Result.Append (V);
+            end if;
+            exit when V = High;
+            V := V + 1;
+         end loop;
+      elsif K >= 64 then
+         if V = 1 then
+            Result.Append (U64'(1));
+         end if;
+      else
+         Generate (1, 2 * K - 1);
+         Sorting.Sort (Result);
+      end if;
+      return Result;
+   end Powerful_Numbers;
+
+   function Powerful_Numbers (High : U64) return Family_Vectors.Vector is
+     (Powerful_Numbers (1, High, 2));
+
+   --  powerfree.c: squarefree_count, the split Mobius/Mertens algorithm.
+   --  D <= 50,860,970 on U64, avoiding a sieve through sqrt(U64'Last).
+   function Squarefree_Count (N : U64) return U64;
+   function Squarefree_Count (N : U64) return U64 is
+      I, D, Xi, L : U64;
+      Mert : Integer := 0;
+      M : Mertens_Vectors.Vector;
+      Mx : Wide_Vectors.Vector;
+      S1 : Int.I128 := Int.I128 (N);
+      Mxi, Mxi_Sum : Int.I128 := 0;
+   begin
+      if N < 4 then
+         return N;
+      end if;
+      I := Int.Rootint (N, 5);
+      D := Int.Sqrtint (N / I);
+      M.Set_Length (Ada.Containers.Count_Type (D + 1));
+      M (0) := 0;
+      declare
+         Mu : constant Mu_Vectors.Vector := Mobius_Table (D);
+      begin
+         for J in U64 range 1 .. D loop
+            if J >= 2 and then Mu (Natural (J)) /= 0 then
+               S1 := S1 + Int.I128 (Mu (Natural (J))) *
+                 Int.I128 (N / (J * J));
+            end if;
+            Mert := Mert + Integer (Mu (Natural (J)));
+            M (Natural (J)) := Mert;
+         end loop;
+      end;
+      Mx.Set_Length (Ada.Containers.Count_Type (I + 1));
+      for A in reverse U64 range 1 .. I - 1 loop
+         Mxi := 1;
+         Xi := Int.Sqrtint (N / A);
+         L := Int.Sqrtint (Xi);
+         for J in U64 range 1 .. Xi / (L + 1) loop
+            Mxi := Mxi - Int.I128 (M (Natural (J))) *
+              Int.I128 (Xi / J - Xi / (J + 1));
+         end loop;
+         for J in U64 range 2 .. L loop
+            Mxi := Mxi -
+              (if Xi / J <= D then Int.I128 (M (Natural (Xi / J)))
+               else Mx (Natural (J * J * A)));
+         end loop;
+         Mx (Natural (A)) := Mxi;
+         Mxi_Sum := Mxi_Sum + Mxi;
+      end loop;
+      return U64 (S1 + Mxi_Sum - Int.I128 (I - 1) * Int.I128 (Mert));
+   end Squarefree_Count;
+
+   function Free_Count
+     (N, K : U64; Mu : Mu_Vectors.Vector) return U64;
+   function Free_Count
+     (N, K : U64; Mu : Mu_Vectors.Vector) return U64
+   is
+      Sum : Int.I128 := Int.I128 (N);
+   begin
+      for I in U64 range 2 .. Int.Rootint (N, K) loop
+         if Mu (Natural (I)) /= 0 then
+            Sum := Sum + Int.I128 (Mu (Natural (I))) *
+              Int.I128 (N / I ** Natural (K));
+         end if;
+      end loop;
+      return U64 (Sum);
+   end Free_Count;
+
+   function Powerfree_Count (N : U64; K : Powerfree_Exponent := 2)
+      return U64
+   is
+   begin
+      if K < 2 then
+         return (if N = 0 then 0 else 1);
+      elsif K >= 64 or else N < 4 then
+         return N;
+      elsif K = 2 then
+         return Squarefree_Count (N);
+      end if;
+      return Free_Count (N, K, Mobius_Table (Int.Rootint (N, K)));
+   end Powerfree_Count;
+
+   function Powerfree_Sum (N : U64; K : Powerfree_Exponent := 2)
+      return U128
+   is
+      Sum : Int.I128 := Int.I128 (Triangular (N));
+   begin
+      if K < 2 then
+         return (if N = 0 then 0 else 1);
+      elsif K >= 64 or else N < 4 then
+         return U128 (Sum);
+      end if;
+      declare
+         Mu : constant Mu_Vectors.Vector :=
+           Mobius_Table (Int.Rootint (N, K));
+         Power : U64;
+      begin
+         for I in U64 range 2 .. Int.Rootint (N, K) loop
+            if Mu (Natural (I)) /= 0 then
+               Power := I ** Natural (K);
+               Sum := Sum + Int.I128 (Mu (Natural (I))) *
+                 Int.I128 (Power) * Int.I128 (Triangular (N / Power));
+            end if;
+         end loop;
+      end;
+      return U128 (Sum);
+   end Powerfree_Sum;
+
+   function Powerfree_Part_Sum (N : U64; K : Powerfree_Exponent := 2)
+      return U128
+   is
+      Sum : Int.I128 := Int.I128 (Triangular (N));
+      P : Int.I128;
+      F : Factor.Factor_List;
+   begin
+      if K < 2 then
+         return (if N = 0 then 0 else 1);
+      elsif K >= 64 or else N < 4 then
+         return U128 (Sum);
+      end if;
+      for I in U64 range 2 .. Int.Rootint (N, K) loop
+         F := Factor.Factor (I);
+         P := 1;
+         for J in 1 .. F.Count loop
+            if J = 1 or else F.Value (J) /= F.Value (J - 1) then
+               P := P * (1 - Int.I128 (F.Value (J) ** Natural (K)));
+            end if;
+         end loop;
+         Sum := Sum + P * Int.I128 (Triangular (N / I ** Natural (K)));
+      end loop;
+      return U128 (Sum);
+   end Powerfree_Part_Sum;
+
+   function Nth_Powerfree (N : U64; K : Powerfree_Exponent := 2)
+      return Int.Optional_U64
+   is
+      Low : U64 := N;
+      High : U64 := (if N > U64'Last / 2 then U64'Last else 2 * N);
+      Mid : U64;
+   begin
+      if N = 0 or else K < 2 then
+         return (Defined => False);
+      elsif N < 4 or else K >= 64 then
+         return (True, N);
+      end if;
+      --  Density is >= 1/zeta(2) > 1/2. Reuse the sieve for inversion.
+      if K = 2 and then High > 10_000_000_000_000 then
+         if Powerfree_Count (High, K) < N then
+            return (Defined => False);
+         end if;
+         while Low < High loop
+            Mid := Low + (High - Low) / 2;
+            if Powerfree_Count (Mid, K) < N then
+               Low := Mid + 1;
+            else
+               High := Mid;
+            end if;
+         end loop;
+      else
+         declare
+            Mu : constant Mu_Vectors.Vector :=
+              Mobius_Table (Int.Rootint (High, K));
+         begin
+            if Free_Count (High, K, Mu) < N then
+               return (Defined => False);
+            end if;
+            while Low < High loop
+               Mid := Low + (High - Low) / 2;
+               if Free_Count (Mid, K, Mu) < N then
+                  Low := Mid + 1;
+               else
+                  High := Mid;
+               end if;
+            end loop;
+         end;
+      end if;
+      return (True, Low);
+   end Nth_Powerfree;
 end Math_Prime_Util.Families;
