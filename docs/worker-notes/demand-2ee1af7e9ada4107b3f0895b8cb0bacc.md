@@ -27,3 +27,5 @@ Restored the XS native semiprime narrow-range threshold ladder, preventing huge 
 Square-free integer fixture replay passed in 39.54 seconds, including U64 maximum. The optimized segment buffer satisfies the one-minute guardrail without skipping native rows.
 Final development and release builds passed after threshold and Lastfor changes; final gate test build/run remains in progress.
 All eight focused tests passed in 36.44 seconds: six fixture groups, Lastfor, and edges. Final gate is running the complete repository suite.
+Rebuilt the focused runner against the final threshold and Lastfor changes; final focused rerun and repository gate are active.
+Final focused run passed all eight tests in 31.12 seconds with no failed assertions or unexpected errors. Awaiting the full gate test summary.
