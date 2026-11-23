@@ -32,7 +32,7 @@ package body Math_Prime_Util.Arith is
       Result : U64_Vectors.Vector;
       N : U64 := Low;
    begin
-      if K = 0 or else High = 0 or else K > High then
+      if K = 0 or else High = 0 or else K > High or else Low > High then
          return Result;
       end if;
       if N < 1 then
