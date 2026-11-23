@@ -70,10 +70,12 @@ package Math_Prime_Util.Families is
           Post => (if Low > High then Twin_Prime_Count'Result = 0);
    --  twin_primes.c: twin_prime_count. Count lower members <= High.
    function Twin_Prime_Count (High : U64) return U64
-     with SPARK_Mode => On, Pre => True, Post => Twin_Prime_Count'Result <= High;
+     with SPARK_Mode => On, Pre => True,
+          Post => Twin_Prime_Count'Result <= High;
    --  twin_primes.c: twin_prime_count_approx. Rounded native estimate.
    function Twin_Prime_Count_Approx (N : U64) return U64
-     with SPARK_Mode => On, Pre => True, Post => Twin_Prime_Count_Approx'Result <= N;
+     with SPARK_Mode => On, Pre => True,
+          Post => Twin_Prime_Count_Approx'Result <= N;
    --  twin_primes.c: nth_twin_prime. One-based; zero or overflow undefined.
    --  Storage_Error may propagate from the sieve.
    function Nth_Twin_Prime (N : U64) return Int.Optional_U64
@@ -107,7 +109,8 @@ package Math_Prime_Util.Families is
           Post => (if Low > High then Semiprime_Count'Result = 0);
    --  semi_primes.c: semiprime_count_approx. Rounded, clamped estimate.
    function Semiprime_Count_Approx (N : U64) return U64
-     with SPARK_Mode => On, Pre => True, Post => Semiprime_Count_Approx'Result <= N;
+     with SPARK_Mode => On, Pre => True,
+          Post => Semiprime_Count_Approx'Result <= N;
    --  semi_primes.c: nth_semiprime. One-based; zero undefined.
    --  The exact search uses the supported native prime-count range.
    function Nth_Semiprime (N : U64) return Int.Optional_U64

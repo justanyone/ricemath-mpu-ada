@@ -1,5 +1,6 @@
 with Math_Prime_Util.Sieve;
 with Math_Prime_Util.Count;
+with Math_Prime_Util.Primality;
 with Ada.Numerics.Generic_Elementary_Functions;
 with Ada.Numerics.Long_Elementary_Functions;
 with Interfaces;
@@ -706,7 +707,7 @@ package body Math_Prime_Util.Families is
          Hi := Lo + U64'Min (Last - Lo, Window - 1);
          Previous := 0;
          for P of Math_Prime_Util.Sieve.Primes (Lo, Hi + 2) loop
-            if Previous >= Lo and then
+            if Previous >= 3 and then Previous >= Lo and then
                Previous <= Hi
               and then P - Previous = 2
             then
@@ -919,6 +920,31 @@ package body Math_Prime_Util.Families is
       return (Defined => False);
    end Nth_Twin_Prime;
 
+   --  semi_primes.c: _range_semiprime_count_iterate, using a bounded
+   --  trial membership test in place of factor.c: is_semiprime.
+   --  A composite with at least three prime factors has one <= cbrt (N).
+   function Semi_Member (N : U64) return Boolean
+     with SPARK_Mode => On, Pre => N >= 4;
+   function Semi_Member (N : U64) return Boolean is
+      use type Primality.Prime_Result;
+      Limit : constant U64 := Int.Rootint (N, 3);
+      D : U64 := 3;
+   begin
+      if N mod 2 = 0 then
+         return Primality.Is_Prime (N / 2) /= 0;
+      elsif Primality.Is_Prime (N) /= 0 then
+         return False;
+      end if;
+      while D <= Limit loop
+         if N mod D = 0 then
+            --  The first divisor is prime. Its cofactor must be prime.
+            return Primality.Is_Prime (N / D) /= 0;
+         end if;
+         D := D + 2;
+      end loop;
+      return True;
+   end Semi_Member;
+
    --  range_semiprime_sieve: count factors from p*p, then from 2*p*p.
    --  Saturating at two is sufficient: only entries equal to one survive.
    function Semi_Window (Low, High : U64) return Family_Vectors.Vector;
@@ -950,6 +976,15 @@ package body Math_Prime_Util.Families is
          end loop;
       end Mark;
    begin
+      --  Avoid a square-root-sized prime list for small native ranges.
+      if High - Low < 100 and then High > 1_000_000_000 then
+         for N in Low .. High loop
+            if Semi_Member (N) then
+               Result.Append (N);
+            end if;
+         end loop;
+         return Result;
+      end if;
       for P of Math_Prime_Util.Sieve.Primes (Int.Sqrtint (High)) loop
          Mark (P * P, P);
          if P * P <= High / 2 then
