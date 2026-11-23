@@ -798,12 +798,14 @@ package body Math_Prime_Util.Factor is
          end if;
          Pp1_Pow (X1, K, N);
          if X1 /= 2 then
-            F := Int.Gcd (if X1 >= 2 then X1 - 2 else N - (2 - X1), N);
+            F := Int.Gcd
+              ((if X1 >= 2 then X1 - 2 else N - (2 - X1)), N);
             exit when F /= 1 and then F /= N;
          end if;
          Pp1_Pow (X2, K, N);
          if X2 /= 2 then
-            F := Int.Gcd (if X2 >= 2 then X2 - 2 else N - (2 - X2), N);
+            F := Int.Gcd
+              ((if X2 >= 2 then X2 - 2 else N - (2 - X2)), N);
             exit when F /= 1 and then F /= N;
          end if;
       end loop;
