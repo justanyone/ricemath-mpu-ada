@@ -14,6 +14,7 @@ package body Compat_Primality is
    use Math_Prime_Util;
    use Math_Prime_Util.Primality;
    use type U64;
+   use type Prime_Result;
    use type Interfaces.Integer_64;
    type Primality_Case is new Test_Case with null record;
    overriding function Name (T : Primality_Case)
@@ -283,8 +284,75 @@ package body Compat_Primality is
       Replay ("is_aks_prime");
       Replay ("is_provable_prime");
    end Test_Proving;
+   procedure Test_Certificates (T : in out Test_Case'Class);
+   procedure Test_Certificates (T : in out Test_Case'Class) is
+      use AUnit.Assertions;
+      LF : constant Character := ASCII.LF;
+      Header : constant String := "[MPU - Primality Certificate]" & LF &
+        "Version 1.0" & LF & LF & "Proof for:" & LF;
+      function Bls (N, Body_N, Fields : String) return String is
+        (Header & "N " & N & LF & LF & "Type BLS5" & LF &
+         "N " & Body_N & LF & Fields);
+      Edges : constant array (Positive range <>) of U64 :=
+        (0, 1, 2, 3, 4, 2 ** 32 - 1, 2 ** 32 + 1,
+         2 ** 63 - 1, 2 ** 63 + 1, U64'Last,
+         18_446_744_073_709_551_557);
+   begin
+      for N of Edges loop
+         declare
+            Cert : constant String := Proving.Prime_Certificate (N);
+         begin
+            Assert (Proving.Verify_Prime (Cert) = (Is_Prime (N) = 2),
+                    "certificate round trip" & N'Image);
+            Assert ((Cert'Length = 0) = (Is_Prime (N) = 0),
+                    "composite certificate is empty");
+         end;
+      end loop;
+      Assert (Proving.Prime_Certificate (2) = Header & "N 2" & LF & LF &
+              "Type Small" & LF & "N 2" & LF, "MPU Small formatting");
+      Assert (not Proving.Verify_Prime (Header & "N 3" & LF &
+              "Type Small" & LF & "N 2" & LF), "candidate mismatch");
+      Assert (not Proving.Verify_Prime (Header &
+              "N 18446744073709551616" & LF & "Type Small" & LF &
+              "N 2" & LF), "non-native candidate");
+      Assert (not Proving.Verify_Prime (Header & "N -2" & LF),
+              "signed candidate rejected");
+      Assert (not Proving.Verify_Prime ("garbage"), "bad header");
+      Assert (not Proving.Verify_Prime (Header), "incomplete certificate");
+      Assert (Proving.Verify_Prime (Bls ("101", "101", "----" & LF)),
+              "BLS5 partial n-1 factorization");
+      Assert (Proving.Verify_Prime (Bls ("13", "13", "----" & LF)),
+              "BLS5 F above square root");
+      Assert (Proving.Verify_Prime (Bls ("101", "101",
+              "Q[1] 5" & LF & "----" & LF)), "BLS5 complete factors");
+      Assert (not Proving.Verify_Prime (Bls ("101", "101", "")),
+              "BLS5 missing terminator");
+      Assert (not Proving.Verify_Prime (Bls ("101", "103", "----")),
+              "BLS5 wrong candidate");
+      Assert (not Proving.Verify_Prime (Bls ("101", "101",
+              "Q[1] 25" & LF & "----")), "composite factor");
+      Assert (not Proving.Verify_Prime (Bls ("101", "101",
+              "Q[1] 3" & LF & "----")), "nondividing factor");
+      Assert (not Proving.Verify_Prime (Bls ("101", "101",
+              "Q[2] 5" & LF & "----")), "missing factor index");
+      Assert (not Proving.Verify_Prime (Bls ("101", "101",
+              "Q[1] 2" & LF & "----")), "duplicate factor");
+      Assert (not Proving.Verify_Prime (Bls ("101", "101",
+              "A[0] 1" & LF & "----")), "witness out of range");
+      Assert (not Proving.Verify_Prime (Bls ("101", "101",
+              "A[0] 4" & LF & "----")), "witness gcd failure");
+      Assert (not Proving.Verify_Prime (Bls ("127", "127", "----")),
+              "insufficient factored part");
+      Assert (not Proving.Verify_Prime (Bls ("101", "101",
+              "Q[999999999999999999999999] 5" & LF & "----")),
+              "index overflow");
+      Assert (not Proving.Verify_Prime (Bls ("101", "101",
+              "Q[1" & LF & "----")), "malformed field");
+   end Test_Certificates;
    overriding procedure Register_Tests (T : in out Primality_Case) is
    begin
+      Registration.Register_Routine
+        (T, Test_Certificates'Access, "native certificates and BLS5");
       Registration.Register_Routine
         (T, Test_Proving'Access, "AKS and native proving fixtures");
       Registration.Register_Routine

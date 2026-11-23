@@ -36,7 +36,7 @@ package body Math_Prime_Util.Proving is
 
    --  aks.c: poly_mod_pow and test_anr.
    function Congruent (A, N : U64; R : Positive) return Boolean
-     with Pre => N > 1 and R > 1 and R < Natural'Last / 2;
+     with Pre => N > 1 and then R > 1 and then R < Natural'Last / 2;
 
    function Congruent (A, N : U64; R : Positive) return Boolean is
       Base : Polynomial (0 .. R - 1) := (others => 0);
@@ -257,7 +257,9 @@ package body Math_Prime_Util.Proving is
                Position := Position + 1;
             end loop;
             Finish := Position - 1;
-            Position := Position + 1;
+            if Position <= Certificate'Last then
+               Position := Position + 1;
+            end if;
             while First <= Finish and then
               Certificate (First) in ' ' | ASCII.HT | ASCII.CR
             loop
