@@ -22,6 +22,10 @@ package body Prop_Combinat is
         [0, 1, 2, 2 ** 32 - 1, 2 ** 32 + 1,
          2 ** 63 - 1, 2 ** 63 + 1, U64'Last];
    begin
+      AUnit.Assertions.Assert
+        (Stirling (131, 1, 2) = (True, 1)
+           and Stirling (U64'Last, 1, 2) = (True, 1),
+         "Stirling second kind single block at native boundaries");
       for I in 1 .. 1_000 loop
          Seed := Seed * 6_364_136_223_846_793_005 + 1;
          N := 2 + Seed mod 18;
