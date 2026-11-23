@@ -405,12 +405,12 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
          Np := (if P /= 2 or else N > U64'Last / P then N else N * P);
          F := Sub (A, Mul (S, S, Np), Np);
          D := Mul (2, S, Np);
-         G := Gcd (D, N);
-         if F mod G /= 0 then
+         G := Gcd (F, D);
+         Result := Invmod (D / G, N);
+         if not Result.Defined then
             return (Defined => False);
          end if;
-         R := Addmod (S, Mul (F / G, Invmod (D / G, N / G).Value,
-                            N / G), N).Value;
+         R := Addmod (S, Mul (F / G, Result.Value, N), N).Value;
       end if;
       R := U64'Min (R, N - R);
       if Mul (R, R, N) /= A mod N then
