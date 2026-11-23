@@ -1,7 +1,5 @@
 --  Wide arithmetic used by the factor128.c factoring paths in MPU 0.75.
 package Math_Prime_Util.Int.Wide with SPARK_Mode => On is
-   use type U128;
-
    --  addmod128: sum of reduced residues modulo N; N must be positive.
    function Addmod (A, B, N : U128) return U128
      with Pre => N > 0 and then A < N and then B < N,

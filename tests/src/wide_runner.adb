@@ -7,6 +7,7 @@ procedure Wide_Runner is
    use type U64;
    use type U128;
    package W renames Math_Prime_Util.Int.Wide;
+   procedure Check (Condition : Boolean; Message : String);
    procedure Check (Condition : Boolean; Message : String) is
    begin
       Ada.Assertions.Assert (Condition, Message);
