@@ -13,7 +13,6 @@ procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
    use Fixture_Support;
    use Math_Prime_Util;
    use Math_Prime_Util.Random;
-   use type U64;
    use type Byte;
    function Image (V : U64) return String is
      (Ada.Strings.Fixed.Trim (U64'Image (V), Ada.Strings.Both));

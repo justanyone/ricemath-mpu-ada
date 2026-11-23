@@ -13,8 +13,7 @@ package Math_Prime_Util.Random with SPARK_Mode => On is
    procedure Csrand (G : out Generator; Seed : Byte_Array)
      with Post => Is_Seeded (G);
    --  Seed from the operating system. Entropy failure raises Entropy_Error.
-   procedure Csrand (G : out Generator)
-     with Post => Is_Seeded (G);
+   procedure Csrand (G : out Generator) with Post => Is_Seeded (G);
    Entropy_Error : exception;
    --  Fill Data with successive stream bytes (including empty arrays).
    procedure Random_Bytes (G : in out Generator; Data : out Byte_Array)

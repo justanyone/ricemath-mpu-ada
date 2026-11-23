@@ -23,6 +23,7 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
    procedure Csrand (G : out Generator; Seed : Byte_Array) is
       Key : Byte_Array (0 .. 39) := [others => 0];
       State, Increment : Word;
+      function Output return Word;
       function Output return Word is
          Mixed : constant Word :=
            (Shift_Right (State, Natural (Shift_Right (State, 28)) + 4)
@@ -76,8 +77,10 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
       end loop;
    end Csrand;
    --  chacha.c: QUARTERROUND, chacha_core, increment_chacha_counter.
+   procedure Refill (G : in out Generator);
    procedure Refill (G : in out Generator) is
       X : State_Array;
+      procedure Quarter (A, B, C, D : State_Index);
       procedure Quarter (A, B, C, D : State_Index) is
       begin
          X (A) := X (A) + X (B);
@@ -145,8 +148,7 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
       end if;
    end Urandomb;
    --  csprng.c: urandomm32/64 (PREFER_LEMIRE = 0).
-   procedure Urandomm (G : in out Generator; Modulus : U64; Value : out U64)
-   is
+   procedure Urandomm (G : in out Generator; Modulus : U64; Value : out U64) is
       Minimum : U64;
    begin
       if Modulus <= 1 then
