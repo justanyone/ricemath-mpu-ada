@@ -4,6 +4,7 @@ with Ada.Text_IO;
 with AUnit.Assertions;
 with AUnit.Test_Cases;
 with Fixture_Support;
+with Compat_Random;
 with Math_Prime_Util;
 
 package body Test_Fixture_Support is
@@ -144,6 +145,8 @@ package body Test_Fixture_Support is
 
    overriding procedure Register_Tests (T : in out Fixture_Case) is
    begin
+      Registration.Register_Routine
+        (T, Compat_Random'Access, "random fixtures and contracts");
       Registration.Register_Routine
         (T, Check_Fixtures'Access, "Fixture loader reads int.tsv");
       Registration.Register_Routine

@@ -40,7 +40,9 @@ package body Compat_Families is
       for C of Cases loop
          N := U64'Value (To_String (C.Args (1)));
          Got := Null_Unbounded_String;
-         if Func = "lucky_numbers" or else Func = "ramanujan_primes" then
+         if Func = "lucky_numbers" or else Func = "ramanujan_primes"
+           or else Func = "twin_primes" or else Func = "semi_primes"
+         then
             declare
                --  Both native vector instances use Natural indices and U64.
                procedure Append_Value (Value : U64) is
@@ -56,10 +58,12 @@ package body Compat_Families is
                Low : constant U64 :=
                  (if Natural (C.Args.Length) = 1 then 0 else N);
             begin
-               if Func = "lucky_numbers" then
+               if Func /= "ramanujan_primes" then
                   declare
                      V : constant Lucky_Vectors.Vector :=
-                       Lucky_Numbers (Low, High);
+                       (if Func = "twin_primes" then Twin_Primes (Low, High)
+                        elsif Func = "semi_primes" then Semi_Primes (Low, High)
+                        else Lucky_Numbers (Low, High));
                   begin
                      for I in V.First_Index .. V.Last_Index loop
                         Append_Value (V.Element (I));
@@ -79,6 +83,28 @@ package body Compat_Families is
                   Got := To_Unbounded_String ("undef");
                end if;
             end;
+         elsif Func = "twin_prime_count" then
+            Got := To_Unbounded_String
+              (Image ((if Natural (C.Args.Length) = 1 then Twin_Prime_Count (N)
+                       else Twin_Prime_Count
+                         (N, U64'Value (To_String (C.Args (2)))))));
+         elsif Func = "semiprime_count" then
+            Got := To_Unbounded_String
+              (Image ((if Natural (C.Args.Length) = 1 then Semiprime_Count (N)
+                       else Semiprime_Count
+                         (N, U64'Value (To_String (C.Args (2)))))));
+         elsif Func = "twin_prime_count_approx" then
+            Got := To_Unbounded_String (Image (Twin_Prime_Count_Approx (N)));
+         elsif Func = "semiprime_count_approx" then
+            Got := To_Unbounded_String (Image (Semiprime_Count_Approx (N)));
+         elsif Func = "nth_twin_prime" then
+            Got := To_Unbounded_String (Image (Nth_Twin_Prime (N)));
+         elsif Func = "nth_twin_prime_approx" then
+            Got := To_Unbounded_String (Image (Nth_Twin_Prime_Approx (N)));
+         elsif Func = "nth_semiprime" then
+            Got := To_Unbounded_String (Image (Nth_Semiprime (N)));
+         elsif Func = "nth_semiprime_approx" then
+            Got := To_Unbounded_String (Image (Nth_Semiprime_Approx (N)));
          elsif Func = "is_ramanujan_prime" then
             Got := To_Unbounded_String
               ((if Is_Ramanujan_Prime (N) then "1" else "0"));
@@ -212,6 +238,55 @@ package body Compat_Families is
       Replay ("nth_lucky_upper");
    end Test_Nth_Lucky_Upper;
 
+   procedure Test_Twin_Primes (T : in out Test_Case'Class) is
+   begin
+      Replay ("twin_primes");
+   end Test_Twin_Primes;
+
+   procedure Test_Twin_Prime_Count (T : in out Test_Case'Class) is
+   begin
+      Replay ("twin_prime_count");
+   end Test_Twin_Prime_Count;
+
+   procedure Test_Twin_Prime_Count_Approx (T : in out Test_Case'Class) is
+   begin
+      Replay ("twin_prime_count_approx");
+   end Test_Twin_Prime_Count_Approx;
+
+   procedure Test_Nth_Twin_Prime (T : in out Test_Case'Class) is
+   begin
+      Replay ("nth_twin_prime");
+   end Test_Nth_Twin_Prime;
+
+   procedure Test_Nth_Twin_Prime_Approx (T : in out Test_Case'Class) is
+   begin
+      Replay ("nth_twin_prime_approx");
+   end Test_Nth_Twin_Prime_Approx;
+
+   procedure Test_Semi_Primes (T : in out Test_Case'Class) is
+   begin
+      Replay ("semi_primes");
+   end Test_Semi_Primes;
+
+   procedure Test_Semiprime_Count (T : in out Test_Case'Class) is
+   begin
+      Replay ("semiprime_count");
+   end Test_Semiprime_Count;
+
+   procedure Test_Semiprime_Count_Approx (T : in out Test_Case'Class) is
+   begin
+      Replay ("semiprime_count_approx");
+   end Test_Semiprime_Count_Approx;
+
+   procedure Test_Nth_Semiprime (T : in out Test_Case'Class) is
+   begin
+      Replay ("nth_semiprime");
+   end Test_Nth_Semiprime;
+
+   procedure Test_Nth_Semiprime_Approx (T : in out Test_Case'Class) is
+   begin
+      Replay ("nth_semiprime_approx");
+   end Test_Nth_Semiprime_Approx;
    procedure Test_Ramanujan (T : in out Test_Case'Class) is
    begin
       Replay ("ramanujan_primes");
@@ -288,6 +363,26 @@ package body Compat_Families is
         (T, Test_Nth_Lucky_Lower'Access, "nth_lucky_lower");
       Registration.Register_Routine
         (T, Test_Nth_Lucky_Upper'Access, "nth_lucky_upper");
+      Registration.Register_Routine
+        (T, Test_Twin_Primes'Access, "twin_primes");
+      Registration.Register_Routine
+        (T, Test_Twin_Prime_Count'Access, "twin_prime_count");
+      Registration.Register_Routine
+        (T, Test_Twin_Prime_Count_Approx'Access, "twin_prime_count_approx");
+      Registration.Register_Routine
+        (T, Test_Nth_Twin_Prime'Access, "nth_twin_prime");
+      Registration.Register_Routine
+        (T, Test_Nth_Twin_Prime_Approx'Access, "nth_twin_prime_approx");
+      Registration.Register_Routine
+        (T, Test_Semi_Primes'Access, "semi_primes");
+      Registration.Register_Routine
+        (T, Test_Semiprime_Count'Access, "semiprime_count");
+      Registration.Register_Routine
+        (T, Test_Semiprime_Count_Approx'Access, "semiprime_count_approx");
+      Registration.Register_Routine
+        (T, Test_Nth_Semiprime'Access, "nth_semiprime");
+      Registration.Register_Routine
+        (T, Test_Nth_Semiprime_Approx'Access, "nth_semiprime_approx");
       Registration.Register_Routine
         (T, Test_Ramanujan'Access, "Ramanujan fixture family");
       Registration.Register_Routine
