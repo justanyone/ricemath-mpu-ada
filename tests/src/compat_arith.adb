@@ -49,6 +49,8 @@ package body Compat_Arith is
                Value := (if Natural (C.Args.Length) = 2 then
                            Mertens (U64 (A), U64 (B)) else Mertens (U64 (A)));
                Actual := To_Unbounded_String (Image (Value));
+            elsif B < A then
+               Actual := To_Unbounded_String ("undef");
             else
                --  Perl's range forms expand into the same scalar API. I128
                --  keeps both negative endpoints and U64'Last exact.
