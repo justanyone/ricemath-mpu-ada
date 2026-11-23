@@ -168,9 +168,8 @@ package body Math_Prime_Util.Arith with SPARK_Mode => On is
       return Result;
    end Inverse_Sigma0;
 
-   function Inverse_Sigma0 (K, High : U64) return U64_Vectors.Vector
-     with SPARK_Mode => Off is
-     (Inverse_Sigma0 (K, 1, High));
+   function Inverse_Sigma0 (K, High : U64) return U64_Vectors.Vector is
+     (Inverse_Sigma0 (K, 1, High)) with SPARK_Mode => Off;
 
    function Inverse_Sigma0_Count (K, Low, High : U64) return U64
      with SPARK_Mode => Off is
@@ -207,7 +206,6 @@ package body Math_Prime_Util.Arith with SPARK_Mode => On is
       return Result;
    end Inverse_Sigma0_Count;
 
-   function Inverse_Sigma0_Count (K, High : U64) return U64
-     with SPARK_Mode => Off is
-     (Inverse_Sigma0_Count (K, 1, High));
+   function Inverse_Sigma0_Count (K, High : U64) return U64 is
+     (Inverse_Sigma0_Count (K, 1, High)) with SPARK_Mode => Off;
 end Math_Prime_Util.Arith;
