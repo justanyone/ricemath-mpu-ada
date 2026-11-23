@@ -1,11 +1,8 @@
 with Ada.Containers.Vectors;
 with Math_Prime_Util.Int;
 
-<<<<<<< HEAD
---  Arithmetic from MPU 0.75 totients.c, moebius.c, factor.c, and XS.xs.
-=======
---  Divisor arithmetic from MPU 0.75 factor.c, XS.xs, and inverse_sigma0.c.
->>>>>>> origin/dev-mpuada-001
+--  Arithmetic from MPU 0.75 totients.c, moebius.c, factor.c, XS.xs,
+--  and inverse_sigma0.c.
 package Math_Prime_Util.Arith with SPARK_Mode => On is
    use type U64;
    use type Int.I128;
