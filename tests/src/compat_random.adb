@@ -219,7 +219,7 @@ procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
             end if;
          end;
       end loop;
-      AUnit.Assertions.Assert (Count > 1_000, "prime fixture coverage");
+      AUnit.Assertions.Assert (Count = 1_420, "prime fixture coverage");
    end Prime_Replay;
 
    procedure Prime_Properties is
@@ -262,6 +262,23 @@ procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
               "balanced semiprime seed 0");
          end if;
       end loop;
+      --  Independent Python hashlib SHA-256 plus integer Pocklington
+      --  calculation, starting from the ChaCha20 zero-key first block.
+      declare
+         Bits : constant Natural_Array := [2, 3, 16, 32, 33, 48, 63, 64];
+         Expected : constant U64_Array :=
+           [3, 5, 61_153, 3_212_153_221, 7_674_027_583,
+            166_985_117_868_383, 8_565_169_370_267_104_537,
+            13_176_855_219_435_377_117];
+      begin
+         for I in Bits'Range loop
+            Csrand (G, Seed);
+            Random_Shawe_Taylor_Prime_With_Cert (G, Bits (I), A, C);
+            AUnit.Assertions.Assert (A = Expected (I),
+              "independent Shawe-Taylor vector bits" &
+              Natural'Image (Bits (I)));
+         end loop;
+      end;
       for N of U64_Array'[0, 1, 4, 9, U64'Last] loop
          AUnit.Assertions.Assert (not Verify_Certificate ((N => N)),
            "composite certificate accepted");
