@@ -25,3 +25,13 @@ Feature: Native powerful and powerfree numbers
     Given the compiled powers test runner
     When I check the independent power family laws
     Then the selected AUnit test passes within one minute
+
+  Scenario Outline: Prime and perfect power compilation regressions
+    Given the compiled powers test runner
+    When I check the "<kind>" power regression
+    Then the selected AUnit test passes within one minute
+
+    Examples:
+      | kind    |
+      | prime   |
+      | perfect |
