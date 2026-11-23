@@ -200,55 +200,19 @@ package body Compat_Families is
       Replay ("nth_lucky_upper");
    end Test_Nth_Lucky_Upper;
 
-   procedure Test_Ramanujan_Primes (T : in out Test_Case'Class) is
+   procedure Test_Ramanujan (T : in out Test_Case'Class) is
    begin
       Replay ("ramanujan_primes");
-   end Test_Ramanujan_Primes;
-
-   procedure Test_Is_Ramanujan_Prime (T : in out Test_Case'Class) is
-   begin
       Replay ("is_ramanujan_prime");
-   end Test_Is_Ramanujan_Prime;
-
-   procedure Test_Ramanujan_Prime_Count (T : in out Test_Case'Class) is
-   begin
       Replay ("ramanujan_prime_count");
-   end Test_Ramanujan_Prime_Count;
-
-   procedure Test_Ramanujan_Prime_Count_Lower (T : in out Test_Case'Class) is
-   begin
       Replay ("ramanujan_prime_count_lower");
-   end Test_Ramanujan_Prime_Count_Lower;
-
-   procedure Test_Ramanujan_Prime_Count_Upper (T : in out Test_Case'Class) is
-   begin
       Replay ("ramanujan_prime_count_upper");
-   end Test_Ramanujan_Prime_Count_Upper;
-
-   procedure Test_Ramanujan_Prime_Count_Approx (T : in out Test_Case'Class) is
-   begin
       Replay ("ramanujan_prime_count_approx");
-   end Test_Ramanujan_Prime_Count_Approx;
-
-   procedure Test_Nth_Ramanujan_Prime (T : in out Test_Case'Class) is
-   begin
       Replay ("nth_ramanujan_prime");
-   end Test_Nth_Ramanujan_Prime;
-
-   procedure Test_Nth_Ramanujan_Prime_Lower (T : in out Test_Case'Class) is
-   begin
       Replay ("nth_ramanujan_prime_lower");
-   end Test_Nth_Ramanujan_Prime_Lower;
-
-   procedure Test_Nth_Ramanujan_Prime_Upper (T : in out Test_Case'Class) is
-   begin
       Replay ("nth_ramanujan_prime_upper");
-   end Test_Nth_Ramanujan_Prime_Upper;
-
-   procedure Test_Nth_Ramanujan_Prime_Approx (T : in out Test_Case'Class) is
-   begin
       Replay ("nth_ramanujan_prime_approx");
-   end Test_Nth_Ramanujan_Prime_Approx;
+   end Test_Ramanujan;
 
    overriding procedure Register_Tests (T : in out Families_Case) is
    begin
@@ -273,31 +237,7 @@ package body Compat_Families is
       Registration.Register_Routine
         (T, Test_Nth_Lucky_Upper'Access, "nth_lucky_upper");
       Registration.Register_Routine
-        (T, Test_Ramanujan_Primes'Access, "ramanujan_primes");
-      Registration.Register_Routine
-        (T, Test_Is_Ramanujan_Prime'Access, "is_ramanujan_prime");
-      Registration.Register_Routine
-        (T, Test_Ramanujan_Prime_Count'Access, "ramanujan_prime_count");
-      Registration.Register_Routine
-        (T, Test_Ramanujan_Prime_Count_Lower'Access,
-         "ramanujan_prime_count_lower");
-      Registration.Register_Routine
-        (T, Test_Ramanujan_Prime_Count_Upper'Access,
-         "ramanujan_prime_count_upper");
-      Registration.Register_Routine
-        (T, Test_Ramanujan_Prime_Count_Approx'Access,
-         "ramanujan_prime_count_approx");
-      Registration.Register_Routine
-        (T, Test_Nth_Ramanujan_Prime'Access, "nth_ramanujan_prime");
-      Registration.Register_Routine
-        (T, Test_Nth_Ramanujan_Prime_Lower'Access,
-         "nth_ramanujan_prime_lower");
-      Registration.Register_Routine
-        (T, Test_Nth_Ramanujan_Prime_Upper'Access,
-         "nth_ramanujan_prime_upper");
-      Registration.Register_Routine
-        (T, Test_Nth_Ramanujan_Prime_Approx'Access,
-         "nth_ramanujan_prime_approx");
+        (T, Test_Ramanujan'Access, "Ramanujan fixture family");
    end Register_Tests;
 
    function Suite return AUnit.Test_Suites.Access_Test_Suite is
