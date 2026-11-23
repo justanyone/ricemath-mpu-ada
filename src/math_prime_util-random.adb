@@ -28,10 +28,6 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
    procedure Csrand (G : out Generator; Seed : Byte_Array) is
       Key : Byte_Array (0 .. 39) := [others => 0];
       State, Increment : Word;
-      procedure Advance is
-      begin
-         State := State * 747_796_405 + Increment;
-      end Advance;
       function Output return Word is
          Mixed : constant Word :=
            (Shift_Right (State, Natural (Shift_Right (State, 28)) + 4)
@@ -45,18 +41,13 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
          Key (I - Seed'First) := Seed (I);
       end loop;
       if Seed'Length < 40 then
-         State := 0;
          Increment := Shift_Left (Load (Key, 4), 1) or 1;
-         Advance;
-         State := State + Load (Key, 0);
-         Advance;
-         State := State xor Load (Key, 8);
-         Advance;
-         State := State xor Load (Key, 12);
-         Advance;
+         State := (Increment + Load (Key, 0)) * 747_796_405 + Increment;
+         State := (State xor Load (Key, 8)) * 747_796_405 + Increment;
+         State := (State xor Load (Key, 12)) * 747_796_405 + Increment;
          for I in (Seed'Length + 3) / 4 .. 9 loop
             Store (Key, 4 * I, Output);
-            Advance;
+            State := State * 747_796_405 + Increment;
          end loop;
       end if;
       G.State := [16#6170_7865#, 16#3320_646E#,
