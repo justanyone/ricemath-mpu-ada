@@ -36,15 +36,15 @@ package Math_Prime_Util.Ramanujan with SPARK_Mode => On is
           Post => Nth_Ramanujan_Prime'Result.Defined = (N /= 0);
    --  Lower bound on the one-based value; zero is undefined.
    function Nth_Ramanujan_Prime_Lower (N : U64) return Int.Optional_U64
-     with Pre => N <= 200_000_000_000_000_000,
+     with Pre => N <= 425_656_284_035_217_743,
           Post => Nth_Ramanujan_Prime_Lower'Result.Defined = (N /= 0);
    --  Upper bound on the one-based value; zero is undefined.
    function Nth_Ramanujan_Prime_Upper (N : U64) return Int.Optional_U64
-     with Pre => N <= 200_000_000_000_000_000,
+     with Pre => N <= 425_656_284_035_217_743,
           Post => Nth_Ramanujan_Prime_Upper'Result.Defined = (N /= 0);
    --  Estimate of the one-based value; zero is undefined.
    function Nth_Ramanujan_Prime_Approx (N : U64) return Int.Optional_U64
-     with Pre => N <= 200_000_000_000_000_000,
+     with Pre => N <= Index_Limit,
           Post => Nth_Ramanujan_Prime_Approx'Result.Defined = (N /= 0);
    --  Lower count bound through N, including the native maximum.
    function Ramanujan_Prime_Count_Lower (N : U64) return U64

@@ -106,8 +106,10 @@ package body Math_Prime_Util.Ramanujan is
             D := -2.8;
          end if;
       end if;
-      return (Defined => True, Value => Count.Nth_Prime_Upper
-        (Axler (N, 0.0, D)));
+      R := Axler (N, 0.0, D);
+      return (Defined => True, Value =>
+        (if R > 425_656_284_035_217_743 then 0
+         else Count.Nth_Prime_Upper (R)));
    end Nth_Ramanujan_Prime_Upper;
 
    function Nth_Ramanujan_Prime_Lower (N : U64)
@@ -177,8 +179,10 @@ package body Math_Prime_Util.Ramanujan is
             D := 2.319;
          end if;
       end if;
-      return (Defined => True, Value => Count.Nth_Prime_Lower
-        (Axler (N, 1.472, D)));
+      R := Axler (N, 1.472, D);
+      return (Defined => True, Value =>
+        (if R > 425_656_284_035_217_743 then 0
+         else Count.Nth_Prime_Lower (R)));
    end Nth_Ramanujan_Prime_Lower;
 
    --  inverse_interpolate.c: inverse search, including nonmonotone estimates.
