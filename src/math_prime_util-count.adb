@@ -1,5 +1,5 @@
 with Ada.Numerics.Generic_Elementary_Functions;
-with Ada.Unchecked_Deallocation;
+with Math_Prime_Util.Count.Lmo;
 with Math_Prime_Util.Int;
 with Math_Prime_Util.Sieve;
 
@@ -87,83 +87,31 @@ package body Math_Prime_Util.Count is
       return Sum_Primes (0, High);
    end Sum_Primes;
 
-   type Count_Array is array (U64 range <>) of U64;
-   type Count_Access is access Count_Array;
-   procedure Free is new Ada.Unchecked_Deallocation
-     (Count_Array, Count_Access);
-
-   function Prime_Count (High : U64) return U64
-     with SPARK_Mode => Off
-   is
-      R : constant U64 := Int.Sqrtint (High);
-      --  Small (V) = S (V) for V <= R; Large (I) = S (High / I).
-      --  The tables live on the heap: R is up to about 4.5 million.
-      Small : Count_Access := new Count_Array (0 .. R);
-      Large : Count_Access := new Count_Array (0 .. R);
-      Result : U64;
+   function Prime_Count (High : U64) return U64 is
    begin
-      if High < 2 then
-         Free (Small);
-         Free (Large);
-         return 0;
+      --  constants.h: MPU_MAX_PRIME and MPU_MAX_PRIME_IDX. There are no
+      --  further primes representable by U64 past this endpoint.
+      if High >= Max_Prime then
+         return Nth_Prime_Limit;
       end if;
-      Small.all := [others => 0];
-      Large.all := [others => 0];
-      for V in U64 range 1 .. R loop
-         Small (V) := V - 1;
-      end loop;
-      for I in U64 range 1 .. R loop
-         Large (I) := High / I - 1;
-      end loop;
-      for P in U64 range 2 .. R loop
-         if Small (P) > Small (P - 1) then
-            declare
-               Sp : constant U64 := Small (P - 1);
-               P2 : constant U64 := P * P;
-            begin
-               for I in U64 range 1 .. U64'Min (R, High / P2) loop
-                  declare
-                     D : constant U64 := I * P;
-                  begin
-                     if D <= R then
-                        Large (I) := Large (I) - (Large (D) - Sp);
-                     else
-                        Large (I) := Large (I) - (Small (High / D) - Sp);
-                     end if;
-                  end;
-               end loop;
-               for V in reverse P2 .. R loop
-                  Small (V) := Small (V) - (Small (V / P) - Sp);
-               end loop;
-            end;
-         end if;
-      end loop;
-      Result := Large (1);
-      Free (Small);
-      Free (Large);
-      return Result;
+      return Lmo.Count (High);
    end Prime_Count;
 
-   function Prime_Count (Low, High : U64) return U64 is
-      P : Int.Optional_U64;
-      Result : U64 := 0;
+   function Prime_Count (Low, High : U64) return U64
+     with SPARK_Mode => Off
+   is
    begin
-      if Low > High or High < 2 then
+      if Low > High or else High < 2 then
          return 0;
-      elsif Low <= 2 and High <= Prime_Count_Limit then
+      elsif High - Low <= 100_000 then
+         --  prime_counts.c: prime_count_range selects a direct prime walk
+         --  for a narrow interval (at most 100_001 integers), avoiding two
+         --  prefix counts. The segmented sieve is that walk.
+         return U64 (Sieve.Primes (Low, High).Length);
+      elsif Low <= 2 then
          return Prime_Count (High);
-      elsif High - Low > 100_000 then
-         return Prime_Count (High) - Prime_Count (Low - 1);
       end if;
-      --  prime_counts.c: prime_count_range selects a direct prime walk
-      --  for narrow intervals, avoiding two expensive prefix counts.
-      --  Next_Prime reports native overflow without wrapping around.
-      P := Sieve.Next_Prime (U64'Max (Low, 2) - 1);
-      while P.Defined and then P.Value <= High loop
-         Result := Result + 1;
-         P := Sieve.Next_Prime (P.Value);
-      end loop;
-      return Result;
+      return Prime_Count (High) - Prime_Count (Low - 1);
    end Prime_Count;
 
    function Legendre_Phi (X : U64; A : Natural) return U64 is
@@ -206,11 +154,13 @@ package body Math_Prime_Util.Count is
       --  Count primes up to the approximation A, then walk with a
       --  segmented sieve in the direction of N. The walk is short:
       --  the approximation is within a few thousand of the answer.
-      Window : constant U64 := 1_000_000;
+      Window : constant U64 := 65_536;
       C : U64;
       A, Lo, Hi : U64;
    begin
-      if N < 306 then
+      if N = Nth_Prime_Limit then
+         return Max_Prime;
+      elsif N < 306 then
          --  The approximations call Nth_Prime for small N.
          declare
             Ps : constant Sieve.Prime_Vectors.Vector := Sieve.Primes (2_100);
@@ -223,7 +173,7 @@ package body Math_Prime_Util.Count is
       if C < N then
          Lo := A + 1;
          loop
-            Hi := Lo + Window - 1;
+            Hi := Lo + U64'Min (Window - 1, U64'Last - Lo);
             declare
                Ps : constant Sieve.Prime_Vectors.Vector :=
                  Sieve.Primes (Lo, Hi);

@@ -1,11 +1,14 @@
 with AUnit.Assertions;
 with AUnit.Test_Cases;
+with Ada.Containers;
 with Ada.Strings;
 with Ada.Strings.Fixed;
 with Ada.Strings.Unbounded;
 with Fixture_Support;
 with Math_Prime_Util.Families;
+with Math_Prime_Util.Goldbach;
 with Math_Prime_Util.Int;
+with Math_Prime_Util.Primality;
 with Math_Prime_Util.Sieve;
 
 package body Compat_Families is
@@ -15,6 +18,9 @@ package body Compat_Families is
    use Math_Prime_Util;
    use type U64;
    use Math_Prime_Util.Families;
+   use Math_Prime_Util.Goldbach;
+   use type Ada.Containers.Count_Type;
+   use type Math_Prime_Util.Primality.Prime_Result;
    type Families_Case is new Test_Case with null record;
    overriding function Name (T : Families_Case)
       return AUnit.Message_String;
@@ -229,6 +235,145 @@ package body Compat_Families is
       Replay ("nth_lucky_upper");
    end Test_Nth_Lucky_Upper;
 
+   --  Given the committed MPU family rows, when each native list, count,
+   --  or nth API runs, then its serialized result equals the fixture.
+   procedure Test_Factor_Families (T : in out Test_Case'Class) is
+      K : Natural;
+      Low, High : U64;
+      Actual : Unbounded_String;
+      V : Family_Vectors.Vector;
+      R : Int.Optional_U64;
+      N : U64;
+   begin
+      for C of Load ("families") loop
+         declare
+            F : constant String := To_String (C.Func);
+         begin
+            if F in "almost_primes" | "omega_primes" |
+              "almost_prime_count" | "omega_prime_count" |
+              "nth_almost_prime" | "nth_omega_prime" |
+              "almost_prime_count_lower" | "almost_prime_count_upper" |
+              "almost_prime_count_approx" | "nth_almost_prime_lower" |
+              "nth_almost_prime_upper" | "nth_almost_prime_approx"
+            then
+               if C.Error then
+                  --  Negative factor counts are rejected by Ada's Natural
+                  --  parameter subtype before entering the public function.
+                  declare
+                     Rejected : Boolean := False;
+                  begin
+                     begin
+                        N := Almost_Prime_Count
+                          (Natural'Value (To_String (C.Args (1))), 100);
+                     exception
+                        when Constraint_Error => Rejected := True;
+                     end;
+                     AUnit.Assertions.Assert (Rejected, "negative K");
+                  end;
+               elsif not C.Undef and then
+                 (To_String (C.Result)'Length > 20 or else
+                  (To_String (C.Result)'Length = 20 and then
+                   To_String (C.Result) > "18446744073709551615"))
+                 and then F /= "almost_primes" and then F /= "omega_primes"
+               then
+                  --  Native_Result_Overflow: bigint nth rows cannot be
+                  --  represented by Optional_U64; test undefined below.
+                  K := Natural'Value (To_String (C.Args (1)));
+                  High := U64'Value (To_String (C.Args (2)));
+                  R := (if F = "nth_almost_prime" then
+                          Nth_Almost_Prime (K, High)
+                        elsif F = "nth_almost_prime_lower" then
+                          Nth_Almost_Prime_Lower (K, High)
+                        elsif F = "nth_almost_prime_upper" then
+                          Nth_Almost_Prime_Upper (K, High)
+                        else Nth_Almost_Prime_Approx (K, High));
+                  AUnit.Assertions.Assert
+                    (not R.Defined, "native nth overflow");
+               else
+                  K := Natural'Value (To_String (C.Args (1)));
+                  if not Parse_U64 (To_String (C.Args (2)), High) then
+                     --  Bigint nth fixtures belong to the later bigint tier.
+                     --  Their exact output exceeds the native U64 result.
+                     High := 0;
+                  end if;
+                  Actual := Null_Unbounded_String;
+                  if F in "almost_primes" | "omega_primes" then
+                     Low := 1;
+                     if Natural (C.Args.Length) = 3 then
+                        Low := High;
+                        High := U64'Value (To_String (C.Args (3)));
+                     end if;
+                     V := (if F = "almost_primes" then
+                             Almost_Primes (K, Low, High)
+                           else Omega_Primes (K, Low, High));
+                     for J in V.First_Index .. V.Last_Index loop
+                        if Length (Actual) > 0 then
+                           Append (Actual, " ");
+                        end if;
+                        Append (Actual, Image (V.Element (J)));
+                     end loop;
+                     if V.Is_Empty then
+                        Actual := To_Unbounded_String ("undef");
+                     end if;
+                  elsif F = "almost_prime_count_lower" then
+                     Actual := To_Unbounded_String
+                       (Image (Almost_Prime_Count_Lower (K, High)));
+                  elsif F = "almost_prime_count_upper" then
+                     Actual := To_Unbounded_String
+                       (Image (Almost_Prime_Count_Upper (K, High)));
+                  elsif F = "almost_prime_count_approx" then
+                     Actual := To_Unbounded_String
+                       (Image (Almost_Prime_Count_Approx (K, High)));
+                  elsif F = "nth_almost_prime_lower" then
+                     Actual := To_Unbounded_String
+                       (Image (Nth_Almost_Prime_Lower (K, High)));
+                  elsif F = "nth_almost_prime_upper" then
+                     Actual := To_Unbounded_String
+                       (Image (Nth_Almost_Prime_Upper (K, High)));
+                  elsif F = "nth_almost_prime_approx" then
+                     Actual := To_Unbounded_String
+                       (Image (Nth_Almost_Prime_Approx (K, High)));
+                  elsif F in "almost_prime_count" | "omega_prime_count" then
+                     N := (if F = "almost_prime_count" then
+                             Almost_Prime_Count (K, High)
+                           else Omega_Prime_Count (K, High));
+                     Actual := To_Unbounded_String (Image (N));
+                  else
+                     R := (if F = "nth_almost_prime" then
+                             Nth_Almost_Prime (K, High)
+                           else Nth_Omega_Prime (K, High));
+                     Actual := To_Unbounded_String (Image (R));
+                  end if;
+                  if K = 1 and then High = U64'Last and then
+                    F in "almost_prime_count_lower" |
+                         "almost_prime_count_upper"
+                  then
+                     --  Delegated_Prime_Bounds_Rounding: Count uses the
+                     --  host extended precision; MPU's fixture rounds the
+                     --  floating input differently. These two bounds differ
+                     --  by 23, below one binary64 unit at this magnitude.
+                     --  Skip exact spelling, still check against the oracle.
+                     declare
+                        Expected : constant U64 :=
+                          U64'Value (To_String (C.Result));
+                        Got : constant U64 := U64'Value (To_String (Actual));
+                     begin
+                        AUnit.Assertions.Assert
+                          (U64'Max (Expected, Got) -
+                           U64'Min (Expected, Got) <= 32,
+                           "delegated prime bound rounding");
+                     end;
+                  else
+                     AUnit.Assertions.Assert
+                       (Actual = C.Result, F & " line" & C.Line_Number'Image &
+                        " expected " & To_String (C.Result) & " got " &
+                        To_String (Actual));
+                  end if;
+               end if;
+            end if;
+         end;
+      end loop;
+   end Test_Factor_Families;
    procedure Test_Twin_Primes (T : in out Test_Case'Class) is
    begin
       Replay ("twin_primes");
@@ -278,6 +423,114 @@ package body Compat_Families is
    begin
       Replay ("nth_semiprime_approx");
    end Test_Nth_Semiprime_Approx;
+
+   --  Skipped: minimal_goldbach_pair argument
+   --  83778272185315920949659591651127238812 is outside U64.
+   procedure Replay_Goldbach (Func : String) is
+      Cases : constant Case_Vectors.Vector :=
+        For_Function (Load ("families"), Func);
+      N : U64;
+      Got : Unbounded_String;
+   begin
+      AUnit.Assertions.Assert (not Cases.Is_Empty, "missing " & Func);
+      for C of Cases loop
+         if not Parse_U64 (To_String (C.Args (1)), N) then
+            AUnit.Assertions.Assert
+              (To_String (C.Args (1)) =
+                 "83778272185315920949659591651127238812",
+               Func & " unexpected non-native row" &
+               C.Line_Number'Image);
+         elsif Func = "minimal_goldbach_pair" then
+            Got := To_Unbounded_String (Image (Minimal_Goldbach_Pair (N)));
+            AUnit.Assertions.Assert
+              (Got = C.Result, Func & " line" & C.Line_Number'Image &
+               " expected " & To_String (C.Result) &
+               " got " & To_String (Got));
+         elsif Func = "goldbach_pair_count" then
+            Got := To_Unbounded_String (Image (Goldbach_Pair_Count (N)));
+            AUnit.Assertions.Assert
+              (Got = C.Result, Func & " line" & C.Line_Number'Image &
+               " expected " & To_String (C.Result) &
+               " got " & To_String (Got));
+         else
+            declare
+               Pairs : constant Pair_Vectors.Vector := Goldbach_Pairs (N);
+            begin
+               Got := Null_Unbounded_String;
+               for I in Pairs.First_Index .. Pairs.Last_Index loop
+                  if Length (Got) > 0 then
+                     Append (Got, " ");
+                  end if;
+                  Append (Got, Image (Pairs.Element (I)));
+               end loop;
+               if Pairs.Is_Empty then
+                  Got := To_Unbounded_String ("undef");
+               end if;
+            end;
+            AUnit.Assertions.Assert
+              (Got = C.Result, Func & " line" & C.Line_Number'Image &
+               " expected " & To_String (C.Result) &
+               " got " & To_String (Got));
+         end if;
+      end loop;
+   end Replay_Goldbach;
+
+   procedure Test_Minimal_Goldbach_Pair (T : in out Test_Case'Class) is
+   begin
+      Replay_Goldbach ("minimal_goldbach_pair");
+   end Test_Minimal_Goldbach_Pair;
+
+   procedure Test_Goldbach_Pair_Count (T : in out Test_Case'Class) is
+   begin
+      Replay_Goldbach ("goldbach_pair_count");
+   end Test_Goldbach_Pair_Count;
+
+   procedure Test_Goldbach_Pairs (T : in out Test_Case'Class) is
+   begin
+      Replay_Goldbach ("goldbach_pairs");
+   end Test_Goldbach_Pairs;
+
+   --  Odd edges follow goldbach.c (only the pair with 2). Even edges check
+   --  that the least returned prime really splits N into two primes.
+   procedure Goldbach_Laws (T : in out Test_Case'Class) is
+      Odds : constant array (Positive range 1 .. 5) of U64 :=
+        [2 ** 32 - 1, 2 ** 32 + 1, 2 ** 63 - 1, 2 ** 63 + 1, U64'Last];
+      Evens : constant array (Positive range 1 .. 3) of U64 :=
+        [2 ** 32, 2 ** 63, U64'Last - 1];
+      P : Int.Optional_U64;
+   begin
+      for N in U64 range 0 .. 3 loop
+         AUnit.Assertions.Assert
+           (not Minimal_Goldbach_Pair (N).Defined and then
+            Goldbach_Pair_Count (N) = 0 and then
+            Goldbach_Pairs (N).Is_Empty,
+            "goldbach below 4");
+      end loop;
+      for N of Odds loop
+         P := Minimal_Goldbach_Pair (N);
+         if Math_Prime_Util.Primality.Is_Prime (N - 2) = 2 then
+            AUnit.Assertions.Assert
+              (P.Defined and then P.Value = 2 and then
+               Goldbach_Pair_Count (N) = 1 and then
+               Goldbach_Pairs (N).Length = 1,
+               "odd goldbach edge");
+         else
+            AUnit.Assertions.Assert
+              (not P.Defined and then Goldbach_Pair_Count (N) = 0 and then
+               Goldbach_Pairs (N).Is_Empty,
+               "odd goldbach composite edge");
+         end if;
+      end loop;
+      for N of Evens loop
+         P := Minimal_Goldbach_Pair (N);
+         AUnit.Assertions.Assert
+           (P.Defined and then P.Value <= N / 2 and then
+            Math_Prime_Util.Primality.Is_Prime (P.Value) = 2 and then
+            Math_Prime_Util.Primality.Is_Prime (N - P.Value) = 2,
+            "even goldbach minimal edge");
+      end loop;
+   end Goldbach_Laws;
+
    procedure Test_Ramanujan (T : in out Test_Case'Class) is
    begin
       Replay ("ramanujan_primes");
@@ -333,6 +586,8 @@ package body Compat_Families is
    overriding procedure Register_Tests (T : in out Families_Case) is
    begin
       Registration.Register_Routine
+        (T, Test_Factor_Families'Access, "factor families");
+      Registration.Register_Routine
         (T, Test_Lucky_Numbers'Access, "lucky_numbers");
       Registration.Register_Routine
         (T, Test_Is_Lucky'Access, "is_lucky");
@@ -372,6 +627,14 @@ package body Compat_Families is
         (T, Test_Nth_Semiprime'Access, "nth_semiprime");
       Registration.Register_Routine
         (T, Test_Nth_Semiprime_Approx'Access, "nth_semiprime_approx");
+      Registration.Register_Routine
+        (T, Test_Minimal_Goldbach_Pair'Access, "minimal_goldbach_pair");
+      Registration.Register_Routine
+        (T, Test_Goldbach_Pair_Count'Access, "goldbach_pair_count");
+      Registration.Register_Routine
+        (T, Test_Goldbach_Pairs'Access, "goldbach_pairs");
+      Registration.Register_Routine
+        (T, Goldbach_Laws'Access, "goldbach edges 0 1 and powers of two");
       Registration.Register_Routine
         (T, Test_Ramanujan'Access, "Ramanujan fixture family");
       Registration.Register_Routine
