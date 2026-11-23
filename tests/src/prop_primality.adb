@@ -79,7 +79,7 @@ package body Prop_Primality is
         (0, 1, 2, 2 ** 32 - 1, 2 ** 32 + 1,
          2 ** 63 - 1, 2 ** 63 + 1, U64'Last);
       Rejected : Boolean := False;
-      Value : Boolean;
+      Value : Boolean := False;
    begin
       for N of Edges loop
          AUnit.Assertions.Assert
@@ -88,21 +88,21 @@ package body Prop_Primality is
       end loop;
       begin
          Value := Is_Strong_Pseudoprime (17, 1);
-         AUnit.Assertions.Assert (not Value, "invalid base accepted");
       exception
          when Ada.Assertions.Assertion_Error | Constraint_Error =>
             Rejected := True;
       end;
-      AUnit.Assertions.Assert (Rejected, "base precondition");
+      AUnit.Assertions.Assert
+        (Rejected, "base precondition; returned " & Value'Image);
       Rejected := False;
       begin
          Value := Is_Almost_Extra_Strong_Lucas_Pseudoprime (17, 0);
-         AUnit.Assertions.Assert (not Value, "invalid increment accepted");
       exception
          when Ada.Assertions.Assertion_Error | Constraint_Error =>
             Rejected := True;
       end;
-      AUnit.Assertions.Assert (Rejected, "increment precondition");
+      AUnit.Assertions.Assert
+        (Rejected, "increment precondition; returned " & Value'Image);
    end Boundaries;
 
    procedure Concurrent (T : in out Test_Case'Class);
