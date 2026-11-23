@@ -50,4 +50,14 @@ package Math_Prime_Util.Families is
    --  lucky_numbers.c: nth_lucky_upper. Empirical upper value bound.
    function Nth_Lucky_Upper (N : U64) return Int.Optional_U64
      with Pre => True, Post => Nth_Lucky_Upper'Result.Defined = (N /= 0);
+   --  prime_powers.c: prime_power_sieve. Sorted inclusive prime powers.
+   --  Reversed ranges are empty; Storage_Error may propagate.
+   function Prime_Powers (Low, High : U64) return Lucky_Vectors.Vector
+     with Pre => True,
+          Post => (for all V of Prime_Powers'Result =>
+                     V >= Low and then V <= High);
+   --  prime_powers.c: prime_power_sieve. Prime powers through High.
+   function Prime_Powers (High : U64) return Lucky_Vectors.Vector
+     with Pre => True,
+          Post => (for all V of Prime_Powers'Result => V <= High);
 end Math_Prime_Util.Families;

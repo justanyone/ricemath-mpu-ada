@@ -1,5 +1,6 @@
 with Ada.Numerics.Long_Elementary_Functions;
 with Interfaces;
+with Math_Prime_Util.Powers;
 
 package body Math_Prime_Util.Families is
    use Ada.Numerics.Long_Elementary_Functions;
@@ -658,4 +659,21 @@ package body Math_Prime_Util.Families is
          Factor := Factor + 1;
       end loop;
    end Is_Lucky;
+   function Prime_Powers (Low, High : U64) return Vector is
+      Result : Vector;
+      P : Int.Optional_U64;
+   begin
+      if High < 2 or else Low > High then
+         return Result;
+      end if;
+      P := Powers.Next_Prime_Power (U64'Max (Low, 2) - 1);
+      while P.Defined and then P.Value <= High loop
+         Result.Append (P.Value);
+         P := Powers.Next_Prime_Power (P.Value);
+      end loop;
+      return Result;
+   end Prime_Powers;
+
+   function Prime_Powers (High : U64) return Vector is
+     (Prime_Powers (2, High));
 end Math_Prime_Util.Families;
