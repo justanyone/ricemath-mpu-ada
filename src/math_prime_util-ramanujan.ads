@@ -6,7 +6,7 @@ package Math_Prime_Util.Ramanujan with SPARK_Mode => On is
    use type U64;
    --  Exact operations are bounded by the prime-count backend.
    Exact_Limit : constant U64 := 10_000_000_000_000;
-   Index_Limit : constant U64 := 100_000_000_000;
+   Index_Limit : constant U64 := 200_000_000_000;
 
    --  Inclusive interval; reversed bounds are empty. Storage_Error may occur.
    function Ramanujan_Primes (Low, High : U64)

@@ -33,11 +33,11 @@ package body Math_Prime_Util.Ramanujan is
       C1 : constant Wide := 2.0 * L2 * L2 + L2 + C;
       C2 : constant Wide := L2 ** 3 + 2.0 * L2 * L2 + D;
       U : constant Wide :=
-        (L2 * L * LL * LL - C1 * L * LL + C2 * L - L2.0 * L2 * LL
-         + L2 ** 3 + L2.0 * L2) /
+        (L2 * L * LL * LL - C1 * L * LL + C2 * L - L2 * L2 * LL
+         + L2 ** 3 + L2 * L2) /
         (L ** 4 + L ** 3 * LL - L ** 3 * L2 - L * L * L2);
       R : constant Long_Float := Long_Float
-        (2.0 * X * (1.0 + L2 / L - (L2 * LL - L2.0 * L2 - L2) / (L * L) + U));
+        (2.0 * X * (1.0 + L2 / L - (L2 * LL - L2 * L2 - L2) / (L * L) + U));
    begin
       return U64 (Long_Float'Floor (R));
    end Axler;
@@ -275,7 +275,7 @@ package body Math_Prime_Util.Ramanujan is
             X3 : U64 := (if Pos >= 0.0 then X1 - Move else X1 + Move);
             Rx3, Temp : U64;
          begin
-            if X3 >= Hi or X3 <= Lo or X3 = X1 then
+            if X3 >= Hi or else X3 <= Lo or else X3 = X1 then
                if Rx1 >= Target then
                   Hi := X1;
                   Rhi := Rx1;
@@ -491,7 +491,7 @@ package body Math_Prime_Util.Ramanujan is
 
    function Ramanujan_Prime_Count (Low, High : U64) return U64 is
    begin
-      if High < 2 or High < Low then
+      if High < 2 or else High < Low then
          return 0;
       end if;
       return Ramanujan_Prime_Count (High) -
@@ -514,7 +514,7 @@ package body Math_Prime_Util.Ramanujan is
    is
       Result : Sieve.Prime_Vectors.Vector;
    begin
-      if High < 2 or Low > High then
+      if High < 2 or else Low > High then
          return Result;
       end if;
       declare
@@ -523,7 +523,7 @@ package body Math_Prime_Util.Ramanujan is
             Ramanujan_Prime_Count_Upper (High));
       begin
          for P of Ps loop
-            if P >= Low and P <= High then
+            if P >= Low and then P <= High then
                Result.Append (P);
             end if;
          end loop;
