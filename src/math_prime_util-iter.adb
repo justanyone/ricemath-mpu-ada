@@ -304,7 +304,6 @@ package body Math_Prime_Util.Iter is
          exit when Context.Stop;
       end loop;
    end Partitions;
-
    procedure Forpart
      (N : Natural;
       Process : not null access procedure
@@ -313,7 +312,6 @@ package body Math_Prime_Util.Iter is
    begin
       Partitions (N, False, Process, Options);
    end Forpart;
-
    procedure Forcomp
      (N : Natural;
       Process : not null access procedure
@@ -322,7 +320,6 @@ package body Math_Prime_Util.Iter is
    begin
       Partitions (N, True, Process, Options);
    end Forcomp;
-
    --  XS.xs: forcomb, lexical subset traversal with one shared context.
    procedure Combinations
      (N, K : Natural; Context : in out Loop_Context;
@@ -431,7 +428,6 @@ package body Math_Prime_Util.Iter is
    begin
       Permutations (Keys, Counts, N, True, Process);
    end Forderange;
-
    procedure Formultiperm
      (Items : Value_Array;
       Process : not null access procedure

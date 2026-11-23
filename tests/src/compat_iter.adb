@@ -282,7 +282,6 @@ package body Compat_Iter is
    procedure Check_Forderange is new Check_Family ("forderange");
    procedure Check_Formultiperm is new Check_Family ("formultiperm");
    procedure Check_Forsetproduct is new Check_Family ("forsetproduct");
-
    procedure Check_Object (T : in out Test_Case'Class) is
       Cursor : Prime_Object := Prime_Iterator_Object;
       P : Int.Optional_U64;
@@ -333,7 +332,6 @@ package body Compat_Iter is
       Assert (not P.Defined, "rewind beyond prime");
       Replay ("prime_iterator_object_iterate");
    end Check_Object;
-
    procedure Check_Print (T : in out Test_Case'Class) is
       File : Ada.Text_IO.File_Type;
       Path : constant String := "obj/iter-primes.txt";
@@ -361,7 +359,6 @@ package body Compat_Iter is
       Check (20, 10);
       Check (0, 1);
    end Check_Print;
-
    procedure Check_Control (T : in out Test_Case'Class) is
       Rows : constant Case_Vectors.Vector := Load ("iter");
       Got : Unbounded_String;
@@ -605,13 +602,11 @@ package body Compat_Iter is
       end;
       Count := 0;
       Got := Null_Unbounded_String;
-      --  Each new loop stops after its first callback.
       Formultiperm ([1, 1, 2, 2], First_Tuple'Access);
       Lists.Append (Value_Array'(3 .. 4 => U64'Last));
       Lists.Append (Value_Array'[0, 1]);
       Forsetproduct (Lists, First_Tuple'Access);
       Assert (Count = 2, "new loop lastfor");
-      --  Exceptions propagate and leave later loops independently usable.
       for Kind in 1 .. 4 loop
          Raised := False;
          begin
@@ -626,7 +621,6 @@ package body Compat_Iter is
          end;
          Assert (Raised, "callback exception swallowed");
       end loop;
-      --  Numeric Perl hash keys sort by decimal spelling, not magnitude.
       Formultiperm ([2, 10], Collect'Access);
       Assert (Got = "10 2 2 10 ", "multiset key order");
       Got := Null_Unbounded_String;
