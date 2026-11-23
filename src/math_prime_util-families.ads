@@ -8,7 +8,6 @@ package Math_Prime_Util.Families with SPARK_Mode => On is
    package Lucky_Vectors is new Ada.Containers.Vectors
      (Index_Type => Natural, Element_Type => U64);
 
-
    --  lucky_numbers.c: lucky_sieve_range. Inclusive; reversed is empty.
    --  Storage_Error propagates when the sieve cannot fit in memory.
    function Lucky_Numbers (Low, High : U64) return Lucky_Vectors.Vector
