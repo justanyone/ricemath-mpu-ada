@@ -7,6 +7,7 @@ with Math_Prime_Util.Factor;
 
 package body Compat_Factor is
    use AUnit.Test_Cases;
+   use AUnit.Test_Cases.Registration;
    use Ada.Strings.Unbounded;
    use Fixture_Support;
    use Math_Prime_Util;
