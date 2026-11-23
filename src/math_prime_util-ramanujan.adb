@@ -180,3 +180,350 @@ package body Math_Prime_Util.Ramanujan is
       return (Defined => True, Value => Count.Nth_Prime_Lower
         (Axler (N, 1.472, D)));
    end Nth_Ramanujan_Prime_Lower;
+
+   --  inverse_interpolate.c: inverse search, including nonmonotone estimates.
+   generic
+      with function Value (X : U64) return U64;
+   function Inverse (First, Last, Target : U64) return U64;
+
+   function Inverse (First, Last, Target : U64) return U64 is
+      Lo : U64 := First;
+      Hi : U64 := Last;
+      Mid, Rlo, Rhi, Rmid : U64;
+      Iter : Natural := 0;
+      function Linear return U64 is
+         Move : U64;
+         Step : Long_Float;
+      begin
+         if Target = Rlo then
+            return Lo + 1;
+         elsif Target = Rhi then
+            return Hi - 1;
+         end if;
+         Step := Long_Float (Target - Rlo) * Long_Float (Hi - Lo) /
+           Long_Float (Rhi - Rlo) + 0.5;
+         if Step >= Long_Float (Hi - Lo) then
+            return Hi - 1;
+         end if;
+         Move := U64 (Long_Float'Floor (Step));
+         return Lo + U64'Max (1, Move);
+      end Linear;
+   begin
+      Mid := Lo + (Hi - Lo) / 2;
+      Rmid := Value (Mid);
+      if Rmid >= Target then
+         Hi := Mid;
+         Rhi := Rmid;
+         Rlo := Value (Lo);
+         if Rlo = Target then
+            return Lo;
+         end if;
+      else
+         Lo := Mid;
+         Rlo := Rmid;
+         Rhi := Value (Hi);
+      end if;
+      while Hi - Lo > 1 and then Rhi > Target loop
+         Mid := Linear;
+         Iter := Iter + 1;
+         if Iter mod 6 = 1 and then Iter > 1 then
+            declare
+               Close : constant U64 := U64
+                 (Long_Float'Floor (0.003 * Long_Float (Hi - Lo) + 1.0));
+            begin
+               Mid := U64'Max (Lo + Close, U64'Min (Hi - Close, Mid));
+            end;
+         end if;
+         Mid := U64'Max (Lo + 1, U64'Min (Hi - 1, Mid));
+         Rmid := Value (Mid);
+         if Rmid >= Target then
+            Hi := Mid;
+            Rhi := Rmid;
+         else
+            Lo := Mid;
+            Rlo := Rmid;
+         end if;
+      end loop;
+      if Rlo = Target then
+         return Lo;
+      elsif Hi - Lo <= 1 then
+         return (if Rhi = Target then Hi else Lo);
+      end if;
+      --  Ridder's method preserves the reference's choice at local dips.
+      while Hi - Lo > 8 loop
+         declare
+            X1 : U64 := Lo + (Hi - Lo) / 2;
+            Rx1 : U64 := Value (X1);
+            D0 : constant Long_Float := Long_Float (Target - Rlo);
+            D1 : constant Long_Float := Long_Float
+              (if Rx1 >= Target then Rx1 - Target else Target - Rx1);
+            D2 : constant Long_Float := Long_Float (Rhi - Target + 1);
+            Pos : constant Wide := Wide
+              ((if Rx1 >= Target then 1.0 else -1.0) *
+               Long_Float (X1 - Lo) * D1) /
+              Sqrt (Wide (D1 * D1 + D0 * D2));
+            Move : constant U64 := U64 (Wide'Floor (abs Pos + 0.5));
+            X3 : U64 := (if Pos >= 0.0 then X1 - Move else X1 + Move);
+            Rx3, Temp : U64;
+         begin
+            if X3 >= Hi or X3 <= Lo or X3 = X1 then
+               if Rx1 >= Target then
+                  Hi := X1;
+                  Rhi := Rx1;
+               else
+                  Lo := X1;
+                  Rlo := Rx1;
+               end if;
+            else
+               Rx3 := Value (X3);
+               if Rx1 > Rx3 then
+                  Temp := X1;
+                  X1 := X3;
+                  X3 := Temp;
+                  Temp := Rx1;
+                  Rx1 := Rx3;
+                  Rx3 := Temp;
+               end if;
+               if Rx1 >= Target then
+                  Hi := X1;
+                  Rhi := Rx1;
+               elsif Rx3 >= Target then
+                  Lo := X1;
+                  Rlo := Rx1;
+                  Hi := X3;
+                  Rhi := Rx3;
+               else
+                  Lo := X3;
+                  Rlo := Rx3;
+               end if;
+            end if;
+         end;
+      end loop;
+      while Hi - Lo > 1 loop
+         Mid := Lo + (Hi - Lo) / 2;
+         if Value (Mid) < Target then
+            Lo := Mid;
+         else
+            Hi := Mid;
+         end if;
+      end loop;
+      return Hi;
+   end Inverse;
+
+   function Upper_Value (N : U64) return U64 is
+     (if N = 0 then 0 else Nth_Ramanujan_Prime_Upper (N).Value);
+   function Lower_Value (N : U64) return U64 is
+     (if N = 0 then 0 else Nth_Ramanujan_Prime_Lower (N).Value);
+   function Invert_Upper is new Inverse (Upper_Value);
+   function Invert_Lower is new Inverse (Lower_Value);
+
+   function Ramanujan_Prime_Count_Lower (N : U64) return U64 is
+      Lo, Hi : U64;
+   begin
+      if N <= 241 then
+         return Small_Count (N);
+      end if;
+      Lo := Count.Prime_Count_Lower (N) / 3;
+      Hi := Count.Prime_Count_Upper (N) / 2;
+      if Upper_Value (Lo) > N or else Upper_Value (Hi) < N then
+         return Lo;
+      end if;
+      return Invert_Upper (Lo, Hi, N);
+   end Ramanujan_Prime_Count_Lower;
+
+   function Ramanujan_Prime_Count_Upper (N : U64) return U64 is
+      Lo, Hi : U64;
+   begin
+      if N <= 241 then
+         return Small_Count (N);
+      end if;
+      Lo := Count.Prime_Count_Lower (N) / 3;
+      Hi := Count.Prime_Count_Upper (N) / 2;
+      if Lower_Value (Lo) > N then
+         return Lo;
+      elsif Lower_Value (Hi) < N then
+         return Hi;
+      end if;
+      return Invert_Lower (Lo, Hi, N);
+   end Ramanujan_Prime_Count_Upper;
+
+   function Ramanujan_Prime_Count_Approx (N : U64) return U64 is
+   begin
+      if N <= 241 then
+         return Small_Count (N);
+      end if;
+      return Count.Prime_Count_Approx (N) - Count.Prime_Count_Approx (N / 2);
+   end Ramanujan_Prime_Count_Approx;
+
+   function Invert_Approx is new Inverse (Ramanujan_Prime_Count_Approx);
+   function Nth_Ramanujan_Prime_Approx (N : U64) return Int.Optional_U64 is
+   begin
+      if N = 0 then
+         return (Defined => False);
+      elsif N <= 23 then
+         return (Defined => True, Value => Small (Positive (N)));
+      end if;
+      return (Defined => True, Value => Invert_Approx
+        (Lower_Value (N) - 1, Upper_Value (N), N));
+   end Nth_Ramanujan_Prime_Approx;
+
+   --  ramanujan_primes.c: n_range_ramanujan_primes, Noe's algorithm.
+   --  Containers isolate allocation from the SPARK arithmetic routines.
+   function Index_Range (First, Last : U64) return Sieve.Prime_Vectors.Vector
+     with SPARK_Mode => Off
+   is
+      use Sieve.Prime_Vectors;
+      Lo : constant U64 := U64'Max (1, First);
+      Result : Vector;
+      Start, Stop, S, K : U64;
+   begin
+      if Lo > Last then
+         return Result;
+      end if;
+      Result.Set_Length (Ada.Containers.Count_Type (Last - Lo + 1));
+      if Last <= 23 then
+         for I in Lo .. Last loop
+            Result.Replace_Element (Natural (I - Lo), Small (Positive (I)));
+         end loop;
+         return Result;
+      end if;
+      Start := U64'Max (15, Lower_Value (Lo) - 1);
+      if Start mod 2 = 0 then
+         Start := Start - 1;
+      end if;
+      Stop := Upper_Value (Last) + 1;
+      S := 1 + Count.Prime_Count (Start - 2) -
+        Count.Prime_Count ((Start - 1) / 2);
+      if Lo = 1 then
+         Result.Replace_Element (0, 2);
+      end if;
+      if Lo <= 2 then
+         Result.Replace_Element (Natural (2 - Lo), 11);
+      end if;
+      declare
+         Ps : constant Vector := Sieve.Primes (Start, Stop);
+         Half : constant Vector := Sieve.Primes ((Start + 1) / 2, (Stop + 1) / 2);
+         Pi : Natural := 0;
+         Qi : Natural := 0;
+      begin
+         K := Start;
+         while K <= Stop loop
+            if Pi < Natural (Ps.Length) and then Ps.Element (Pi) = K then
+               S := S + 1;
+               Pi := Pi + 1;
+            end if;
+            if S >= Lo and then S <= Last then
+               Result.Replace_Element (Natural (S - Lo), K + 1);
+            end if;
+            if K mod 4 = 1 then
+               while Qi < Natural (Half.Length) and then
+                 Half.Element (Qi) < (K + 1) / 2
+               loop
+                  Qi := Qi + 1;
+               end loop;
+               if Qi < Natural (Half.Length) and then
+                 Half.Element (Qi) = (K + 1) / 2
+               then
+                  S := S - 1;
+               end if;
+            end if;
+            if S >= Lo and then S <= Last then
+               Result.Replace_Element (Natural (S - Lo), K + 2);
+            end if;
+            K := K + 2;
+         end loop;
+      end;
+      return Result;
+   end Index_Range;
+
+   function Nth_Ramanujan_Prime (N : U64) return Int.Optional_U64
+     with SPARK_Mode => Off
+   is
+   begin
+      if N = 0 then
+         return (Defined => False);
+      end if;
+      return (Defined => True, Value => Index_Range (N, N).First_Element);
+   end Nth_Ramanujan_Prime;
+
+   function Ramanujan_Prime_Count (N : U64) return U64
+     with SPARK_Mode => Off
+   is
+      V : U64;
+      Window : U64 := 20;
+      First : U64;
+   begin
+      if N <= 241 then
+         return Small_Count (N);
+      end if;
+      V := Count.Prime_Count (N) - Count.Prime_Count (N / 2);
+      if N > 1_000_000_000 then
+         Window := 320;
+      end if;
+      loop
+         First := (if V <= Window then 1 else V - Window);
+         declare
+            Ps : constant Sieve.Prime_Vectors.Vector :=
+              Index_Range (First, V + Window);
+         begin
+            if Ps.First_Element < N and then Ps.Last_Element > N then
+               for I in Ps.First_Index + 1 .. Ps.Last_Index loop
+                  if Ps.Element (I) > N then
+                     return First + U64 (I) - 1;
+                  end if;
+               end loop;
+            end if;
+         end;
+         Window := Window * 2;
+      end loop;
+   end Ramanujan_Prime_Count;
+
+   function Ramanujan_Prime_Count (Low, High : U64) return U64 is
+   begin
+      if High < 2 or High < Low then
+         return 0;
+      end if;
+      return Ramanujan_Prime_Count (High) -
+        (if Low <= 2 then 0 else Ramanujan_Prime_Count (Low - 1));
+   end Ramanujan_Prime_Count;
+
+   function Is_Ramanujan_Prime (N : U64) return Boolean is
+   begin
+      if Primality.Is_Prime (N) = 0 then
+         return False;
+      elsif N <= 241 then
+         return (for some P of Small => P = N);
+      end if;
+      return Nth_Ramanujan_Prime (Ramanujan_Prime_Count (N)).Value = N;
+   end Is_Ramanujan_Prime;
+
+   function Ramanujan_Primes (Low, High : U64)
+      return Sieve.Prime_Vectors.Vector
+     with SPARK_Mode => Off
+   is
+      Result : Sieve.Prime_Vectors.Vector;
+   begin
+      if High < 2 or Low > High then
+         return Result;
+      end if;
+      declare
+         Ps : constant Sieve.Prime_Vectors.Vector := Index_Range
+           (Ramanujan_Prime_Count_Lower (Low),
+            Ramanujan_Prime_Count_Upper (High));
+      begin
+         for P of Ps loop
+            if P >= Low and P <= High then
+               Result.Append (P);
+            end if;
+         end loop;
+      end;
+      return Result;
+   end Ramanujan_Primes;
+
+   function Ramanujan_Primes (High : U64) return Sieve.Prime_Vectors.Vector
+     with SPARK_Mode => Off
+   is
+   begin
+      return Ramanujan_Primes (0, High);
+   end Ramanujan_Primes;
+end Math_Prime_Util.Ramanujan;
