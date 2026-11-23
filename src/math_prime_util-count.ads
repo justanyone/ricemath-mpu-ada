@@ -4,12 +4,11 @@ with Math_Prime_Util.Int;
 package Math_Prime_Util.Count with SPARK_Mode => On is
    use type U64;
 
-   --  Largest High that Prime_Count accepts. The Lucy table holds
-   --  two arrays of Sqrt (High) entries on the heap.
-   Prime_Count_Limit : constant U64 := 20_000_000_000_000;
+   --  Native range supported by MPU's extended LMO counter.
+   Prime_Count_Limit : constant U64 := U64'Last;
 
-   --  Largest N that Nth_Prime accepts (pi (10**13) is below this).
-   Nth_Prime_Limit : constant U64 := 300_000_000_000;
+   --  Number of primes representable in the native unsigned range.
+   Nth_Prime_Limit : constant U64 := 425_656_284_035_217_743;
 
    --  Largest index that Legendre_Phi accepts.
    Legendre_Index_Limit : constant Natural := 40;
@@ -30,9 +29,8 @@ package Math_Prime_Util.Count with SPARK_Mode => On is
           Post => (if Low > High or High < 2 then Sum_Primes'Result.Defined
                    and then Sum_Primes'Result.Value = 0);
 
-   --  lmo.c: LMO_count, Lucy_Hedgehog method with the
-   --  prime_counts.c entry point. Returns pi (High).
-   --  Dies on High above Prime_Count_Limit (Pre).
+   --  lmo.c: LMO_prime_count, extended LMO method. Returns pi (High).
+   --  Storage_Error may propagate from local factor and phi tables.
    function Prime_Count (High : U64) return U64
      with Pre => High <= Prime_Count_Limit,
           Post => (if High < 2 then Prime_Count'Result = 0)

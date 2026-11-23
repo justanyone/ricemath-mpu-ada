@@ -1,5 +1,5 @@
 with Ada.Numerics.Generic_Elementary_Functions;
-with Ada.Unchecked_Deallocation;
+with Math_Prime_Util.Count.Lmo;
 with Math_Prime_Util.Int;
 with Math_Prime_Util.Sieve;
 
@@ -87,61 +87,9 @@ package body Math_Prime_Util.Count is
       return Sum_Primes (0, High);
    end Sum_Primes;
 
-   type Count_Array is array (U64 range <>) of U64;
-   type Count_Access is access Count_Array;
-   procedure Free is new Ada.Unchecked_Deallocation
-     (Count_Array, Count_Access);
-
-   function Prime_Count (High : U64) return U64
-     with SPARK_Mode => Off
-   is
-      R : constant U64 := Int.Sqrtint (High);
-      --  Small (V) = S (V) for V <= R; Large (I) = S (High / I).
-      --  The tables live on the heap: R is up to about 4.5 million.
-      Small : Count_Access := new Count_Array (0 .. R);
-      Large : Count_Access := new Count_Array (0 .. R);
-      Result : U64;
+   function Prime_Count (High : U64) return U64 is
    begin
-      if High < 2 then
-         Free (Small);
-         Free (Large);
-         return 0;
-      end if;
-      Small.all := [others => 0];
-      Large.all := [others => 0];
-      for V in U64 range 1 .. R loop
-         Small (V) := V - 1;
-      end loop;
-      for I in U64 range 1 .. R loop
-         Large (I) := High / I - 1;
-      end loop;
-      for P in U64 range 2 .. R loop
-         if Small (P) > Small (P - 1) then
-            declare
-               Sp : constant U64 := Small (P - 1);
-               P2 : constant U64 := P * P;
-            begin
-               for I in U64 range 1 .. U64'Min (R, High / P2) loop
-                  declare
-                     D : constant U64 := I * P;
-                  begin
-                     if D <= R then
-                        Large (I) := Large (I) - (Large (D) - Sp);
-                     else
-                        Large (I) := Large (I) - (Small (High / D) - Sp);
-                     end if;
-                  end;
-               end loop;
-               for V in reverse P2 .. R loop
-                  Small (V) := Small (V) - (Small (V / P) - Sp);
-               end loop;
-            end;
-         end if;
-      end loop;
-      Result := Large (1);
-      Free (Small);
-      Free (Large);
-      return Result;
+      return Lmo.Count (High);
    end Prime_Count;
 
    function Legendre_Phi (X : U64; A : Natural) return U64 is
