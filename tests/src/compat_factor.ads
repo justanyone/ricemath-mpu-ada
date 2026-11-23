@@ -10,6 +10,7 @@ package Compat_Factor is
    function Ecm_Suite return AUnit.Test_Suites.Access_Test_Suite
      with Pre => True, Post => Ecm_Suite'Result /= null;
    --  The nine factor count/predicate fixture routines only.
-   function Counts_Suite return AUnit.Test_Suites.Access_Test_Suite
+   function Counts_Suite (Only_Test : Natural := 0)
+      return AUnit.Test_Suites.Access_Test_Suite
      with Pre => True, Post => Counts_Suite'Result /= null;
 end Compat_Factor;
