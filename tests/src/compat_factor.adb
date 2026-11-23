@@ -23,17 +23,6 @@ package body Compat_Factor is
       return AUnit.Message_String;
    overriding procedure Register_Tests (T : in out Factor_Case);
 
-   type Counts_Case is new Test_Case with record
-      Only_Test : Natural := 0;
-   end record;
-   overriding function Name (T : Counts_Case) return AUnit.Message_String;
-   overriding procedure Register_Tests (T : in out Counts_Case);
-
-   overriding function Name (T : Counts_Case) return AUnit.Message_String is
-   begin
-      return AUnit.Format ("Compat_Factor_Counts");
-   end Name;
-
    type Ecm_Case is new Test_Case with null record;
    overriding function Name (T : Ecm_Case) return AUnit.Message_String;
    overriding procedure Register_Tests (T : in out Ecm_Case);
@@ -577,58 +566,6 @@ package body Compat_Factor is
       Registration.Register_Routine
         (T, Check_Edges'Access, "ecm_factor edges");
    end Register_Tests;
-
-   overriding procedure Register_Tests (T : in out Counts_Case) is
-   begin
-      if T.Only_Test = 0 or else T.Only_Test = 1 then
-         Registration.Register_Routine
-           (T, Test_Factor_Exp'Access, "factor_exp");
-      end if;
-      if T.Only_Test = 0 or else T.Only_Test = 2 then
-         Registration.Register_Routine
-           (T, Test_Prime_Omega'Access, "prime_omega");
-      end if;
-      if T.Only_Test = 0 or else T.Only_Test = 3 then
-         Registration.Register_Routine
-           (T, Test_Prime_Bigomega'Access, "prime_bigomega");
-      end if;
-      if T.Only_Test = 0 or else T.Only_Test = 4 then
-         Registration.Register_Routine
-           (T, Test_Prime_Signature'Access, "prime_signature");
-      end if;
-      if T.Only_Test = 0 or else T.Only_Test = 5 then
-         Registration.Register_Routine
-           (T, Test_Is_Square_Free'Access, "is_square_free");
-      end if;
-      if T.Only_Test = 0 or else T.Only_Test = 6 then
-         Registration.Register_Routine
-           (T, Test_Is_Semiprime'Access, "is_semiprime");
-      end if;
-      if T.Only_Test = 0 or else T.Only_Test = 7 then
-         Registration.Register_Routine
-           (T, Test_Is_Almost_Prime'Access, "is_almost_prime");
-      end if;
-      if T.Only_Test = 0 or else T.Only_Test = 8 then
-         Registration.Register_Routine
-           (T, Test_Is_Omega_Prime'Access, "is_omega_prime");
-      end if;
-      if T.Only_Test = 0 or else T.Only_Test = 9 then
-         Registration.Register_Routine
-           (T, Test_Cheb_Factor'Access, "cheb_factor");
-      end if;
-   end Register_Tests;
-
-   function Counts_Suite (Only_Test : Natural := 0)
-      return AUnit.Test_Suites.Access_Test_Suite
-   is
-      Result : constant AUnit.Test_Suites.Access_Test_Suite :=
-        new AUnit.Test_Suites.Test_Suite;
-      Item : constant access Counts_Case := new Counts_Case;
-   begin
-      Item.Only_Test := Only_Test;
-      Result.Add_Test (Item);
-      return Result;
-   end Counts_Suite;
 
    function Suite return AUnit.Test_Suites.Access_Test_Suite is
       Result : constant AUnit.Test_Suites.Access_Test_Suite :=

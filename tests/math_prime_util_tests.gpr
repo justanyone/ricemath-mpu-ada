@@ -9,8 +9,7 @@ project Math_Prime_Util_Tests is
    for Exec_Dir use "bin";
    for Main use
      ("test_runner.adb", "modular_runner.adb", "powers_runner.adb",
-      "arith_runner.adb", "ecm_test_runner.adb", "random_runner.adb",
-      "factor_counts_runner.adb");
+      "arith_runner.adb", "ecm_test_runner.adb", "random_runner.adb");
 
    package Compiler is
       for Default_Switches ("Ada") use Math_Prime_Util_Tests_Config.Ada_Compiler_Switches;

@@ -1,8 +1,8 @@
 Feature: Native factor counts and predicates
   Scenario Outline: Replay each native function fixture
     Given the checked Ada factor counts runner is built
-    When the factor fixture for "<function>" runs
-    Then that native factor fixture test passes within one minute
+    When the factor test "Compat_Factor : <function>" runs
+    Then the selected AUnit test passes within one minute
 
     Examples:
       | function        |
@@ -16,7 +16,12 @@ Feature: Native factor counts and predicates
       | is_omega_prime  |
       | cheb_factor     |
 
-  Scenario: Preserve decomposition laws and boundary conventions
+  Scenario Outline: Preserve decomposition laws and boundary conventions
     Given the checked Ada factor counts runner is built
-    When the factor property tests run
-    Then seeded factor laws and native boundary tests pass within one minute
+    When the factor test "Prop_Factor seed 20261123 : <check>" runs
+    Then the selected AUnit test passes within one minute
+
+    Examples:
+      | check       |
+      | factor laws |
+      | boundaries  |
