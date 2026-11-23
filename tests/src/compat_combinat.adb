@@ -61,8 +61,10 @@ package body Compat_Combinat is
               (To_String (C.Args (1)), Signed_A)
               and Parse_U64 (To_String (C.Args (2)), B);
          end if;
-         --  Bigint inputs are outside this native API.
-         --  Their fixture rows remain for the later signed/bigint port.
+         --  Skipped: negative factorial/subfactorial inputs and signed
+         --  binomial inputs cannot be represented by these U64 APIs.
+         --  Skipped: multifactorial inputs beyond U64 require bigint.
+         --  Oversized results are checked as undefined, not skipped.
          if Inputs_Fit then
             if C.Error then
                if Func = "multifactorial" and B = 0 then
@@ -215,7 +217,10 @@ package body Compat_Combinat is
          for I in 1 .. Natural (C.Args.Length) loop
             Ok := Parse_U64 (To_String (C.Args (I)), Arg (I)) and Ok;
          end loop;
-         --  Skipped: the one stirling row with kind 4 (not in MPU 0.75 C).
+         --  Skipped: partitions(-1) and partitionsq(-1), whose negative
+         --  inputs cannot be represented by these U64 APIs.
+         --  Skipped: stirling(4,3,4), whose invalid kind is excluded by
+         --  the Stirling_Kind subtype before the function can be called.
          if Ok and then Arg (3) <= 3 then
             Fits := not C.Undef and then
               (Func = "partitions" or Func = "partitionsq"
