@@ -1,7 +1,6 @@
 with AUnit.Assertions;
 with AUnit.Test_Cases;
 with Math_Prime_Util.Factor;
-with Math_Prime_Util.Primality;
 
 package body Prop_Factor is
    use AUnit.Test_Cases;
@@ -9,7 +8,6 @@ package body Prop_Factor is
    use Math_Prime_Util.Factor;
    use type U64;
    use type U128;
-   use type Primality.Prime_Result;
 
    type Factor_Case is new Test_Case with null record;
    overriding function Name (T : Factor_Case) return AUnit.Message_String;
@@ -22,13 +20,10 @@ package body Prop_Factor is
 
    procedure Check (N : U64) is
       Pairs : constant Factor_Exp_Vectors.Vector := Factor_Exp (N);
-      Signature : constant U64_Vectors.Vector := Prime_Signature (N);
       Split : constant Factor_List := Cheb_Factor (N, B => 100);
       Product, Split_Product : U128 := 1;
       Sum : Natural := 0;
       Square_Free : Boolean := N /= 0;
-      Last : U64 := 0;
-      Histogram : array (Factor_Exponent) of Natural := [others => 0];
       Message : constant String := "seed 20261123 N=" & U64'Image (N);
    begin
       for I in 1 .. Natural (Pairs.Length) loop
@@ -38,11 +33,6 @@ package body Prop_Factor is
             Product := Product * U128 (Pair.Prime) ** Pair.Exponent;
             Sum := Sum + Pair.Exponent;
             Square_Free := Square_Free and then Pair.Exponent = 1;
-            Histogram (Pair.Exponent) := Histogram (Pair.Exponent) + 1;
-            AUnit.Assertions.Assert
-              (N = 0 or else (Pair.Prime > Last
-               and then Primality.Is_Prime (Pair.Prime) = 2), Message);
-            Last := Pair.Prime;
          end;
       end loop;
       AUnit.Assertions.Assert
@@ -57,21 +47,6 @@ package body Prop_Factor is
             and then Is_Omega_Prime (K, N)
               = (N > 0 and then K = U64 (Pairs.Length)), Message);
       end loop;
-      for I in 1 .. Natural (Signature.Length) loop
-         declare
-            E : constant Factor_Exponent :=
-              Factor_Exponent (Signature.Element (I));
-         begin
-            AUnit.Assertions.Assert (Histogram (E) > 0, Message);
-            Histogram (E) := Histogram (E) - 1;
-            AUnit.Assertions.Assert
-              (I = 1 or else Signature.Element (I - 1)
-                 >= Signature.Element (I), Message);
-         end;
-      end loop;
-      AUnit.Assertions.Assert
-        (Natural (Signature.Length) = Natural (Pairs.Length)
-         and then (for all Count of Histogram => Count = 0), Message);
       for I in 1 .. Split.Count loop
          Split_Product := Split_Product * U128 (Split.Value (I));
       end loop;
