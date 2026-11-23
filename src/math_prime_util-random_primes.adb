@@ -79,7 +79,7 @@ package body Math_Prime_Util.Random_Primes with SPARK_Mode => On is
             when others => Start := 55; Span := 43;
          end case;
          Urandomm (G, Span, Value);
-         Value := Count.Nth_Prime (Start + Value).Value;
+         Value := Count.Nth_Prime (Start + Value);
       else
          loop
             Urandomb (G, Bits - 2, Value);
@@ -102,7 +102,7 @@ package body Math_Prime_Util.Random_Primes with SPARK_Mode => On is
             when others => Start := 26; Span := 143;
          end case;
          Urandomm (G, Span, Value);
-         Value := Count.Nth_Prime (Start + Value).Value;
+         Value := Count.Nth_Prime (Start + Value);
       else
          Lo := 10 ** (Digits - 1) + 1;
          Hi := 10 * Lo - 11;
