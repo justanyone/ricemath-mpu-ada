@@ -5,16 +5,16 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
    use type Primality.Prime_Result;
 
    function Mul (A, B, M : U64) return U64
-     with Pre => M > 0, Post => Mul'Result < M
-   is (U64 ((U128 (A) * U128 (B)) mod U128 (M)));
+     is (U64 ((U128 (A) * U128 (B)) mod U128 (M)))
+     with Pre => M > 0, Post => Mul'Result < M;
 
    function Add (A, B, M : U64) return U64
-     with Pre => M > 0, Post => Add'Result < M
-   is (U64 ((U128 (A) + U128 (B)) mod U128 (M)));
+     is (U64 ((U128 (A) + U128 (B)) mod U128 (M)))
+     with Pre => M > 0, Post => Add'Result < M;
 
    function Power (A, E, M : U64) return U64
-     with Pre => M > 0, Post => Power'Result < M
-   is (Powmod (A, E, M).Value);
+     is (Powmod (A, E, M).Value)
+     with Pre => M > 0, Post => Power'Result < M;
 
    subtype Factor_Count is Natural range 0 .. 64;
    type Factor_Array is array (Positive range 1 .. 64) of U64;
@@ -163,7 +163,7 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
    is
       B : constant U128 := Valuation (N, P) - Valuation (K, P)
         - Valuation (N - K, P);
-      L : constant U128 := U128' Min (K, N - K);
+      L : constant U128 := U128'Min (K, N - K);
       Num : U64 := 1;
       Den : U64 := 1;
       T, S : U128;
@@ -201,7 +201,7 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
       F : Factors;
       I : Positive := 1;
       E : Positive;
-      P, Q, R, Delta, X : U64;
+      P, Q, R, Difference, X : U64;
       Product : U64 := 1;
       Result : U64 := 0;
    begin
@@ -239,8 +239,8 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
          end loop;
          R := Binomial_Prime_Power (U128 (NN), U128 (KK), P, Q, E);
          --  Incremental CRT, with exact 128-bit intermediates.
-         Delta := Submod (R, Result mod Q, Q).Value;
-         X := Mul (Delta, Invmod (Product mod Q, Q).Value, Q);
+         Difference := Submod (R, Result mod Q, Q).Value;
+         X := Mul (Difference, Invmod (Product mod Q, Q).Value, Q);
          Result := U64 (U128 (Result) + U128 (Product) * U128 (X));
          Product := Product * Q;
       end loop;
@@ -257,13 +257,13 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
    is
       Table_Size : constant := 131_071;
       subtype Slot is Natural range 0 .. Table_Size - 1;
-      type Entry is record
+      type Table_Entry is record
          Key, Exponent : U64 := 0;
          Used : Boolean := False;
       end record;
-      type Table_Array is array (Slot) of Entry;
+      type Table_Array is array (Slot) of Table_Entry;
       Table : Table_Array := [others => (0, 0, False)];
-      Width : constant U64 := U64' Min (Sqrtint (Order) + 1, 65_536);
+      Width : constant U64 := U64'Min (Sqrtint (Order) + 1, 65_536);
       V : U64 := 1;
       H : Slot;
       Step : U64;
@@ -331,7 +331,7 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
    is
       F : constant Factors := Factorize (Order);
       I : Positive := 1;
-      Q, QE, Base, X, Digit_Power, H, Delta, T : U64;
+      Q, QE, Base, X, Digit_Power, H, Difference, T : U64;
       R : U64 := 0;
       Product : U64 := 1;
       Digit : Optional_U64;
@@ -354,8 +354,8 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
             X := X + Digit.Value * Digit_Power;
             I := I + 1;
          end loop;
-         Delta := Submod (X, R mod QE, QE).Value;
-         T := Mul (Delta, Invmod (Product mod QE, QE).Value, QE);
+         Difference := Submod (X, R mod QE, QE).Value;
+         T := Mul (Difference, Invmod (Product mod QE, QE).Value, QE);
          R := U64 (U128 (R) + U128 (Product) * U128 (T));
          Product := Product * QE;
       end loop;
@@ -378,7 +378,7 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
       Base := G mod M;
       --  Short exponents also avoid expensive order computations.
       V := 1;
-      for I in U64 range 0 .. 127 loop
+      for I in U64 range 0 .. U64'Min (65_535, M) loop
          if V = Target then
             return (True, I);
          end if;
