@@ -7,6 +7,8 @@ Review failed on merge conflicts in STATUS.md and math_prime_util-families.ads/.
 Next: inspect conflict markers, families fixture, and the Goldbach package layout.
 No conflict markers on this head. Prior families.ads/.adb and STATUS.md edits are what collided with 095ca86. Left those files unchanged. Added Math_Prime_Util.Goldbach and replayed the three families.tsv Goldbach routines inside compat_families, skipping the one non-U64 row by name.
 Next: build and run the families tests.
+Development library build succeeded. Test build via alr failed while deleting an AUnit build hash outside the tree, so the runner was built with gprbuild. Indexed pair scan avoids an undefined vector reference at link time.
+Next: run test_runner and fix any Goldbach mismatches.
 - 2026-11-23T14:31:46Z launcher: no commit for 60 s; 90 s elapsed. Files changed so far: docs/worker-notes/demand-6a3f2df5f79f4e8ab03cfbe6b39bb8de.md.
 - 2026-11-23T14:32:46Z launcher: no commit for 60 s; 151 s elapsed. Files changed so far: docs/worker-notes/demand-6a3f2df5f79f4e8ab03cfbe6b39bb8de.md.
 - 2026-11-23T14:33:47Z launcher: no commit for 60 s; 211 s elapsed. Files changed so far: docs/worker-notes/demand-6a3f2df5f79f4e8ab03cfbe6b39bb8de.md.
