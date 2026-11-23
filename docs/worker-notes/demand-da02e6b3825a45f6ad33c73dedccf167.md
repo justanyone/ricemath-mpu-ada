@@ -12,3 +12,4 @@ Bounds tables and approximation routines added, including native overflow behavi
 Added seeded list/count/partition laws, nth inverses, reversed ranges, zero factors, and native-boundary tests. A focused AUnit runner now lives only under obj/ to isolate Families.
 Exact fixture run reached bounds: delegated prime-count lower(U64 Last) differs by 23 due to floating precision. Gathering all mismatches before choosing narrowly scoped floating comparison rules; no fixture edits.
 Build and focused suite are runnable with the installed GNAT toolchain. The focused harness is being rebuilt with the current Alire dependency paths; full gate will follow fixture fixes.
+All 916 relevant fixture rows exercised: only two delegated prime bounds at U64 Last differ (23). Added a named, two-row rounding check capped at 32; bigint nth overflow rows assert undefined. Running focused compatibility/properties and full gate next.

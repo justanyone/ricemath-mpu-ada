@@ -137,12 +137,12 @@ package body Prop_Families is
          Edges : constant array (Positive range 1 .. 5) of U64 :=
            [2 ** 32 - 1, 2 ** 32 + 1, 2 ** 63 - 1, 2 ** 63 + 1, U64'Last];
       begin
-      for Edge of Edges loop
-         AUnit.Assertions.Assert
-           (Almost_Primes (64, Edge, Edge).Is_Empty and then
-            Omega_Primes (16, Edge, Edge).Is_Empty,
-            "impossible factor counts at native boundaries");
-      end loop;
+         for Edge of Edges loop
+            AUnit.Assertions.Assert
+              (Almost_Primes (64, Edge, Edge).Is_Empty and then
+               Omega_Primes (16, Edge, Edge).Is_Empty,
+               "impossible factor counts at native boundaries");
+         end loop;
       end;
    end Factor_Laws;
 
