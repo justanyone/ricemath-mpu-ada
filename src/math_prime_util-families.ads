@@ -66,22 +66,22 @@ package Math_Prime_Util.Families is
           Post => (for all P of Twin_Primes'Result => P <= High);
    --  twin_primes.c: twin_prime_count_range. Inclusive; reversed is zero.
    function Twin_Prime_Count (Low, High : U64) return U64
-     with Pre => True,
+     with SPARK_Mode => On, Pre => True,
           Post => (if Low > High then Twin_Prime_Count'Result = 0);
    --  twin_primes.c: twin_prime_count. Count lower members <= High.
    function Twin_Prime_Count (High : U64) return U64
-     with Pre => True, Post => Twin_Prime_Count'Result <= High;
+     with SPARK_Mode => On, Pre => True, Post => Twin_Prime_Count'Result <= High;
    --  twin_primes.c: twin_prime_count_approx. Rounded native estimate.
    function Twin_Prime_Count_Approx (N : U64) return U64
-     with Pre => True, Post => Twin_Prime_Count_Approx'Result <= N;
+     with SPARK_Mode => On, Pre => True, Post => Twin_Prime_Count_Approx'Result <= N;
    --  twin_primes.c: nth_twin_prime. One-based; zero or overflow undefined.
    --  Storage_Error may propagate from the sieve.
    function Nth_Twin_Prime (N : U64) return Int.Optional_U64
-     with Pre => True,
+     with SPARK_Mode => On, Pre => True,
           Post => (if N = 0 then not Nth_Twin_Prime'Result.Defined);
    --  twin_primes.c: nth_twin_prime_approx. Zero undefined; saturates.
    function Nth_Twin_Prime_Approx (N : U64) return Int.Optional_U64
-     with Pre => True,
+     with SPARK_Mode => On, Pre => True,
           Post => Nth_Twin_Prime_Approx'Result.Defined = (N /= 0);
 
    --  semi_primes.c: range_semiprime_sieve. Products of two primes,
@@ -98,23 +98,23 @@ package Math_Prime_Util.Families is
    --  semi_primes.c: semiprime_count. Uses the prime counter, so High/2
    --  must fit its supported range. Storage_Error may propagate.
    function Semiprime_Count (High : U64) return U64
-     with Pre => High <= 40_000_000_000_000,
+     with SPARK_Mode => On, Pre => High <= 40_000_000_000_000,
           Post => Semiprime_Count'Result <= High;
    --  semi_primes.c: semiprime_count_range. Inclusive; reversed is zero.
    --  Uses the segmented factor sieve. Storage_Error may propagate.
    function Semiprime_Count (Low, High : U64) return U64
-     with Pre => True,
+     with SPARK_Mode => On, Pre => True,
           Post => (if Low > High then Semiprime_Count'Result = 0);
    --  semi_primes.c: semiprime_count_approx. Rounded, clamped estimate.
    function Semiprime_Count_Approx (N : U64) return U64
-     with Pre => True, Post => Semiprime_Count_Approx'Result <= N;
+     with SPARK_Mode => On, Pre => True, Post => Semiprime_Count_Approx'Result <= N;
    --  semi_primes.c: nth_semiprime. One-based; zero undefined.
    --  The exact search uses the supported native prime-count range.
    function Nth_Semiprime (N : U64) return Int.Optional_U64
-     with Pre => N <= 1_000_000_000,
+     with SPARK_Mode => On, Pre => N <= 1_000_000_000,
           Post => Nth_Semiprime'Result.Defined = (N /= 0);
    --  semi_primes.c: nth_semiprime_approx. Zero or overflow undefined.
    function Nth_Semiprime_Approx (N : U64) return Int.Optional_U64
-     with Pre => True,
+     with SPARK_Mode => On, Pre => True,
           Post => (if N = 0 then not Nth_Semiprime_Approx'Result.Defined);
 end Math_Prime_Util.Families;

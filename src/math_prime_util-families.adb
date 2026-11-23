@@ -24,7 +24,7 @@ package body Math_Prime_Util.Families is
       True, True, False, False, False, False, False, False, False,
       True, True];
 
-   function Trunc (X : F64) return U64;
+   function Trunc (X : F64) return U64 with SPARK_Mode => On;
    function Trunc (X : F64) return U64 is
      (U64 (F64'Floor (X)));
 
@@ -723,7 +723,9 @@ package body Math_Prime_Util.Families is
    function Twin_Primes (High : U64) return Family_Vectors.Vector is
      (Twin_Primes (0, High));
 
-   function Twin_Prime_Count (Low, High : U64) return U64 is
+   function Twin_Prime_Count (Low, High : U64) return U64
+     with SPARK_Mode => Off
+   is
       Last : constant U64 := U64'Min (High, Max_Twin);
       Lo : U64 := Low;
       Hi, Sum : U64 := 0;
@@ -755,14 +757,16 @@ package body Math_Prime_Util.Families is
       return Sum;
    end Twin_Prime_Count;
 
-   function Twin_Prime_Count (High : U64) return U64 is
+   function Twin_Prime_Count (High : U64) return U64
+     with SPARK_Mode => Off
+   is
      (Twin_Prime_Count (0, High));
 
    subtype Wide is Long_Long_Float;
    package Wef is new Ada.Numerics.Generic_Elementary_Functions (Wide);
 
    --  real.c: positive Ei series, preserving C long-double evaluation.
-   function Ei (X : Wide) return Wide;
+   function Ei (X : Wide) return Wide with SPARK_Mode => On;
    function Ei (X : Wide) return Wide is
       Term : Wide := X;
       Sum : Wide := 0.577215664901532860606512090082402431
@@ -828,7 +832,7 @@ package body Math_Prime_Util.Families is
    --  inverse_interpolate: binary refinement of a monotone estimate.
    --  Return the first x with f(x) = N, or the lower side of a jump.
    function Inverse_Estimate (Low, High, N : U64; Twin : Boolean)
-      return U64;
+      return U64 with SPARK_Mode => On;
    function Inverse_Estimate (Low, High, N : U64; Twin : Boolean)
       return U64 is
       Lo : U64 := Low;
@@ -881,7 +885,9 @@ package body Math_Prime_Util.Families is
       return (True, Inverse_Estimate (Lo, Hi, N, True));
    end Nth_Twin_Prime_Approx;
 
-   function Nth_Twin_Prime (N : U64) return Int.Optional_U64 is
+   function Nth_Twin_Prime (N : U64) return Int.Optional_U64
+     with SPARK_Mode => Off
+   is
       Small_Twins : constant array (Positive range 1 .. 5) of U64 :=
         [3, 5, 11, 17, 29];
       Lo : U64 := 0;
@@ -980,7 +986,9 @@ package body Math_Prime_Util.Families is
    function Semi_Primes (High : U64) return Family_Vectors.Vector is
      (Semi_Primes (0, High));
 
-   function Semiprime_Count (High : U64) return U64 is
+   function Semiprime_Count (High : U64) return U64
+     with SPARK_Mode => Off
+   is
       Sum, Index : U64 := 0;
    begin
       for P of Math_Prime_Util.Sieve.Primes (Int.Sqrtint (High)) loop
@@ -990,7 +998,9 @@ package body Math_Prime_Util.Families is
       return Sum;
    end Semiprime_Count;
 
-   function Semiprime_Count (Low, High : U64) return U64 is
+   function Semiprime_Count (Low, High : U64) return U64
+     with SPARK_Mode => Off
+   is
       Lo : U64 := U64'Max (4, Low);
       Last : constant U64 := U64'Min (High, Max_Semi);
       Hi, Sum : U64 := 0;
@@ -1059,7 +1069,9 @@ package body Math_Prime_Util.Families is
       return U64'Min (Max_Semi_Index, U64'Max (Res, Min_Count (L - 3)));
    end Semiprime_Count_Approx;
 
-   function Nth_Semiprime_Approx (N : U64) return Int.Optional_U64 is
+   function Nth_Semiprime_Approx (N : U64) return Int.Optional_U64
+     with SPARK_Mode => Off
+   is
       X : constant F64 := F64 (N);
       L1, L2, L3, L4, El, Em, Eh, Factor, Blend, Est : F64;
       Lo, Hi : U64;
@@ -1109,7 +1121,9 @@ package body Math_Prime_Util.Families is
       return (True, Inverse_Estimate (Lo, Hi, N, False));
    end Nth_Semiprime_Approx;
 
-   function Nth_Semiprime (N : U64) return Int.Optional_U64 is
+   function Nth_Semiprime (N : U64) return Int.Optional_U64
+     with SPARK_Mode => Off
+   is
       Guess, C, Lo, Hi : U64;
    begin
       if N = 0 then
