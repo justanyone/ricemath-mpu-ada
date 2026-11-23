@@ -706,7 +706,8 @@ package body Math_Prime_Util.Families is
          Hi := Lo + U64'Min (Last - Lo, Window - 1);
          Previous := 0;
          for P of Math_Prime_Util.Sieve.Primes (Lo, Hi + 2) loop
-            if Previous >= Lo and then Previous <= Hi
+            if Previous >= Lo and then
+               Previous <= Hi
               and then P - Previous = 2
             then
                Result.Append (Previous);
@@ -788,13 +789,20 @@ package body Math_Prime_Util.Families is
       Li2 := Ei (L) + 2.8853900817779268147198494
         - X / L;
       if N < 32_000_000 then
-         if N < 4_000 then Fm := 0.2952;
-         elsif N < 8_000 then Fm := 0.3102;
-         elsif N < 16_000 then Fm := 0.3090;
-         elsif N < 32_000 then Fm := 0.3096;
-         elsif N < 64_000 then Fm := 0.3097;
-         elsif N < 128_000 then Fm := 0.3094;
-         elsif N < 256_000 then Fm := 0.3099;
+         if N < 4_000 then
+            Fm := 0.2952;
+         elsif N < 8_000 then
+            Fm := 0.3102;
+         elsif N < 16_000 then
+            Fm := 0.3090;
+         elsif N < 32_000 then
+            Fm := 0.3096;
+         elsif N < 64_000 then
+            Fm := 0.3097;
+         elsif N < 128_000 then
+            Fm := 0.3094;
+         elsif N < 256_000 then
+            Fm := 0.3099;
          elsif N < 600_000 then
             Fm := 0.3098 + (X - 256_000.0) *
               (0.3056 - 0.3098) / (600_000.0 - 256_000.0);
@@ -828,7 +836,8 @@ package body Math_Prime_Util.Families is
       Mid, R : U64;
       function Value (X : U64) return U64 is
         (if Twin then Twin_Prime_Count_Approx (X)
-         else Semiprime_Count_Approx (X));
+         else
+            Semiprime_Count_Approx (X));
    begin
       if Value (Lo) = N then
          return Lo;
@@ -836,8 +845,10 @@ package body Math_Prime_Util.Families is
       while Hi - Lo > 1 loop
          Mid := Lo + (Hi - Lo) / 2;
          R := Value (Mid);
-         if R >= N then Hi := Mid;
-         else Lo := Mid;
+         if R >= N then
+            Hi := Mid;
+         else
+            Lo := Mid;
          end if;
       end loop;
       return (if Value (Hi) > N then Lo else Hi);
@@ -856,9 +867,12 @@ package body Math_Prime_Util.Families is
       V := X * Log (X) * Log (X);
       Dlo := 0.9 * V;
       Dhi := (if N >= 10 ** 16 then 1.04 * V
-              elsif N >= 10 ** 13 then 1.10 * V
-              elsif N >= 10 ** 7 then 1.31 * V
-              elsif N >= 1_200 then 1.70 * V else 2.30 * V + 5.0);
+              elsif N >= 10 ** 13 then
+                 1.10 * V
+              elsif N >= 10 ** 7 then
+                 1.31 * V
+              elsif N >= 1_200 then
+                 1.70 * V else 2.30 * V + 5.0);
       Lo := (if Dlo >= F64 (Max_Twin) then Max_Twin else Trunc (Dlo));
       Hi := (if Dhi >= F64 (Max_Twin) then Max_Twin else Trunc (Dhi));
       if Lo >= Hi or else Twin_Prime_Count_Approx (Hi) < N then
@@ -873,7 +887,7 @@ package body Math_Prime_Util.Families is
       Lo : U64 := 0;
       Hi, C : U64 := 0;
    begin
-      if N = 0 or N > Max_Twin_Index then
+      if N = 0 or else N > Max_Twin_Index then
          return (Defined => False);
       elsif N <= 5 then
          return (True, Small_Twins (Positive (N)));
@@ -911,7 +925,9 @@ package body Math_Prime_Util.Families is
             R := Low mod Stride;
             J := Low;
             if R /= 0 then
-               if Stride - R > High - Low then return; end if;
+               if Stride - R > High - Low then
+                  return;
+               end if;
                J := Low + Stride - R;
             end if;
          end if;
@@ -943,7 +959,9 @@ package body Math_Prime_Util.Families is
       Hi : U64;
       Result : Family_Vectors.Vector;
    begin
-      if Low > Last or Lo > Last then return Result; end if;
+      if Low > Last or else Lo > Last then
+         return Result;
+      end if;
       loop
          Hi := Lo + U64'Min (Last - Lo, Window - 1);
          Result.Append (Semi_Window (Lo, Hi));
@@ -971,8 +989,11 @@ package body Math_Prime_Util.Families is
       Last : constant U64 := U64'Min (High, Max_Semi);
       Hi, Sum : U64 := 0;
    begin
-      if Low > Last or Lo > Last then return 0; end if;
-      if High <= 40_000_000_000_000 and then Low <= 4 then
+      if Low > Last or else Lo > Last then
+         return 0;
+      end if;
+      if High <= 40_000_000_000_000 and then
+         Low <= 4 then
          return Semiprime_Count (High);
       end if;
       loop
@@ -1013,7 +1034,9 @@ package body Math_Prime_Util.Families is
       Den, Fact : F64 := 1.0;
       Res : U64;
    begin
-      if N <= 623 then return Semiprime_Count (N); end if;
+      if N <= 623 then
+         return Semiprime_Count (N);
+      end if;
       Logn := Log (X);
       Loglogn := Log (Logn);
       while L <= 17 and then X >= Cross (L - 3) loop
@@ -1036,8 +1059,10 @@ package body Math_Prime_Util.Families is
       L1, L2, L3, L4, El, Em, Eh, Factor, Blend, Est : F64;
       Lo, Hi : U64;
    begin
-      if N = 0 or N > Max_Semi_Index then return (Defined => False);
-      elsif N = Max_Semi_Index then return (True, Max_Semi);
+      if N = 0 or else N > Max_Semi_Index then
+         return (Defined => False);
+      elsif N = Max_Semi_Index then
+         return (True, Max_Semi);
       elsif N <= 200 then
          declare
             V : constant Family_Vectors.Vector := Semi_Primes (623);
@@ -1045,35 +1070,46 @@ package body Math_Prime_Util.Families is
             return (True, V.Element (Natural (N - 1)));
          end;
       end if;
-      L1 := Log (X); L2 := Log (L1); L3 := Log (L2); L4 := Log (L3);
+      L1 := Log (X);
+      L2 := Log (L1);
+      L3 := Log (L2);
+      L4 := Log (L3);
       El := 1.000 - 0.00018216088 * L1 + 0.18099609886 * L2
         - 0.51962474356 * L3 - 0.01136143381 * L4;
       Em := 0.968 - 0.00073297945 * L1 + 0.09731690314 * L2
         - 0.25212500749 * L3 - 0.01366795346 * L4;
       Eh := 0.968 - 0.00008034109 * L1 + 0.01522628393 * L2
         - 0.04020257367 * L3 - 0.01266447175 * L4;
-      if N <= 2 ** 26 then Factor := El;
+      if N <= 2 ** 26 then
+         Factor := El;
       elsif N < 2 ** 27 then
          Blend := (X - 67108864.0) / 67108864.0;
          Factor := (1.0 - Blend) * El + Blend * Em;
-      elsif L1 <= 31.88477030575 then Factor := Em;
+      elsif L1 <= 31.88477030575 then
+         Factor := Em;
       elsif L1 < 32.57791748632 then
          Blend := (X - 70368744177664.0) / 70368744177664.0;
          Factor := (1.0 - Blend) * Em + Blend * Eh;
-      else Factor := Eh;
+      else
+         Factor := Eh;
       end if;
       Est := Factor * X * L1 / L2;
-      if Est >= F64 (Max_Semi) then return (True, Max_Semi); end if;
+      if Est >= F64 (Max_Semi) then
+         return (True, Max_Semi);
+      end if;
       Lo := Trunc (0.979 * Est - 5.0);
       Hi := (if 1.03 * Est >= F64 (Max_Semi) then Max_Semi
-             else Trunc (1.03 * Est));
+             else
+                Trunc (1.03 * Est));
       return (True, Inverse_Estimate (Lo, Hi, N, False));
    end Nth_Semiprime_Approx;
 
    function Nth_Semiprime (N : U64) return Int.Optional_U64 is
       Guess, C, Lo, Hi : U64;
    begin
-      if N = 0 then return (Defined => False); end if;
+      if N = 0 then
+         return (Defined => False);
+      end if;
       Guess := Nth_Semiprime_Approx (N).Value;
       C := Semiprime_Count (Guess);
       if C < N then
