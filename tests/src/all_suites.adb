@@ -1,6 +1,7 @@
 with Compat_Primality;
 with Prop_Primality;
 with Compat_Factor;
+with Compat_Arith;
 with Compat_Families;
 with Prop_Families;
 with Version_Suite;
@@ -19,9 +20,11 @@ with Compat_Digits;
 with Prop_Digits;
 with Compat_Rational;
 with Prop_Rational;
+with Compat_Modular;
 with Compat_Lucas;
 with Prop_Lucas;
 
+with Compat_Arith;
 with Compat_Real;
 with Prop_Real;
 
@@ -33,6 +36,7 @@ package body All_Suites is
       Result.Add_Test (Test_Fixture_Support.Suite);
       Result.Add_Test (Compat_Iter.Suite);
       Result.Add_Test (Compat_Int.Suite);
+      Result.Add_Test (Compat_Arith.Suite);
       Result.Add_Test (Compat_Modular.Suite);
       Result.Add_Test (Prop_Int.Suite);
       Result.Add_Test (Compat_Combinat.Suite);
@@ -43,6 +47,7 @@ package body All_Suites is
       Result.Add_Test (Prop_Digits.Suite);
       Result.Add_Test (Compat_Rational.Suite);
       Result.Add_Test (Prop_Rational.Suite);
+      Result.Add_Test (Compat_Modular.Suite);
       Result.Add_Test (Compat_Lucas.Suite);
       Result.Add_Test (Prop_Lucas.Suite);
       Result.Add_Test (Compat_Real.Suite);
@@ -52,6 +57,7 @@ package body All_Suites is
       Result.Add_Test (Compat_Primality.Suite);
       Result.Add_Test (Prop_Primality.Suite);
       Result.Add_Test (Compat_Factor.Suite);
+      Result.Add_Test (Compat_Arith.Suite);
       Result.Add_Test (Compat_Families.Suite);
       Result.Add_Test (Prop_Families.Suite);
       return Result;

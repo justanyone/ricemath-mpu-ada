@@ -7,7 +7,9 @@ project Math_Prime_Util_Tests is
    for Object_Dir use "obj/" & Math_Prime_Util_Tests_Config.Build_Profile;
    for Create_Missing_Dirs use "True";
    for Exec_Dir use "bin";
-   for Main use ("test_runner.adb", "modular_runner.adb");
+   for Main use
+     ("test_runner.adb", "modular_runner.adb", "powers_runner.adb",
+      "arith_runner.adb", "ecm_test_runner.adb", "random_runner.adb");
 
    package Compiler is
       for Default_Switches ("Ada") use Math_Prime_Util_Tests_Config.Ada_Compiler_Switches;
