@@ -11,3 +11,4 @@ Added explicit no-callback assertions for every empty-input operation. The index
 Reviewed the final generic loops and tests; no callback is invoked by a contract, and not-found first values are initialized to zero. Waiting for focused command completion before the gate.
 Indexed-copy bodies linked successfully; focused command reached test execution. Started declared gate with temporary directories redirected inside obj; diff whitespace check passed.
 The stock test runner does not implement the passed filter, so it runs all suites. Added an untracked build-only Vec runner under obj for a genuinely focused AUnit run while the declared gate proceeds.
+Gate development build passed. Build-only focused runner initially used the wrong AUnit generic signature; corrected it to the repository runner's signature. Release gate build is underway.
