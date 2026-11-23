@@ -69,7 +69,9 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
       G.Buffer := [others => 0];
       G.Position := 1024;
       G.Seeded := True;
-      Key := [others => 0];
+      for I in Key'Range loop
+         Key (I) := 0;
+      end loop;
    end Csrand;
 
    --  entropy.c: get_entropy_bytes, using the operating-system source.
@@ -91,7 +93,9 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
          Seed (I) := Byte (Buffer (Stream_Element_Offset (I)));
       end loop;
       Csrand (G, Seed);
-      Seed := [others => 0];
+      for I in Seed'Range loop
+         Seed (I) := 0;
+      end loop;
    exception
       when IO.Name_Error | IO.Use_Error | IO.Device_Error | IO.End_Error =>
          if IO.Is_Open (File) then
