@@ -69,7 +69,8 @@ package Math_Prime_Util.Families is
           Post => (for all V of Almost_Primes'Result => V <= High);
    --  almost_primes.c: almost_prime_count.
    --  Count integers through High, counting prime factors with multiplicity.
-   --  Storage_Error may propagate from the prime sieve.
+   --  Storage_Error may propagate from the prime sieve. Intermediate prime
+   --  counts inherit Count.Prime_Count_Limit; exceeding it fails its Pre.
    function Almost_Prime_Count (K : Natural; High : U64) return U64
      with Pre => True, Post => Almost_Prime_Count'Result <= High;
    --  Inclusive range count; reversed ranges return zero. May raise
@@ -78,7 +79,8 @@ package Math_Prime_Util.Families is
      with Pre => True,
           Post => (if Low > High then Almost_Prime_Count'Result = 0);
    --  almost_primes.c: nth_almost_prime. One-based index; undefined for
-   --  zero or a result beyond U64. Storage_Error may propagate.
+   --  zero or a result beyond U64. Storage_Error may propagate. Counting
+   --  during selection inherits Count.Prime_Count_Limit and its Pre.
    function Nth_Almost_Prime (K : Natural; N : U64)
       return Int.Optional_U64
      with Pre => True,
@@ -99,7 +101,8 @@ package Math_Prime_Util.Families is
           Post => (for all V of Omega_Primes'Result => V <= High);
    --  omega_primes.c: omega_prime_count.
    --  Count integers through High with K distinct prime factors.
-   --  Storage_Error may propagate from the prime sieve.
+   --  Storage_Error may propagate from the prime sieve. Intermediate prime
+   --  counts inherit Count.Prime_Count_Limit; exceeding it fails its Pre.
    function Omega_Prime_Count (K : Natural; High : U64) return U64
      with Pre => True, Post => Omega_Prime_Count'Result <= High;
    --  Inclusive range count; reversed ranges return zero. May raise
@@ -108,7 +111,8 @@ package Math_Prime_Util.Families is
      with Pre => True,
           Post => (if Low > High then Omega_Prime_Count'Result = 0);
    --  omega_primes.c: nth_omega_prime. One-based index; undefined for
-   --  zero or a result beyond U64. Storage_Error may propagate.
+   --  zero or a result beyond U64. Storage_Error may propagate. Counting
+   --  during selection inherits Count.Prime_Count_Limit and its Pre.
    function Nth_Omega_Prime (K : Natural; N : U64)
       return Int.Optional_U64
      with Pre => True,

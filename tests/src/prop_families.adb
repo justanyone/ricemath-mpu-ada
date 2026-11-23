@@ -78,7 +78,6 @@ package body Prop_Families is
       end loop;
    end Concurrent_Calls;
 
-
    --  Given seeded intervals, when factor families are partitioned, then
    --  lists, counts and one-based selection agree independently.
    procedure Factor_Laws (T : in out Test_Case'Class) is
