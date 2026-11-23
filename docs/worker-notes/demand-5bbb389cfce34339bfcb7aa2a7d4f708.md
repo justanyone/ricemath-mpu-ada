@@ -7,3 +7,4 @@ Plan: read the test project and the prime-util sources the context pack points a
 Guardrails: no Petri change, no settings files, no logfile reads, no git writes, no full-board reads. Keep deletions if the head removed a file and port additions onto the replacement.
 
 Tried: read factor.ads/adb and compat_factor; the branch adds those five files vs dev-mpuada-001. Next: alr/gprbuild to capture the compiler errors (style and types).
+- 2026-11-23T11:14:57Z launcher: no commit for 60 s; 151 s elapsed. Files changed so far: .gitignore, STATUS.md, docs/upstream-findings.md, docs/worker-notes/demand-5bbb389cfce34339bfcb7aa2a7d4f708.md, src/math_prime_util-combinat.adb, src/math_prime_util-count.adb, src/math_prime_util-count.ads, src/math_prime_util-families.adb, src/math_prime_util-families.ads, src/math_prime_util-primality.adb, src/math_prime_util-primality.ads, src/math_prime_util-random.adb.
