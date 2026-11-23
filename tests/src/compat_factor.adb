@@ -14,9 +14,8 @@ package body Compat_Factor is
    use Fixture_Support;
    use Math_Prime_Util;
    use type U64;
-   use type Primality.Prime_Result;
-
    use type U128;
+   use type Primality.Prime_Result;
 
    type Factor_Case is new Test_Case with null record;
    overriding function Name (T : Factor_Case)
@@ -71,7 +70,6 @@ package body Compat_Factor is
 
 
    procedure Check_Fixtures (T : in out Test_Case'Class) is
-      pragma Unreferenced (T);
       Cases : constant Case_Vectors.Vector :=
         For_Function (Load ("factor"), "ecm_factor");
       Args : array (1 .. 4) of U64;
@@ -102,7 +100,6 @@ package body Compat_Factor is
    end Check_Fixtures;
 
    procedure Check_Edges (T : in out Test_Case'Class) is
-      pragma Unreferenced (T);
       Inputs : constant array (Positive range <>) of U64 :=
         [0, 1, 2, 2 ** 32 - 1, 2 ** 32, 2 ** 32 + 1,
          2 ** 63 - 1, 2 ** 63, 2 ** 63 + 1, U64'Last];
@@ -412,18 +409,12 @@ package body Compat_Factor is
       Replay ("divisors");
    end Test_Divisors;
 
-
-   procedure Register_Ecm (T : in out Test_Case'Class) is
+   overriding procedure Register_Tests (T : in out Factor_Case) is
    begin
       Registration.Register_Routine
         (T, Check_Fixtures'Access, "ecm_factor fixtures");
       Registration.Register_Routine
         (T, Check_Edges'Access, "ecm_factor edges");
-   end Register_Ecm;
-
-   overriding procedure Register_Tests (T : in out Factor_Case) is
-   begin
-      Register_Ecm (T);
       Registration.Register_Routine
         (T, Test_Factor'Access, "factor");
       Registration.Register_Routine
@@ -450,7 +441,10 @@ package body Compat_Factor is
 
    overriding procedure Register_Tests (T : in out Ecm_Case) is
    begin
-      Register_Ecm (T);
+      Registration.Register_Routine
+        (T, Check_Fixtures'Access, "ecm_factor fixtures");
+      Registration.Register_Routine
+        (T, Check_Edges'Access, "ecm_factor edges");
    end Register_Tests;
 
    function Suite return AUnit.Test_Suites.Access_Test_Suite is
