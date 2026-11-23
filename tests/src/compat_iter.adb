@@ -285,9 +285,10 @@ package body Compat_Iter is
    procedure Check_Object (T : in out Test_Case'Class) is
       Cursor : Prime_Object := Prime_Iterator_Object;
       P : Int.Optional_U64;
-      procedure Expect (P : Int.Optional_U64; N : U64) is
+      procedure Expect (P : Int.Optional_U64; N : U64 := 0) is
       begin
-         Assert (P.Defined and then P.Value = N, "object value " & Image (N));
+         Assert ((if N = 0 then not P.Defined else
+                    P.Defined and then P.Value = N), "object " & Image (N));
       end Expect;
    begin
       --  iter.tsv 554..560: next, prev, peek, iterate and rewind sequence.
@@ -299,10 +300,10 @@ package body Compat_Iter is
       Expect (Value (Cursor), 29);
       Expect (Peek (Cursor), 31);
       Expect (Value (Cursor), 29);
-      Iterate (Cursor, P);
-      Expect (P, 29);
-      Iterate (Cursor, P);
-      Expect (P, 31);
+      for N of Value_Array'[29, 31] loop
+         Iterate (Cursor, P);
+         Expect (P, N);
+      end loop;
       Rewind (Cursor);
       for I in 1 .. 3 loop
          Next (Cursor);
@@ -319,13 +320,13 @@ package body Compat_Iter is
       Rewind (Cursor, 18446744073709551557);
       Expect (Value (Cursor), 18446744073709551557);
       Next (Cursor);
-      Assert (not Value (Cursor).Defined, "object wrapped");
+      Expect (Value (Cursor));
       Next (Cursor);
-      Assert (not Peek (Cursor).Defined, "exhausted peek");
+      Expect (Peek (Cursor));
       Prev (Cursor);
       Expect (Value (Cursor), 18446744073709551557);
       Rewind (Cursor, U64'Last);
-      Assert (not Value (Cursor).Defined, "rewind beyond prime");
+      Expect (Value (Cursor));
       Replay ("prime_iterator_object_iterate");
    end Check_Object;
    procedure Check_Print (T : in out Test_Case'Class) is
@@ -339,10 +340,10 @@ package body Compat_Iter is
          Print_Primes (Low, High, File);
          Ada.Text_IO.Close (File);
          Ada.Text_IO.Open (File, Ada.Text_IO.In_File, Path);
-         for I in Expected.First_Index .. Expected.Last_Index loop
+         for P of Expected loop
             Assert
               (not Ada.Text_IO.End_Of_File (File), "missing printed prime");
-            Assert (Ada.Text_IO.Get_Line (File) = Image (Expected.Element (I)),
+            Assert (Ada.Text_IO.Get_Line (File) = Image (P),
                "printed prime");
          end loop;
          Assert (Ada.Text_IO.End_Of_File (File), "extra printed prime");
