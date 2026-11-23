@@ -67,8 +67,8 @@ package body Math_Prime_Util.Factor with SPARK_Mode => On is
       return Values (1 .. Count);
    end Trial_Factor;
 
-   --  factor.c / montmath.h: pbrent_factor with USE_MONTMATH (x86_64 MPU 0.75).
-   --  Round counts in the fixtures follow that reduction, not the portable branch.
+   --  factor.c / montmath.h: pbrent_factor, USE_MONTMATH.
+   --  Fixture round counts follow that reduction.
    function Mont_Inverse (N : U64) return U64 is
       Ret : U64 := (3 * N) xor 2;
    begin
@@ -78,13 +78,16 @@ package body Math_Prime_Util.Factor with SPARK_Mode => On is
       return 0 - Ret;
    end Mont_Inverse;
 
+   function Low64 (Value : U128) return U64 is
+     (U64 (Value mod 2 ** 64));
+
    function Redc (A, B, N, Npi : U64) return U64 is
       AB : constant U128 := U128 (A) * U128 (B);
-      Lo_AB : constant U64 := U64 (AB);
+      Lo_AB : constant U64 := Low64 (AB);
       Hi_AB : constant U64 := U64 (AB / 2 ** 64);
       M : constant U64 := Lo_AB * Npi;
       MN : constant U128 := U128 (M) * U128 (N);
-      Sum_Lo : constant U128 := U128 (Lo_AB) + U128 (U64 (MN));
+      Sum_Lo : constant U128 := U128 (Lo_AB) + U128 (Low64 (MN));
       Sum_Hi : U128 :=
         U128 (Hi_AB) + MN / 2 ** 64 + Sum_Lo / 2 ** 64;
    begin
