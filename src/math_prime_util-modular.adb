@@ -4,7 +4,7 @@ with Math_Prime_Util.Primality;
 package body Math_Prime_Util.Modular with SPARK_Mode => On is
    use Int;
    use type Primality.Prime_Result;
-   Empty : constant Root_List (1 .. 0) := (others => 0);
+   Empty : constant Root_List (1 .. 0) := [others => 0];
    Max_Roots : constant := 600_000_000;
 
    function Mul (A, B, N : U64) return U64 is
@@ -167,15 +167,15 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
       X, Z : U64;
    begin
       if P = 2 or else V = 0 then
-         return (1 => V);
+         return [1 => V];
       elsif K = 2 then
          X := Sqrt_Prime (V, P);
          if Mul (X, X, P) /= V then
             return Empty;
          end if;
-         return (X, P - X);
+         return [X, P - X];
       elsif Gcd (K, P - 1) = 1 then
-         return (1 => Pow (V, Invmod (K mod (P - 1), P - 1).Value, P));
+         return [1 => Pow (V, Invmod (K mod (P - 1), P - 1).Value, P)];
       elsif Pow (V, (P - 1) / K, P) /= 1 then
          return Empty;
       end if;
@@ -338,7 +338,7 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
       end if;
       V := Reduce (A, N);
       if N = 1 then
-         return (1 => 0);
+         return [1 => 0];
       end if;
       if K < 0 then
          declare
@@ -366,7 +366,7 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
             return R;
          end;
       end if;
-      return Sorted (Split ((1 => V), Exponent));
+      return Sorted (Split ([1 => V], Exponent));
    end Allrootmod;
 
    function Allsqrtmod (A : I128; N : U64) return Root_List is
