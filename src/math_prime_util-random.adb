@@ -131,6 +131,121 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
       Random_Bytes (G, Data);
       Value := U64 (Load (Data, 0));
    end Irand;
+   procedure Srand (G : out Generator; Seed : U64; Value : out U64) is
+      Data : Byte_Array (0 .. 7);
+      Size : constant Positive := (if Seed <= 16#FFFF_FFFF# then 4 else 8);
+   begin
+      for I in Data'Range loop
+         Data (I) := Byte (Shift_Right (Seed, 8 * I) and 255);
+      end loop;
+      Csrand (G, Data (0 .. Size - 1));
+      Value := Seed;
+      for I in Data'Range loop
+         Data (I) := 0;
+      end loop;
+   end Srand;
+   procedure Srand (G : out Generator; Value : out U64) is
+      Data : Byte_Array (0 .. 7);
+      Seed : U64 := 0;
+   begin
+      Entropy_Bytes (Data);
+      for I in Data'Range loop
+         Seed := Seed or Shift_Left (U64 (Data (I)), 8 * I);
+         Data (I) := 0;
+      end loop;
+      Srand (G, Seed, Value);
+   end Srand;
+   procedure Irand32 (G : in out Generator; Value : out U64) is
+   begin
+      Irand (G, Value);
+   end Irand32;
+   procedure Irand64 (G : in out Generator; Value : out U64) is
+      Low : U64;
+   begin
+      Irand (G, Value);
+      Irand (G, Low);
+      Value := Shift_Left (Value, 32) or Low;
+   end Irand64;
+   procedure Drand
+     (G : in out Generator; Value : out Long_Float; Scale : Long_Float := 0.0)
+   is
+      Bits : U64;
+   begin
+      loop
+         Irand64 (G, Bits);
+         Value := Long_Float (Bits) * 2.0 ** (-64);
+         exit when Value < 1.0;
+      end loop;
+      if Scale /= 0.0 then
+         Value := Value * Scale;
+      end if;
+   end Drand;
+   procedure Rand
+     (G : in out Generator; Value : out Long_Float; Scale : Long_Float := 0.0)
+   is
+   begin
+      Drand (G, Value, Scale);
+   end Rand;
+   procedure Entropy_Bytes (Data : out Byte_Array)
+     with SPARK_Mode => Off
+   is
+      use type Interfaces.C.int;
+      use type Interfaces.C.long;
+      function Open (Name : Interfaces.C.char_array; Flags : Interfaces.C.int)
+        return Interfaces.C.int
+        with Import, Convention => C, External_Name => "open";
+      function Read
+        (Fd : Interfaces.C.int; Buffer : System.Address;
+         Size : Interfaces.C.size_t) return Interfaces.C.long
+        with Import, Convention => C, External_Name => "read";
+      function Close (Fd : Interfaces.C.int) return Interfaces.C.int
+        with Import, Convention => C, External_Name => "close";
+      function Clock return Interfaces.C.long
+        with Import, Convention => C, External_Name => "clock";
+      --  entropy.c timer_mix8 and mix32, using process CPU clock ticks.
+      function Mix8 (Initial : Word) return Word is
+         Acc : Word := Initial;
+         A : Word := 0;
+         Tick : Interfaces.C.long;
+         Mixed : Word;
+      begin
+         for Bit in 1 .. 8 loop
+            Tick := Clock;
+            while Tick = Clock loop
+               A := A xor 1;
+            end loop;
+            Acc := Shift_Left (Acc, 1) or A;
+         end loop;
+         Mixed := (Shift_Right (Acc, Natural (Shift_Right (Acc, 28)) + 4)
+                   xor Acc) * 277_803_737;
+         return Shift_Right (Mixed, 22) xor Mixed;
+      end Mix8;
+      Fd, Closed : Interfaces.C.int;
+      Got : Interfaces.C.long := 0;
+      Acc : Word := 0;
+   begin
+      if Data'Length = 0 then
+         return;
+      end if;
+      Fd := Open (Interfaces.C.To_C ("/dev/urandom"), 0);
+      if Fd < 0 then
+         Fd := Open (Interfaces.C.To_C ("/dev/random"), 0);
+      end if;
+      if Fd >= 0 then
+         Got := Read (Fd, Data'Address, Interfaces.C.size_t (Data'Length));
+         Closed := Close (Fd);
+         if Got = Interfaces.C.long (Data'Length) and then Closed = 0 then
+            return;
+         end if;
+      end if;
+      for I in 1 .. 4 loop
+         Acc := Mix8 (Acc);
+      end loop;
+      for I in Data'Range loop
+         Acc := Mix8 (Mix8 (Acc));
+         Data (I) := Byte (Shift_Right (Acc, 24));
+      end loop;
+   end Entropy_Bytes;
    procedure Urandomb
      (G : in out Generator; Bits : Natural; Value : out U64) is
       Low : U64;
