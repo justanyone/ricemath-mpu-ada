@@ -46,7 +46,11 @@ Entries 15 to 24 are numbered in the order they were found, not by section.
 - How verified: PP returns -18446744073709551556. The XS and PP backends disagree.
   The other large fixture rows (`arith.tsv` lines for 2^64-2, 2^64-1, 2^63-25)
   have differences inside `i64` and are unchanged.
-- Port: corrected in `src/arith/abundance.rs`.
+- Port: corrected in `src/arith/abundance.rs`. The Ada port returns the exact
+  signed value using `Int.I128` in `src/math_prime_util-arith.adb`.
+- Ada test: `Compat_Arith.Fixtures` names and skips the wrapped expectation at
+  `arith.tsv:8419`, asserting -18446744073709551556 instead; `Boundaries`
+  independently checks the same signed boundary.
 - Test that skips the row: `abundance` in `tests/compat_arith.rs` (line 8419);
   the test asserts `None` directly.
 - Upstream test: `is(abundance("18446744073709551557"), "-18446744073709551556", "abundance large prime");`
@@ -498,3 +502,18 @@ Math::Prime::Util::PP::random_safe_prime(65)` raises
 `RandomPrimes.pm::_random_safe_prime_large`. The bigint_random fixture records
 ERROR. Its replay skips value equality for this named row and checks the correct
 65-bit safe prime form: both p and (p-1)/2 must pass primality tests.
+
+### Ada native Li precision (compatibility limit, not an MPU defect)
+
+`families.tsv` rows 2624 and 2641 evaluate the lower and upper Ramanujan
+count bounds at 2^64 - 1. The native-overflow fallback uses respectively
+`prime_count_lower(n) / 3` and `prime_count_upper(n) / 2` from
+`ramanujan_primes.c`. Ada Count evaluates Li with its convergent Ei series;
+MPU uses its own Li evaluator. On the installed x86-64 GNAT toolchain the
+results are 141885427974027788 and 212828142057859307, versus fixture values
+141885427974027780 and 212828142057859296. Both remain conservative bounds.
+`Compat_Families.Replay` names this exception `Native_Max_Li_Precision`,
+skips exact equality on only these two rows, and checks a maximum difference
+of 16 integer units. `Compat_Families.Ramanujan_Laws` also checks the native
+boundary bounds against the count approximation. Fixtures are unchanged;
+this records a numerical compatibility limit, not a mathematical correction.

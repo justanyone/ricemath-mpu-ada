@@ -1,7 +1,12 @@
+with Math_Prime_Util.Count;
+with Math_Prime_Util.Primality;
+with Ada.Numerics.Generic_Elementary_Functions;
 with Ada.Numerics.Long_Elementary_Functions;
 with Interfaces;
+with Math_Prime_Util.Sieve;
 
 package body Math_Prime_Util.Families is
+   package Prime_Sieve renames Math_Prime_Util.Sieve;
    use Ada.Numerics.Long_Elementary_Functions;
    use Lucky_Vectors;
    subtype F64 is Long_Float;
@@ -21,7 +26,7 @@ package body Math_Prime_Util.Families is
       True, True, False, False, False, False, False, False, False,
       True, True];
 
-   function Trunc (X : F64) return U64;
+   function Trunc (X : F64) return U64 with SPARK_Mode => On;
    function Trunc (X : F64) return U64 is
      (U64 (F64'Floor (X)));
 
@@ -398,8 +403,14 @@ package body Math_Prime_Util.Families is
          when Upper => Nth_Lucky_Upper (N).Value);
 
    --  inverse_interpolate.c: inverse_interpolate, zero threshold.
-   function Invert (Low, High, N : U64; Kind : Estimate_Kind) return U64;
-   function Invert (Low, High, N : U64; Kind : Estimate_Kind) return U64 is
+   generic
+      type Wide is digits <>;
+      with function Value (X : U64) return U64;
+   function Inverse (Low, High, N : U64) return U64
+     with Pre => Low <= High,
+          Post => Inverse'Result in Low .. High;
+   function Inverse (Low, High, N : U64) return U64 is
+      package Ef is new Ada.Numerics.Generic_Elementary_Functions (Wide);
       Lo : U64 := Low;
       Hi : U64 := High;
       Mid, Rlo, Rhi, Rmid : U64;
@@ -422,18 +433,18 @@ package body Math_Prime_Util.Families is
       end Linear;
    begin
       Mid := Lo + (Hi - Lo) / 2;
-      Rmid := Estimate (Mid, Kind);
+      Rmid := Value (Mid);
       if Rmid >= N then
          Hi := Mid;
          Rhi := Rmid;
-         Rlo := Estimate (Lo, Kind);
+         Rlo := Value (Lo);
          if Rlo = N then
             return Lo;
          end if;
       else
          Lo := Mid;
          Rlo := Rmid;
-         Rhi := Estimate (Hi, Kind);
+         Rhi := Value (Hi);
       end if;
       if Hi - Lo <= 1 then
          return (if Rlo = N or else (Rlo < N and then Rhi > N)
@@ -442,7 +453,7 @@ package body Math_Prime_Util.Families is
       Mid := Linear;
       while Hi - Lo > 1 and then Rhi > N loop
          Iteration := Iteration + 1;
-         Rmid := Estimate (Mid, Kind);
+         Rmid := Value (Mid);
          if Rmid >= N then
             Hi := Mid;
             Rhi := Rmid;
@@ -475,15 +486,15 @@ package body Math_Prime_Util.Families is
       while Hi - Lo > 8 loop
          declare
             X1 : U64 := Lo + (Hi - Lo) / 2;
-            R1 : U64 := Estimate (X1, Kind);
+            R1 : U64 := Value (X1);
             D0 : constant F64 := F64 (N - Rlo);
             D1 : constant F64 :=
               F64 ((if R1 >= N then R1 - N else N - R1));
             D2 : constant F64 := F64 (Rhi - N + 1);
             Sign : constant F64 := (if R1 >= N then 1.0 else -1.0);
-            Pos : constant F64 := Sign * F64 (X1 - Lo) * D1 /
-              Sqrt (D1 * D1 + D0 * D2);
-            Move : constant U64 := Trunc (abs Pos + 0.5);
+            Pos : constant Wide := Wide (Sign * F64 (X1 - Lo) * D1) /
+              Ef.Sqrt (Wide (D1 * D1 + D0 * D2));
+            Move : constant U64 := U64 (Wide'Floor (abs Pos + 0.5));
             X3 : U64 := (if Pos >= 0.0 then X1 - Move else X1 + Move);
             R3, Temp : U64;
          begin
@@ -496,7 +507,7 @@ package body Math_Prime_Util.Families is
                   Rlo := R1;
                end if;
             else
-               R3 := Estimate (X3, Kind);
+               R3 := Value (X3);
                if R1 > R3 then
                   Temp := X1;
                   X1 := X3;
@@ -522,21 +533,28 @@ package body Math_Prime_Util.Families is
       end loop;
       while Hi - Lo > 1 loop
          Mid := Lo + (Hi - Lo) / 2;
-         if Estimate (Mid, Kind) < N then
+         if Value (Mid) < N then
             Lo := Mid;
          else
             Hi := Mid;
          end if;
       end loop;
       return Hi;
-   end Invert;
+   end Inverse;
+
+   function Approx_Value (N : U64) return U64 is (Estimate (N, Approx));
+   function Lower_Value (N : U64) return U64 is (Estimate (N, Lower));
+   function Upper_Value (N : U64) return U64 is (Estimate (N, Upper));
+   function Invert_Approx is new Inverse (F64, Approx_Value);
+   function Invert_Lower is new Inverse (F64, Lower_Value);
+   function Invert_Upper is new Inverse (F64, Upper_Value);
 
    function Lucky_Count_Approx (N : U64) return U64 is
    begin
       if N < 48 then
          return Small_Count (N);
       end if;
-      return Invert (Simple_Lower (N), Simple_Upper (N), N, Approx);
+      return Invert_Approx (Simple_Lower (N), Simple_Upper (N), N);
    end Lucky_Count_Approx;
 
    function Lucky_Count_Lower (N : U64) return U64 is
@@ -546,7 +564,7 @@ package body Math_Prime_Util.Families is
       elsif N < 9_000 then
          return Simple_Lower (N);
       end if;
-      return Invert (Simple_Lower (N), Simple_Upper (N), N, Upper);
+      return Invert_Upper (Simple_Lower (N), Simple_Upper (N), N);
    end Lucky_Count_Lower;
 
    function Lucky_Count_Upper (N : U64) return U64 is
@@ -556,9 +574,9 @@ package body Math_Prime_Util.Families is
       elsif N < 40_000_000 or else N > 18_428_297_000_000_000_000 then
          return Simple_Upper (N);
       end if;
-      return Invert
+      return Invert_Lower
         (Simple_Lower (N), 1 + Trunc (F64 (Simple_Upper (N)) * 1.001),
-         N, Lower);
+         N);
    end Lucky_Count_Upper;
 
    function Lucky_Count (N : U64) return U64 is
@@ -658,4 +676,1644 @@ package body Math_Prime_Util.Families is
          Factor := Factor + 1;
       end loop;
    end Is_Lucky;
+   Max_Almost_Count : constant array (Natural range 0 .. 63) of U64 :=
+     [
+      1, 425656284035217743, 1701748900850019777, 3167597434038354478,
+      3787884015050788482, 3378907169603895030, 2466706950238087748,
+      1571012171387856192,
+      913164427599983727, 499840874923678341, 263157990621533964,
+      135128109904869290,
+      68283616225825256, 34151861008771016, 16967424859951587,
+      8393048221327186,
+      4139595949113890, 2037655246635364, 1001591348315641, 491808604962296,
+      241293656953012, 118304122014405, 57968649799947, 28388662714236,
+      13895161400556, 6797526392535, 3323560145881, 1624109166018,
+      793189260998, 387148515886, 188844769357, 92054377509,
+      44841620426, 21827124353, 10616326552, 5159281045,
+      2505087309, 1215204383, 588891145, 285076316,
+      137840686, 66567488, 32103728, 15460810,
+      7433670, 3567978, 1709640, 817053,
+      389954, 185387, 87993, 41604,
+      19611, 9184, 4283, 2001,
+      914, 421, 187, 84,
+      37, 15, 7, 2];
+   Max_Almost_Offset : constant array (Natural range 0 .. 63) of U64 :=
+     [
+      U64'Last - 1, 58, 14, 2,
+      4, 3, 17, 0,
+      1, 195, 51, 127,
+      63, 767, 1535, 511,
+      255, 15, 8191, 1023,
+      83967, 16383, 111615, 557055,
+      2097151, 524287, 65535, 1048575,
+      6553599, 33554431, 4194303, 671088639,
+      16777215, 536870911, 2684354559, 2147483647,
+      25769803775, 4294967295, 268435455, 206158430207,
+      137438953471, 17179869183, 68719476735, 2199023255551,
+      5428838662143, 21990232555519, 4398046511103, 1099511627775,
+      100055558127615, 10995116277759, 17592186044415, 545357767376895,
+      70368744177663, 1125899906842623, 10133099161583615, 9007199254740991,
+      24769797950537727, 4503599627370495, 144115188075855871,
+      72057594037927935,
+      432345564227567615, 288230376151711743, 1152921504606846975,
+      4611686018427387903];
+   Upper_20 : constant array (Natural range 0 .. 12) of F64 :=
+     [
+      0.0, 0.0, 1.006, 0.7385,
+      0.6830, 0.5940, 0.3596, 0.2227,
+      0.1439, 0.09785, 0.07016, 0.05303,
+      0.04202];
+   Upper_32 : constant array (Natural range 0 .. 20) of F64 :=
+     [
+      0.0, 0.0, 1.013, 0.8094,
+      0.7485, 0.6467, 0.3984, 0.2464,
+      0.1572, 0.1049, 0.07364, 0.05452,
+      0.04266, 0.03542, 0.03082, 0.02798,
+      0.02642, 0.02585, 0.02615, 0.02808,
+      0.03054];
+   Upper_64 : constant array (Natural range 0 .. 40) of F64 :=
+     [
+      0.0, 0.0, 1.028, 1.028,
+      1.3043, 0.72208, 0.46609, 0.29340,
+      0.18571, 0.12063, 0.0815, 0.0575,
+      0.0427, 0.03490, 0.03007, 0.02710,
+      0.02554, 0.02504, 0.02554, 0.02699,
+      0.02954, 0.03294, 0.03779, 0.04453,
+      0.05393, 0.06703, 0.08543, 0.1117,
+      0.1494, 0.205, 0.287, 0.410,
+      0.60, 0.90, 1.36, 2.12,
+      3.35, 5.38, 8.83, 14.75,
+      25.07];
+   Lower_20 : constant array (Natural range 0 .. 12) of F64 :=
+     [
+      0.0, 0.0, 0.8197, 0.8418,
+      0.5242, 0.5154, 0.3053, 0.1901,
+      0.1253, 0.0892, 0.06551, 0.05082,
+      0.04101];
+   Lower_32 : constant array (Natural range 0 .. 20) of F64 :=
+     [
+      0.0, 0.0, 1.004, 0.7383,
+      0.6828, 0.5939, 0.3594, 0.2222,
+      0.1438, 0.09754, 0.06981, 0.05245,
+      0.04151, 0.03461, 0.03006, 0.02709,
+      0.02553, 0.02502, 0.02552, 0.02697,
+      0.02945];
+   Lower_64 : constant array (Natural range 0 .. 40) of F64 :=
+     [
+      0.0, 0.0, 1.011, 0.8093,
+      0.7484, 0.6465, 0.3982, 0.2463,
+      0.1571, 0.1048, 0.07363, 0.0545,
+      0.0422, 0.0331, 0.0270, 0.0232,
+      0.0208, 0.0194, 0.0190, 0.0193,
+      0.0203, 0.0222, 0.0252, 0.0295,
+      0.0356, 0.0444, 0.0570, 0.0753,
+      0.102, 0.14, 0.20, 0.297,
+      0.44, 0.68, 1.07, 1.71,
+      2.8, 4.7, 8.0, 13.89,
+      23.98];
+   First_Three : constant array (Natural range 0 .. 49) of U64 :=
+     [
+      1, 2, 3, 5,
+      8, 14, 23, 39,
+      64, 103, 169, 269,
+      427, 676, 1065, 1669,
+      2628, 4104, 6414, 10023,
+      15608, 24281, 37733, 58503,
+      90616, 140187, 216625, 334527,
+      516126, 795632, 1225641, 1886570,
+      2901796, 4460359, 6851532, 10518476,
+      16138642, 24748319, 37932129, 58110457,
+      88981343, 136192537, 208364721, 318653143,
+      487128905, 744398307, 1137129971, 1736461477,
+      2650785552, 4045250962];
+
+   --  almost_primes.c: _genkap, _cs; omega_primes.c:
+   --  _omega_prime_gen_rec and _omega_prime_count_rec2. Enumerate ordered
+   --  prime factorizations once; count the last prime with pi rather than
+   --  materializing it. All state belongs to this call.
+   procedure Factor_Family
+     (K : Natural; Low, High : U64; Distinct, Listing : Boolean;
+      Values : out Family_Vectors.Vector; Total : out U64);
+
+   procedure Factor_Family
+     (K : Natural; Low, High : U64; Distinct, Listing : Boolean;
+      Values : out Family_Vectors.Vector; Total : out U64)
+   is
+      Cache_High : constant U64 := U64'Min (High, 1_000_000);
+      Pr : constant Math_Prime_Util.Sieve.Prime_Vectors.Vector :=
+        Math_Prime_Util.Sieve.Primes (Cache_High);
+      package Sorting is new Family_Vectors.Generic_Sorting;
+
+      function Pi (N : U64) return U64;
+      function Pi (N : U64) return U64 is
+         L : Natural := 0;
+         H : Natural := Natural (Pr.Length);
+         M : Natural;
+      begin
+         if N > Cache_High then
+            return Count.Prime_Count (N);
+         end if;
+         while L < H loop
+            M := L + (H - L) / 2;
+            if Pr.Element (M) <= N then
+               L := M + 1;
+            else
+               H := M;
+            end if;
+         end loop;
+         return U64 (L);
+      end Pi;
+
+      function Next (P : U64) return U64;
+      function Next (P : U64) return U64 is
+         I : constant U64 := Pi (P);
+         R : Int.Optional_U64;
+      begin
+         if I < U64 (Pr.Length) then
+            return Pr.Element (Natural (I));
+         end if;
+         R := Math_Prime_Util.Sieve.Next_Prime (P);
+         return (if R.Defined then R.Value else 0);
+      end Next;
+
+      --  Minimum possible product of the remaining ordered factors.
+      function Fits (Left : Positive; P, Limit : U64) return Boolean;
+      function Fits (Left : Positive; P, Limit : U64) return Boolean is
+         Product : U64 := 1;
+         Q : U64 := P;
+      begin
+         for I in 1 .. Left loop
+            if Q = 0 or else Q > Limit / Product then
+               return False;
+            end if;
+            Product := Product * Q;
+            if Distinct and then I < Left then
+               Q := Next (Q);
+            end if;
+         end loop;
+         return True;
+      end Fits;
+
+      procedure Last (M, P : U64);
+      procedure Last (M, P : U64) is
+         Upper : constant U64 := High / M;
+         Lower : constant U64 := Low / M + (if Low mod M = 0 then 0 else 1);
+         E : Positive := 1;
+         A, B : U64;
+         Power : Int.Optional_U64;
+      begin
+         loop
+            B := Int.Rootint (Upper, U64 (E));
+            exit when B < P;
+            A := U64'Max (P, Int.Crootint (Lower, U64 (E)));
+            if A <= B then
+               if Listing then
+                  for Q of Math_Prime_Util.Sieve.Primes (A, B) loop
+                     Power := Int.Powint (Q, U64 (E));
+                     if Power.Defined then
+                        Values.Append (M * Power.Value);
+                        Total := Total + 1;
+                     end if;
+                  end loop;
+               else
+                  Total := Total + Pi (B) - Pi (A - 1);
+               end if;
+            end if;
+            exit when not Distinct or else E = 63;
+            E := E + 1;
+         end loop;
+      end Last;
+
+      procedure Recurse (Left : Positive; M, Start : U64);
+      procedure Recurse (Left : Positive; M, Start : U64) is
+         P : U64 := Start;
+         T, Next_P : U64;
+      begin
+         if Left = 1 then
+            Last (M, Start);
+            return;
+         end if;
+         while Fits (Left, P, High / M) loop
+            Next_P := (if Distinct then Next (P) else P);
+            T := M * P;
+            loop
+               exit when not Fits (Left - 1, Next_P, High / T);
+               Recurse (Left - 1, T, Next_P);
+               exit when not Distinct or else T > High / P;
+               T := T * P;
+            end loop;
+            P := Next (P);
+            exit when P = 0;
+         end loop;
+      end Recurse;
+   begin
+      Values.Clear;
+      Total := 0;
+      if Low > High or else High = 0 then
+         return;
+      elsif K = 0 then
+         if Low <= 1 then
+            Total := 1;
+            if Listing then
+               Values.Append (1);
+            end if;
+         end if;
+      elsif K < 64 and then (not Distinct or else K < 16) then
+         Recurse (K, 1, 2);
+         if Listing then
+            Sorting.Sort (Values);
+         end if;
+      end if;
+   end Factor_Family;
+
+   --  almost_primes.c: range_almost_prime_sieve; omega_primes.c:
+   --  sieve_omega_primes. Bounded segments track residual factors and
+   --  avoid recursive work below a narrow interval's lower endpoint.
+   function Factor_Range (K : Natural; Low, High : U64; Distinct : Boolean)
+      return Family_Vectors.Vector;
+   function Factor_Range (K : Natural; Low, High : U64; Distinct : Boolean)
+      return Family_Vectors.Vector
+   is
+      Values : Family_Vectors.Vector;
+      Total : U64;
+   begin
+      if Low > High or else High = 0 then
+         return Values;
+      end if;
+      if K = 0 or else K >= 64 or else (Distinct and then K >= 16)
+        or else High < 100_000_000 or else High - Low > 5_000_000
+        or else (Distinct and then K >= 8)
+      then
+         Factor_Family (K, Low, High, Distinct, True, Values, Total);
+         return Values;
+      end if;
+      declare
+         subtype Index is Natural range 0 .. Natural (High - Low);
+         type Residual_Array is array (Index) of U64;
+         type Count_Array is array (Index) of Natural range 0 .. 64;
+         Residual : Residual_Array;
+         Counts : Count_Array := [others => 0];
+         Offset : U64;
+      begin
+         for I in Index loop
+            Residual (I) := Low + U64 (I);
+         end loop;
+         for P of Math_Prime_Util.Sieve.Primes (Int.Sqrtint (High)) loop
+            Offset := (if Low mod P = 0 then 0 else P - Low mod P);
+            while Offset <= High - Low loop
+               declare
+                  I : constant Index := Index (Offset);
+               begin
+                  if Residual (I) > 1 then
+                     Counts (I) := Counts (I) + 1;
+                     Residual (I) := Residual (I) / P;
+                     while Residual (I) mod P = 0 loop
+                        if not Distinct then
+                           Counts (I) := Counts (I) + 1;
+                        end if;
+                        Residual (I) := Residual (I) / P;
+                     end loop;
+                  end if;
+               end;
+               exit when P > High - Low - Offset;
+               Offset := Offset + P;
+            end loop;
+         end loop;
+         for I in Index loop
+            if Residual (I) > 1 then
+               Counts (I) := Counts (I) + 1;
+            end if;
+            if Low + U64 (I) >= 1 and then Counts (I) = K then
+               Values.Append (Low + U64 (I));
+            end if;
+         end loop;
+      end;
+      return Values;
+   end Factor_Range;
+
+   function Almost_Primes (K : Natural; Low, High : U64)
+      return Family_Vectors.Vector is
+     (Factor_Range (K, Low, High, False));
+
+   function Almost_Primes (K : Natural; High : U64)
+      return Family_Vectors.Vector is (Almost_Primes (K, 1, High));
+
+   function Omega_Primes (K : Natural; Low, High : U64)
+      return Family_Vectors.Vector is
+     (Factor_Range (K, Low, High, True));
+
+   function Omega_Primes (K : Natural; High : U64)
+      return Family_Vectors.Vector is (Omega_Primes (K, 1, High));
+
+   function Family_Count (K : Natural; High : U64; Distinct : Boolean)
+      return U64;
+   function Family_Count (K : Natural; High : U64; Distinct : Boolean)
+      return U64 is
+      Values : Family_Vectors.Vector;
+      Total : U64;
+   begin
+      if K = 0 then
+         return (if High >= 1 then 1 else 0);
+      elsif K >= 64 or else (Distinct and then K >= 16)
+        or else High < 2 ** K
+      then
+         return 0;
+      elsif not Distinct and then
+        High >= U64'Last - Max_Almost_Offset (K)
+      then
+         return Max_Almost_Count (K);
+      end if;
+      Factor_Family (K, 1, High, Distinct, False, Values, Total);
+      return Total;
+   end Family_Count;
+
+   function Almost_Prime_Count (K : Natural; High : U64) return U64 is
+     (Family_Count (K, High, False));
+
+   function Omega_Prime_Count (K : Natural; High : U64) return U64 is
+     (Family_Count (K, High, True));
+
+   function Almost_Prime_Count (K : Natural; Low, High : U64) return U64 is
+   begin
+      if Low > High then
+         return 0;
+      elsif High - Low <= 100_000 then
+         return U64 (Almost_Primes (K, Low, High).Length);
+      end if;
+      return Almost_Prime_Count (K, High) -
+        (if Low <= 1 then 0 else Almost_Prime_Count (K, Low - 1));
+   end Almost_Prime_Count;
+
+   function Omega_Prime_Count (K : Natural; Low, High : U64) return U64 is
+   begin
+      if Low > High then
+         return 0;
+      elsif High - Low <= 100_000 then
+         return U64 (Omega_Primes (K, Low, High).Length);
+      end if;
+      return Omega_Prime_Count (K, High) -
+        (if Low <= 1 then 0 else Omega_Prime_Count (K, Low - 1));
+   end Omega_Prime_Count;
+
+   function Family_Nth (K : Natural; N : U64; Distinct : Boolean)
+      return Int.Optional_U64;
+   function Family_Nth (K : Natural; N : U64; Distinct : Boolean)
+      return Int.Optional_U64 is
+      Low : U64 := 1;
+      High : U64 := 2;
+      Mid : U64;
+      R : Natural := 0;
+      Result : Int.Optional_U64;
+   begin
+      if N = 0 or else K >= 64 or else (Distinct and then K >= 16) then
+         return (Defined => False);
+      elsif K = 0 then
+         return (if N = 1 then (True, 1) else (Defined => False));
+      elsif not Distinct and then N > Max_Almost_Count (K) then
+         return (Defined => False);
+      elsif not Distinct and then N = Max_Almost_Count (K) then
+         return (True, U64'Last - Max_Almost_Offset (K));
+      elsif not Distinct and then K = 1 then
+         return (True, Count.Nth_Prime (N));
+      end if;
+      if not Distinct then
+         if K > 49 and then N < First_Three (49) then
+            R := K - 48;
+         end if;
+         while K - R <= 49 and then N < First_Three (K - R) loop
+            R := R + 1;
+         end loop;
+         if R > 0 then
+            Result := Family_Nth (K - R, N, False);
+            if not Result.Defined or else Result.Value > U64'Last / 2 ** R
+            then
+               return (Defined => False);
+            end if;
+            return (True, Result.Value * 2 ** R);
+         end if;
+      end if;
+      while Family_Count (K, High, Distinct) < N loop
+         Low := High + 1;
+         if High > U64'Last / 2 then
+            High := U64'Last;
+            if Family_Count (K, High, Distinct) < N then
+               return (Defined => False);
+            end if;
+            exit;
+         end if;
+         High := High * 2;
+      end loop;
+      while Low < High loop
+         Mid := Low + (High - Low) / 2;
+         if Family_Count (K, Mid, Distinct) < N then
+            Low := Mid + 1;
+         else
+            High := Mid;
+         end if;
+      end loop;
+      return (True, Low);
+   end Family_Nth;
+
+   function Nth_Almost_Prime (K : Natural; N : U64)
+      return Int.Optional_U64 is (Family_Nth (K, N, False));
+
+   function Nth_Omega_Prime (K : Natural; N : U64)
+      return Int.Optional_U64 is (Family_Nth (K, N, True));
+   --  almost_primes.c: reduce_prime_count_factor. Remove mandatory twos
+   --  until an all-odd factorization can fit in the remaining bound.
+   procedure Reduce_Count (K : in out Natural; N : in out U64)
+     with SPARK_Mode => On;
+   procedure Reduce_Count (K : in out Natural; N : in out U64) is
+      P : Int.Optional_U64;
+   begin
+      while K > 1 loop
+         P := Int.Powint (3, U64 (K));
+         exit when P.Defined and then N >= P.Value;
+         K := K - 1;
+         N := N / 2;
+      end loop;
+   end Reduce_Count;
+
+   procedure Almost_Bounds (Factors : Natural; High : U64;
+                            Lower, Upper : out U64);
+   procedure Almost_Bounds (Factors : Natural; High : U64;
+                            Lower, Upper : out U64)
+   is
+      K : Natural := Factors;
+      N : U64 := High;
+      X, L, LL, LP, ML, MU, BL, BU, Weight : F64;
+      Maximum : U64;
+   begin
+      Lower := 0;
+      Upper := 0;
+      if K >= 64 or else N < 2 ** K then
+         return;
+      end if;
+      Reduce_Count (K, N);
+      if K = 0 then
+         Lower := (if N >= 1 then 1 else 0);
+         Upper := Lower;
+         return;
+      elsif K = 1 then
+         Lower := Count.Prime_Count_Lower (N);
+         Upper := Count.Prime_Count_Upper (N);
+         return;
+      elsif N < 3 * 2 ** (K - 1) then
+         Lower := 1;
+         Upper := 1;
+         return;
+      elsif N < 9 * 2 ** (K - 2) then
+         Lower := 2;
+         Upper := 2;
+         return;
+      elsif N < 10 * 2 ** (K - 2) then
+         Lower := 3;
+         Upper := 3;
+         return;
+      end if;
+      Maximum := Max_Almost_Count (K);
+      if N >= U64'Last - Max_Almost_Offset (K) then
+         Lower := Maximum;
+         Upper := Maximum;
+         return;
+      end if;
+      X := F64 (N);
+      L := Log (X);
+      LL := Log (L);
+      LP := LL + 0.26153;
+      if N <= 1_048_575 then
+         ML := Lower_20 (K);
+         MU := Upper_20 (K);
+      elsif N <= 4_294_967_295 then
+         ML := Lower_32 (K);
+         MU := Upper_32 (K);
+      else
+         ML := Lower_64 (K);
+         MU := Upper_64 (K);
+      end if;
+      if K = 2 then
+         BL := X * (LL + 0.261536) / L;
+         BU := BL;
+         if X >= 1.0E12 then
+            BL := X * (LL + 0.1769) / L * (1.0 + 0.4232 / L);
+            ML := 1.0;
+         end if;
+      elsif K = 3 then
+         BU := X * (LP * LP + 1.055852) / (2.0 * L);
+         BL := X * LL * LL / (2.0 * L);
+         if N < 638 then
+            ML := 0.8418;
+         elsif N <= 1_926 then
+            Weight := (X - 638.0) / (1_926.0 - 638.0);
+            ML := (1.0 - Weight) * 0.8939 + Weight * 0.9233;
+         elsif N <= 500_194 then
+            Weight := (X - 1_927.0) / (500_194.0 - 1_927.0);
+            ML := (1.0 - Weight) * 0.9233 + Weight;
+         elsif N <= 3_184_393_786 then
+            Weight := (X - 500_194.0) / (3_184_393_786.0 - 500_194.0);
+            ML := (1.0 - Weight) + Weight * 1.039;
+         else
+            ML := 1.0004;
+         end if;
+         if N > 4_294_967_295 then
+            MU := 0.8711;
+         end if;
+      elsif K = 4 then
+         BL := X * LP * LP * LP / (6.0 * L);
+         BU := BL;
+         if X > 1.0E12 then
+            BU := BU + 0.511977 * X *
+              (Log (Log (X / 4.0)) + 0.261536) / L;
+         end if;
+         if N > 4_294_967_295 then
+            MU := 0.780;
+         end if;
+         if X > 1.0E12 then
+            MU := 0.6921;
+         end if;
+      else
+         BL := X / L;
+         LP := LL + (Log (F64 (K)) * Log (Log (F64 (K))) - 0.504377);
+         for I in 1 .. K - 1 loop
+            BL := BL * (LP / F64 (I));
+         end loop;
+         BU := BL;
+      end if;
+      BL := BL * ML;
+      BU := BU * MU;
+      Lower := (if BL >= F64 (Maximum) then Maximum else Trunc (BL));
+      Upper := (if BU >= F64 (Maximum) then Maximum else Trunc (BU + 1.0));
+   end Almost_Bounds;
+
+   function Almost_Prime_Count_Lower (K : Natural; N : U64) return U64 is
+      L, U : U64;
+   begin
+      if K = 2 and then N < 256 then
+         return Almost_Prime_Count (K, N);
+      end if;
+      Almost_Bounds (K, N, L, U);
+      return L;
+   end Almost_Prime_Count_Lower;
+
+   function Almost_Prime_Count_Upper (K : Natural; N : U64) return U64 is
+      L, U : U64;
+   begin
+      if K = 2 and then N < 256 then
+         return Almost_Prime_Count (K, N);
+      end if;
+      Almost_Bounds (K, N, L, U);
+      return U;
+   end Almost_Prime_Count_Upper;
+
+   --  semi_primes.c: semiprime_count_approx. Truncated Crisan/Erban series.
+   function Semi_Approx (N : U64) return U64;
+   function Semi_Approx (N : U64) return U64 is
+      C : constant array (Natural range 0 .. 18) of F64 :=
+        [0.26149721284764278375, -2.0710850628855780875,
+         -7.6972777412176108802, -35.345660320564161516,
+         -206.71503925406509339, -1511.1997871316530251,
+         -13546.323682845914021, -146229.10675883565523,
+         -1867579.6280076650637, -27733045.258413542557,
+         -470983423.57703294361, -9011500983.75, -191744069149.4,
+         -4487573459710.5, -114472069580579.8, -3158610502077135.6,
+         -93682567786528911.9, -2970838770257639695.3,
+         -100274471240063911725.1];
+      Cross : constant array (Natural range 0 .. 14) of F64 :=
+        [632.0, 9385.0, 136411.0, 4610076.0, 66358000.0, 440590000.0,
+         2557200000.0, 53032001000.0, 1151076796431.0, 20416501389724.0,
+         165815501587300.0, 953038830319448.0, 20019396133340433.0,
+         192558867109258424.0, 1757883874953032448.0];
+      Minimum : constant array (Natural range 0 .. 15) of F64 :=
+        [82.0, 195.0, 2485.0, 31446.0, 906319.0, 11741185.0,
+         72840337.0, 398702652.0, 7538564737.0, 150382042176.0,
+         2482510001499.0, 19204997230933.0, 106211451717048.0,
+         2094735089989940.0, 19282342825922188.0, 168996486318315136.0];
+      L : Natural := 3;
+      Log_N, LL, Series, Den, Fact, Estimate : F64;
+   begin
+      if N <= 623 then
+         return Almost_Prime_Count (2, N);
+      end if;
+      Log_N := Log (F64 (N));
+      LL := Log (Log_N);
+      while L <= 17 and then F64 (N) >= Cross (L - 3) loop
+         L := L + 1;
+      end loop;
+      Series := 0.0;
+      Den := 1.0;
+      Fact := 1.0;
+      for I in 1 .. L loop
+         if I > 1 then
+            Fact := Fact * F64 (I - 1);
+         end if;
+         Series := Series + Fact * (LL / Den);
+         Series := Series + C (I - 1) / Den;
+         Den := Den * Log_N;
+      end loop;
+      Estimate := (F64 (N) / Log_N) * Series + 0.5;
+      if Estimate >= F64 (Max_Almost_Count (2)) then
+         return Max_Almost_Count (2);
+      end if;
+      return U64'Max (Trunc (Estimate), Trunc (Minimum (L - 3)));
+   end Semi_Approx;
+
+   function Almost_Prime_Count_Approx (K : Natural; N : U64) return U64 is
+      Factors : Natural := K;
+      High : U64 := N;
+      L, U : U64;
+      X, Log_X, LL, A, S, Estimate : F64;
+      Small_Three : constant array (Natural range 0 .. 18) of U64 :=
+        [27, 28, 30, 42, 44, 45, 50, 52, 63, 66, 68, 70, 75, 76, 78,
+         92, 98, 99, 102];
+      Small_Count : U64 := 4;
+   begin
+      if K = 0 then
+         return (if N >= 1 then 1 else 0);
+      elsif K >= 64 or else N < 2 ** K then
+         return 0;
+      end if;
+      Reduce_Count (Factors, High);
+      if Factors = 1 then
+         return Count.Prime_Count_Approx (High);
+      elsif Factors = 2 then
+         return Semi_Approx (High);
+      elsif High < 3 * 2 ** (Factors - 1) then
+         return 1;
+      elsif High < 9 * 2 ** (Factors - 2) then
+         return 2;
+      elsif High < 10 * 2 ** (Factors - 2) then
+         return 3;
+      elsif Factors = 3 and then High < 102 then
+         for V of Small_Three loop
+            exit when High < V;
+            Small_Count := Small_Count + 1;
+         end loop;
+         return Small_Count;
+      end if;
+      Almost_Bounds (Factors, High, L, U);
+      if Factors = 3 then
+         X := F64 (High);
+         Log_X := Log (X);
+         LL := Log (Log_X);
+         if X <= 638.0 then
+            S := 1.554688; A := 0.865814;
+         elsif X <= 1544.0 then
+            S := 1.050000; A := 0.822256;
+         elsif X <= 1927.0 then
+            S := 0.625000; A := 0.791747;
+         elsif X <= 486586.0 then
+            S := 2.865611; A := 1.004090;
+         elsif X <= 1913680.0 then
+            S := 2.790963; A := 0.999618;
+         elsif X <= 22347532.0 then
+            S := 2.719238; A := 0.995635;
+         elsif X <= 2.95E8 then
+            S := 2.584473; A := 0.988802;
+         elsif X <= 4.20E9 then
+            S := 2.457108; A := 0.983098;
+         elsif X <= 7.07E10 then
+            S := 2.352818; A := 0.978931;
+         elsif X <= 1.36E12 then
+            S := 2.269745; A := 0.975953;
+         elsif X <= 4.1E13 then
+            S := 2.203002; A := 0.973796;
+         elsif X <= 9.2E14 then
+            S := 2.148463; A := 0.972213;
+         else
+            S := 2.119279; A := 0.971438;
+         end if;
+         Estimate := 0.5 * A * X * ((LL + 0.26153) * (LL + 0.26153)) /
+           (Log_X + S) + 0.5;
+         return U64'Min (U, U64'Max (L, Trunc (Estimate)));
+      end if;
+      return Trunc (F64 (L) + F64 (U - L) *
+                      (if Factors > 11 then 0.20 else 0.76));
+   end Almost_Prime_Count_Approx;
+
+   function Almost_Estimate_Nth (K : Natural; N : U64; Kind : Natural)
+      return Int.Optional_U64;
+   function Almost_Estimate_Nth (K : Natural; N : U64; Kind : Natural)
+      return Int.Optional_U64
+   is
+      R : Natural := 0;
+      Low, High, Mid, C : U64;
+      Reduced : Int.Optional_U64;
+      Semi : constant array (Natural range 1 .. 7) of U64 :=
+        [4, 6, 9, 10, 14, 15, 21];
+      Triple : constant array (Natural range 1 .. 7) of U64 :=
+        [8, 12, 18, 20, 27, 28, 30];
+   begin
+      if N = 0 or else K >= 64 then
+         return (Defined => False);
+      elsif K = 0 then
+         return (if N = 1 then (True, 1) else (Defined => False));
+      elsif N > Max_Almost_Count (K) then
+         return (Defined => False);
+      elsif N = Max_Almost_Count (K) then
+         return (True, U64'Last - Max_Almost_Offset (K));
+      elsif K = 1 then
+         return (True, (case Kind is
+                   when 0 => Count.Nth_Prime_Lower (N),
+                   when 1 => Count.Nth_Prime_Upper (N),
+                   when others => Count.Nth_Prime_Approx (N)));
+      elsif N < 8 then
+         return (True, (if K = 2 then Semi (Natural (N)) else
+                          Triple (Natural (N)) * 2 ** (K - 3)));
+      elsif K = 2 and then N <= 220 then
+         return Nth_Almost_Prime (K, N);
+      end if;
+      if Kind /= 2 then
+         if K > 49 then
+            if N < First_Three (49) then
+               R := K - 48;
+            end if;
+         end if;
+         while K - R <= 49 and then N < First_Three (K - R) loop
+            R := R + 1;
+         end loop;
+         if R > 0 then
+            Reduced := Almost_Estimate_Nth (K - R, N, Kind);
+            if not Reduced.Defined or else Reduced.Value > U64'Last / 2 ** R
+            then
+               return (Defined => False);
+            end if;
+            return (True, Reduced.Value * 2 ** R);
+         end if;
+      end if;
+      Low := (if Kind = 0 then 3 * 2 ** K else 5 * 2 ** K);
+      if Kind = 2 then
+         Reduced := Almost_Estimate_Nth (K, N, 0);
+         Low := Reduced.Value;
+      end if;
+      High := Low;
+      loop
+         C := (case Kind is
+                 when 0 => Almost_Prime_Count_Upper (K, High),
+                 when 1 => Almost_Prime_Count_Lower (K, High),
+                 when others => Almost_Prime_Count_Approx (K, High));
+         exit when C >= N;
+         if High = U64'Last then
+            return (Defined => False);
+         end if;
+         High := (if High > U64'Last / 2 then U64'Last else High * 2);
+      end loop;
+      while Low < High loop
+         Mid := Low + (High - Low) / 2;
+         C := (case Kind is
+                 when 0 => Almost_Prime_Count_Upper (K, Mid),
+                 when 1 => Almost_Prime_Count_Lower (K, Mid),
+                 when others => Almost_Prime_Count_Approx (K, Mid));
+         if C < N then
+            Low := Mid + 1;
+         else
+            High := Mid;
+         end if;
+      end loop;
+      --  MPU's inverse interpolation returns the lower neighboring integer
+      --  when the count estimate skips over the requested index.
+      C := (case Kind is
+              when 0 => Almost_Prime_Count_Upper (K, Low),
+              when 1 => Almost_Prime_Count_Lower (K, Low),
+              when others => Almost_Prime_Count_Approx (K, Low));
+      if C > N then
+         Low := Low - 1;
+      end if;
+      return (True, Low);
+   end Almost_Estimate_Nth;
+
+   function Nth_Almost_Prime_Lower (K : Natural; N : U64)
+      return Int.Optional_U64 is (Almost_Estimate_Nth (K, N, 0));
+   function Nth_Almost_Prime_Upper (K : Natural; N : U64)
+      return Int.Optional_U64 is (Almost_Estimate_Nth (K, N, 1));
+   function Nth_Almost_Prime_Approx (K : Natural; N : U64)
+      return Int.Optional_U64 is (Almost_Estimate_Nth (K, N, 2));
+   use type Primality.Prime_Result;
+   subtype Ram_Wide is Long_Long_Float;
+   package Ram_Ef is new Ada.Numerics.Generic_Elementary_Functions (Ram_Wide);
+   use Ram_Ef;
+   Ram_Small : constant array (Positive range 1 .. 23) of U64 :=
+     [2, 11, 17, 29, 41, 47, 59, 67, 71, 97, 101, 107, 127,
+      149, 151, 167, 179, 181, 227, 229, 233, 239, 241];
+
+   function Ram_Small_Count (N : U64) return U64;
+   function Ram_Small_Count (N : U64) return U64 is
+      R : U64 := 0;
+   begin
+      for P of Ram_Small loop
+         exit when P > N;
+         R := R + 1;
+      end loop;
+      return R;
+   end Ram_Small_Count;
+
+   --  prime_counts.c: ramanujan_axler returns double after wide arithmetic.
+   function Axler (N : U64; C, D : Ram_Wide) return U64;
+   function Axler (N : U64; C, D : Ram_Wide) return U64 is
+      X : constant Ram_Wide := Ram_Wide (N);
+      L : constant Ram_Wide := Log (X);
+      LL : constant Ram_Wide := Log (L);
+      L2 : constant Ram_Wide := Log (2.0);
+      C1 : constant Ram_Wide := 2.0 * L2 * L2 + L2 + C;
+      C2 : constant Ram_Wide := L2 ** 3 + 2.0 * L2 * L2 + D;
+      U : constant Ram_Wide :=
+        (L2 * L * LL * LL - C1 * L * LL + C2 * L - L2 * L2 * LL
+         + L2 ** 3 + L2 * L2) /
+        (L ** 4 + L ** 3 * LL - L ** 3 * L2 - L * L * L2);
+      R : constant Long_Float := Long_Float
+        (2.0 * X * (1.0 + L2 / L - (L2 * LL - L2 * L2 - L2) / (L * L) + U));
+   begin
+      return U64 (Long_Float'Floor (R));
+   end Axler;
+
+   type Bound_Kind is (Lower, Upper);
+   type Coefficient is record
+      Last : U64;
+      C, D : Ram_Wide;
+   end record;
+   type Coefficients is array (Positive range <>) of Coefficient;
+   --  ramanujan_primes.c: nth_ramanujan_prime_lower/upper breakpoints.
+   Lower_Coefficients : constant Coefficients :=
+     [(188, 4.2720, 0.340), (1244, -0.2179, -6.179),
+      (2983, 0.1446, -4.8693), (14302, -0.3570, -5.1154),
+      (34815, -1.5770, -7.5332), (76399, 1.472, 0.0126),
+      (280815, 1.472, 0.5132), (915886, 1.472, 0.9967),
+      (4000000, 1.472, 1.5004), (16000000, 1.472, 1.7184),
+      (64000000, 1.472, 1.9860), (128000000, 1.472, 2.1352),
+      (256000000, 1.472, 2.1658), (384000000, 1.472, 2.1999),
+      (512000000, 1.472, 2.2047), (640000000, 1.472, 2.2324),
+      (14888378285, 1.472, 2.2385), (467037926604, 1.472, 2.29),
+      (2778491401197, 1.472, 2.31), (10656144781918, 1.472, 2.315),
+      (63698770351741, 1.472, 2.317), (U64'Last, 1.472, 2.319)];
+   Upper_Coefficients : constant Coefficients :=
+     [(167, -4.7691, -6.2682), (2289, -0.9315, -0.5635),
+      (5224, -0.5318, -0.0710), (12580, 0.1212, 0.7973),
+      (18174, 0.0, 0.3548), (82882, 0.0, -0.2450),
+      (316313, 0.0, -0.6384), (1000000, 0.0, -0.9353),
+      (4000000, 0.0, -1.1271), (16000000, 0.0, -1.4152),
+      (64000000, 0.0, -1.6671), (128000000, 0.0, -1.8855),
+      (256000000, 0.0, -1.9325), (384000000, 0.0, -2.0190),
+      (512000000, 0.0, -2.0310), (3999654659, 0.0, -2.0884),
+      (84086679236, 0.0, -2.235), (514808375201, 0.0, -2.435),
+      (3594243587299, 0.0, -2.535), (28330126673435, 0.0, -2.635),
+      (117462814829787, 0.0, -2.735), (U64'Last, 0.0, -2.8)];
+
+   function Nth_Bound (N : U64; Kind : Bound_Kind) return Int.Optional_U64;
+   function Nth_Bound (N : U64; Kind : Bound_Kind) return Int.Optional_U64 is
+      Table : constant Coefficients :=
+        (if Kind = Lower then Lower_Coefficients else Upper_Coefficients);
+      R : U64 := 0;
+   begin
+      if N = 0 then
+         return (Defined => False);
+      elsif N <= 23 then
+         return (Defined => True, Value => Ram_Small (Positive (N)));
+      end if;
+      for Row of Table loop
+         if N <= Row.Last then
+            R := Axler (N, Row.C, Row.D);
+            exit;
+         end if;
+      end loop;
+      return (Defined => True, Value =>
+        (if R > 425_656_284_035_217_743 then 0
+         elsif Kind = Lower then Count.Nth_Prime_Lower (R)
+         else Count.Nth_Prime_Upper (R)));
+   end Nth_Bound;
+
+   function Nth_Ramanujan_Prime_Lower (N : U64) return Int.Optional_U64 is
+     (Nth_Bound (N, Lower));
+   function Nth_Ramanujan_Prime_Upper (N : U64) return Int.Optional_U64 is
+     (Nth_Bound (N, Upper));
+
+   function Ram_Upper_Value (N : U64) return U64 is
+     (if N = 0 then 0 else Nth_Ramanujan_Prime_Upper (N).Value);
+   function Ram_Lower_Value (N : U64) return U64 is
+     (if N = 0 then 0 else Nth_Ramanujan_Prime_Lower (N).Value);
+   function Ram_Invert_Upper is new Inverse (Ram_Wide, Ram_Upper_Value);
+   function Ram_Invert_Lower is new Inverse (Ram_Wide, Ram_Lower_Value);
+
+   function Ram_Count_Bound (N : U64; Kind : Bound_Kind) return U64;
+   function Ram_Count_Bound (N : U64; Kind : Bound_Kind) return U64 is
+      Lo : constant U64 := Count.Prime_Count_Lower (N) / 3;
+      Hi : constant U64 := Count.Prime_Count_Upper (N) / 2;
+   begin
+      if N <= 241 then
+         return Ram_Small_Count (N);
+      elsif Kind = Lower then
+         return (if Ram_Upper_Value (Lo) > N or else Ram_Upper_Value (Hi) < N
+                 then Lo else Ram_Invert_Upper (Lo, Hi, N));
+      else
+         return (if Ram_Lower_Value (Lo) > N then Lo
+                 elsif Ram_Lower_Value (Hi) < N then Hi
+                 else Ram_Invert_Lower (Lo, Hi, N));
+      end if;
+   end Ram_Count_Bound;
+   function Ramanujan_Prime_Count_Lower (N : U64) return U64 is
+     (Ram_Count_Bound (N, Lower));
+   function Ramanujan_Prime_Count_Upper (N : U64) return U64 is
+     (Ram_Count_Bound (N, Upper));
+
+   function Ramanujan_Prime_Count_Approx (N : U64) return U64 is
+   begin
+      if N <= 241 then
+         return Ram_Small_Count (N);
+      end if;
+      return Count.Prime_Count_Approx (N) - Count.Prime_Count_Approx (N / 2);
+   end Ramanujan_Prime_Count_Approx;
+
+   function Ram_Invert_Approx is new Inverse
+     (Ram_Wide, Ramanujan_Prime_Count_Approx);
+   function Nth_Ramanujan_Prime_Approx (N : U64) return Int.Optional_U64 is
+   begin
+      if N = 0 then
+         return (Defined => False);
+      elsif N <= 23 then
+         return (Defined => True, Value => Ram_Small (Positive (N)));
+      end if;
+      return (Defined => True, Value => Ram_Invert_Approx
+        (Ram_Lower_Value (N) - 1, Ram_Upper_Value (N), N));
+   end Nth_Ramanujan_Prime_Approx;
+
+   --  ramanujan_primes.c: n_range_ramanujan_primes, Noe's algorithm.
+   --  Containers isolate allocation from the SPARK arithmetic routines.
+   function Index_Range (First, Last : U64)
+      return Prime_Sieve.Prime_Vectors.Vector
+     with SPARK_Mode => Off;
+   function Index_Range (First, Last : U64)
+      return Prime_Sieve.Prime_Vectors.Vector
+   is
+      subtype Vector is Prime_Sieve.Prime_Vectors.Vector;
+      Lo : constant U64 := U64'Max (1, First);
+      Result : Vector;
+      Start, Stop, S : U64;
+   begin
+      if Lo > Last then
+         return Result;
+      end if;
+      Result.Set_Length (Ada.Containers.Count_Type (Last - Lo + 1));
+      for I in Lo .. U64'Min (Last, 23) loop
+         Result.Replace_Element (Natural (I - Lo), Ram_Small (Positive (I)));
+      end loop;
+      if Last <= 23 then
+         return Result;
+      end if;
+      Start := U64'Max (15, Ram_Lower_Value (Lo) - 1);
+      Stop := Ram_Upper_Value (Last) + 1;
+      S := Count.Prime_Count (Start - 1) -
+        Count.Prime_Count ((Start - 1) / 2);
+      declare
+         Half : constant Vector :=
+           Prime_Sieve.Primes ((Start + 1) / 2, (Stop + 1) / 2);
+         Qi : Natural := 0;
+      begin
+         --  Noe's count falls at twice a prime and rises at a prime.
+         --  The last rise to each index is its Ramanujan prime.
+         for P of Prime_Sieve.Primes (Start, Stop) loop
+            while Qi < Natural (Half.Length) and then
+              Half.Element (Qi) * 2 < P
+            loop
+               S := S - 1;
+               Qi := Qi + 1;
+            end loop;
+            S := S + 1;
+            if S >= Lo and then S <= Last then
+               Result.Replace_Element (Natural (S - Lo), P);
+            end if;
+         end loop;
+      end;
+      return Result;
+   end Index_Range;
+
+   function Nth_Ramanujan_Prime (N : U64) return Int.Optional_U64
+     with SPARK_Mode => Off
+   is
+   begin
+      if N = 0 then
+         return (Defined => False);
+      end if;
+      return (Defined => True, Value => Index_Range (N, N).First_Element);
+   end Nth_Ramanujan_Prime;
+
+   function Ramanujan_Prime_Count (N : U64) return U64
+     with SPARK_Mode => Off
+   is
+      V : U64;
+      Window : U64 := 20;
+      First : U64;
+   begin
+      if N <= 241 then
+         return Ram_Small_Count (N);
+      end if;
+      V := Count.Prime_Count (N) - Count.Prime_Count (N / 2);
+      if N > 1_000_000_000 then
+         Window := 320;
+      end if;
+      loop
+         First := (if V <= Window then 1 else V - Window);
+         declare
+            Ps : constant Prime_Sieve.Prime_Vectors.Vector :=
+              Index_Range (First, V + Window);
+         begin
+            if Ps.First_Element < N and then Ps.Last_Element > N then
+               for I in Ps.First_Index + 1 .. Ps.Last_Index loop
+                  if Ps.Element (I) > N then
+                     return First + U64 (I) - 1;
+                  end if;
+               end loop;
+            end if;
+         end;
+         Window := Window * 2;
+      end loop;
+   end Ramanujan_Prime_Count;
+
+   function Ramanujan_Prime_Count (Low, High : U64) return U64 is
+   begin
+      if High < 2 or else High < Low then
+         return 0;
+      end if;
+      return Ramanujan_Prime_Count (High) -
+        (if Low <= 2 then 0 else Ramanujan_Prime_Count (Low - 1));
+   end Ramanujan_Prime_Count;
+
+   function Is_Ramanujan_Prime (N : U64) return Boolean is
+   begin
+      if Primality.Is_Prime (N) = 0 then
+         return False;
+      elsif N <= 241 then
+         return (for some P of Ram_Small => P = N);
+      end if;
+      return Nth_Ramanujan_Prime (Ramanujan_Prime_Count (N)).Value = N;
+   end Is_Ramanujan_Prime;
+
+   function Ramanujan_Primes (Low, High : U64)
+      return Prime_Sieve.Prime_Vectors.Vector
+     with SPARK_Mode => Off
+   is
+      Result : Prime_Sieve.Prime_Vectors.Vector;
+   begin
+      if High < 2 or else Low > High then
+         return Result;
+      end if;
+      declare
+         Ps : constant Prime_Sieve.Prime_Vectors.Vector := Index_Range
+           (Ramanujan_Prime_Count_Lower (Low),
+            Ramanujan_Prime_Count_Upper (High));
+      begin
+         for P of Ps loop
+            if P >= Low and then P <= High then
+               Result.Append (P);
+            end if;
+         end loop;
+      end;
+      return Result;
+   end Ramanujan_Primes;
+
+   function Ramanujan_Primes (High : U64)
+      return Prime_Sieve.Prime_Vectors.Vector
+     is (Ramanujan_Primes (0, High)) with SPARK_Mode => Off;
+
+   Max_Twin : constant U64 := 18_446_744_073_709_550_771;
+   Max_Twin_Index : constant U64 := 12_975_810_317_986_308;
+   Max_Semi : constant U64 := 18_446_744_073_709_551_601;
+   Max_Semi_Index : constant U64 := 1_701_748_900_850_019_777;
+   Window : constant U64 := 1_000_000;
+   Twin_Steps : constant array (Natural range <>) of U64 :=
+     [58980, 48427, 45485, 43861, 42348,
+      41457, 40908, 39984, 39640, 39222,
+      373059, 353109, 341253, 332437, 326131,
+      320567, 315883, 312511, 309244, 2963535,
+      2822103, 2734294, 2673728, 2626243, 2585752,
+      2554015, 2527034, 2501469, 24096420, 23046519,
+      22401089, 21946975, 21590715, 21300632, 21060884,
+      20854501, 20665634, 199708605, 191801047, 186932018,
+      183404596, 180694619, 178477447, 176604059, 174989299,
+      173597482, 1682185723, 1620989842, 1583071291, 1555660927,
+      1534349481, 1517031854, 1502382532, 1489745250, 1478662752,
+      14364197903, 13879821868, 13578563641, 13361034187, 13191416949,
+      13053013447, 12936030624, 12835090276, 12746487898, 124078078589,
+      120182602778, 117753842540, 115995331742, 114622738809, 113499818125,
+      112551549250, 111732637241, 111012321565, 1082549061370, 1050759497170,
+      1030883829367, 1016473645857, 1005206830409, 995980796683, 988183329733,
+      981441437376, 975508027029, 9527651328494, 9264843314051, 9100153493509,
+      8980561036751, 8886953365929, 8810223086411, 8745329823109,
+      8689179566509,
+      8639748641098, 84499489470819, 82302056642520, 80922166953330,
+      79918799449753,
+      79132610984280, 78487688897426, 77941865286827, 77469296499217,
+      77053075040105,
+      754527610498466, 735967887462370, 724291736697048];
+
+   function Twin_Primes (Low, High : U64) return Family_Vectors.Vector
+     with SPARK_Mode => Off
+   is
+      Result : Family_Vectors.Vector;
+      Last : constant U64 := U64'Min (High, Max_Twin);
+      Lo, Hi, Previous : U64;
+   begin
+      if Low > Last then
+         return Result;
+      end if;
+      Lo := Low;
+      loop
+         Hi := Lo + U64'Min (Last - Lo, Window - 1);
+         Previous := 0;
+         for P of Math_Prime_Util.Sieve.Primes (Lo, Hi + 2) loop
+            if Previous >= 3 and then Previous >= Lo and then
+               Previous <= Hi
+              and then P - Previous = 2
+            then
+               Result.Append (Previous);
+            end if;
+            Previous := P;
+         end loop;
+         exit when Hi = Last;
+         Lo := Hi + 1;
+      end loop;
+      return Result;
+   end Twin_Primes;
+
+   function Twin_Primes (High : U64) return Family_Vectors.Vector is
+     (Twin_Primes (0, High)) with SPARK_Mode => Off;
+
+   function Twin_Prime_Count (Low, High : U64) return U64
+     with SPARK_Mode => Off
+   is
+      Last : constant U64 := U64'Min (High, Max_Twin);
+      Lo : U64 := Low;
+      Hi, Sum : U64 := 0;
+      Base : U64 := 10_000_000;
+      Step : Natural := 0;
+   begin
+      if Lo > Last then
+         return 0;
+      end if;
+      --  twin_prime_count_range: consume MPU's disjoint decade steps.
+      if Lo <= 3 then
+         for E in 0 .. 11 loop
+            for M in U64 range 1 .. (if E = 11 then 4 else 9) loop
+               exit when Last < M * Base;
+               Sum := Sum + Twin_Steps (Step);
+               Step := Step + 1;
+               Lo := M * Base;
+            end loop;
+            exit when Last < Base or else E = 11;
+            Base := Base * 10;
+         end loop;
+      end if;
+      loop
+         Hi := Lo + U64'Min (Last - Lo, Window - 1);
+         Sum := Sum + U64 (Twin_Primes (Lo, Hi).Length);
+         exit when Hi = Last;
+         Lo := Hi + 1;
+      end loop;
+      return Sum;
+   end Twin_Prime_Count;
+
+   function Twin_Prime_Count (High : U64) return U64 is
+     (Twin_Prime_Count (0, High))
+     with SPARK_Mode => Off;
+
+   subtype Wide is Long_Long_Float;
+   package Wef is new Ada.Numerics.Generic_Elementary_Functions (Wide);
+
+   --  real.c: positive Ei series, preserving C long-double evaluation.
+   function Ei (X : Wide) return Wide with SPARK_Mode => On;
+   function Ei (X : Wide) return Wide is
+      Term : Wide := X;
+      Sum : Wide := 0.577215664901532860606512090082402431
+        + Wef.Log (X);
+      Old : Wide;
+   begin
+      for K in 1 .. 1_000 loop
+         Old := Sum;
+         Sum := Sum + Term / Wide (K);
+         exit when Sum = Old;
+         Term := Term * X / Wide (K + 1);
+      end loop;
+      return Sum;
+   end Ei;
+
+   function Twin_Prime_Count_Approx (N : U64) return U64 is
+      X : constant Wide := Wide (N);
+      L, Li2, Fm : Wide;
+   begin
+      if N < 2_000 then
+         return Twin_Prime_Count (N);
+      end if;
+      L := Wef.Log (X);
+      --  Ei is an NV (double) API in MPU, including its argument.
+      Li2 := Wide (F64 (Ei (Wide (F64 (L)))))
+        + 2.8853900817779268147198494
+        - X / L;
+      if N < 32_000_000 then
+         if N < 4_000 then
+            Fm := 0.2952;
+         elsif N < 8_000 then
+            Fm := 0.3102;
+         elsif N < 16_000 then
+            Fm := 0.3090;
+         elsif N < 32_000 then
+            Fm := 0.3096;
+         elsif N < 64_000 then
+            Fm := 0.3097;
+         elsif N < 128_000 then
+            Fm := 0.3094;
+         elsif N < 256_000 then
+            Fm := 0.3099;
+         elsif N < 600_000 then
+            Fm := 0.3098 + (X - 256_000.0) *
+              (0.3056 - 0.3098) / (600_000.0 - 256_000.0);
+         elsif N < 1_000_000 then
+            Fm := 0.3062 + (X - 600_000.0) *
+              (0.3042 - 0.3062) / (1_000_000.0 - 600_000.0);
+         elsif N < 4_000_000 then
+            Fm := 0.3067 + (X - 1_000_000.0) *
+              (0.3041 - 0.3067) / (4_000_000.0 - 1_000_000.0);
+         elsif N < 16_000_000 then
+            Fm := 0.3041 + (X - 4_000_000.0) *
+              (0.2983 - 0.3041) / (16_000_000.0 - 4_000_000.0);
+         else
+            Fm := 0.2983 + (X - 16_000_000.0) *
+              (0.2961 - 0.2983) / (32_000_000.0 - 16_000_000.0);
+         end if;
+         Li2 := Li2 * Fm * Wef.Log (12.0 + L);
+      end if;
+      return U64 (Wide'Floor
+        (1.32032363169373914785562422 * Li2 + 0.5));
+   end Twin_Prime_Count_Approx;
+
+   --  inverse_interpolate: binary refinement of a monotone estimate.
+   --  Return the first x with f(x) = N, or the lower side of a jump.
+   function Inverse_Estimate (Low, High, N : U64; Twin : Boolean)
+      return U64 with SPARK_Mode => On;
+   function Inverse_Estimate (Low, High, N : U64; Twin : Boolean)
+      return U64 is
+      Lo : U64 := Low;
+      Hi : U64 := High;
+      Mid, R : U64;
+      function Value (X : U64) return U64 is
+        (if Twin then Twin_Prime_Count_Approx (X)
+         else
+            Semiprime_Count_Approx (X));
+   begin
+      if Value (Lo) = N then
+         return Lo;
+      end if;
+      while Hi - Lo > 1 loop
+         Mid := Lo + (Hi - Lo) / 2;
+         R := Value (Mid);
+         if R >= N then
+            Hi := Mid;
+         else
+            Lo := Mid;
+         end if;
+      end loop;
+      return (if Value (Hi) > N then Lo else Hi);
+   end Inverse_Estimate;
+
+   function Nth_Twin_Prime_Approx (N : U64) return Int.Optional_U64 is
+      X : constant F64 := F64 (N);
+      V, Dlo, Dhi : F64;
+      Lo, Hi : U64;
+   begin
+      if N < 6 then
+         return Nth_Twin_Prime (N);
+      elsif N >= Max_Twin_Index then
+         return (True, Max_Twin);
+      end if;
+      V := X * Log (X) * Log (X);
+      Dlo := 0.9 * V;
+      Dhi := (if N >= 10 ** 16 then 1.04 * V
+              elsif N >= 10 ** 13 then
+                 1.10 * V
+              elsif N >= 10 ** 7 then
+                 1.31 * V
+              elsif N >= 1_200 then
+                 1.70 * V else 2.30 * V + 5.0);
+      Lo := (if Dlo >= F64 (Max_Twin) then Max_Twin else Trunc (Dlo));
+      Hi := (if Dhi >= F64 (Max_Twin) then Max_Twin else Trunc (Dhi));
+      if Lo >= Hi or else Twin_Prime_Count_Approx (Hi) < N then
+         return (True, Max_Twin);
+      end if;
+      return (True, Inverse_Estimate (Lo, Hi, N, True));
+   end Nth_Twin_Prime_Approx;
+
+   function Nth_Twin_Prime (N : U64) return Int.Optional_U64
+     with SPARK_Mode => Off
+   is
+      Small_Twins : constant array (Positive range 1 .. 5) of U64 :=
+        [3, 5, 11, 17, 29];
+      Lo : U64 := 0;
+      Hi, C : U64 := 0;
+      Bound : U64;
+   begin
+      if N = 0 or else N > Max_Twin_Index then
+         return (Defined => False);
+      elsif N <= 5 then
+         return (True, Small_Twins (Positive (N)));
+      end if;
+      Bound := Nth_Twin_Prime_Approx (N).Value;
+      Bound := Bound + U64'Min (Max_Twin - Bound, Bound / 10 + 800);
+      loop
+         Hi := Lo + U64'Min (Bound - Lo, Window - 1);
+         declare
+            V : constant Family_Vectors.Vector := Twin_Primes (Lo, Hi);
+         begin
+            if U64 (V.Length) >= N - C then
+               return (True, V.Element (Natural (N - C - 1)));
+            end if;
+            C := C + U64 (V.Length);
+         end;
+         exit when Hi = Max_Twin;
+         Lo := Hi + 1;
+         if Lo > Bound then
+            Bound := Bound + U64'Min (Max_Twin - Bound, Window);
+         end if;
+      end loop;
+      return (Defined => False);
+   end Nth_Twin_Prime;
+
+   --  semi_primes.c: _range_semiprime_count_iterate, using a bounded
+   --  trial membership test in place of factor.c: is_semiprime.
+   --  A composite with at least three prime factors has one <= cbrt (N).
+   function Semi_Member (N : U64) return Boolean
+     with SPARK_Mode => On, Pre => N >= 4;
+   function Semi_Member (N : U64) return Boolean is
+      Limit : constant U64 := Int.Rootint (N, 3);
+      D : U64 := 3;
+   begin
+      if N mod 2 = 0 then
+         return Primality.Is_Prime (N / 2) /= 0;
+      elsif Primality.Is_Prime (N) /= 0 then
+         return False;
+      end if;
+      while D <= Limit loop
+         if N mod D = 0 then
+            --  The first divisor is prime. Its cofactor must be prime.
+            return Primality.Is_Prime (N / D) /= 0;
+         end if;
+         D := D + 2;
+      end loop;
+      return True;
+   end Semi_Member;
+
+   --  range_semiprime_sieve: count factors from p*p, then from 2*p*p.
+   --  Saturating at two is sufficient: only entries equal to one survive.
+   function Semi_Window (Low, High : U64) return Family_Vectors.Vector
+     with SPARK_Mode => Off;
+   function Semi_Window (Low, High : U64) return Family_Vectors.Vector
+     with SPARK_Mode => Off
+   is
+      type Marker is range 0 .. 2;
+      type Marker_Array is array (Natural range <>) of Marker;
+      Marks : Marker_Array (0 .. Natural (High - Low)) := [others => 0];
+      Result : Family_Vectors.Vector;
+      procedure Mark (Start, Stride : U64);
+      procedure Mark (Start, Stride : U64) is
+         J : U64 := Start;
+         R : U64;
+      begin
+         if J < Low then
+            R := Low mod Stride;
+            J := Low;
+            if R /= 0 then
+               if Stride - R > High - Low then
+                  return;
+               end if;
+               J := Low + Stride - R;
+            end if;
+         end if;
+         while J <= High loop
+            Marks (Natural (J - Low)) :=
+              Marker'Min (2, Marks (Natural (J - Low)) + 1);
+            exit when High - J < Stride;
+            J := J + Stride;
+         end loop;
+      end Mark;
+   begin
+      --  Avoid a square-root-sized prime list for small native ranges.
+      if High - Low < 100 and then High > 1_000_000_000 then
+         for N in Low .. High loop
+            if Semi_Member (N) then
+               Result.Append (N);
+            end if;
+         end loop;
+         return Result;
+      end if;
+      for P of Math_Prime_Util.Sieve.Primes (Int.Sqrtint (High)) loop
+         Mark (P * P, P);
+         if P * P <= High / 2 then
+            Mark (2 * P * P, P * P);
+         end if;
+      end loop;
+      for I in Marks'Range loop
+         if Marks (I) = 1 then
+            Result.Append (Low + U64 (I));
+         end if;
+      end loop;
+      return Result;
+   end Semi_Window;
+
+   function Semi_Primes (Low, High : U64) return Family_Vectors.Vector
+     with SPARK_Mode => Off
+   is
+      Lo : U64 := U64'Min (Max_Semi, U64'Max (4, Low));
+      Last : constant U64 := U64'Min (High, Max_Semi);
+      Hi : U64;
+      Result : Family_Vectors.Vector;
+   begin
+      if Low > Last or else Lo > Last then
+         return Result;
+      end if;
+      loop
+         Hi := Lo + U64'Min (Last - Lo, Window - 1);
+         Result.Append (Semi_Window (Lo, Hi));
+         exit when Hi = Last;
+         Lo := Hi + 1;
+      end loop;
+      return Result;
+   end Semi_Primes;
+
+   function Semi_Primes (High : U64) return Family_Vectors.Vector is
+     (Semi_Primes (0, High)) with SPARK_Mode => Off;
+
+   function Semiprime_Count (High : U64) return U64
+     with SPARK_Mode => Off
+   is
+      Sum, Index : U64 := 0;
+   begin
+      for P of Math_Prime_Util.Sieve.Primes (Int.Sqrtint (High)) loop
+         Sum := Sum + Count.Prime_Count (High / P) - Index;
+         Index := Index + 1;
+      end loop;
+      return Sum;
+   end Semiprime_Count;
+
+   function Semiprime_Count (Low, High : U64) return U64
+     with SPARK_Mode => Off
+   is
+      Lo : U64 := U64'Max (4, Low);
+      Last : constant U64 := U64'Min (High, Max_Semi);
+      Hi, Sum : U64 := 0;
+   begin
+      if Low > Last or else Lo > Last then
+         return 0;
+      end if;
+      if High <= 40_000_000_000_000 and then Low <= 4 then
+         return Semiprime_Count (High);
+      end if;
+      loop
+         Hi := Lo + U64'Min (Last - Lo, Window - 1);
+         Sum := Sum + U64 (Semi_Window (Lo, Hi).Length);
+         exit when Hi = Last;
+         Lo := Hi + 1;
+      end loop;
+      return Sum;
+   end Semiprime_Count;
+
+   function Semiprime_Count_Approx (N : U64) return U64 is
+      C : constant array (Natural range 0 .. 18) of F64 :=
+        [0.26149721284764278375, -2.0710850628855780875,
+         -7.6972777412176108802, -35.345660320564161516,
+         -206.71503925406509339, -1511.1997871316530251,
+         -13546.323682845914021, -146229.10675883565523,
+         -1867579.6280076650637, -27733045.258413542557,
+         -470983423.57703294361, -9011500983.75, -191744069149.4,
+         -4487573459710.5, -114472069580579.8, -3158610502077135.6,
+         -93682567786528911.9, -2970838770257639695.3,
+         -100274471240063911725.1];
+      Cross : constant array (Natural range 0 .. 14) of F64 :=
+        [632.0, 9385.0, 136411.0, 4610076.0, 66358000.0, 440590000.0,
+         2557200000.0, 53032001000.0, 1151076796431.0,
+         20416501389724.0, 165815501587300.0, 953038830319448.0,
+         20019396133340433.0, 192558867109258424.0,
+         1757883874953032448.0];
+      Min_Count : constant array (Natural range 0 .. 15) of U64 :=
+        [82, 195, 2485, 31446, 906319, 11741185, 72840337, 398702652,
+         7538564737, 150382042176, 2482510001499, 19204997230933,
+         106211451717048, 2094735089989940, 19282342825922188,
+         168996486318315136];
+      X : constant F64 := F64 (N);
+      L : Natural := 3;
+      Logn, Loglogn, Value : F64;
+      Series : F64 := 0.0;
+      Den, Fact : F64 := 1.0;
+      Res : U64;
+   begin
+      if N <= 623 then
+         return Semiprime_Count (N);
+      end if;
+      Logn := Log (X);
+      Loglogn := Log (Logn);
+      while L <= 17 and then X >= Cross (L - 3) loop
+         L := L + 1;
+      end loop;
+      for I in 1 .. L loop
+         Series := Series + Fact * (Loglogn / Den);
+         Series := Series + C (I - 1) / Den;
+         Den := Den * Logn;
+         Fact := Fact * F64 (I);
+      end loop;
+      Value := (X / Logn) * Series;
+      --  C evaluates the final +0.5L in extended precision.
+      Res := U64 (Long_Long_Float'Floor (Long_Long_Float (Value) + 0.5));
+      return U64'Min (Max_Semi_Index, U64'Max (Res, Min_Count (L - 3)));
+   end Semiprime_Count_Approx;
+
+   function Nth_Semiprime_Approx (N : U64) return Int.Optional_U64
+     with SPARK_Mode => Off
+   is
+      X : constant F64 := F64 (N);
+      L1, L2, L3, L4, El, Em, Eh, Factor, Blend, Est : F64;
+      Lo, Hi : U64;
+   begin
+      if N = 0 or else N > Max_Semi_Index then
+         return (Defined => False);
+      elsif N = Max_Semi_Index then
+         return (True, Max_Semi);
+      elsif N <= 190 then
+         declare
+            V : constant Family_Vectors.Vector := Semi_Primes (623);
+         begin
+            return (True, V.Element (Natural (N - 1)));
+         end;
+      end if;
+      L1 := Log (X);
+      L2 := Log (L1);
+      L3 := Log (L2);
+      L4 := Log (L3);
+      El := 1.000 - 0.00018216088 * L1 + 0.18099609886 * L2
+        - 0.51962474356 * L3 - 0.01136143381 * L4;
+      Em := 0.968 - 0.00073297945 * L1 + 0.09731690314 * L2
+        - 0.25212500749 * L3 - 0.01366795346 * L4;
+      Eh := 0.968 - 0.00008034109 * L1 + 0.01522628393 * L2
+        - 0.04020257367 * L3 - 0.01266447175 * L4;
+      if N <= 2 ** 26 then
+         Factor := El;
+      elsif N < 2 ** 27 then
+         Blend := (X - 67108864.0) / 67108864.0;
+         Factor := (1.0 - Blend) * El + Blend * Em;
+      elsif L1 <= 31.88477030575 then
+         Factor := Em;
+      elsif L1 < 32.57791748632 then
+         Blend := (X - 70368744177664.0) / 70368744177664.0;
+         Factor := (1.0 - Blend) * Em + Blend * Eh;
+      else
+         Factor := Eh;
+      end if;
+      Est := Factor * X * L1 / L2;
+      if Est >= F64 (Max_Semi) then
+         return (True, Max_Semi);
+      end if;
+      Lo := Trunc (0.979 * Est - 5.0);
+      Hi := (if 1.03 * Est >= F64 (Max_Semi) then Max_Semi
+             else
+                Trunc (1.03 * Est));
+      return (True, Inverse_Estimate (Lo, Hi, N, False));
+   end Nth_Semiprime_Approx;
+
+   function Nth_Semiprime (N : U64) return Int.Optional_U64
+     with SPARK_Mode => Off
+   is
+      Guess, C, Lo, Hi : U64;
+   begin
+      if N = 0 then
+         return (Defined => False);
+      end if;
+      if N <= 190 then
+         return Nth_Semiprime_Approx (N);
+      end if;
+      Guess := Nth_Semiprime_Approx (N).Value;
+      C := Semiprime_Count (Guess);
+      if C < N then
+         Lo := Guess + 1;
+         loop
+            Hi := Lo + Window - 1;
+            declare
+               V : constant Family_Vectors.Vector := Semi_Primes (Lo, Hi);
+            begin
+               if U64 (V.Length) >= N - C then
+                  return (True, V.Element (Natural (N - C - 1)));
+               end if;
+               C := C + U64 (V.Length);
+            end;
+            Lo := Hi + 1;
+         end loop;
+      else
+         Hi := Guess;
+         loop
+            Lo := (if Hi >= Window then Hi - Window + 1 else 4);
+            declare
+               V : constant Family_Vectors.Vector := Semi_Primes (Lo, Hi);
+            begin
+               if C - U64 (V.Length) < N then
+                  return (True, V.Element
+                    (Natural (N - (C - U64 (V.Length)) - 1)));
+               end if;
+               C := C - U64 (V.Length);
+            end;
+            Hi := Lo - 1;
+         end loop;
+      end if;
+   end Nth_Semiprime;
 end Math_Prime_Util.Families;

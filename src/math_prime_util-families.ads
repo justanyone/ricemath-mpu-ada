@@ -1,8 +1,9 @@
 with Ada.Containers.Vectors;
 with Math_Prime_Util.Int;
+with Math_Prime_Util.Sieve;
 
---  Lucky-number sieves and estimates from MPU 0.75.
-package Math_Prime_Util.Families is
+--  Number-family sieves and estimates from MPU 0.75.
+package Math_Prime_Util.Families with SPARK_Mode => On is
    use type U64;
    package Lucky_Vectors is new Ada.Containers.Vectors
      (Index_Type => Natural, Element_Type => U64);
@@ -50,4 +51,237 @@ package Math_Prime_Util.Families is
    --  lucky_numbers.c: nth_lucky_upper. Empirical upper value bound.
    function Nth_Lucky_Upper (N : U64) return Int.Optional_U64
      with Pre => True, Post => Nth_Lucky_Upper'Result.Defined = (N /= 0);
+
+   --  Lists share the native integer vector representation with lucky numbers.
+   package Family_Vectors renames Lucky_Vectors;
+
+   --  almost_primes.c: generate_almost_primes.
+   --  Integers in the inclusive range with K prime factors with multiplicity.
+   --  Reversed ranges are empty; Storage_Error may propagate.
+   function Almost_Primes (K : Natural; Low, High : U64)
+      return Family_Vectors.Vector
+     with Pre => True,
+          Post => (for all V of Almost_Primes'Result =>
+                     V >= Low and then V <= High);
+   --  Prefix list through High inclusive; Storage_Error may propagate.
+   function Almost_Primes (K : Natural; High : U64)
+      return Family_Vectors.Vector
+     with Pre => True,
+          Post => (for all V of Almost_Primes'Result => V <= High);
+   --  almost_primes.c: almost_prime_count.
+   --  Count integers through High, counting prime factors with multiplicity.
+   --  Storage_Error may propagate from the prime sieve. Intermediate prime
+   --  counts inherit Count.Prime_Count_Limit; exceeding it fails its Pre.
+   function Almost_Prime_Count (K : Natural; High : U64) return U64
+     with Pre => True, Post => Almost_Prime_Count'Result <= High;
+   --  Inclusive range count; reversed ranges return zero. May raise
+   --  Storage_Error if the prime sieve cannot fit in memory.
+   function Almost_Prime_Count (K : Natural; Low, High : U64) return U64
+     with Pre => True,
+          Post => (if Low > High then Almost_Prime_Count'Result = 0);
+   --  almost_primes.c: nth_almost_prime. One-based index; undefined for
+   --  zero or a result beyond U64. Storage_Error may propagate. Counting
+   --  during selection inherits Count.Prime_Count_Limit and its Pre.
+   function Nth_Almost_Prime (K : Natural; N : U64)
+      return Int.Optional_U64
+     with Pre => True,
+          Post => (if N = 0 then not Nth_Almost_Prime'Result.Defined);
+
+   --  omega_primes.c: range_omega_prime_sieve.
+   --  Inclusive range with K distinct prime factors.
+   --  Reversed ranges are empty; Storage_Error may propagate.
+   function Omega_Primes (K : Natural; Low, High : U64)
+      return Family_Vectors.Vector
+     with Pre => True,
+          Post => (for all V of Omega_Primes'Result =>
+                     V >= Low and then V <= High);
+   --  Prefix list through High inclusive; Storage_Error may propagate.
+   function Omega_Primes (K : Natural; High : U64)
+      return Family_Vectors.Vector
+     with Pre => True,
+          Post => (for all V of Omega_Primes'Result => V <= High);
+   --  omega_primes.c: omega_prime_count.
+   --  Count integers through High with K distinct prime factors.
+   --  Storage_Error may propagate from the prime sieve. Intermediate prime
+   --  counts inherit Count.Prime_Count_Limit; exceeding it fails its Pre.
+   function Omega_Prime_Count (K : Natural; High : U64) return U64
+     with Pre => True, Post => Omega_Prime_Count'Result <= High;
+   --  Inclusive range count; reversed ranges return zero. May raise
+   --  Storage_Error if the prime sieve cannot fit in memory.
+   function Omega_Prime_Count (K : Natural; Low, High : U64) return U64
+     with Pre => True,
+          Post => (if Low > High then Omega_Prime_Count'Result = 0);
+   --  omega_primes.c: nth_omega_prime. One-based index; undefined for
+   --  zero or a result beyond U64. Storage_Error may propagate. Counting
+   --  during selection inherits Count.Prime_Count_Limit and its Pre.
+   function Nth_Omega_Prime (K : Natural; N : U64)
+      return Int.Optional_U64
+     with Pre => True,
+          Post => (if N = 0 then not Nth_Omega_Prime'Result.Defined);
+
+   --   almost_primes.c: almost_prime_count_lower. Native count estimate
+   --  or bound.
+   --  K counts factors with multiplicity; no errors for native inputs.
+   function Almost_Prime_Count_Lower (K : Natural; N : U64) return U64
+     with Pre => True, Post => Almost_Prime_Count_Lower'Result <= N;
+
+   --   almost_primes.c: almost_prime_count_upper. Native count estimate
+   --  or bound.
+   --  K counts factors with multiplicity; no errors for native inputs.
+   function Almost_Prime_Count_Upper (K : Natural; N : U64) return U64
+     with Pre => True, Post => Almost_Prime_Count_Upper'Result <= N;
+
+   --   almost_primes.c: almost_prime_count_approx. Native count estimate
+   --  or bound.
+   --  K counts factors with multiplicity; no errors for native inputs.
+   function Almost_Prime_Count_Approx (K : Natural; N : U64) return U64
+     with Pre => True, Post => Almost_Prime_Count_Approx'Result <= N;
+
+   --  almost_primes.c: nth_almost_prime_lower. Native value estimate
+   --  or bound. Undefined for zero index or native overflow; no errors.
+   function Nth_Almost_Prime_Lower (K : Natural; N : U64)
+      return Int.Optional_U64
+     with Pre => True,
+          Post => (if N = 0 then
+                     not Nth_Almost_Prime_Lower'Result.Defined);
+
+   --  almost_primes.c: nth_almost_prime_upper. Native value estimate
+   --  or bound. Undefined for zero index or native overflow; no errors.
+   function Nth_Almost_Prime_Upper (K : Natural; N : U64)
+      return Int.Optional_U64
+     with Pre => True,
+          Post => (if N = 0 then
+                     not Nth_Almost_Prime_Upper'Result.Defined);
+
+   --  almost_primes.c: nth_almost_prime_approx. Native value estimate
+   --  or bound. Undefined for zero index or native overflow; no errors.
+   function Nth_Almost_Prime_Approx (K : Natural; N : U64)
+      return Int.Optional_U64
+     with Pre => True,
+          Post => (if N = 0 then
+                     not Nth_Almost_Prime_Approx'Result.Defined);
+   --  Ramanujan arguments/results are dimensionless; exact operations are
+   --  bounded by the prime-count backend. Contract violations raise
+   --  Assertion_Error; nth bounds return zero beyond the native prime range.
+   Exact_Limit : constant U64 := 10_000_000_000_000;
+   Index_Limit : constant U64 := 200_000_000_000;
+
+   --  Inclusive interval; reversed bounds are empty. Storage_Error may occur.
+   function Ramanujan_Primes (Low, High : U64)
+      return Sieve.Prime_Vectors.Vector
+     with Pre => High <= Exact_Limit,
+          Post => (for all P of Ramanujan_Primes'Result =>
+                     P >= Low and then P <= High);
+   --  List Ramanujan primes through High. Storage_Error may occur.
+   function Ramanujan_Primes (High : U64) return Sieve.Prime_Vectors.Vector
+     with Pre => High <= Exact_Limit,
+          Post => (for all P of Ramanujan_Primes'Result => P <= High);
+   --  Test membership; Storage_Error may occur in window generation.
+   function Is_Ramanujan_Prime (N : U64) return Boolean
+     with Pre => N <= Exact_Limit,
+          Post => (if N < 2 then not Is_Ramanujan_Prime'Result);
+   --  Count Ramanujan primes through N; Storage_Error may occur.
+   function Ramanujan_Prime_Count (N : U64) return U64
+     with Pre => N <= Exact_Limit,
+          Post => Ramanujan_Prime_Count'Result <= N;
+   --  Count an inclusive interval; reversed bounds return zero.
+   function Ramanujan_Prime_Count (Low, High : U64) return U64
+     with Pre => High <= Exact_Limit,
+          Post => (if Low > High then Ramanujan_Prime_Count'Result = 0);
+   --  Exact one-based value; zero is undefined. Storage_Error may occur.
+   function Nth_Ramanujan_Prime (N : U64) return Int.Optional_U64
+     with Pre => N <= Index_Limit,
+          Post => Nth_Ramanujan_Prime'Result.Defined = (N /= 0);
+   --  Lower bound on the one-based value; zero is undefined.
+   function Nth_Ramanujan_Prime_Lower (N : U64) return Int.Optional_U64
+     with Pre => N <= 425_656_284_035_217_743,
+          Post => Nth_Ramanujan_Prime_Lower'Result.Defined = (N /= 0);
+   --  Upper bound on the one-based value; zero is undefined.
+   function Nth_Ramanujan_Prime_Upper (N : U64) return Int.Optional_U64
+     with Pre => N <= 425_656_284_035_217_743,
+          Post => Nth_Ramanujan_Prime_Upper'Result.Defined = (N /= 0);
+   --  Estimate of the one-based value; zero is undefined.
+   function Nth_Ramanujan_Prime_Approx (N : U64) return Int.Optional_U64
+     with Pre => N <= Index_Limit,
+          Post => Nth_Ramanujan_Prime_Approx'Result.Defined = (N /= 0);
+   --  Lower count bound through N, including the native maximum.
+   function Ramanujan_Prime_Count_Lower (N : U64) return U64
+     with Pre => True,
+          Post => Ramanujan_Prime_Count_Lower'Result <= N;
+   --  Upper count bound through N, including the native maximum.
+   function Ramanujan_Prime_Count_Upper (N : U64) return U64
+     with Pre => True,
+          Post => Ramanujan_Prime_Count_Upper'Result <= N;
+   --  Count estimate through N, including the native maximum.
+   function Ramanujan_Prime_Count_Approx (N : U64) return U64
+     with Pre => True,
+          Post => Ramanujan_Prime_Count_Approx'Result <= N;
+
+   --  twin_primes.c: range_twin_prime_sieve. Lower members in [Low, High];
+   --  the partner may exceed High. Reversed ranges are empty.
+   --  Storage_Error may propagate from the sieve or result vector.
+   function Twin_Primes (Low, High : U64) return Family_Vectors.Vector
+     with Pre => True,
+          Post => (for all P of Twin_Primes'Result =>
+                     P >= Low and then P <= High and then P <= U64'Last - 2);
+   --  Lower members of twin pairs through High, inclusive.
+   function Twin_Primes (High : U64) return Family_Vectors.Vector
+     with Pre => True,
+          Post => (for all P of Twin_Primes'Result => P <= High);
+   --  twin_primes.c: twin_prime_count_range. Inclusive; reversed is zero.
+   function Twin_Prime_Count (Low, High : U64) return U64
+     with SPARK_Mode => On, Pre => True,
+          Post => (if Low > High then Twin_Prime_Count'Result = 0);
+   --  twin_primes.c: twin_prime_count. Count lower members <= High.
+   function Twin_Prime_Count (High : U64) return U64
+     with SPARK_Mode => On, Pre => True,
+          Post => Twin_Prime_Count'Result <= High;
+   --  twin_primes.c: twin_prime_count_approx. Rounded native estimate.
+   function Twin_Prime_Count_Approx (N : U64) return U64
+     with SPARK_Mode => On, Pre => True,
+          Post => Twin_Prime_Count_Approx'Result <= N;
+   --  twin_primes.c: nth_twin_prime. One-based; zero or overflow undefined.
+   --  Storage_Error may propagate from the sieve.
+   function Nth_Twin_Prime (N : U64) return Int.Optional_U64
+     with SPARK_Mode => On, Pre => True,
+          Post => (if N = 0 then not Nth_Twin_Prime'Result.Defined);
+   --  twin_primes.c: nth_twin_prime_approx. Zero undefined; saturates.
+   function Nth_Twin_Prime_Approx (N : U64) return Int.Optional_U64
+     with SPARK_Mode => On, Pre => True,
+          Post => Nth_Twin_Prime_Approx'Result.Defined = (N /= 0);
+
+   --  semi_primes.c: range_semiprime_sieve. Products of two primes,
+   --  including squares, in [Low, High]. Reversed ranges are empty.
+   --  Storage_Error may propagate from the sieve or result vector.
+   function Semi_Primes (Low, High : U64) return Family_Vectors.Vector
+     with Pre => True,
+          Post => (for all P of Semi_Primes'Result =>
+                     P >= U64'Max (Low, 4) and then P <= High);
+   --  Products of exactly two primes through High, inclusive.
+   function Semi_Primes (High : U64) return Family_Vectors.Vector
+     with Pre => True,
+          Post => (for all P of Semi_Primes'Result => P <= High);
+   --  semi_primes.c: semiprime_count. Uses the prime counter, so High/2
+   --  must fit its supported range. Storage_Error may propagate.
+   function Semiprime_Count (High : U64) return U64
+     with SPARK_Mode => On, Pre => High <= 40_000_000_000_000,
+          Post => Semiprime_Count'Result <= High;
+   --  semi_primes.c: semiprime_count_range. Inclusive; reversed is zero.
+   --  Uses the segmented factor sieve. Storage_Error may propagate.
+   function Semiprime_Count (Low, High : U64) return U64
+     with SPARK_Mode => On, Pre => True,
+          Post => (if Low > High then Semiprime_Count'Result = 0);
+   --  semi_primes.c: semiprime_count_approx. Rounded, clamped estimate.
+   function Semiprime_Count_Approx (N : U64) return U64
+     with SPARK_Mode => On, Pre => True,
+          Post => Semiprime_Count_Approx'Result <= N;
+   --  semi_primes.c: nth_semiprime. One-based; zero undefined.
+   --  The exact search uses the supported native prime-count range.
+   function Nth_Semiprime (N : U64) return Int.Optional_U64
+     with SPARK_Mode => On, Pre => N <= 1_000_000_000,
+          Post => Nth_Semiprime'Result.Defined = (N /= 0);
+   --  semi_primes.c: nth_semiprime_approx. Zero or overflow undefined.
+   function Nth_Semiprime_Approx (N : U64) return Int.Optional_U64
+     with SPARK_Mode => On, Pre => True,
+          Post => (if N = 0 then not Nth_Semiprime_Approx'Result.Defined);
 end Math_Prime_Util.Families;
