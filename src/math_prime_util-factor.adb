@@ -67,52 +67,111 @@ package body Math_Prime_Util.Factor with SPARK_Mode => On is
       return Values (1 .. Count);
    end Trial_Factor;
 
-   --  factor.c: pbrent_factor (portable, non-Montgomery branch).
+   --  factor.c: pbrent_factor (USE_MONTMATH on x86-64).
    function Brent (N, Rounds, A : U64) return U64 is
+      Radix : constant U128 := 2 ** 64;
+      Mask : constant U128 := Radix - 1;
+      function Bit_Length (Value : U64) return Natural is
+         X : U64 := Value;
+         Bits : Natural := 0;
+      begin
+         while X > 0 loop
+            Bits := Bits + 1;
+            X := X / 2;
+         end loop;
+         return Bits;
+      end Bit_Length;
+      Bits : constant Natural := Bit_Length (N);
+      Inner : constant Natural :=
+        (if Bits <= 31 then 32
+         elsif Bits <= 35 then 64
+         elsif Bits <= 40 then 160
+         elsif Bits <= 52 then 256
+         else 320);
+      Inverse : U64 := (3 * N) xor 2;
+      Mont1 : constant U64 := U64 (Radix mod U128 (N));
+      function Add_Mod (Left, Right : U64) return U64 is
+        (U64 ((U128 (Left) + U128 (Right)) mod U128 (N)));
+      function To_Mont (Value : U64) return U64 is
+        (U64 ((U128 (Value) * U128 (Mont1)) mod U128 (N)));
+      function Mont_Mul (Left, Right : U64) return U64 is
+         Product : constant U128 := U128 (Left) * U128 (Right);
+         M : constant U64 := U64 (Product and Mask) * Inverse;
+         MN : constant U128 := U128 (M) * U128 (N);
+         Low : constant U128 := (Product and Mask) + (MN and Mask);
+         High : constant U128 :=
+           Product / Radix + MN / Radix + Low / Radix;
+         T : constant U64 := U64 (High and Mask);
+      begin
+         --  factor.c _mulredc64 keeps a wrapped difference when the
+         --  128-bit accumulation overflows. Smaller n subtract once.
+         if N >= 2 ** 63 and then High >= Radix then
+            return T - N;
+         elsif T >= N then
+            return T - N;
+         else
+            return T;
+         end if;
+      end Mont_Mul;
+      function Poly (X : U64; C : U64) return U64 is
+      begin
+         if N < 2 ** 63 or else C = Mont1 then
+            return Mont_Mul (X, X + C);
+         end if;
+         return Add_Mod (Mont_Mul (X, X), C);
+      end Poly;
       Left : U64 := Rounds;
       R : U64 := 1;
-      X, Y : U64 := 1;
-      Saved, Batch, Remaining, Product, D : U64;
-      C : U64 := A mod N;
-      Failures : Natural := 0;
+      X : U64 := Mont1;
+      Y : U64 := Mont1;
+      C : U64 := To_Mont (A);
+      Saved, M, D : U64;
+      Batch : Natural;
+      Remaining : U64;
+      Fails : Integer := 6;
    begin
+      for I in 1 .. 4 loop
+         Inverse := Inverse * (2 - N * Inverse);
+      end loop;
+      Inverse := 0 - Inverse;
       while Left > 0 loop
          Remaining := U64'Min (R, Left);
+         Y := X;
          D := 1;
-         Saved := X;
          while Remaining > 0 loop
-            Batch := U64'Min (Remaining, 32);
+            Batch := Natural (U64'Min (Remaining, U64 (Inner)));
             Saved := X;
-            Remaining := Remaining - Batch;
-            Left := Left - Batch;
-            Product := 1;
-            for I in 1 .. Batch loop
-               X := Step (X, C, N);
-               Product := U64
-                 (U128 (Product) * U128 (Difference (X, Y)) mod U128 (N));
+            Remaining := Remaining - U64 (Batch);
+            Left := Left - U64 (Batch);
+            X := Poly (X, C);
+            M := Difference (X, Y);
+            for I in 1 .. Batch - 1 loop
+               X := Poly (X, C);
+               M := Mont_Mul (M, Difference (X, Y));
             end loop;
-            D := Int.Gcd (Product, N);
+            D := Int.Gcd (M, N);
             exit when D /= 1;
          end loop;
-         if D = N then
-            X := Saved;
-            for I in 1 .. R loop
-               X := Step (X, C, N);
-               D := Int.Gcd (Difference (X, Y), N);
-               exit when D /= 1;
-            end loop;
-         end if;
-         if D > 1 and D < N then
-            return D;
-         elsif D = N then
-            exit when Failures = 6;
-            Failures := Failures + 1;
-            Y := U64 ((U128 (Y) + 11) mod U128 (N));
-            X := Y;
-            C := U64 ((U128 (C) + 1) mod U128 (N));
+         if D = 1 then
+            R := R * 2;
          else
-            R := U64'Min (R, U64'Last / 2) * 2;
-            Y := X;
+            if D = N then
+               X := Saved;
+               while D = 1 and then R /= 0 loop
+                  R := R - 1;
+                  X := Poly (X, C);
+                  D := Int.Gcd (Difference (X, Y), N);
+               end loop;
+            end if;
+            if D = 0 or else D = N then
+               exit when Fails <= 0;
+               Fails := Fails - 1;
+               X := Mont1;
+               Y := Mont1;
+               C := Add_Mod (C, To_Mont (11));
+            else
+               return D;
+            end if;
          end if;
       end loop;
       return N;
