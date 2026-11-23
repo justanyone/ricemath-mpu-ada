@@ -16,8 +16,9 @@ package body Math_Prime_Util.Arith is
    --  factor.c: prho_factor, with deterministic polynomial restarts.
    --  Private until the separate factor package dependency is available.
    function Split (N : U64) return U64
-     with Pre => N > 1, Post => Split'Result in 2 .. N
-   is
+     with Pre => N > 1, Post => Split'Result in 2 .. N;
+
+   function Split (N : U64) return U64 is
       C : U64 := 1;
       X, Y, D : U64;
       function Step (V : U64) return U64 is
@@ -45,9 +46,13 @@ package body Math_Prime_Util.Arith is
       end loop;
    end Split;
 
+   function Factors (N : U64) return Factorization;
+
    function Factors (N : U64) return Factorization is
       Result : Factorization;
-      procedure Visit (V : U64) with Pre => V > 0 is
+      procedure Visit (V : U64) with Pre => V > 0;
+
+      procedure Visit (V : U64) is
          D : U64;
       begin
          if V = 1 then
@@ -184,6 +189,8 @@ package body Math_Prime_Util.Arith is
       Cache : Cache_Array (1 .. Slots) := [others => 0];
       Known : Known_Array (1 .. Slots) := [others => False];
       J : U64;
+      function Evaluate (X : U64) return Int.I128;
+
       function Evaluate (X : U64) return Int.I128 is
          Sum : Int.I128 := 1;
          Low : U64 := 2;
