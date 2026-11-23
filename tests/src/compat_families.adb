@@ -5,6 +5,7 @@ with Ada.Strings.Fixed;
 with Ada.Strings.Unbounded;
 with Fixture_Support;
 with Math_Prime_Util.Families;
+with Math_Prime_Util.Goldbach;
 with Math_Prime_Util.Int;
 with Math_Prime_Util.Sieve;
 
@@ -15,6 +16,7 @@ package body Compat_Families is
    use Math_Prime_Util;
    use type U64;
    use Math_Prime_Util.Families;
+   use Math_Prime_Util.Goldbach;
    type Families_Case is new Test_Case with null record;
    overriding function Name (T : Families_Case)
       return AUnit.Message_String;
@@ -178,6 +180,77 @@ package body Compat_Families is
          end if;
       end loop;
    end Replay;
+
+   procedure Replay_Goldbach (Func : String) is
+      Cases : constant Case_Vectors.Vector :=
+        For_Function (Load ("families"), Func);
+      N : U64;
+      Got : Unbounded_String;
+   begin
+      AUnit.Assertions.Assert (not Cases.Is_Empty, "missing " & Func);
+      for C of Cases loop
+         if not Parse_U64 (To_String (C.Args (1)), N) then
+            --  Skipped: minimal_goldbach_pair argument
+            --  83778272185315920949659591651127238812 exceeds U64.
+            AUnit.Assertions.Assert
+              (To_String (C.Args (1)) =
+                 "83778272185315920949659591651127238812",
+               Func & " unexpected non-native row" &
+                 C.Line_Number'Image);
+         elsif Func = "minimal_goldbach_pair" then
+            Got := To_Unbounded_String
+              (Image (Minimal_Goldbach_Pair (N)));
+            AUnit.Assertions.Assert
+              (Got = C.Result,
+               Func & " line" & C.Line_Number'Image &
+                 " expected " & To_String (C.Result) &
+                 " got " & To_String (Got));
+         elsif Func = "goldbach_pair_count" then
+            Got := To_Unbounded_String (Image (Goldbach_Pair_Count (N)));
+            AUnit.Assertions.Assert
+              (Got = C.Result,
+               Func & " line" & C.Line_Number'Image &
+                 " expected " & To_String (C.Result) &
+                 " got " & To_String (Got));
+         else
+            declare
+               Pairs : constant Pair_Vectors.Vector :=
+                 Goldbach_Pairs (N);
+            begin
+               Got := Null_Unbounded_String;
+               for P of Pairs loop
+                  if Length (Got) > 0 then
+                     Append (Got, " ");
+                  end if;
+                  Append (Got, Image (P));
+               end loop;
+               if Pairs.Is_Empty then
+                  Got := To_Unbounded_String ("undef");
+               end if;
+            end;
+            AUnit.Assertions.Assert
+              (Got = C.Result,
+               Func & " line" & C.Line_Number'Image &
+                 " expected " & To_String (C.Result) &
+                 " got " & To_String (Got));
+         end if;
+      end loop;
+   end Replay_Goldbach;
+
+   procedure Test_Minimal_Goldbach_Pair (T : in out Test_Case'Class) is
+   begin
+      Replay_Goldbach ("minimal_goldbach_pair");
+   end Test_Minimal_Goldbach_Pair;
+
+   procedure Test_Goldbach_Pair_Count (T : in out Test_Case'Class) is
+   begin
+      Replay_Goldbach ("goldbach_pair_count");
+   end Test_Goldbach_Pair_Count;
+
+   procedure Test_Goldbach_Pairs (T : in out Test_Case'Class) is
+   begin
+      Replay_Goldbach ("goldbach_pairs");
+   end Test_Goldbach_Pairs;
 
    procedure Test_Lucky_Numbers (T : in out Test_Case'Class) is
    begin
@@ -372,6 +445,12 @@ package body Compat_Families is
         (T, Test_Nth_Semiprime'Access, "nth_semiprime");
       Registration.Register_Routine
         (T, Test_Nth_Semiprime_Approx'Access, "nth_semiprime_approx");
+      Registration.Register_Routine
+        (T, Test_Minimal_Goldbach_Pair'Access, "minimal_goldbach_pair");
+      Registration.Register_Routine
+        (T, Test_Goldbach_Pair_Count'Access, "goldbach_pair_count");
+      Registration.Register_Routine
+        (T, Test_Goldbach_Pairs'Access, "goldbach_pairs");
       Registration.Register_Routine
         (T, Test_Ramanujan'Access, "Ramanujan fixture family");
       Registration.Register_Routine
