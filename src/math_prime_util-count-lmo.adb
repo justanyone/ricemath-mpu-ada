@@ -14,10 +14,11 @@ package body Math_Prime_Util.Count.Lmo with SPARK_Mode => On is
    type Words is array (Natural range <>) of U64;
    type Factors is array (Natural range <>) of Factor;
    type Naturals is array (Natural range <>) of Natural;
-   pragma SPARK_Mode (Off);
-   package Word_Holders is new Ada.Containers.Indefinite_Holders (Words);
-   package Factor_Holders is new Ada.Containers.Indefinite_Holders (Factors);
-   pragma SPARK_Mode (On);
+   package Storage with SPARK_Mode => Off is
+      package Word_Holders is new Ada.Containers.Indefinite_Holders (Words);
+      package Factor_Holders is new Ada.Containers.Indefinite_Holders
+        (Factors);
+   end Storage;
    C : constant := 6;
    Wheel : constant := 30_030;
    Segment_Words : constant := 1155 * 13;
@@ -66,17 +67,17 @@ package body Math_Prime_Util.Count.Lmo with SPARK_Mode => On is
 
    --  lmo.c: LMO_prime_count, Bau steps 4 through 9. The caller owns all
    --  variable-sized storage; the arithmetic kernel stays in SPARK.
-   function Compute
+   procedure Compute
      (N, N2, Initial_M : U64; K2, Initial_K3 : Natural;
-      Ft : in out Factors; Ps : in out Words) return U64
+      Ft : in out Factors; Ps : in out Words; Result : out U64)
      with Pre => N >= 66_000_000 and then N2 = Int.Sqrtint (N)
        and then Initial_M >= 1 and then K2 > 0
        and then Ft'First = 0 and then Ps'First = 0
        and then Ft'Last >= 1 and then Ps'Last > Ft'Last,
-          Post => Compute'Result <= N;
-   function Compute
+          Post => Result <= N;
+   procedure Compute
      (N, N2, Initial_M : U64; K2, Initial_K3 : Natural;
-      Ft : in out Factors; Ps : in out Words) return U64
+      Ft : in out Factors; Ps : in out Words; Result : out U64)
    is
       M : U64 := Initial_M;
       Bound : constant Natural := Ft'Last * 2;
@@ -295,7 +296,7 @@ package body Math_Prime_Util.Count.Lmo with SPARK_Mode => On is
             Start := Finish;
          end loop;
       end;
-      return Sum1 - Sum2;
+      Result := Sum1 - Sum2;
    end Compute;
 
    function Count (N : U64) return U64
@@ -303,7 +304,8 @@ package body Math_Prime_Util.Count.Lmo with SPARK_Mode => On is
    is
       N2 : constant U64 := Int.Sqrtint (N);
       N3 : constant U64 := Int.Rootint (N, 3);
-      M : U64;
+      M, Result : U64;
+      use Storage;
    begin
       if N < 66_000_000 then
          declare
@@ -329,8 +331,9 @@ package body Math_Prime_Util.Count.Lmo with SPARK_Mode => On is
          Ft : Factors renames Fr.Element.all;
          Ps : Words renames Pr.Element.all;
       begin
-         return Compute (N, N2, M, Natural (Count (N2)),
-           Natural (Count (N3)), Ft, Ps);
+         Compute (N, N2, M, Natural (Count (N2)),
+           Natural (Count (N3)), Ft, Ps, Result);
+         return Result;
       end;
    end Count;
 
