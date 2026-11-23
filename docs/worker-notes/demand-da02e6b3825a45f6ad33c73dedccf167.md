@@ -10,3 +10,4 @@ Exact fixture replay written. First build fails because Alire/gprbuild cannot lo
 Located installed GNAT and restored build via PATH. Compilation succeeded; linking exposed a container reference issue in the new test iterator, changed to Element access. Count bounds and estimates are now ported.
 Bounds tables and approximation routines added, including native overflow behavior for bigint fixture results. Focused runner attempts were blocked by compile/link issues; fixing generated-table Ada spelling before the next test run.
 Added seeded list/count/partition laws, nth inverses, reversed ranges, zero factors, and native-boundary tests. A focused AUnit runner now lives only under obj/ to isolate Families.
+Exact fixture run reached bounds: delegated prime-count lower(U64 Last) differs by 23 due to floating precision. Gathering all mismatches before choosing narrowly scoped floating comparison rules; no fixture edits.
