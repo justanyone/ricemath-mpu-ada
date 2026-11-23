@@ -510,6 +510,6 @@ results are 141885427974027788 and 212828142057859307, versus fixture values
 141885427974027780 and 212828142057859296. Both remain conservative bounds.
 `Compat_Families.Replay` names this exception `Native_Max_Li_Precision`,
 skips exact equality on only these two rows, and checks a maximum difference
-of 16 integer units. `Prop_Families.Ramanujan_Laws` also checks the native
+of 16 integer units. `Compat_Families.Ramanujan_Laws` also checks the native
 boundary bounds against the count approximation. Fixtures are unchanged;
 this records a numerical compatibility limit, not a mathematical correction.

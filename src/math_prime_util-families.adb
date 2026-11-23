@@ -959,5 +959,5 @@ package body Math_Prime_Util.Families is
 
    function Ramanujan_Primes (High : U64)
       return Prime_Sieve.Prime_Vectors.Vector
-     with SPARK_Mode => Off is (Ramanujan_Primes (0, High));
+     is (Ramanujan_Primes (0, High)) with SPARK_Mode => Off;
 end Math_Prime_Util.Families;
