@@ -780,35 +780,26 @@ package body Math_Prime_Util.Families is
    function Ram_Invert_Upper is new Inverse (Ram_Wide, Ram_Upper_Value);
    function Ram_Invert_Lower is new Inverse (Ram_Wide, Ram_Lower_Value);
 
+   function Ram_Count_Bound (N : U64; Kind : Bound_Kind) return U64;
+   function Ram_Count_Bound (N : U64; Kind : Bound_Kind) return U64 is
+      Lo : constant U64 := Count.Prime_Count_Lower (N) / 3;
+      Hi : constant U64 := Count.Prime_Count_Upper (N) / 2;
+   begin
+      if N <= 241 then
+         return Ram_Small_Count (N);
+      elsif Kind = Lower then
+         return (if Ram_Upper_Value (Lo) > N or else Ram_Upper_Value (Hi) < N
+                 then Lo else Ram_Invert_Upper (Lo, Hi, N));
+      else
+         return (if Ram_Lower_Value (Lo) > N then Lo
+                 elsif Ram_Lower_Value (Hi) < N then Hi
+                 else Ram_Invert_Lower (Lo, Hi, N));
+      end if;
+   end Ram_Count_Bound;
    function Ramanujan_Prime_Count_Lower (N : U64) return U64 is
-      Lo, Hi : U64;
-   begin
-      if N <= 241 then
-         return Ram_Small_Count (N);
-      end if;
-      Lo := Count.Prime_Count_Lower (N) / 3;
-      Hi := Count.Prime_Count_Upper (N) / 2;
-      if Ram_Upper_Value (Lo) > N or else Ram_Upper_Value (Hi) < N then
-         return Lo;
-      end if;
-      return Ram_Invert_Upper (Lo, Hi, N);
-   end Ramanujan_Prime_Count_Lower;
-
+     (Ram_Count_Bound (N, Lower));
    function Ramanujan_Prime_Count_Upper (N : U64) return U64 is
-      Lo, Hi : U64;
-   begin
-      if N <= 241 then
-         return Ram_Small_Count (N);
-      end if;
-      Lo := Count.Prime_Count_Lower (N) / 3;
-      Hi := Count.Prime_Count_Upper (N) / 2;
-      if Ram_Lower_Value (Lo) > N then
-         return Lo;
-      elsif Ram_Lower_Value (Hi) < N then
-         return Hi;
-      end if;
-      return Ram_Invert_Lower (Lo, Hi, N);
-   end Ramanujan_Prime_Count_Upper;
+     (Ram_Count_Bound (N, Upper));
 
    function Ramanujan_Prime_Count_Approx (N : U64) return U64 is
    begin
@@ -968,9 +959,5 @@ package body Math_Prime_Util.Families is
 
    function Ramanujan_Primes (High : U64)
       return Prime_Sieve.Prime_Vectors.Vector
-     with SPARK_Mode => Off
-   is
-   begin
-      return Ramanujan_Primes (0, High);
-   end Ramanujan_Primes;
+     with SPARK_Mode => Off is (Ramanujan_Primes (0, High));
 end Math_Prime_Util.Families;

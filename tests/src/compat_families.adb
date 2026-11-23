@@ -57,13 +57,23 @@ package body Compat_Families is
                  (if Natural (C.Args.Length) = 1 then 0 else N);
             begin
                if Func = "lucky_numbers" then
-                  for V of Lucky_Numbers (Low, High) loop
-                     Append_Value (V);
-                  end loop;
+                  declare
+                     V : constant Lucky_Vectors.Vector :=
+                       Lucky_Numbers (Low, High);
+                  begin
+                     for I in V.First_Index .. V.Last_Index loop
+                        Append_Value (V.Element (I));
+                     end loop;
+                  end;
                else
-                  for V of Ramanujan_Primes (Low, High) loop
-                     Append_Value (V);
-                  end loop;
+                  declare
+                     V : constant Sieve.Prime_Vectors.Vector :=
+                       Ramanujan_Primes (Low, High);
+                  begin
+                     for I in V.First_Index .. V.Last_Index loop
+                        Append_Value (V.Element (I));
+                     end loop;
+                  end;
                end if;
                if Length (Got) = 0 then
                   Got := To_Unbounded_String ("undef");
