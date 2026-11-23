@@ -790,7 +790,9 @@ package body Math_Prime_Util.Families is
          return Twin_Prime_Count (N);
       end if;
       L := Wef.Log (X);
-      Li2 := Ei (L) + 2.8853900817779268147198494
+      --  Ei is an NV (double) API in MPU, including its argument.
+      Li2 := Wide (F64 (Ei (Wide (F64 (L)))))
+        + 2.8853900817779268147198494
         - X / L;
       if N < 32_000_000 then
          if N < 4_000 then
