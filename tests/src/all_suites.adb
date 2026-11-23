@@ -43,6 +43,7 @@ package body All_Suites is
       Result.Add_Test (Prop_Lucas.Suite);
       Result.Add_Test (Compat_Real.Suite);
       Result.Add_Test (Prop_Real.Suite);
+      Result.Add_Test (Compat_Vec.Suite);
       Result.Add_Test (Compat_Count.Suite);
       Result.Add_Test (Prop_Count.Suite);
       Result.Add_Test (Compat_Primality.Suite);
