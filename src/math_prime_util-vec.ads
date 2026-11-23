@@ -1,3 +1,4 @@
+with Ada.Containers;
 with Ada.Containers.Vectors;
 with Ada.Numerics.Big_Numbers.Big_Integers;
 with Ada.Strings.Unbounded;
@@ -10,6 +11,7 @@ with Ada.Strings.Unbounded;
 package Math_Prime_Util.Vec with SPARK_Mode => Off is
    use Ada.Numerics.Big_Numbers.Big_Integers;
    use Ada.Strings.Unbounded;
+   use type Ada.Containers.Count_Type;
 
    package Integer_Vectors is new Ada.Containers.Vectors
      (Index_Type => Positive, Element_Type => Big_Integer);

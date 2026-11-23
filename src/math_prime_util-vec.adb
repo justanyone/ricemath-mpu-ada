@@ -3,9 +3,11 @@ with Ada.Containers.Ordered_Maps;
 with Ada.Containers.Ordered_Sets;
 
 package body Math_Prime_Util.Vec is
+   use type Ada.Containers.Count_Type;
    use type Big_Integer;
 
    package Big_Sets is new Ada.Containers.Ordered_Sets (Big_Integer);
+   use type Big_Sets.Set;
    package Count_Maps is new Ada.Containers.Ordered_Maps
      (Key_Type => Big_Integer, Element_Type => Natural);
 
@@ -171,8 +173,8 @@ package body Math_Prime_Util.Vec is
    begin
       for Cursor in Seen.Iterate loop
          Result.Append
-           ((Value => Count_Maps.Key (Cursor),
-             Count => Count_Maps.Element (Cursor)));
+           (Freq_Pair'(Value => Count_Maps.Key (Cursor),
+                       Count => Count_Maps.Element (Cursor)));
       end loop;
       return Result;
    end Vecfreq;
