@@ -1,11 +1,14 @@
 with AUnit.Assertions;
 with AUnit.Test_Cases;
+with Ada.Containers;
 with Ada.Strings;
 with Ada.Strings.Fixed;
 with Ada.Strings.Unbounded;
 with Fixture_Support;
 with Math_Prime_Util.Families;
+with Math_Prime_Util.Goldbach;
 with Math_Prime_Util.Int;
+with Math_Prime_Util.Primality;
 with Math_Prime_Util.Sieve;
 
 package body Compat_Families is
@@ -15,6 +18,9 @@ package body Compat_Families is
    use Math_Prime_Util;
    use type U64;
    use Math_Prime_Util.Families;
+   use Math_Prime_Util.Goldbach;
+   use type Ada.Containers.Count_Type;
+   use type Math_Prime_Util.Primality.Prime_Result;
    type Families_Case is new Test_Case with null record;
    overriding function Name (T : Families_Case)
       return AUnit.Message_String;
@@ -278,6 +284,114 @@ package body Compat_Families is
    begin
       Replay ("nth_semiprime_approx");
    end Test_Nth_Semiprime_Approx;
+
+   --  Skipped: minimal_goldbach_pair argument
+   --  83778272185315920949659591651127238812 is outside U64.
+   procedure Replay_Goldbach (Func : String) is
+      Cases : constant Case_Vectors.Vector :=
+        For_Function (Load ("families"), Func);
+      N : U64;
+      Got : Unbounded_String;
+   begin
+      AUnit.Assertions.Assert (not Cases.Is_Empty, "missing " & Func);
+      for C of Cases loop
+         if not Parse_U64 (To_String (C.Args (1)), N) then
+            AUnit.Assertions.Assert
+              (To_String (C.Args (1)) =
+                 "83778272185315920949659591651127238812",
+               Func & " unexpected non-native row" &
+               C.Line_Number'Image);
+         elsif Func = "minimal_goldbach_pair" then
+            Got := To_Unbounded_String (Image (Minimal_Goldbach_Pair (N)));
+            AUnit.Assertions.Assert
+              (Got = C.Result, Func & " line" & C.Line_Number'Image &
+               " expected " & To_String (C.Result) &
+               " got " & To_String (Got));
+         elsif Func = "goldbach_pair_count" then
+            Got := To_Unbounded_String (Image (Goldbach_Pair_Count (N)));
+            AUnit.Assertions.Assert
+              (Got = C.Result, Func & " line" & C.Line_Number'Image &
+               " expected " & To_String (C.Result) &
+               " got " & To_String (Got));
+         else
+            declare
+               Pairs : constant Pair_Vectors.Vector := Goldbach_Pairs (N);
+            begin
+               Got := Null_Unbounded_String;
+               for P of Pairs loop
+                  if Length (Got) > 0 then
+                     Append (Got, " ");
+                  end if;
+                  Append (Got, Image (P));
+               end loop;
+               if Pairs.Is_Empty then
+                  Got := To_Unbounded_String ("undef");
+               end if;
+            end;
+            AUnit.Assertions.Assert
+              (Got = C.Result, Func & " line" & C.Line_Number'Image &
+               " expected " & To_String (C.Result) &
+               " got " & To_String (Got));
+         end if;
+      end loop;
+   end Replay_Goldbach;
+
+   procedure Test_Minimal_Goldbach_Pair (T : in out Test_Case'Class) is
+   begin
+      Replay_Goldbach ("minimal_goldbach_pair");
+   end Test_Minimal_Goldbach_Pair;
+
+   procedure Test_Goldbach_Pair_Count (T : in out Test_Case'Class) is
+   begin
+      Replay_Goldbach ("goldbach_pair_count");
+   end Test_Goldbach_Pair_Count;
+
+   procedure Test_Goldbach_Pairs (T : in out Test_Case'Class) is
+   begin
+      Replay_Goldbach ("goldbach_pairs");
+   end Test_Goldbach_Pairs;
+
+   --  Odd edges follow goldbach.c (only the pair with 2). Even edges check
+   --  that the least returned prime really splits N into two primes.
+   procedure Goldbach_Laws (T : in out Test_Case'Class) is
+      Odds : constant array (Positive range 1 .. 5) of U64 :=
+        [2 ** 32 - 1, 2 ** 32 + 1, 2 ** 63 - 1, 2 ** 63 + 1, U64'Last];
+      Evens : constant array (Positive range 1 .. 3) of U64 :=
+        [2 ** 32, 2 ** 63, U64'Last - 1];
+      P : Int.Optional_U64;
+   begin
+      for N in U64 range 0 .. 3 loop
+         AUnit.Assertions.Assert
+           (not Minimal_Goldbach_Pair (N).Defined and then
+            Goldbach_Pair_Count (N) = 0 and then
+            Goldbach_Pairs (N).Is_Empty,
+            "goldbach below 4");
+      end loop;
+      for N of Odds loop
+         P := Minimal_Goldbach_Pair (N);
+         if Math_Prime_Util.Primality.Is_Prime (N - 2) = 2 then
+            AUnit.Assertions.Assert
+              (P.Defined and then P.Value = 2 and then
+               Goldbach_Pair_Count (N) = 1 and then
+               Goldbach_Pairs (N).Length = 1,
+               "odd goldbach edge");
+         else
+            AUnit.Assertions.Assert
+              (not P.Defined and then Goldbach_Pair_Count (N) = 0 and then
+               Goldbach_Pairs (N).Is_Empty,
+               "odd goldbach composite edge");
+         end if;
+      end loop;
+      for N of Evens loop
+         P := Minimal_Goldbach_Pair (N);
+         AUnit.Assertions.Assert
+           (P.Defined and then P.Value <= N / 2 and then
+            Math_Prime_Util.Primality.Is_Prime (P.Value) = 2 and then
+            Math_Prime_Util.Primality.Is_Prime (N - P.Value) = 2,
+            "even goldbach minimal edge");
+      end loop;
+   end Goldbach_Laws;
+
    procedure Test_Ramanujan (T : in out Test_Case'Class) is
    begin
       Replay ("ramanujan_primes");
@@ -372,6 +486,14 @@ package body Compat_Families is
         (T, Test_Nth_Semiprime'Access, "nth_semiprime");
       Registration.Register_Routine
         (T, Test_Nth_Semiprime_Approx'Access, "nth_semiprime_approx");
+      Registration.Register_Routine
+        (T, Test_Minimal_Goldbach_Pair'Access, "minimal_goldbach_pair");
+      Registration.Register_Routine
+        (T, Test_Goldbach_Pair_Count'Access, "goldbach_pair_count");
+      Registration.Register_Routine
+        (T, Test_Goldbach_Pairs'Access, "goldbach_pairs");
+      Registration.Register_Routine
+        (T, Goldbach_Laws'Access, "goldbach edges 0 1 and powers of two");
       Registration.Register_Routine
         (T, Test_Ramanujan'Access, "Ramanujan fixture family");
       Registration.Register_Routine
