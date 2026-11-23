@@ -2,13 +2,8 @@ with Ada.Containers.Vectors;
 with Math_Prime_Util.Int;
 with Math_Prime_Util.Sieve;
 
-<<<<<<< HEAD
---  Number families from MPU 0.75.
-package Math_Prime_Util.Families is
-=======
 --  Number-family sieves and estimates from MPU 0.75.
 package Math_Prime_Util.Families with SPARK_Mode => On is
->>>>>>> origin/dev-mpuada-001
    use type U64;
    package Lucky_Vectors is new Ada.Containers.Vectors
      (Index_Type => Natural, Element_Type => U64);
@@ -56,7 +51,6 @@ package Math_Prime_Util.Families with SPARK_Mode => On is
    --  lucky_numbers.c: nth_lucky_upper. Empirical upper value bound.
    function Nth_Lucky_Upper (N : U64) return Int.Optional_U64
      with Pre => True, Post => Nth_Lucky_Upper'Result.Defined = (N /= 0);
-<<<<<<< HEAD
 
    --  Lists share the native integer vector representation with lucky numbers.
    package Family_Vectors renames Lucky_Vectors;
@@ -166,7 +160,6 @@ package Math_Prime_Util.Families with SPARK_Mode => On is
      with Pre => True,
           Post => (if N = 0 then
                      not Nth_Almost_Prime_Approx'Result.Defined);
-=======
    --  Ramanujan arguments/results are dimensionless; exact operations are
    --  bounded by the prime-count backend. Contract violations raise
    --  Assertion_Error; nth bounds return zero beyond the native prime range.
@@ -223,8 +216,6 @@ package Math_Prime_Util.Families with SPARK_Mode => On is
    function Ramanujan_Prime_Count_Approx (N : U64) return U64
      with Pre => True,
           Post => Ramanujan_Prime_Count_Approx'Result <= N;
-   --  Family lists use the same native integer vector representation.
-   package Family_Vectors renames Lucky_Vectors;
 
    --  twin_primes.c: range_twin_prime_sieve. Lower members in [Low, High];
    --  the partner may exceed High. Reversed ranges are empty.
@@ -293,5 +284,4 @@ package Math_Prime_Util.Families with SPARK_Mode => On is
    function Nth_Semiprime_Approx (N : U64) return Int.Optional_U64
      with SPARK_Mode => On, Pre => True,
           Post => (if N = 0 then not Nth_Semiprime_Approx'Result.Defined);
->>>>>>> origin/dev-mpuada-001
 end Math_Prime_Util.Families;

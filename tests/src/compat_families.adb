@@ -229,7 +229,6 @@ package body Compat_Families is
       Replay ("nth_lucky_upper");
    end Test_Nth_Lucky_Upper;
 
-<<<<<<< HEAD
    --  Given the committed MPU family rows, when each native list, count,
    --  or nth API runs, then its serialized result equals the fixture.
    procedure Test_Factor_Families (T : in out Test_Case'Class) is
@@ -369,7 +368,6 @@ package body Compat_Families is
          end;
       end loop;
    end Test_Factor_Families;
-=======
    procedure Test_Twin_Primes (T : in out Test_Case'Class) is
    begin
       Replay ("twin_primes");
@@ -470,7 +468,6 @@ package body Compat_Families is
             "Ramanujan native count bounds" & Edge'Image);
       end loop;
    end Ramanujan_Laws;
->>>>>>> origin/dev-mpuada-001
 
    overriding procedure Register_Tests (T : in out Families_Case) is
    begin

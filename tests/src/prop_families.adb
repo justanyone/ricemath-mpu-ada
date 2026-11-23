@@ -78,7 +78,6 @@ package body Prop_Families is
       end loop;
    end Concurrent_Calls;
 
-<<<<<<< HEAD
    --  Given seeded intervals, when factor families are partitioned, then
    --  lists, counts and one-based selection agree independently.
    procedure Factor_Laws (T : in out Test_Case'Class) is
@@ -145,7 +144,6 @@ package body Prop_Families is
          end loop;
       end;
    end Factor_Laws;
-=======
    procedure Twin_Semi_Laws (T : in out Test_Case'Class) is
       type U64_Array is array (Positive range <>) of U64;
       Seed : U64 := 20_261_123;
@@ -263,18 +261,15 @@ package body Prop_Families is
         (Twin_Primes (3) = Family_Vectors.To_Vector (3, 1),
          "first twin pair has lower member three");
    end Twin_Empty_Prefix;
->>>>>>> origin/dev-mpuada-001
 
    overriding procedure Register_Tests (T : in out Families_Case) is
    begin
       Registration.Register_Routine
-<<<<<<< HEAD
         (T, Factor_Laws'Access, "factor family laws");
-=======
+      Registration.Register_Routine
         (T, Twin_Empty_Prefix'Access, "twin empty prefix");
       Registration.Register_Routine
         (T, Twin_Semi_Laws'Access, "twin and semiprime laws");
->>>>>>> origin/dev-mpuada-001
       Registration.Register_Routine (T, Laws'Access, "lucky laws");
       Registration.Register_Routine
         (T, Concurrent_Calls'Access, "concurrent repeated sieves");

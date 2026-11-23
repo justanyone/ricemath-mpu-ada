@@ -4,7 +4,6 @@ with Ada.Numerics.Generic_Elementary_Functions;
 with Ada.Numerics.Long_Elementary_Functions;
 with Interfaces;
 with Math_Prime_Util.Sieve;
-with Math_Prime_Util.Count;
 
 package body Math_Prime_Util.Families is
    package Prime_Sieve renames Math_Prime_Util.Sieve;
@@ -677,7 +676,6 @@ package body Math_Prime_Util.Families is
          Factor := Factor + 1;
       end loop;
    end Is_Lucky;
-<<<<<<< HEAD
    Max_Almost_Count : constant array (Natural range 0 .. 63) of U64 :=
      [
       1, 425656284035217743, 1701748900850019777, 3167597434038354478,
@@ -1270,7 +1268,225 @@ package body Math_Prime_Util.Families is
    --  semi_primes.c: semiprime_count_approx. Truncated Crisan/Erban series.
    function Semi_Approx (N : U64) return U64;
    function Semi_Approx (N : U64) return U64 is
-=======
+      C : constant array (Natural range 0 .. 18) of F64 :=
+        [0.26149721284764278375, -2.0710850628855780875,
+         -7.6972777412176108802, -35.345660320564161516,
+         -206.71503925406509339, -1511.1997871316530251,
+         -13546.323682845914021, -146229.10675883565523,
+         -1867579.6280076650637, -27733045.258413542557,
+         -470983423.57703294361, -9011500983.75, -191744069149.4,
+         -4487573459710.5, -114472069580579.8, -3158610502077135.6,
+         -93682567786528911.9, -2970838770257639695.3,
+         -100274471240063911725.1];
+      Cross : constant array (Natural range 0 .. 14) of F64 :=
+        [632.0, 9385.0, 136411.0, 4610076.0, 66358000.0, 440590000.0,
+         2557200000.0, 53032001000.0, 1151076796431.0, 20416501389724.0,
+         165815501587300.0, 953038830319448.0, 20019396133340433.0,
+         192558867109258424.0, 1757883874953032448.0];
+      Minimum : constant array (Natural range 0 .. 15) of F64 :=
+        [82.0, 195.0, 2485.0, 31446.0, 906319.0, 11741185.0,
+         72840337.0, 398702652.0, 7538564737.0, 150382042176.0,
+         2482510001499.0, 19204997230933.0, 106211451717048.0,
+         2094735089989940.0, 19282342825922188.0, 168996486318315136.0];
+      L : Natural := 3;
+      Log_N, LL, Series, Den, Fact, Estimate : F64;
+   begin
+      if N <= 623 then
+         return Almost_Prime_Count (2, N);
+      end if;
+      Log_N := Log (F64 (N));
+      LL := Log (Log_N);
+      while L <= 17 and then F64 (N) >= Cross (L - 3) loop
+         L := L + 1;
+      end loop;
+      Series := 0.0;
+      Den := 1.0;
+      Fact := 1.0;
+      for I in 1 .. L loop
+         if I > 1 then
+            Fact := Fact * F64 (I - 1);
+         end if;
+         Series := Series + Fact * (LL / Den);
+         Series := Series + C (I - 1) / Den;
+         Den := Den * Log_N;
+      end loop;
+      Estimate := (F64 (N) / Log_N) * Series + 0.5;
+      if Estimate >= F64 (Max_Almost_Count (2)) then
+         return Max_Almost_Count (2);
+      end if;
+      return U64'Max (Trunc (Estimate), Trunc (Minimum (L - 3)));
+   end Semi_Approx;
+
+   function Almost_Prime_Count_Approx (K : Natural; N : U64) return U64 is
+      Factors : Natural := K;
+      High : U64 := N;
+      L, U : U64;
+      X, Log_X, LL, A, S, Estimate : F64;
+      Small_Three : constant array (Natural range 0 .. 18) of U64 :=
+        [27, 28, 30, 42, 44, 45, 50, 52, 63, 66, 68, 70, 75, 76, 78,
+         92, 98, 99, 102];
+      Small_Count : U64 := 4;
+   begin
+      if K = 0 then
+         return (if N >= 1 then 1 else 0);
+      elsif K >= 64 or else N < 2 ** K then
+         return 0;
+      end if;
+      Reduce_Count (Factors, High);
+      if Factors = 1 then
+         return Count.Prime_Count_Approx (High);
+      elsif Factors = 2 then
+         return Semi_Approx (High);
+      elsif High < 3 * 2 ** (Factors - 1) then
+         return 1;
+      elsif High < 9 * 2 ** (Factors - 2) then
+         return 2;
+      elsif High < 10 * 2 ** (Factors - 2) then
+         return 3;
+      elsif Factors = 3 and then High < 102 then
+         for V of Small_Three loop
+            exit when High < V;
+            Small_Count := Small_Count + 1;
+         end loop;
+         return Small_Count;
+      end if;
+      Almost_Bounds (Factors, High, L, U);
+      if Factors = 3 then
+         X := F64 (High);
+         Log_X := Log (X);
+         LL := Log (Log_X);
+         if X <= 638.0 then
+            S := 1.554688; A := 0.865814;
+         elsif X <= 1544.0 then
+            S := 1.050000; A := 0.822256;
+         elsif X <= 1927.0 then
+            S := 0.625000; A := 0.791747;
+         elsif X <= 486586.0 then
+            S := 2.865611; A := 1.004090;
+         elsif X <= 1913680.0 then
+            S := 2.790963; A := 0.999618;
+         elsif X <= 22347532.0 then
+            S := 2.719238; A := 0.995635;
+         elsif X <= 2.95E8 then
+            S := 2.584473; A := 0.988802;
+         elsif X <= 4.20E9 then
+            S := 2.457108; A := 0.983098;
+         elsif X <= 7.07E10 then
+            S := 2.352818; A := 0.978931;
+         elsif X <= 1.36E12 then
+            S := 2.269745; A := 0.975953;
+         elsif X <= 4.1E13 then
+            S := 2.203002; A := 0.973796;
+         elsif X <= 9.2E14 then
+            S := 2.148463; A := 0.972213;
+         else
+            S := 2.119279; A := 0.971438;
+         end if;
+         Estimate := 0.5 * A * X * ((LL + 0.26153) * (LL + 0.26153)) /
+           (Log_X + S) + 0.5;
+         return U64'Min (U, U64'Max (L, Trunc (Estimate)));
+      end if;
+      return Trunc (F64 (L) + F64 (U - L) *
+                      (if Factors > 11 then 0.20 else 0.76));
+   end Almost_Prime_Count_Approx;
+
+   function Almost_Estimate_Nth (K : Natural; N : U64; Kind : Natural)
+      return Int.Optional_U64;
+   function Almost_Estimate_Nth (K : Natural; N : U64; Kind : Natural)
+      return Int.Optional_U64
+   is
+      R : Natural := 0;
+      Low, High, Mid, C : U64;
+      Reduced : Int.Optional_U64;
+      Semi : constant array (Natural range 1 .. 7) of U64 :=
+        [4, 6, 9, 10, 14, 15, 21];
+      Triple : constant array (Natural range 1 .. 7) of U64 :=
+        [8, 12, 18, 20, 27, 28, 30];
+   begin
+      if N = 0 or else K >= 64 then
+         return (Defined => False);
+      elsif K = 0 then
+         return (if N = 1 then (True, 1) else (Defined => False));
+      elsif N > Max_Almost_Count (K) then
+         return (Defined => False);
+      elsif N = Max_Almost_Count (K) then
+         return (True, U64'Last - Max_Almost_Offset (K));
+      elsif K = 1 then
+         return (True, (case Kind is
+                   when 0 => Count.Nth_Prime_Lower (N),
+                   when 1 => Count.Nth_Prime_Upper (N),
+                   when others => Count.Nth_Prime_Approx (N)));
+      elsif N < 8 then
+         return (True, (if K = 2 then Semi (Natural (N)) else
+                          Triple (Natural (N)) * 2 ** (K - 3)));
+      elsif K = 2 and then N <= 220 then
+         return Nth_Almost_Prime (K, N);
+      end if;
+      if Kind /= 2 then
+         if K > 49 then
+            if N < First_Three (49) then
+               R := K - 48;
+            end if;
+         end if;
+         while K - R <= 49 and then N < First_Three (K - R) loop
+            R := R + 1;
+         end loop;
+         if R > 0 then
+            Reduced := Almost_Estimate_Nth (K - R, N, Kind);
+            if not Reduced.Defined or else Reduced.Value > U64'Last / 2 ** R
+            then
+               return (Defined => False);
+            end if;
+            return (True, Reduced.Value * 2 ** R);
+         end if;
+      end if;
+      Low := (if Kind = 0 then 3 * 2 ** K else 5 * 2 ** K);
+      if Kind = 2 then
+         Reduced := Almost_Estimate_Nth (K, N, 0);
+         Low := Reduced.Value;
+      end if;
+      High := Low;
+      loop
+         C := (case Kind is
+                 when 0 => Almost_Prime_Count_Upper (K, High),
+                 when 1 => Almost_Prime_Count_Lower (K, High),
+                 when others => Almost_Prime_Count_Approx (K, High));
+         exit when C >= N;
+         if High = U64'Last then
+            return (Defined => False);
+         end if;
+         High := (if High > U64'Last / 2 then U64'Last else High * 2);
+      end loop;
+      while Low < High loop
+         Mid := Low + (High - Low) / 2;
+         C := (case Kind is
+                 when 0 => Almost_Prime_Count_Upper (K, Mid),
+                 when 1 => Almost_Prime_Count_Lower (K, Mid),
+                 when others => Almost_Prime_Count_Approx (K, Mid));
+         if C < N then
+            Low := Mid + 1;
+         else
+            High := Mid;
+         end if;
+      end loop;
+      --  MPU's inverse interpolation returns the lower neighboring integer
+      --  when the count estimate skips over the requested index.
+      C := (case Kind is
+              when 0 => Almost_Prime_Count_Upper (K, Low),
+              when 1 => Almost_Prime_Count_Lower (K, Low),
+              when others => Almost_Prime_Count_Approx (K, Low));
+      if C > N then
+         Low := Low - 1;
+      end if;
+      return (True, Low);
+   end Almost_Estimate_Nth;
+
+   function Nth_Almost_Prime_Lower (K : Natural; N : U64)
+      return Int.Optional_U64 is (Almost_Estimate_Nth (K, N, 0));
+   function Nth_Almost_Prime_Upper (K : Natural; N : U64)
+      return Int.Optional_U64 is (Almost_Estimate_Nth (K, N, 1));
+   function Nth_Almost_Prime_Approx (K : Natural; N : U64)
+      return Int.Optional_U64 is (Almost_Estimate_Nth (K, N, 2));
    use type Primality.Prime_Result;
    subtype Ram_Wide is Long_Long_Float;
    package Ram_Ef is new Ada.Numerics.Generic_Elementary_Functions (Ram_Wide);
@@ -1956,7 +2172,6 @@ package body Math_Prime_Util.Families is
    end Semiprime_Count;
 
    function Semiprime_Count_Approx (N : U64) return U64 is
->>>>>>> origin/dev-mpuada-001
       C : constant array (Natural range 0 .. 18) of F64 :=
         [0.26149721284764278375, -2.0710850628855780875,
          -7.6972777412176108802, -35.345660320564161516,
@@ -1969,215 +2184,6 @@ package body Math_Prime_Util.Families is
          -100274471240063911725.1];
       Cross : constant array (Natural range 0 .. 14) of F64 :=
         [632.0, 9385.0, 136411.0, 4610076.0, 66358000.0, 440590000.0,
-<<<<<<< HEAD
-         2557200000.0, 53032001000.0, 1151076796431.0, 20416501389724.0,
-         165815501587300.0, 953038830319448.0, 20019396133340433.0,
-         192558867109258424.0, 1757883874953032448.0];
-      Minimum : constant array (Natural range 0 .. 15) of F64 :=
-        [82.0, 195.0, 2485.0, 31446.0, 906319.0, 11741185.0,
-         72840337.0, 398702652.0, 7538564737.0, 150382042176.0,
-         2482510001499.0, 19204997230933.0, 106211451717048.0,
-         2094735089989940.0, 19282342825922188.0, 168996486318315136.0];
-      L : Natural := 3;
-      Log_N, LL, Series, Den, Fact, Estimate : F64;
-   begin
-      if N <= 623 then
-         return Almost_Prime_Count (2, N);
-      end if;
-      Log_N := Log (F64 (N));
-      LL := Log (Log_N);
-      while L <= 17 and then F64 (N) >= Cross (L - 3) loop
-         L := L + 1;
-      end loop;
-      Series := 0.0;
-      Den := 1.0;
-      Fact := 1.0;
-      for I in 1 .. L loop
-         if I > 1 then
-            Fact := Fact * F64 (I - 1);
-         end if;
-         Series := Series + Fact * (LL / Den);
-         Series := Series + C (I - 1) / Den;
-         Den := Den * Log_N;
-      end loop;
-      Estimate := (F64 (N) / Log_N) * Series + 0.5;
-      if Estimate >= F64 (Max_Almost_Count (2)) then
-         return Max_Almost_Count (2);
-      end if;
-      return U64'Max (Trunc (Estimate), Trunc (Minimum (L - 3)));
-   end Semi_Approx;
-
-   function Almost_Prime_Count_Approx (K : Natural; N : U64) return U64 is
-      Factors : Natural := K;
-      High : U64 := N;
-      L, U : U64;
-      X, Log_X, LL, A, S, Estimate : F64;
-      Small_Three : constant array (Natural range 0 .. 18) of U64 :=
-        [27, 28, 30, 42, 44, 45, 50, 52, 63, 66, 68, 70, 75, 76, 78,
-         92, 98, 99, 102];
-      Small_Count : U64 := 4;
-   begin
-      if K = 0 then
-         return (if N >= 1 then 1 else 0);
-      elsif K >= 64 or else N < 2 ** K then
-         return 0;
-      end if;
-      Reduce_Count (Factors, High);
-      if Factors = 1 then
-         return Count.Prime_Count_Approx (High);
-      elsif Factors = 2 then
-         return Semi_Approx (High);
-      elsif High < 3 * 2 ** (Factors - 1) then
-         return 1;
-      elsif High < 9 * 2 ** (Factors - 2) then
-         return 2;
-      elsif High < 10 * 2 ** (Factors - 2) then
-         return 3;
-      elsif Factors = 3 and then High < 102 then
-         for V of Small_Three loop
-            exit when High < V;
-            Small_Count := Small_Count + 1;
-         end loop;
-         return Small_Count;
-      end if;
-      Almost_Bounds (Factors, High, L, U);
-      if Factors = 3 then
-         X := F64 (High);
-         Log_X := Log (X);
-         LL := Log (Log_X);
-         if X <= 638.0 then
-            S := 1.554688; A := 0.865814;
-         elsif X <= 1544.0 then
-            S := 1.050000; A := 0.822256;
-         elsif X <= 1927.0 then
-            S := 0.625000; A := 0.791747;
-         elsif X <= 486586.0 then
-            S := 2.865611; A := 1.004090;
-         elsif X <= 1913680.0 then
-            S := 2.790963; A := 0.999618;
-         elsif X <= 22347532.0 then
-            S := 2.719238; A := 0.995635;
-         elsif X <= 2.95E8 then
-            S := 2.584473; A := 0.988802;
-         elsif X <= 4.20E9 then
-            S := 2.457108; A := 0.983098;
-         elsif X <= 7.07E10 then
-            S := 2.352818; A := 0.978931;
-         elsif X <= 1.36E12 then
-            S := 2.269745; A := 0.975953;
-         elsif X <= 4.1E13 then
-            S := 2.203002; A := 0.973796;
-         elsif X <= 9.2E14 then
-            S := 2.148463; A := 0.972213;
-         else
-            S := 2.119279; A := 0.971438;
-         end if;
-         Estimate := 0.5 * A * X * ((LL + 0.26153) * (LL + 0.26153)) /
-           (Log_X + S) + 0.5;
-         return U64'Min (U, U64'Max (L, Trunc (Estimate)));
-      end if;
-      return Trunc (F64 (L) + F64 (U - L) *
-                      (if Factors > 11 then 0.20 else 0.76));
-   end Almost_Prime_Count_Approx;
-
-   function Almost_Estimate_Nth (K : Natural; N : U64; Kind : Natural)
-      return Int.Optional_U64;
-   function Almost_Estimate_Nth (K : Natural; N : U64; Kind : Natural)
-      return Int.Optional_U64
-   is
-      R : Natural := 0;
-      Low, High, Mid, C : U64;
-      Reduced : Int.Optional_U64;
-      Semi : constant array (Natural range 1 .. 7) of U64 :=
-        [4, 6, 9, 10, 14, 15, 21];
-      Triple : constant array (Natural range 1 .. 7) of U64 :=
-        [8, 12, 18, 20, 27, 28, 30];
-   begin
-      if N = 0 or else K >= 64 then
-         return (Defined => False);
-      elsif K = 0 then
-         return (if N = 1 then (True, 1) else (Defined => False));
-      elsif N > Max_Almost_Count (K) then
-         return (Defined => False);
-      elsif N = Max_Almost_Count (K) then
-         return (True, U64'Last - Max_Almost_Offset (K));
-      elsif K = 1 then
-         return (True, (case Kind is
-                   when 0 => Count.Nth_Prime_Lower (N),
-                   when 1 => Count.Nth_Prime_Upper (N),
-                   when others => Count.Nth_Prime_Approx (N)));
-      elsif N < 8 then
-         return (True, (if K = 2 then Semi (Natural (N)) else
-                          Triple (Natural (N)) * 2 ** (K - 3)));
-      elsif K = 2 and then N <= 220 then
-         return Nth_Almost_Prime (K, N);
-      end if;
-      if Kind /= 2 then
-         if K > 49 then
-            if N < First_Three (49) then
-               R := K - 48;
-            end if;
-         end if;
-         while K - R <= 49 and then N < First_Three (K - R) loop
-            R := R + 1;
-         end loop;
-         if R > 0 then
-            Reduced := Almost_Estimate_Nth (K - R, N, Kind);
-            if not Reduced.Defined or else Reduced.Value > U64'Last / 2 ** R
-            then
-               return (Defined => False);
-            end if;
-            return (True, Reduced.Value * 2 ** R);
-         end if;
-      end if;
-      Low := (if Kind = 0 then 3 * 2 ** K else 5 * 2 ** K);
-      if Kind = 2 then
-         Reduced := Almost_Estimate_Nth (K, N, 0);
-         Low := Reduced.Value;
-      end if;
-      High := Low;
-      loop
-         C := (case Kind is
-                 when 0 => Almost_Prime_Count_Upper (K, High),
-                 when 1 => Almost_Prime_Count_Lower (K, High),
-                 when others => Almost_Prime_Count_Approx (K, High));
-         exit when C >= N;
-         if High = U64'Last then
-            return (Defined => False);
-         end if;
-         High := (if High > U64'Last / 2 then U64'Last else High * 2);
-      end loop;
-      while Low < High loop
-         Mid := Low + (High - Low) / 2;
-         C := (case Kind is
-                 when 0 => Almost_Prime_Count_Upper (K, Mid),
-                 when 1 => Almost_Prime_Count_Lower (K, Mid),
-                 when others => Almost_Prime_Count_Approx (K, Mid));
-         if C < N then
-            Low := Mid + 1;
-         else
-            High := Mid;
-         end if;
-      end loop;
-      --  MPU's inverse interpolation returns the lower neighboring integer
-      --  when the count estimate skips over the requested index.
-      C := (case Kind is
-              when 0 => Almost_Prime_Count_Upper (K, Low),
-              when 1 => Almost_Prime_Count_Lower (K, Low),
-              when others => Almost_Prime_Count_Approx (K, Low));
-      if C > N then
-         Low := Low - 1;
-      end if;
-      return (True, Low);
-   end Almost_Estimate_Nth;
-
-   function Nth_Almost_Prime_Lower (K : Natural; N : U64)
-      return Int.Optional_U64 is (Almost_Estimate_Nth (K, N, 0));
-   function Nth_Almost_Prime_Upper (K : Natural; N : U64)
-      return Int.Optional_U64 is (Almost_Estimate_Nth (K, N, 1));
-   function Nth_Almost_Prime_Approx (K : Natural; N : U64)
-      return Int.Optional_U64 is (Almost_Estimate_Nth (K, N, 2));
-=======
          2557200000.0, 53032001000.0, 1151076796431.0,
          20416501389724.0, 165815501587300.0, 953038830319448.0,
          20019396133340433.0, 192558867109258424.0,
@@ -2310,5 +2316,4 @@ package body Math_Prime_Util.Families is
          end loop;
       end if;
    end Nth_Semiprime;
->>>>>>> origin/dev-mpuada-001
 end Math_Prime_Util.Families;
