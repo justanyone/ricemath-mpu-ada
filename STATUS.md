@@ -179,7 +179,7 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [x] `is_pseudoprime` -> `Is_Pseudoprime`
 - [ ] `is_qr` -> `Is_Qr`
 - [ ] `is_quasi_carmichael` -> `Is_Quasi_Carmichael`
-- [ ] `is_ramanujan_prime` -> `Is_Ramanujan_Prime`
+- [x] `is_ramanujan_prime` -> `Is_Ramanujan_Prime`
 - [ ] `is_rough` -> `Is_Rough`
 - [x] `is_safe_prime` -> `Is_Safe_Prime`
 - [ ] `is_semiprime` -> `Is_Semiprime`
@@ -262,10 +262,10 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [ ] `nth_prime_power_lower` -> `Nth_Prime_Power_Lower`
 - [ ] `nth_prime_power_upper` -> `Nth_Prime_Power_Upper`
 - [x] `nth_prime_upper` -> `Nth_Prime_Upper`
-- [ ] `nth_ramanujan_prime` -> `Nth_Ramanujan_Prime`
-- [ ] `nth_ramanujan_prime_approx` -> `Nth_Ramanujan_Prime_Approx`
-- [ ] `nth_ramanujan_prime_lower` -> `Nth_Ramanujan_Prime_Lower`
-- [ ] `nth_ramanujan_prime_upper` -> `Nth_Ramanujan_Prime_Upper`
+- [x] `nth_ramanujan_prime` -> `Nth_Ramanujan_Prime`
+- [x] `nth_ramanujan_prime_approx` -> `Nth_Ramanujan_Prime_Approx`
+- [x] `nth_ramanujan_prime_lower` -> `Nth_Ramanujan_Prime_Lower`
+- [x] `nth_ramanujan_prime_upper` -> `Nth_Ramanujan_Prime_Upper`
 - [ ] `nth_semiprime` -> `Nth_Semiprime`
 - [ ] `nth_semiprime_approx` -> `Nth_Semiprime_Approx`
 - [x] `nth_stern_brocot` -> `Nth_Stern_Brocot`
@@ -324,11 +324,11 @@ Full directions: PLAN.md section 3. Tick each when done.
 - [x] `primorial` -> `Primorial`
 - [ ] `print_primes` -> `Print_Primes`
 - [ ] `qnr` -> `Qnr`
-- [ ] `ramanujan_prime_count` -> `Ramanujan_Prime_Count`
-- [ ] `ramanujan_prime_count_approx` -> `Ramanujan_Prime_Count_Approx`
-- [ ] `ramanujan_prime_count_lower` -> `Ramanujan_Prime_Count_Lower`
-- [ ] `ramanujan_prime_count_upper` -> `Ramanujan_Prime_Count_Upper`
-- [ ] `ramanujan_primes` -> `Ramanujan_Primes`
+- [x] `ramanujan_prime_count` -> `Ramanujan_Prime_Count`
+- [x] `ramanujan_prime_count_approx` -> `Ramanujan_Prime_Count_Approx`
+- [x] `ramanujan_prime_count_lower` -> `Ramanujan_Prime_Count_Lower`
+- [x] `ramanujan_prime_count_upper` -> `Ramanujan_Prime_Count_Upper`
+- [x] `ramanujan_primes` -> `Ramanujan_Primes`
 - [ ] `ramanujan_sum` -> `Ramanujan_Sum`
 - [ ] `ramanujan_tau` -> `Ramanujan_Tau`
 - [ ] `rand` -> `Rand`
