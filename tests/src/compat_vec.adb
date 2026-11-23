@@ -96,12 +96,13 @@ package body Compat_Vec is
       end record;
       Pairs : array (1 .. 256) of Pair;
       Used : Natural := 0;
+      Count : constant Natural := Natural (Parts.Length);
       Result : Unbounded_String;
    begin
-      if Parts.Length mod 2 /= 0 or else Parts.Length / 2 > 256 then
+      if Count mod 2 /= 0 or else Count / 2 > 256 then
          return Text;
       end if;
-      while Used < Natural (Parts.Length / 2) loop
+      while Used < Count / 2 loop
          Used := Used + 1;
          Pairs (Used) :=
            (Key => Parse_Integer (To_String (Parts (Used * 2 - 1))),
