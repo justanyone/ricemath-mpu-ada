@@ -374,6 +374,51 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
       return Allrootmod (A, 2, N);
    end Allsqrtmod;
 
+   --  rootmod.c: _sqrtmod_prime_power, Newton lifting with gcd division.
+   function Sqrt_Power (A, P : U64; E : Natural) return Optional_U64 is
+      N : constant U64 := Powint (P, U64 (E)).Value;
+      S, R, Np, D, F, G : U64;
+      Half : Natural;
+      Result : Optional_U64;
+   begin
+      if E = 0 or else A mod N = 0 then
+         return (True, 0);
+      elsif E = 1 then
+         R := Sqrt_Prime (A mod P, P);
+      elsif A mod P = 0 then
+         if A / P mod P /= 0 then
+            return (Defined => False);
+         end if;
+         Result := Sqrt_Power (A / P / P, P, E - 2);
+         if not Result.Defined then
+            return Result;
+         end if;
+         R := Result.Value * P;
+      else
+         Half := (if P > 2 or else E < 5 then (E + 1) / 2
+                  else (E + 3) / 2);
+         Result := Sqrt_Power (A, P, Half);
+         if not Result.Defined then
+            return Result;
+         end if;
+         S := Result.Value;
+         Np := (if P /= 2 or else N > U64'Last / P then N else N * P);
+         F := Sub (A, Mul (S, S, Np), Np);
+         D := Mul (2, S, Np);
+         G := Gcd (D, N);
+         if F mod G /= 0 then
+            return (Defined => False);
+         end if;
+         R := Addmod (S, Mul (F / G, Invmod (D / G, N / G).Value,
+                            N / G), N).Value;
+      end if;
+      R := U64'Min (R, N - R);
+      if Mul (R, R, N) /= A mod N then
+         return (Defined => False);
+      end if;
+      return (True, R);
+   end Sqrt_Power;
+
    function Sqrtmod (A : I128; N : U64) return Optional_U64 is
       V : U64;
       function One (Value, Modulus : U64) return Optional_U64 is
@@ -389,14 +434,11 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
             M := M * P;
             E := E + 1;
          end loop;
-         declare
-            Roots : constant Root_List := Sorted (Power_Roots (Value, 2, P, E));
-         begin
-            if Roots'Length = 0 then
-               return (Defined => False);
-            end if;
-            X := Roots (1);
-         end;
+         Other := Sqrt_Power (Value, P, E);
+         if not Other.Defined then
+            return Other;
+         end if;
+         X := Other.Value;
          if Rest = 1 then
             return (True, X);
          end if;
@@ -580,6 +622,9 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
          V := Inv.Value;
       end if;
       Exponent := U64 (abs K);
+      if Exponent = 2 then
+         return Sqrtmod (I128 (V), N);
+      end if;
       if N <= 2 or else V <= 1 then
          X := V;
       elsif Exponent <= 1 then
