@@ -119,7 +119,8 @@ package Math_Prime_Util.Iter with SPARK_Mode => On is
    --  largest native prime; repeated calls remain undefined, without wrap.
    procedure Next
      (Cursor : in out Prime_Cursor; Value : out Int.Optional_U64)
-     with Pre => True, Post => True;
+     with Pre => True,
+          Post => (if Value.Defined then Value.Value >= 2);
 
 private
    type Loop_Context is limited record

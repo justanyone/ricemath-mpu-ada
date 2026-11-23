@@ -5,6 +5,7 @@ with Ada.Strings.Unbounded;
 with Fixture_Support;
 with Math_Prime_Util.Int;
 with Math_Prime_Util.Iter;
+with Math_Prime_Util.Primality;
 
 package body Compat_Iter is
    use AUnit.Test_Cases;
@@ -395,6 +396,7 @@ package body Compat_Iter is
 
    procedure Check_Properties (T : in out Test_Case'Class) is
       use type U128;
+      use type Primality.Prime_Result;
       Seed : U64 := 16#4954_4552#;
       Expected_N : U64;
       Expected_Length : Natural;
@@ -406,6 +408,9 @@ package body Compat_Iter is
          Product : U128 := 1;
       begin
          for I in Factors'Range loop
+            AUnit.Assertions.Assert
+              (Primality.Is_Prime (Factors (I)) /= 0,
+               "prime factor, seed 0x49544552");
             Product := Product * U128 (Factors (I));
             AUnit.Assertions.Assert
               (I = Factors'First or else Factors (I - 1) <= Factors (I),
