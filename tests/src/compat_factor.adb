@@ -23,6 +23,15 @@ package body Compat_Factor is
       return AUnit.Message_String;
    overriding procedure Register_Tests (T : in out Factor_Case);
 
+   type Counts_Case is new Test_Case with null record;
+   overriding function Name (T : Counts_Case) return AUnit.Message_String;
+   overriding procedure Register_Tests (T : in out Counts_Case);
+
+   overriding function Name (T : Counts_Case) return AUnit.Message_String is
+   begin
+      return AUnit.Format ("Compat_Factor_Counts");
+   end Name;
+
    type Ecm_Case is new Test_Case with null record;
    overriding function Name (T : Ecm_Case) return AUnit.Message_String;
    overriding procedure Register_Tests (T : in out Ecm_Case);
@@ -566,6 +575,36 @@ package body Compat_Factor is
       Registration.Register_Routine
         (T, Check_Edges'Access, "ecm_factor edges");
    end Register_Tests;
+
+   overriding procedure Register_Tests (T : in out Counts_Case) is
+   begin
+      Registration.Register_Routine
+        (T, Test_Factor_Exp'Access, "factor_exp");
+      Registration.Register_Routine
+        (T, Test_Prime_Omega'Access, "prime_omega");
+      Registration.Register_Routine
+        (T, Test_Prime_Bigomega'Access, "prime_bigomega");
+      Registration.Register_Routine
+        (T, Test_Prime_Signature'Access, "prime_signature");
+      Registration.Register_Routine
+        (T, Test_Is_Square_Free'Access, "is_square_free");
+      Registration.Register_Routine
+        (T, Test_Is_Semiprime'Access, "is_semiprime");
+      Registration.Register_Routine
+        (T, Test_Is_Almost_Prime'Access, "is_almost_prime");
+      Registration.Register_Routine
+        (T, Test_Is_Omega_Prime'Access, "is_omega_prime");
+      Registration.Register_Routine
+        (T, Test_Cheb_Factor'Access, "cheb_factor");
+   end Register_Tests;
+
+   function Counts_Suite return AUnit.Test_Suites.Access_Test_Suite is
+      Result : constant AUnit.Test_Suites.Access_Test_Suite :=
+        new AUnit.Test_Suites.Test_Suite;
+   begin
+      Result.Add_Test (new Counts_Case);
+      return Result;
+   end Counts_Suite;
 
    function Suite return AUnit.Test_Suites.Access_Test_Suite is
       Result : constant AUnit.Test_Suites.Access_Test_Suite :=
