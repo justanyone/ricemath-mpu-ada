@@ -1,5 +1,6 @@
 with AUnit.Assertions;
 with AUnit.Test_Cases;
+with Ada.Containers;
 with Ada.Strings;
 with Ada.Strings.Fixed;
 with Ada.Strings.Unbounded;
@@ -18,6 +19,8 @@ package body Compat_Families is
    use type U64;
    use Math_Prime_Util.Families;
    use Math_Prime_Util.Goldbach;
+   use type Ada.Containers.Count_Type;
+   use type Math_Prime_Util.Primality.Prime_Result;
    type Families_Case is new Test_Case with null record;
    overriding function Name (T : Families_Case)
       return AUnit.Message_String;
