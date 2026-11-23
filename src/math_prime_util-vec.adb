@@ -414,7 +414,8 @@ package body Math_Prime_Util.Vec with SPARK_Mode => Off is
 
    function Set_Is_Subset (Left, Right : Int_List) return Boolean is
      (Right.Is_Empty
-      or else (Left.Length >= Right.Length and then Setcontains (Left, Right)));
+      or else (Left.Length >= Right.Length
+               and then Setcontains (Left, Right)));
 
    function Set_Is_Proper_Subset (Left, Right : Int_List) return Boolean is
      (Left.Length > Right.Length and then Set_Is_Subset (Left, Right));
