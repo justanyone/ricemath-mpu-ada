@@ -42,12 +42,20 @@ package body Compat_Arith is
             end if;
             if Func = "inverse_sigma0_count" then
                Actual := To_Unbounded_String
-                 (Image (Math_Prime_Util.Arith.Inverse_Sigma0_Count
-                    (K, Low, High)));
+                 (Image
+                    ((if C.Args.Length = 2 then
+                        Math_Prime_Util.Arith.Inverse_Sigma0_Count (K, High)
+                      else
+                        Math_Prime_Util.Arith.Inverse_Sigma0_Count
+                          (K, Low, High))));
             else
                declare
                   Values : constant Math_Prime_Util.Arith.U64_Vectors.Vector :=
-                    Math_Prime_Util.Arith.Inverse_Sigma0 (K, Low, High);
+                    (if C.Args.Length = 2 then
+                       Math_Prime_Util.Arith.Inverse_Sigma0 (K, High)
+                     else
+                       Math_Prime_Util.Arith.Inverse_Sigma0
+                         (K, Low, High));
                begin
                   if Values.Is_Empty then
                      Actual := To_Unbounded_String ("undef");

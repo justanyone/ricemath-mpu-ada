@@ -2,6 +2,7 @@ with Math_Prime_Util.Primality;
 
 package body Math_Prime_Util.Arith is
    use type U64;
+   use type Primality.Prime_Result;
 
    function Divisor_Count (N : U64) return U64 is
       Remaining : U64 := N;
