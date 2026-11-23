@@ -99,4 +99,83 @@ package Math_Prime_Util.Modular with SPARK_Mode => On is
      with Pre => True,
           Post => (if N <= 1 then Pisano_Period'Result.Defined and then
                      Pisano_Period'Result.Value = N);
+   subtype Symbol is Integer range -1 .. 1;
+   type Congruence is record
+      Residue : I128;
+      Modulus : U64;
+   end record;
+   type Congruence_List is array (Positive range <>) of Congruence;
+   type Chinese_Result (Defined : Boolean := False) is record
+      case Defined is
+         when True => Remainder, Modulus : U64;
+         when False => null;
+      end case;
+   end record;
+
+   --  util.c: kronecker_uu, kronecker_su, kronecker_ss. Signed symbol.
+   --  Native magnitude inputs; no errors, including zero denominators.
+   function Kronecker (A, B : I128) return Symbol
+     with Pre => A in -I128 (U64'Last) .. I128 (U64'Last)
+       and then B in -I128 (U64'Last) .. I128 (U64'Last),
+          Post => Kronecker'Result in -1 .. 1;
+
+   --  util.c: chinese. Least nonnegative simultaneous residue.
+   --  Undefined for inconsistent congruences, zero moduli or LCM overflow.
+   function Chinese (Pairs : Congruence_List) return Optional_U64
+     with Pre => True,
+          Post => (if Pairs'Length = 0 then Chinese'Result.Defined
+                     and then Chinese'Result.Value = 0);
+
+   --  XS.xs: chinese2, util.c: chinese. Residue and combined modulus.
+   --  Same undefined cases as Chinese; empty input returns (0, 0).
+   function Chinese2 (Pairs : Congruence_List) return Chinese_Result
+     with Pre => True,
+          Post => (if Chinese2'Result.Defined then
+            (for all C of Pairs => C.Modulus > 0 and then
+               Chinese2'Result.Remainder mod C.Modulus =
+                 U64 (C.Residue mod I128 (C.Modulus))));
+
+   --  util.c: znorder. Multiplicative order, undefined for nonunits or N=0.
+   --  Modulo one returns one, following the XS wrapper.
+   function Znorder (A : I128; N : U64) return Optional_U64
+     with Pre => True,
+          Post => (if Znorder'Result.Defined then N > 0 and then
+            Powmod (U64 (A mod I128 (N)), Znorder'Result.Value, N).Value
+              = 1 mod N);
+
+   --  util.c: znprimroot. Least primitive root; undefined if none or N=0.
+   function Znprimroot (N : U64) return Optional_U64
+     with Pre => True,
+          Post => (if Znprimroot'Result.Defined then N > 0 and then
+                     Znprimroot'Result.Value < N);
+
+   --  util.c: is_primitive_root. Test a generator; false for N=0.
+   --  Signed A is reduced modulo N; modulo one every A is a generator.
+   function Is_Primitive_Root (A : I128; N : U64) return Boolean
+     with Pre => True,
+          Post => (if N = 0 then not Is_Primitive_Root'Result);
+
+   --  util.c: qnr. Least quadratic nonresidue, undefined for N=0.
+   --  MPU's conventions return one and two for moduli one and two.
+   function Qnr (N : U64) return Optional_U64
+     with Pre => True,
+          Post => (if Qnr'Result.Defined then Qnr'Result.Value <= N);
+
+   --  util.c: is_qr. Whether A is a square residue; N=0 tests A=1.
+   function Is_Qr (A : I128; N : U64) return Boolean
+     with Pre => True,
+          Post => (if N = 0 then Is_Qr'Result = (A = 1));
+
+   --  util.c: is_fundamental. Signed fundamental discriminant predicate.
+   --  Native magnitude inputs; zero is false, one is true. No errors.
+   function Is_Fundamental (D : I128) return Boolean
+     with Pre => D in -I128 (U64'Last) .. I128 (U64'Last),
+          Post => (if D = 0 then not Is_Fundamental'Result);
+
+   --  XS.xs: divmod, util.c: divmod. A/B modulo N after signed reduction.
+   --  Undefined for N=0 or noninvertible B; N=1 returns zero.
+   function Divmod (A, B : I128; N : U64) return Optional_U64
+     with Pre => True,
+          Post => (if Divmod'Result.Defined then N > 0 and then
+                     Divmod'Result.Value < N);
 end Math_Prime_Util.Modular;
