@@ -23,3 +23,4 @@ Replaced controlled-vector operations inside the prime segment sieve with a fixe
 Rebuilding optimized square-free sieve and running the selected edge test. Stopped the earlier gate run because it used the pre-optimization library.
 Selected edge test passed in 0.42 seconds, including chunk crossing and K=63. Correcting one U64 conversion in the optimized prime-segment bound.
 Added Lastfor checks for short and segmented square-free factor paths and for the integer sieve after two; optimized focused run is in progress.
+Restored the XS native semiprime narrow-range threshold ladder, preventing huge sieving-prime allocation for short high ranges; preparing the final gate run.

@@ -136,7 +136,24 @@ package body Math_Prime_Util.Iter.Ranges is
       if First > Bound then
          return;
       end if;
-      if Bound - First < 200 then
+      if Bound - First < 200 or else
+        (First >= 10_000_000_000_000_000_000
+         and then Bound - First < 1_400_000) or else
+        (First >= 1_000_000_000_000_000_000
+         and then Bound - First < 950_000) or else
+        (First >= 100_000_000_000_000_000
+         and then Bound - First < 440_000) or else
+        (First >= 10_000_000_000_000_000
+         and then Bound - First < 240_000) or else
+        (First >= 1_000_000_000_000_000
+         and then Bound - First < 65_000) or else
+        (First >= 100_000_000_000_000
+         and then Bound - First < 29_000) or else
+        (First >= 10_000_000_000_000
+         and then Bound - First < 11_000) or else
+        (First >= 1_000_000_000_000
+         and then Bound - First < 5_000)
+      then
          loop
             if Factor.Factor (First).Count = 2 then
                Process (First, Context);
@@ -399,7 +416,8 @@ package body Math_Prime_Util.Iter.Ranges is
             end if;
             while Prime_Low <= Root loop
                Prime_High := Prime_Low +
-                 U64'Min (Root - Prime_Low, 2 * U64 (Composite'Last));
+                 U64'Min (Root - Prime_Low,
+                          2 * U64 (Composite'Last));
                Length := Natural ((Prime_High - Prime_Low) / 2);
                Composite := [others => False];
                for P of Base_Primes loop
