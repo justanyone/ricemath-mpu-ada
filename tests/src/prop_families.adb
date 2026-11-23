@@ -99,6 +99,22 @@ package body Prop_Families is
          return True;
       end Trial_Prime;
    begin
+      --  Given indices around the 190-entry small table, exact nth must
+      --  remain the inverse of the count after switching to estimation.
+      for Index in U64 range 189 .. 201 loop
+         P := Nth_Semiprime (Index).Value;
+         AUnit.Assertions.Assert
+           (Semiprime_Count (P) = Index
+            and then Semiprime_Count (P - 1) = Index - 1,
+            "semiprime small-table boundary:" & Index'Image);
+      end loop;
+      --  Given large singleton ranges, retain squares and reject cubes.
+      for Value of U64_Array'[1_009 ** 2, 1_009 ** 3, 2 ** 32,
+                              2 ** 63, U64'Last] loop
+         AUnit.Assertions.Assert
+           (Semi_Primes (Value, Value).Contains (Value) =
+              (Value = 1_009 ** 2), "large semiprime membership");
+      end loop;
       for I in 1 .. 40 loop
          Seed := Seed * 6_364_136_223_846_793_005 + 1;
          N := Seed mod 400;

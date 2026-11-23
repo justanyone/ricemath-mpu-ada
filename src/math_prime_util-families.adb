@@ -1116,7 +1116,7 @@ package body Math_Prime_Util.Families is
          return (Defined => False);
       elsif N = Max_Semi_Index then
          return (True, Max_Semi);
-      elsif N <= 200 then
+      elsif N <= 190 then
          declare
             V : constant Family_Vectors.Vector := Semi_Primes (623);
          begin
@@ -1165,7 +1165,7 @@ package body Math_Prime_Util.Families is
       if N = 0 then
          return (Defined => False);
       end if;
-      if N <= 200 then
+      if N <= 190 then
          return Nth_Semiprime_Approx (N);
       end if;
       Guess := Nth_Semiprime_Approx (N).Value;
