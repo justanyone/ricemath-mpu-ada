@@ -1,12 +1,13 @@
 """Unit tests for status.py."""
 
+import importlib.util
 import tempfile
 import unittest
-import importlib.util
 from pathlib import Path
 
 SPEC = importlib.util.spec_from_file_location(
     "status", Path(__file__).with_name("status.py"))
+assert SPEC is not None and SPEC.loader is not None
 status = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(status)
 

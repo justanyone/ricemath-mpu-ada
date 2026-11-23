@@ -7,7 +7,6 @@ Run from any directory with ``python3 -I tools/status.py``.
 import re
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parent.parent
 STATUS = ROOT / "STATUS.md"
 SOURCE = ROOT / "src"
@@ -34,10 +33,8 @@ def public_subprograms(source: Path) -> set[str]:
     return names
 
 
-def regenerate(status: Path = STATUS, source: Path = SOURCE) -> bool:
-    """Update ticks; reject malformed lists. Return whether the file changed."""
-    original = status.read_text(encoding="utf-8")
-    lines = original.splitlines(keepends=True)
+def function_list_start(lines: list[str]) -> int:
+    """Validate the complete function list and return its first line index."""
     try:
         start = next(i for i, line in enumerate(lines)
                      if line.rstrip("\r\n") == FUNCTIONS_HEADING) + 1
@@ -55,6 +52,13 @@ def regenerate(status: Path = STATUS, source: Path = SOURCE) -> bool:
     if count != FUNCTION_COUNT:
         raise ValueError(
             f"expected {FUNCTION_COUNT} function rows, found {count}")
+    return start
+
+
+def regenerate(status: Path = STATUS, source: Path = SOURCE) -> bool:
+    """Update ticks; reject malformed lists. Return whether the file changed."""
+    lines = status.read_text(encoding="utf-8").splitlines(keepends=True)
+    start = function_list_start(lines)
 
     declared = public_subprograms(source)
     changed = False
