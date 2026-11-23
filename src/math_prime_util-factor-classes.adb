@@ -261,3 +261,151 @@ package body Math_Prime_Util.Factor.Classes is
       F := Factor (M);
       return F.Value (1) >= K;
    end Is_Rough;
+
+   Cache_7 : constant array (Natural range <>) of U64 :=
+     [8, 9, 10, 10, 11, 11, 12, 13, 14, 14, 15, 15, 16, 17, 17, 17, 18, 19, 
+      19, 20, 21, 21, 22, 22, 23, 23, 23, 24, 25, 25, 25, 25, 26, 26, 27, 
+      27, 27, 28, 28, 28, 29, 30, 31, 31, 31, 31, 32, 32, 33, 33, 33, 33, 
+      34, 34, 34, 35, 36, 36, 36, 36, 36, 36, 37, 37, 38, 38, 38, 39, 39, 
+      39, 39, 39, 40, 41, 41, 41, 42, 42, 42, 42, 42, 42, 43, 43, 43, 43, 
+      43, 43, 44, 44, 45, 45, 46, 46, 46, 46, 46, 47, 47, 47, 48, 48, 48, 
+      48, 49, 49, 49, 49, 49, 49, 49, 49, 50, 50, 50, 50, 50, 51, 52, 52, 
+      53, 53, 53, 53, 53, 53, 53, 54];
+
+   Cache_11 : constant array (Natural range <>) of U64 :=
+     [12, 12, 13, 14, 15, 15, 16, 16, 17, 18, 19, 19, 20, 21, 21, 22, 23, 
+      23, 24, 24, 25, 26, 26, 27, 28, 28, 28, 28, 29, 29, 30, 30, 31, 32, 
+      32, 32, 33, 34, 35, 35, 35, 35, 36, 37, 38, 38, 38, 38, 39, 39, 39, 
+      40, 41, 41, 42, 42, 42, 42, 43, 43, 44, 44, 44, 45, 45, 46, 46, 46, 
+      47, 48, 48, 48, 49, 49, 49, 49, 50, 50, 51, 51, 51, 51, 51, 51, 52, 
+      52, 53, 54, 55, 55, 55, 55, 55, 56, 56, 56];
+
+   Cache_13 : constant array (Natural range <>) of U64 :=
+     [14, 15, 16, 16, 17, 17, 18, 19, 20, 20, 21, 22, 23, 24, 25, 25, 26, 
+      26, 27, 28, 28, 29, 30, 30, 30, 31, 32, 32, 33, 33, 34, 35, 35, 35, 
+      36, 37, 38, 38, 39, 39, 40, 41, 42, 42, 42, 42, 43, 43, 43, 44, 45, 
+      46, 47, 47, 47, 47, 48, 48, 49, 49, 49, 50, 50, 51];
+
+   X_Table : constant array (Natural range <>) of U64 :=
+     [19, 23, 29, 31, 37, 38, 41, 43, 46, 47, 53, 57, 58, 59, 61, 62, 67, 
+      69, 71, 73, 74, 76, 79, 82, 83, 86, 87, 89, 92, 93, 94, 95, 97, 101, 
+      103, 106, 107, 109, 111, 113, 114, 115, 116, 118, 122, 123, 124, 
+      127];
+
+   Y_Table : constant array (Natural range <>) of U64 :=
+     [19, 23, 29, 31, 37, 19, 41, 43, 23, 47, 53, 19, 29, 59, 61, 31, 67, 
+      23, 71, 73, 37, 19, 79, 41, 83, 43, 29, 89, 23, 31, 47, 19, 97, 101, 
+      103, 53, 107, 109, 37, 113, 19, 23, 29, 59, 61, 41, 31, 127];
+
+   function Log2_Floor (N : U64) return U64 is
+      M : U64 := N;
+      R : U64 := 0;
+   begin
+      while M > 1 loop
+         M := M / 2;
+         R := R + 1;
+      end loop;
+      return R;
+   end Log2_Floor;
+
+   function Smooth_Count (N, K : U64) return U64 is
+      Y : U64 := K;
+      Sum, X3, X5 : U64;
+   begin
+      if N = 0 then
+         return 0;
+      elsif Y <= 1 then
+         return 1;
+      elsif Y >= N then
+         return N;
+      elsif Y = 2 then
+         return 1 + Log2_Floor (N);
+      end if;
+      if Y mod 2 = 0 then
+         Y := Y - 1;
+      end if;
+      if Y = 7 and then N - 7 <= 128 then
+         return Cache_7 (Natural (N - 8));
+      elsif Y = 11 and then N - 11 <= 96 then
+         return Cache_11 (Natural (N - 12));
+      elsif Y = 13 and then N - 13 <= 64 then
+         return Cache_13 (Natural (N - 14));
+      elsif Y >= 17 and then N <= 128 then
+         Sum := N;
+         for I in X_Table'Range loop
+            exit when N < X_Table (I);
+            if Y < Y_Table (I) then
+               Sum := Sum - 1;
+            end if;
+         end loop;
+         return Sum;
+      end if;
+      Sum := 1 + Log2_Floor (N);
+      X3 := N / 3;
+      while X3 > 3 loop
+         Sum := Sum + 1 + Log2_Floor (X3);
+         X3 := X3 / 3;
+      end loop;
+      Sum := Sum + X3;
+      if Y >= 5 then
+         X5 := N / 5;
+         while X5 > 5 loop
+            Sum := Sum + 1 + Log2_Floor (X5);
+            X3 := X5 / 3;
+            while X3 > 3 loop
+               Sum := Sum + 1 + Log2_Floor (X3);
+               X3 := X3 / 3;
+            end loop;
+            Sum := Sum + X3;
+            X5 := X5 / 5;
+         end loop;
+         Sum := Sum + X5;
+      end if;
+      declare
+         Primes : constant Sieve.Prime_Vectors.Vector :=
+           Sieve.Primes (7, Y);
+         P, XP : U64;
+      begin
+         for I in Primes.First_Index .. Primes.Last_Index loop
+            P := Primes.Element (I);
+            XP := N / P;
+            Sum := Sum + (if P >= XP then XP else Smooth_Count (XP, P));
+         end loop;
+      end;
+      return Sum;
+   end Smooth_Count;
+
+   function Rough_Count (N, K : U64) return U64 is
+   begin
+      if N = 0 or else K <= 2 then
+         return N;
+      elsif K <= 3 then
+         return N - N / 2;
+      elsif K <= 5 then
+         return N - N / 2 - N / 3 + N / 6;
+      elsif K > N then
+         return 1;
+      end if;
+      declare
+         --  Legendre's recurrence with exactly the primes below K.
+         Primes : constant Sieve.Prime_Vectors.Vector :=
+           Sieve.Primes (K - 1);
+         function Phi (X : U64; A : Natural) return U64 is
+            P : U64;
+         begin
+            if X = 0 or else A = 0 then
+               return X;
+            end if;
+            P := Primes.Element (A - 1);
+            if X < P then
+               return 1;
+            elsif A = 1 then
+               return X - X / 2;
+            end if;
+            return Phi (X, A - 1) - Phi (X / P, A - 1);
+         end Phi;
+      begin
+         return Phi (N, Natural (Primes.Length));
+      end;
+   end Rough_Count;
+end Math_Prime_Util.Factor.Classes;
