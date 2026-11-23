@@ -6,3 +6,4 @@ Inspected MPU power algorithms and fixture ranges; implementing a SPARK arithmet
 - 2026-11-23T07:43:21Z launcher: no commit for 60 s; 120 s elapsed. Files changed so far: docs/worker-notes/demand-ab49b3dec26b41aa9b73f24c412fce76.md.
 Implemented power predicates, root-based neighbors, Mobius counts, nth inversion and MPU estimates. Initial Alire build hit an unwritable runtime directory; retrying with a workspace runtime directory.
 Added fixture replay for all 25 power-family names, signed perfect powers, native-overflow assertions, and named bigint/count-limit exclusions. Located cached Alire toolchains and retrying with their bin directories on PATH.
+Development build passes after visibility fixes. Running the complete Families fixture replay next; native counts retain Count limits and overflow results are checked explicitly.
