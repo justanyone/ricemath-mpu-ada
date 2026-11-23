@@ -88,7 +88,8 @@ package body Prop_Count is
       task type Worker (Index : Positive);
       task body Worker is
       begin
-         Values (Index) := Count.Sum_Primes (100_000).Value;
+         Values (Index) := Count.Sum_Primes (100_000).Value +
+           Count.Prime_Count (1_000_000_000);
       end Worker;
    begin
       declare
@@ -98,8 +99,8 @@ package body Prop_Count is
          null;
       end;
       AUnit.Assertions.Assert
-        (Values (1) = 454_396_537 and Values (2) = Values (1),
-         "concurrent sums use independent scratch storage");
+        (Values (1) = 505_244_071 and then Values (2) = Values (1),
+         "concurrent sums and counts use independent scratch storage");
    end Concurrent_Calls;
 
    procedure Count_Boundaries (T : in out Test_Case'Class) is
