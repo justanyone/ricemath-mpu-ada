@@ -156,11 +156,33 @@ package body Compat_Totients is
    procedure Laws (T : in out Test_Case'Class) is
       Seed : U64 := 20_261_123;
       N, L : U64;
+      Inputs : constant array (Positive range <>) of U64 :=
+        [0, 1, 2, 2 ** 32 - 1, 2 ** 32 + 1,
+         2 ** 63 - 1, 2 ** 63 + 1, U64'Last];
       V : U64_Vectors.Vector;
    begin
       Assert (T.Name /= null, "named property test");
       Assert (Sumtotient (7_790_208_951) =
                 2 ** 64 + 2_584_983_748, "128-bit phi sum crossing");
+      for X of Inputs loop
+         L := Carmichael_Lambda (X);
+         if X > 0 then
+            Assert (L > 0 and then Euler_Phi (I128 (X)) mod L = 0,
+                    "native boundary lambda divides phi");
+         else
+            Assert (L = 0, "lambda zero");
+         end if;
+         Assert (Ramanujan_Sum (X, 0) = 0, "zero Ramanujan sum");
+         if X > 0 then
+            Assert (Ramanujan_Sum (X, X) = I128 (Euler_Phi (I128 (X))),
+                    "diagonal Ramanujan sum at native boundary");
+         end if;
+      end loop;
+      Assert (not Dedekind_Psi (I128 (U64'Last)).Defined,
+              "psi overflow boundary");
+      Assert (Sumtotient (0) = 0 and then Sumliouville (0) = 0,
+              "empty summatory functions");
+      Assert (not Is_Totient (0), "zero is not a totient");
       for I in 1 .. 200 loop
          Seed := Seed * 6_364_136_223_846_793_005 + 1;
          N := Seed mod 10_000 + 1;

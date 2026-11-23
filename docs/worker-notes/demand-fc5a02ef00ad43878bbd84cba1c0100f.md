@@ -10,3 +10,4 @@ Progress: library compiles; focused AUnit build launched. Native-overflow sum fi
 Progress: added pytest-bdd feature and native-suite bridge; Alire builds are still running, and gnatprove is unavailable on this host.
 Progress: aligned inverse list/count implementations with the reference divisor-keyed dynamic programming, including native list-overflow bounds.
 Progress: library and test builds pass sequentially; added dedicated native runner because the shared runner does not apply the requested filter.
+Progress: added explicit native boundaries for lambda, psi overflow, and signed Ramanujan sums; focused runner build and first execution are underway.
