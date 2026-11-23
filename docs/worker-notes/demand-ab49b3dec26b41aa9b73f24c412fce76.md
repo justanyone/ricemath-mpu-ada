@@ -12,3 +12,5 @@ Resolved a GNAT vector iterator link failure by using the established indexed it
 Added seeded membership/count/nth/neighbor laws and two pytest-bdd scenarios. pytest-bdd is absent on this offline worker; Ada assertions are run directly through the same runner.
 The existing AUnit runner ignored CLI filters and began the whole suite. Added its standard name filter so BDD and focused power checks select the intended assertions; no-argument gate behavior is unchanged.
 Seeded power laws pass. Focused fixture tests found a missing predecessor of 1 and bigint dispatch exclusions; fixed both. Investigating two maximum-U64 bound discrepancies inherited from Count numeric estimates.
+Corrected native predecessor behavior and signed range handling. Added a high-precision derivation for MPU_Li_Rounding and retained fixtures unchanged; rerunning all power fixtures and properties before the project gate.
+All 34 Compat_Families routines and the seeded power-law routine pass. Full gate is running with its cleanup function disabled to obey the no-delete worker rule; output stays in obj/.
