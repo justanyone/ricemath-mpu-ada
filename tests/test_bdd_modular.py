@@ -1,6 +1,7 @@
 """BDD entry point for the native Ada modular compatibility suite."""
 from pathlib import Path
 import subprocess
+import re
 
 from pytest_bdd import given, when, then, scenarios
 
@@ -30,4 +31,4 @@ def modular_suite_passes(result):
     assert result.returncode == 0, result.stdout + result.stderr
     assert "Failed Assertions: 0" in result.stdout, result.stdout
     assert "Unexpected Errors: 0" in result.stdout, result.stdout
-    assert "Total Tests Run:   6" in result.stdout, result.stdout
+    assert re.search(r"Total Tests Run:\s+6\b", result.stdout), result.stdout
