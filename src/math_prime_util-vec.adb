@@ -312,7 +312,8 @@ package body Math_Prime_Util.Vec is
       return True;
    end Vecequal;
 
-   function Toset (Items : Integer_Vectors.Vector) return Integer_Vectors.Vector
+   function Toset (Items : Integer_Vectors.Vector)
+      return Integer_Vectors.Vector
    is
      (To_Vector (As_Set (Items)));
 
@@ -373,7 +374,8 @@ package body Math_Prime_Util.Vec is
    is
      (Setdelta (Left, Right));
 
-   function Setcontains (Left, Right : Integer_Vectors.Vector) return Boolean is
+   function Setcontains (Left, Right : Integer_Vectors.Vector) return Boolean
+   is
       Known : constant Big_Sets.Set := As_Set (Left);
    begin
       for Value of Right loop
