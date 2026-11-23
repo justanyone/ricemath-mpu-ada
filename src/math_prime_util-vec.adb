@@ -514,7 +514,8 @@ package body Math_Prime_Util.Vec with SPARK_Mode => On is
    begin
       --  XS.xs: vecsample, ordered selection without replacement.
       if K >= A'Length then
-         return A;
+         R := A;
+         return R;
       end if;
       for V of A loop
          exit when N = R'Length;
