@@ -16,7 +16,7 @@ package Math_Prime_Util.Factor with SPARK_Mode => On is
      with Pre => True,
           Post => Ecm_Factor'Result'Length <= 64
             and then (if N = 1 then Ecm_Factor'Result'Length = 0
-              elsif N = 0 then Ecm_Factor'Result = Factor_List'(1 => 0)
+              elsif N = 0 then Ecm_Factor'Result = Factor_List'[1 => 0]
               else Ecm_Factor'Result'Length > 0
                 and then (for all F of Ecm_Factor'Result =>
                   F > 1 and then N mod F = 0));

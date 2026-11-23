@@ -3,11 +3,10 @@ with Math_Prime_Util.Primality;
 
 package body Math_Prime_Util.Factor is
    use type Primality.Prime_Result;
-   use type Int.Optional_U64;
 
    --  factor.c: ecm64_sigmas, in the original deterministic order.
    Sigmas : constant array (Positive range 1 .. 400) of U64 :=
-     (11, 13, 17, 19, 23, 29, 31, 37, 41, 43,
+     [11, 13, 17, 19, 23, 29, 31, 37, 41, 43,
       47, 53, 59, 61, 67, 71, 73, 79, 83, 89,
       103, 127, 139, 149, 151, 157, 163, 181, 191, 197,
       199, 211, 223, 227, 233, 239, 257, 271, 293, 313,
@@ -46,7 +45,7 @@ package body Math_Prime_Util.Factor is
       30851, 30911, 30983, 31397, 31541, 31963, 32369, 32561, 32771, 32969,
       33029, 33083, 33487, 33637, 33757, 34057, 34381, 34513, 34613, 34807,
       35083, 35171, 35311, 35381, 36013, 36251, 36493, 36529, 36551, 36913,
-      36919, 37363, 37517, 37699, 37907, 38047, 38177, 38273, 38749, 38903);
+      36919, 37363, 37517, 37699, 37907, 38047, 38177, 38273, 38749, 38903];
 
    type Point is record
       X, Z : U64;
@@ -60,6 +59,22 @@ package body Math_Prime_Util.Factor is
      (Int.Addmod (A, B, N).Value);
    function Sub (A, B, N : U64) return U64 is
      (Int.Submod (A, B, N).Value);
+
+   function Double_Point (P : Point; A24, N : U64) return Point
+     with Pre => N > 1;
+   function Differential_Add
+     (P, Q, Pm : Point; N : U64) return Point with Pre => N > 1;
+   function Multiply (P : Point; K, A24, N : U64) return Point
+     with Pre => N > 1 and then K > 0;
+   procedure Normalize
+     (P : Points; N : U64; X : out Residues;
+      Factor : out U64; Success : out Boolean)
+     with Pre => N > 1 and then P'First = X'First
+       and then P'Last = X'Last;
+   function Stage_Two (Q : Point; A24, N, B1, B2 : U64) return U64
+     with Pre => N > 1;
+   function Find_Factor (N, B1, B2, Curves : U64) return U64
+     with Pre => N > 1;
 
    --  factor.c: ecm_double64; ordinary residues replace Montgomery form.
    function Double_Point (P : Point; A24, N : U64) return Point is
@@ -128,7 +143,7 @@ package body Math_Prime_Util.Factor is
    begin
       Factor := 0;
       Success := False;
-      X := (others => 0);
+      X := [others => 0];
       for I in P'Range loop
          Acc := Mul (Acc, P (I).Z, N);
          Prefix (I) := Acc;
@@ -140,7 +155,7 @@ package body Math_Prime_Util.Factor is
          else
             for V of P loop
                G := Int.Gcd (V.Z, N);
-               if G > 1 and G < N then
+               if G > 1 and then G < N then
                   Factor := G;
                   exit;
                end if;
@@ -223,7 +238,7 @@ package body Math_Prime_Util.Factor is
             if Hi > B1 then
                Lo := U64'Max (U64'Max (Lo, B1 + 1), 2);
                for P in Lo .. Hi loop
-                  if Primality.Is_Prime (P) /= 0 and P /= M then
+                  if Primality.Is_Prime (P) /= 0 and then P /= M then
                      Idx := (if P < M then M - P else P - M);
                      --  Skip the mirrored prime already handled below M.
                      if not (P > M and then M <= U64'Last / 2
@@ -249,7 +264,7 @@ package body Math_Prime_Util.Factor is
          end loop;
       end;
       F := Int.Gcd (Product, N);
-      return (if F > 1 and F < N then F else 0);
+      return (if F > 1 and then F < N then F else 0);
    end Stage_Two;
 
    --  factor.c: tinyecm64, Suyama parametrization and prime powers.
@@ -272,7 +287,7 @@ package body Math_Prime_Util.Factor is
          Inverse := Int.Invmod (Den, N);
          if not Inverse.Defined then
             G := Int.Gcd (Den, N);
-            if G > 1 and G < N then
+            if G > 1 and then G < N then
                return G;
             end if;
          else
@@ -289,7 +304,7 @@ package body Math_Prime_Util.Factor is
                   P := Multiply (P, K, A24, N);
                   if J mod 64 = 0 then
                      G := Int.Gcd (P.Z, N);
-                     if G > 1 and G < N then
+                     if G > 1 and then G < N then
                         return G;
                      elsif G = N then
                         Failed := True;
@@ -301,12 +316,12 @@ package body Math_Prime_Util.Factor is
             end loop;
             if not Failed then
                G := Int.Gcd (P.Z, N);
-               if G > 1 and G < N then
+               if G > 1 and then G < N then
                   return G;
                end if;
                if B2 > B1 then
                   G := Stage_Two (P, A24, N, B1, B2);
-                  if G > 1 and G < N then
+                  if G > 1 and then G < N then
                      return G;
                   end if;
                end if;
@@ -329,9 +344,9 @@ package body Math_Prime_Util.Factor is
       F, T : U64;
    begin
       if N = 0 then
-         return (1 => 0);
+         return [1 => 0];
       end if;
-      for Small of Factor_List'(2, 3, 5) loop
+      for Small of Factor_List'[2, 3, 5] loop
          while Remaining > 1 and then Remaining mod Small = 0 loop
             Count := Count + 1;
             Result (Count) := Small;
@@ -341,7 +356,7 @@ package body Math_Prime_Util.Factor is
       if Remaining > 1 then
          F := (if Primality.Is_Prime (Remaining) /= 0 then 0
                else Find_Factor (Remaining, B1, Bound, Curves));
-         if F > 1 and F < Remaining then
+         if F > 1 and then F < Remaining then
             Count := Count + 1;
             Result (Count) := F;
             Remaining := Remaining / F;
