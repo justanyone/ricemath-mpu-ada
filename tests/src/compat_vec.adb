@@ -318,7 +318,8 @@ package body Compat_Vec is
                if C.Error then
                   AUnit.Assertions.Assert
                     (Raised,
-                     Func & Positive'Image (C.Line_Number) & " expected ERROR");
+                     Func & Positive'Image (C.Line_Number)
+                       & " expected ERROR");
                else
                   AUnit.Assertions.Assert
                     (not Raised and then
@@ -390,9 +391,9 @@ package body Compat_Vec is
    end Name;
 
    overriding procedure Register_Tests (T : in out Vec_Case) is
+      use AUnit.Test_Cases.Registration;
    begin
-      Registration.Register_Routine
-        (T, Test_Vec_Fixture'Access, "vec.tsv");
+      Register_Routine (T, Test_Vec_Fixture'Access, "vec.tsv");
    end Register_Tests;
 
    function Suite return AUnit.Test_Suites.Access_Test_Suite is
