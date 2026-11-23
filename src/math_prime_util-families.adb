@@ -1816,7 +1816,7 @@ package body Math_Prime_Util.Families is
       Lo := Simple_Prime_Lower (N);
       Hi := Simple_Prime_Upper (N);
       if Lo > Hi then
-         Lo := 2;
+         Lo := Hi;
       end if;
       case Kind is
          when Lower =>

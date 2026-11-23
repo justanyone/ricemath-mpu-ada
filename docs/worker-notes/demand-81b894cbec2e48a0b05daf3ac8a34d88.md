@@ -7,6 +7,7 @@ Why: STATUS.md still has those functions unticked, and families.ads has lucky, R
 Next: list the fixture function names, read the C entry points, and match the twin/semiprime port style.
 Tried the families spec and both C files: prime and perfect powers are not ported yet. Fixtures live in families.tsv. A few rows are past the C UV/IV domain (2^64 or bigint negatives) and will be named skips.
 Next: add the subprograms to Math_Prime_Util.Families and replay them from compat_families.adb.
+Added the family subprograms and the compat replay. Building the development library next, then the power-family tests.
 - 2026-11-23T13:39:20Z launcher: no commit for 60 s; 120 s elapsed. Files changed so far: docs/worker-notes/demand-81b894cbec2e48a0b05daf3ac8a34d88.md.
 - 2026-11-23T13:40:20Z launcher: no commit for 60 s; 180 s elapsed. Files changed so far: docs/worker-notes/demand-81b894cbec2e48a0b05daf3ac8a34d88.md.
 - 2026-11-23T13:41:20Z launcher: no commit for 60 s; 240 s elapsed. Files changed so far: docs/worker-notes/demand-81b894cbec2e48a0b05daf3ac8a34d88.md.

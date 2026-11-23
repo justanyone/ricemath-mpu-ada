@@ -330,6 +330,264 @@ package body Compat_Families is
       end loop;
    end Ramanujan_Laws;
 
+   --  Native_Word_Limit: families.tsv rows outside the C UV/IV domain
+   --  of prime_powers.c and perfect_powers.c. The pure-Perl bigint path
+   --  supplies the successor past 2^64, arguments past signed 64-bit, and
+   --  the perfect-power index one past MPU_MAX_PERFECT_POW_IDX.
+   --  Skipped lines: 2981, 2982, 2983, 8421, 8422, 8434, 8639, 8640,
+   --  8651, 8652, 8655, 8857, 8858, 8870, 9421, 9496, 9571, 9646.
+   function Skip_Native_Word (Line : Positive) return Boolean is
+     (Line in 2981 | 2982 | 2983 | 8421 | 8422 | 8434
+        | 8639 | 8640 | 8651 | 8652 | 8655
+        | 8857 | 8858 | 8870
+        | 9421 | 9496 | 9571 | 9646);
+
+   function Image (N : Int.I128) return String is
+     (Ada.Strings.Fixed.Trim (Int.I128'Image (N), Ada.Strings.Both));
+
+   procedure Replay_Powers (Func : String) is
+      Cases : constant Case_Vectors.Vector :=
+        For_Function (Load ("families"), Func);
+      Got : Unbounded_String;
+   begin
+      AUnit.Assertions.Assert (not Cases.Is_Empty, "missing " & Func);
+      for C of Cases loop
+         if Skip_Native_Word (C.Line_Number) then
+            null;
+         else
+            Got := Null_Unbounded_String;
+            if Func = "prime_powers" then
+               declare
+                  procedure Append_Value (Value : U64) is
+                  begin
+                     if Length (Got) > 0 then
+                        Append (Got, " ");
+                     end if;
+                     Append (Got, Image (Value));
+                  end Append_Value;
+                  High : constant U64 :=
+                    (if Natural (C.Args.Length) = 1
+                     then U64'Value (To_String (C.Args (1)))
+                     else U64'Value (To_String (C.Args (2))));
+                  Low : constant U64 :=
+                    (if Natural (C.Args.Length) = 1 then 0
+                     else U64'Value (To_String (C.Args (1))));
+                  V : constant Family_Vectors.Vector :=
+                    Prime_Powers (Low, High);
+               begin
+                  for I in V.First_Index .. V.Last_Index loop
+                     Append_Value (V.Element (I));
+                  end loop;
+                  if Length (Got) = 0 then
+                     Got := To_Unbounded_String ("undef");
+                  end if;
+               end;
+            elsif Func = "is_prime_power" then
+               Got := To_Unbounded_String
+                 (Image (Is_Prime_Power
+                    (U64'Value (To_String (C.Args (1))))));
+            elsif Func = "is_prime_power_root" then
+               declare
+                  Factor : constant Prime_Power_Factor :=
+                    Prime_Power (U64'Value (To_String (C.Args (1))));
+               begin
+                  Got := To_Unbounded_String
+                    (Image (Factor.Exponent) & " " & Image (Factor.Root));
+               end;
+            elsif Func = "next_prime_power" then
+               Got := To_Unbounded_String
+                 (Image (Next_Prime_Power
+                    (U64'Value (To_String (C.Args (1))))));
+            elsif Func = "prev_prime_power" then
+               Got := To_Unbounded_String
+                 (Image (Prev_Prime_Power
+                    (U64'Value (To_String (C.Args (1))))));
+            elsif Func = "prime_power_count" then
+               Got := To_Unbounded_String
+                 (Image ((if Natural (C.Args.Length) = 1 then
+                            Prime_Power_Count
+                              (U64'Value (To_String (C.Args (1))))
+                          else Prime_Power_Count
+                            (U64'Value (To_String (C.Args (1))),
+                             U64'Value (To_String (C.Args (2)))))));
+            elsif Func = "prime_power_count_lower" then
+               Got := To_Unbounded_String
+                 (Image (Prime_Power_Count_Lower
+                    (U64'Value (To_String (C.Args (1))))));
+            elsif Func = "prime_power_count_upper" then
+               Got := To_Unbounded_String
+                 (Image (Prime_Power_Count_Upper
+                    (U64'Value (To_String (C.Args (1))))));
+            elsif Func = "prime_power_count_approx" then
+               Got := To_Unbounded_String
+                 (Image (Prime_Power_Count_Approx
+                    (U64'Value (To_String (C.Args (1))))));
+            elsif Func = "nth_prime_power" then
+               Got := To_Unbounded_String
+                 (Image (Nth_Prime_Power
+                    (U64'Value (To_String (C.Args (1))))));
+            elsif Func = "nth_prime_power_lower" then
+               Got := To_Unbounded_String
+                 (Image (Nth_Prime_Power_Lower
+                    (U64'Value (To_String (C.Args (1))))));
+            elsif Func = "nth_prime_power_upper" then
+               Got := To_Unbounded_String
+                 (Image (Nth_Prime_Power_Upper
+                    (U64'Value (To_String (C.Args (1))))));
+            elsif Func = "nth_prime_power_approx" then
+               Got := To_Unbounded_String
+                 (Image (Nth_Prime_Power_Approx
+                    (U64'Value (To_String (C.Args (1))))));
+            elsif Func = "is_perfect_power" then
+               declare
+                  Text : constant String := To_String (C.Args (1));
+               begin
+                  if Text (Text'First) = '-' then
+                     Got := To_Unbounded_String
+                       ((if Is_Perfect_Power (Int.I128'Value (Text))
+                         then "1" else "0"));
+                  else
+                     Got := To_Unbounded_String
+                       ((if Is_Perfect_Power (U64'Value (Text))
+                         then "1" else "0"));
+                  end if;
+               end;
+            elsif Func = "next_perfect_power" then
+               Got := To_Unbounded_String
+                 (Image (Next_Perfect_Power
+                    (Int.I128'Value (To_String (C.Args (1))))));
+            elsif Func = "prev_perfect_power" then
+               Got := To_Unbounded_String
+                 (Image (Prev_Perfect_Power
+                    (Int.I128'Value (To_String (C.Args (1))))));
+            elsif Func = "perfect_power_count" then
+               Got := To_Unbounded_String
+                 (Image (Perfect_Power_Count
+                    (U64'Value (To_String (C.Args (1))))));
+            elsif Func = "perfect_power_count_lower" then
+               Got := To_Unbounded_String
+                 (Image (Perfect_Power_Count_Lower
+                    (U64'Value (To_String (C.Args (1))))));
+            elsif Func = "perfect_power_count_upper" then
+               Got := To_Unbounded_String
+                 (Image (Perfect_Power_Count_Upper
+                    (U64'Value (To_String (C.Args (1))))));
+            elsif Func = "perfect_power_count_approx" then
+               Got := To_Unbounded_String
+                 (Image (Perfect_Power_Count_Approx
+                    (U64'Value (To_String (C.Args (1))))));
+            elsif Func = "nth_perfect_power" then
+               Got := To_Unbounded_String
+                 (Image (Nth_Perfect_Power
+                    (U64'Value (To_String (C.Args (1))))));
+            elsif Func = "nth_perfect_power_lower" then
+               Got := To_Unbounded_String
+                 (Image (Nth_Perfect_Power_Lower
+                    (U64'Value (To_String (C.Args (1))))));
+            elsif Func = "nth_perfect_power_upper" then
+               Got := To_Unbounded_String
+                 (Image (Nth_Perfect_Power_Upper
+                    (U64'Value (To_String (C.Args (1))))));
+            elsif Func = "nth_perfect_power_approx" then
+               Got := To_Unbounded_String
+                 (Image (Nth_Perfect_Power_Approx
+                    (U64'Value (To_String (C.Args (1))))));
+            end if;
+            AUnit.Assertions.Assert
+              (Got = C.Result, Func & " line" & C.Line_Number'Image &
+               " expected " & To_String (C.Result) &
+               " got " & To_String (Got));
+         end if;
+      end loop;
+   end Replay_Powers;
+
+   procedure Test_Prime_Powers (T : in out Test_Case'Class) is
+   begin
+      Replay_Powers ("prime_powers");
+      Replay_Powers ("is_prime_power");
+      Replay_Powers ("is_prime_power_root");
+      Replay_Powers ("next_prime_power");
+      Replay_Powers ("prev_prime_power");
+      Replay_Powers ("prime_power_count");
+      Replay_Powers ("prime_power_count_lower");
+      Replay_Powers ("prime_power_count_upper");
+      Replay_Powers ("prime_power_count_approx");
+      Replay_Powers ("nth_prime_power");
+      Replay_Powers ("nth_prime_power_lower");
+      Replay_Powers ("nth_prime_power_upper");
+      Replay_Powers ("nth_prime_power_approx");
+   end Test_Prime_Powers;
+
+   procedure Test_Perfect_Powers (T : in out Test_Case'Class) is
+   begin
+      Replay_Powers ("is_perfect_power");
+      Replay_Powers ("next_perfect_power");
+      Replay_Powers ("prev_perfect_power");
+      Replay_Powers ("perfect_power_count");
+      Replay_Powers ("perfect_power_count_lower");
+      Replay_Powers ("perfect_power_count_upper");
+      Replay_Powers ("perfect_power_count_approx");
+      Replay_Powers ("nth_perfect_power");
+      Replay_Powers ("nth_perfect_power_lower");
+      Replay_Powers ("nth_perfect_power_upper");
+      Replay_Powers ("nth_perfect_power_approx");
+   end Test_Perfect_Powers;
+
+   --  Round-trip and sign edges the fixture grid does not isolate.
+   procedure Power_Laws (T : in out Test_Case'Class) is
+      P : U64;
+   begin
+      AUnit.Assertions.Assert
+        (Prime_Powers (10, 2).Is_Empty and then
+         Prime_Power_Count (10, 2) = 0 and then
+         Prime_Power_Count (0) = 0 and then
+         Is_Prime_Power (0) = 0 and then
+         Is_Prime_Power (1) = 0 and then
+         Is_Prime_Power (6) = 0 and then
+         Is_Prime_Power (36) = 0 and then
+         Prime_Power (8) = (3, 2) and then
+         Prime_Power (9) = (2, 3) and then
+         not Next_Prime_Power (0).Defined = False and then
+         Next_Prime_Power (0).Value = 2 and then
+         not Prev_Prime_Power (2).Defined and then
+         Is_Perfect_Power (Int.I128 (-1)) and then
+         Is_Perfect_Power (Int.I128 (-8)) and then
+         not Is_Perfect_Power (Int.I128 (-16)) and then
+         Is_Perfect_Power (Int.I128 (-27)) and then
+         Is_Perfect_Power (Int.I128 (-32)) and then
+         not Is_Perfect_Power (Int.I128 (-64 + 1)) and then
+         Is_Perfect_Power (U64'(0)) and then
+         not Is_Perfect_Power (U64'(2)) and then
+         Next_Perfect_Power (-1) = 0 and then
+         Prev_Perfect_Power (0) = -1 and then
+         Prev_Perfect_Power (1) = 0 and then
+         not Nth_Prime_Power (0).Defined and then
+         not Nth_Perfect_Power (0).Defined,
+         "prime and perfect power edges");
+      for N in U64 range 1 .. 30 loop
+         P := Nth_Prime_Power (N).Value;
+         AUnit.Assertions.Assert
+           (Prime_Power_Count (P) = N and then
+            (P = 2 or else Prime_Power_Count (P - 1) = N - 1) and then
+            Nth_Prime_Power_Lower (N).Value <= P and then
+            P <= Nth_Prime_Power_Upper (N).Value,
+            "prime power inverse" & N'Image);
+         P := Nth_Perfect_Power (N).Value;
+         AUnit.Assertions.Assert
+           (Perfect_Power_Count (P) = N and then
+            Is_Perfect_Power (P),
+            "perfect power inverse" & N'Image);
+      end loop;
+      AUnit.Assertions.Assert
+        (Prime_Power_Count_Lower (U64'Last) <=
+           Prime_Power_Count_Approx (U64'Last) and then
+         Prime_Power_Count_Approx (U64'Last) <=
+           Prime_Power_Count_Upper (U64'Last) and then
+         Perfect_Power_Count (U64'Last) =
+           Perfect_Power_Count_Lower (U64'Last),
+         "native maximum power bounds");
+   end Power_Laws;
+
    overriding procedure Register_Tests (T : in out Families_Case) is
    begin
       Registration.Register_Routine
@@ -376,6 +634,12 @@ package body Compat_Families is
         (T, Test_Ramanujan'Access, "Ramanujan fixture family");
       Registration.Register_Routine
         (T, Ramanujan_Laws'Access, "Ramanujan laws seed 20261123");
+      Registration.Register_Routine
+        (T, Test_Prime_Powers'Access, "prime and perfect power primes");
+      Registration.Register_Routine
+        (T, Test_Perfect_Powers'Access, "perfect powers");
+      Registration.Register_Routine
+        (T, Power_Laws'Access, "prime power laws");
    end Register_Tests;
 
    function Suite return AUnit.Test_Suites.Access_Test_Suite is
