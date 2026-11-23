@@ -36,25 +36,19 @@ package Math_Prime_Util.Count with SPARK_Mode => On is
           Post => (if High < 2 then Prime_Count'Result = 0)
                   and then Prime_Count'Result <= High;
 
-<<<<<<< HEAD
-   --  prime_counts.c: prime_count_range. Inclusive bounds; reversed ranges
-   --  return zero. Narrow intervals use the segmented sieve directly.
-   function Prime_Count (Low, High : U64) return U64
-     with Pre => True,
-          Post => (if Low > High then Prime_Count'Result = 0)
-            and then Prime_Count'Result <= High;
-=======
-   --  prime_counts.c: prime_count_range. Count primes in Low .. High.
-   --  Reversed bounds return zero. Above Prime_Count_Limit, only ranges
-   --  of at most 100_001 integers are accepted (Assertion_Error with
-   --  contracts enabled). Storage_Error may propagate for prefix counts.
+   --  prime_counts.c: prime_count_range. Inclusive bounds; reversed
+   --  ranges return zero. Narrow intervals use the segmented sieve
+   --  directly. Above Prime_Count_Limit, only ranges of at most
+   --  100_001 integers are accepted (Assertion_Error with contracts
+   --  enabled). Extended LMO sets that limit to the native maximum,
+   --  so every native interval is accepted. Storage_Error may
+   --  propagate from a wide prefix count.
    function Prime_Count (Low, High : U64) return U64
      with Pre => Low > High or else High <= Prime_Count_Limit
                    or else High - Low <= 100_000,
           Post => (if Low > High or High < 2 then
                      Prime_Count'Result = 0
                    else Prime_Count'Result <= High - U64'Max (Low, 2) + 1);
->>>>>>> origin/dev-mpuada-001
 
    --  legendre_phi.c: _legendre_phi. Counts n in 1 .. X with no prime
    --  factor among the first A primes. Recursion on A, so A is bounded.
