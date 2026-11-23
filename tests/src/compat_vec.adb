@@ -71,7 +71,7 @@ package body Compat_Vec is
 
    procedure Split
      (C : Case_Record;
-      Left, Right : out String_Vectors.Vector;
+      Left, Right : out Math_Prime_Util.Vec.String_Vectors.Vector;
       Has_Right : out Boolean)
    is
    begin
@@ -89,7 +89,9 @@ package body Compat_Vec is
       end loop;
    end Split;
 
-   function As_Ints (Items : String_Vectors.Vector) return Int_Vector is
+   function As_Ints
+     (Items : Math_Prime_Util.Vec.String_Vectors.Vector) return Int_Vector
+   is
       Result : Int_Vector;
    begin
       for A of Items loop
@@ -151,7 +153,7 @@ package body Compat_Vec is
       end if;
       for I in 1 .. Integer (Tokens.Length) / 2 loop
          Pairs.Append
-           ((Key => BI.From_String (To_String (Tokens (2 * I - 1))),
+           (Pair'(Key => BI.From_String (To_String (Tokens (2 * I - 1))),
              Count => BI.From_String (To_String (Tokens (2 * I)))));
       end loop;
       Pair_Sort.Sort (Pairs);
@@ -165,7 +167,7 @@ package body Compat_Vec is
    end Canonical_Freq;
 
    function Evaluate (C : Case_Record; Func : String) return String is
-      Left_Text, Right_Text : String_Vectors.Vector;
+      Left_Text, Right_Text : Math_Prime_Util.Vec.String_Vectors.Vector;
       Has_Right : Boolean;
       Left, Right : Int_Vector;
       Merged : Int_Vector;
