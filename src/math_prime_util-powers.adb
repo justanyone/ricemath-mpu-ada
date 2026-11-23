@@ -1,13 +1,13 @@
-with Ada.Numerics.Generic_Elementary_Functions;
+with Interfaces;
 with Ada.Numerics.Long_Elementary_Functions;
 with Math_Prime_Util.Count;
-with Math_Prime_Util.Int;
 with Math_Prime_Util.Primality;
 with Math_Prime_Util.Sieve;
 
 package body Math_Prime_Util.Powers with SPARK_Mode => Off is
    use Ada.Numerics.Long_Elementary_Functions;
    use type U128;
+   use type Interfaces.Unsigned_8;
    subtype F64 is Long_Float;
 
    type Pow_Result (Ok : Boolean := False) is record
@@ -355,7 +355,44 @@ package body Math_Prime_Util.Powers with SPARK_Mode => Off is
    function Prime_Power_Count_Approx (N : U64) return U64 is
      (Bounded_Count (N, 'A'));
 
-   -- @@INVERSE@@
+   --  inverse_interpolate.c: inverse_interpolate, threshold zero. Keep
+   --  integer brackets to avoid losing adjacent U64 values in floating point.
+   generic
+      with function Value (X : U64) return U64;
+   function Inverse (Low, High, N : U64) return U64;
+
+   function Inverse (Low, High, N : U64) return U64 is
+      Lo : U64 := Low;
+      Hi : U64 := High;
+      Mid, Rlo, Rhi, Rmid : U64;
+   begin
+      Mid := Lo + (Hi - Lo) / 2;
+      Rmid := Value (Mid);
+      if Rmid >= N then
+         Hi := Mid;
+         Rhi := Rmid;
+         Rlo := Value (Lo);
+         if Rlo = N then
+            return Lo;
+         end if;
+      else
+         Lo := Mid;
+         Rlo := Rmid;
+         Rhi := Value (Hi);
+      end if;
+      while Hi - Lo > 1 loop
+         Mid := Lo + (Hi - Lo) / 2;
+         Rmid := Value (Mid);
+         if Rmid < N then
+            Lo := Mid;
+            Rlo := Rmid;
+         else
+            Hi := Mid;
+            Rhi := Rmid;
+         end if;
+      end loop;
+      return (if Rlo = N or else Rhi > N then Lo else Hi);
+   end Inverse;
 
    function Simple_Prime_Lower (N : U64) return U64;
    function Simple_Prime_Lower (N : U64) return U64 is
@@ -379,9 +416,9 @@ package body Math_Prime_Util.Powers with SPARK_Mode => Off is
      (Prime_Power_Count_Upper (X));
    function Value_Approx (X : U64) return U64 is
      (Prime_Power_Count_Approx (X));
-   function Invert_Lower is new Inverse (Long_Long_Float, Value_Lower);
-   function Invert_Upper is new Inverse (Long_Long_Float, Value_Upper);
-   function Invert_Approx is new Inverse (Long_Long_Float, Value_Approx);
+   function Invert_Lower is new Inverse (Value_Lower);
+   function Invert_Upper is new Inverse (Value_Upper);
+   function Invert_Approx is new Inverse (Value_Approx);
 
    function Raw_Prime_Bound (N : U64; Kind : Character) return U64;
    function Raw_Prime_Bound (N : U64; Kind : Character) return U64 is
@@ -483,7 +520,6 @@ package body Math_Prime_Util.Powers with SPARK_Mode => Off is
                Guess := Maxg - Step;
             end if;
          end if;
-         pragma Unreferenced (Gn);
       end loop;
       if not Settled then
          Count_At := Prime_Power_Count (Guess);
@@ -584,7 +620,7 @@ package body Math_Prime_Util.Powers with SPARK_Mode => Off is
          return Largest_Exponent (U128 (N)) > 1;
       end if;
       K := Largest_Exponent (U128 (-N));
-      return K > 2 and then (K and (K - 1)) /= 0;
+      return K > 2 and then (U64 (K) and (U64 (K) - 1)) /= 0;
    end Is_Perfect_Power;
 
    function Next_Perfect_Power (N : Power_Domain) return Int.I128 is
@@ -754,7 +790,6 @@ package body Math_Prime_Util.Powers with SPARK_Mode => Off is
                Guess := Maxg - Step;
             end if;
          end if;
-         pragma Unreferenced (Gn);
       end loop;
       if not Settled then
          Count_At := Perfect_Power_Count (Guess);
