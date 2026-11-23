@@ -67,10 +67,12 @@ package body Math_Prime_Util.Vec with SPARK_Mode => Off is
               Text => Items (Positive (BI.To_Integer (Pos) + 1)));
    end Take;
 
+   --  Element copies avoid GNAT 16 reference-finalizer links between
+   --  generic instances and libraries built with different profiles.
    function Vecany (Items : Int_Vector) return Boolean is
    begin
-      for V of Items loop
-         if Predicate (V) then
+      for I in Items.First_Index .. Items.Last_Index loop
+         if Predicate (Items.Element (I)) then
             return True;
          end if;
       end loop;
@@ -79,8 +81,8 @@ package body Math_Prime_Util.Vec with SPARK_Mode => Off is
 
    function Vecall (Items : Int_Vector) return Boolean is
    begin
-      for V of Items loop
-         if not Predicate (V) then
+      for I in Items.First_Index .. Items.Last_Index loop
+         if not Predicate (Items.Element (I)) then
             return False;
          end if;
       end loop;
@@ -103,9 +105,9 @@ package body Math_Prime_Util.Vec with SPARK_Mode => Off is
      (Items : Int_Vector; Value : out BI.Big_Integer; Found : out Boolean)
    is
    begin
-      for V of Items loop
-         if Predicate (V) then
-            Value := V;
+      for I in Items.First_Index .. Items.Last_Index loop
+         if Predicate (Items.Element (I)) then
+            Value := Items.Element (I);
             Found := True;
             return;
          end if;

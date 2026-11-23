@@ -695,6 +695,17 @@ package body Compat_Vec is
       Found : Boolean;
    begin
       AUnit.Assertions.Assert
+        (not Any_Match (Int_Vectors.Empty_Vector)
+         and then All_Match (Int_Vectors.Empty_Vector)
+         and then None_Match (Int_Vectors.Empty_Vector)
+         and then not Not_All (Int_Vectors.Empty_Vector)
+         and then First_Index (Int_Vectors.Empty_Vector) = -1
+         and then Calls = 0, "empty inputs never call predicate");
+      First_Value (Int_Vectors.Empty_Vector, Value, Found);
+      AUnit.Assertions.Assert
+        (not Found and then Value = 0 and then Calls = 0,
+         "empty first never calls predicate");
+      AUnit.Assertions.Assert
         (Any_Match (Items) and then Calls = 2, "any short circuit");
       Calls := 0;
       AUnit.Assertions.Assert

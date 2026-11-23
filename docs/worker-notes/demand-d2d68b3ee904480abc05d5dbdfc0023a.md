@@ -6,3 +6,4 @@ Read XS vecnone and aliases: callbacks short circuit in order; kept existing Big
 Added separate AUnit tests for all six functions, cited upstream integer cases and reference-array exclusions, seeded complement/index laws, integer boundaries, and short-circuit call-order checks. Next run focused tests.
 Focused test initially failed before compilation: Alire used unwritable /run/user/1000. TMPDIR alone did not fix it; setting XDG_RUNTIME_DIR under obj/tmp started the build.
 Focused build remains pending with no terminal output; reviewed contracts to avoid repeated callback calls and parenthesized Boolean negations in law assertions for Ada syntax.
+Compilation succeeded but linking exposed the known GNAT 16 cross-profile vector-reference finalizer issue. Replaced element iteration in generic bodies with indexed Element copies, matching prop_sieve's existing workaround; rerunning focused tests.
