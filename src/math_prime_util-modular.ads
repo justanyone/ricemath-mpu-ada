@@ -117,7 +117,8 @@ package Math_Prime_Util.Modular with SPARK_Mode => On is
    function Kronecker (A, B : I128) return Symbol
      with Pre => A in -I128 (U64'Last) .. I128 (U64'Last)
        and then B in -I128 (U64'Last) .. I128 (U64'Last),
-          Post => Kronecker'Result in -1 .. 1;
+          Post => (if B = 0 then Kronecker'Result =
+                     (if A in -1 | 1 then 1 else 0));
 
    --  util.c: chinese. Least nonnegative simultaneous residue.
    --  Undefined for inconsistent congruences, zero moduli or LCM overflow.
