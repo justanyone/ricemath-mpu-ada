@@ -51,7 +51,9 @@ package Math_Prime_Util.Families with SPARK_Mode => On is
    --  lucky_numbers.c: nth_lucky_upper. Empirical upper value bound.
    function Nth_Lucky_Upper (N : U64) return Int.Optional_U64
      with Pre => True, Post => Nth_Lucky_Upper'Result.Defined = (N /= 0);
-   --  Exact operations are bounded by the prime-count backend.
+   --  Ramanujan arguments/results are dimensionless; exact operations are
+   --  bounded by the prime-count backend. Contract violations raise
+   --  Assertion_Error; nth bounds return zero beyond the native prime range.
    Exact_Limit : constant U64 := 10_000_000_000_000;
    Index_Limit : constant U64 := 200_000_000_000;
 
