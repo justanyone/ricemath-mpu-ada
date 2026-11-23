@@ -23,11 +23,11 @@ package Math_Prime_Util.Random_Primes with SPARK_Mode => On is
      with Pre => Is_Seeded (G) and then Bits in 2 .. 64,
           Post => Value >= 2 ** (Bits - 1)
             and then (if Bits < 64 then Value < 2 ** Bits);
-   --  Prime of exactly Digits decimal digits (1 .. 19 in the native C tier).
+   --  Prime of exactly Digit_Count decimal digits (1 .. 19 in the native C tier).
    procedure Random_Ndigit_Prime
-     (G : in out Generator; Digits : Natural; Value : out U64)
-     with Pre => Is_Seeded (G) and then Digits in 1 .. 19,
-          Post => Value >= 10 ** (Digits - 1) and then Value < 10 ** Digits;
+     (G : in out Generator; Digit_Count : Natural; Value : out U64)
+     with Pre => Is_Seeded (G) and then Digit_Count in 1 .. 19,
+          Post => Value >= 10 ** (Digit_Count - 1) and then Value < 10 ** Digit_Count;
    --  Bits-bit safe prime P, for which (P-1)/2 is prime; Bits in 3 .. 64.
    procedure Random_Safe_Prime
      (G : in out Generator; Bits : Natural; Value : out U64)
@@ -57,12 +57,40 @@ package Math_Prime_Util.Random_Primes with SPARK_Mode => On is
      (G : in out Generator; Bits : Natural; Value : out U64)
      with Pre => Is_Seeded (G) and then Bits in 2 .. 64,
           Post => Value >= 2 ** (Bits - 1);
-   --  Shawe-Taylor generation using SHA-256 and a fresh 512-bit seed.
+   --  XS.xs native Shawe-Taylor entry point: deterministic n-bit generation.
    --  Bits in 2 .. 64. Generation_Error means the MPU retry limit expired.
    procedure Random_Shawe_Taylor_Prime
      (G : in out Generator; Bits : Natural; Value : out U64)
      with Pre => Is_Seeded (G) and then Bits in 2 .. 64,
           Post => Value >= 2 ** (Bits - 1)
             and then (if Bits < 64 then Value < 2 ** Bits);
+   --  A native certificate is the prime itself: deterministic Is_Prime
+   --  verifies it without a probabilistic assumption or a bigint proof chain.
+   type Prime_Certificate is record
+      N : U64;
+   end record;
+   --  Verify a native certificate; composites (including 0 and 1) fail.
+   function Verify_Certificate (Certificate : Prime_Certificate) return Boolean
+     with Pre => True,
+          Post => (if Certificate.N < 2 then not Verify_Certificate'Result);
+   --  Native Maurer prime and its deterministic certificate; Bits in 2 .. 64.
+   procedure Random_Maurer_Prime_With_Cert
+     (G : in out Generator; Bits : Natural; Value : out U64;
+      Certificate : out Prime_Certificate)
+     with Pre => Is_Seeded (G) and then Bits in 2 .. 64,
+          Post => Certificate.N = Value and then Verify_Certificate (Certificate);
+   --  Native proven prime and its certificate; Bits in 2 .. 64.
+   procedure Random_Proven_Prime_With_Cert
+     (G : in out Generator; Bits : Natural; Value : out U64;
+      Certificate : out Prime_Certificate)
+     with Pre => Is_Seeded (G) and then Bits in 2 .. 64,
+          Post => Certificate.N = Value and then Verify_Certificate (Certificate);
+   --  RandomPrimes.pm Shawe-Taylor recursion with SHA-256, 512-bit seed.
+   --  Bits in 2 .. 64; Generation_Error means the retry limit expired.
+   procedure Random_Shawe_Taylor_Prime_With_Cert
+     (G : in out Generator; Bits : Natural; Value : out U64;
+      Certificate : out Prime_Certificate)
+     with Pre => Is_Seeded (G) and then Bits in 2 .. 64,
+          Post => Certificate.N = Value and then Verify_Certificate (Certificate);
    Generation_Error : exception;
 end Math_Prime_Util.Random_Primes;

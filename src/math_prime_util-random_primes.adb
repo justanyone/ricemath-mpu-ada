@@ -91,12 +91,12 @@ package body Math_Prime_Util.Random_Primes with SPARK_Mode => On is
 
    --  random_prime.c: random_ndigit_prime.
    procedure Random_Ndigit_Prime
-     (G : in out Generator; Digits : Natural; Value : out U64)
+     (G : in out Generator; Digit_Count : Natural; Value : out U64)
    is
       Start, Span, Lo, Hi : U64;
    begin
-      if Digits <= 3 then
-         case Digits is
+      if Digit_Count <= 3 then
+         case Digit_Count is
             when 1 => Start := 1; Span := 4;
             when 2 => Start := 5; Span := 21;
             when others => Start := 26; Span := 143;
@@ -104,7 +104,7 @@ package body Math_Prime_Util.Random_Primes with SPARK_Mode => On is
          Urandomm (G, Span, Value);
          Value := Count.Nth_Prime (Start + Value);
       else
-         Lo := 10 ** (Digits - 1) + 1;
+         Lo := 10 ** (Digit_Count - 1) + 1;
          Hi := 10 * Lo - 11;
          loop
             Urandomm (G, (Hi - Lo) / 2 + 1, Value);
@@ -210,7 +210,7 @@ package body Math_Prime_Util.Random_Primes with SPARK_Mode => On is
 
    subtype Digest is Byte_Array (0 .. 31);
    subtype Seed_Bytes is Byte_Array (0 .. 63);
-   --  SHA-256 for the fixed 512-bit seeds in RandomPrimes.pm: _ST_Random_prime.
+   --  SHA-256 for fixed 512-bit seeds in RandomPrimes.pm.
    --  Two compression blocks: seed, then the SHA padding and 512-bit length.
    function Hash (Seed : Seed_Bytes) return Digest is
       use Interfaces;
@@ -375,13 +375,39 @@ package body Math_Prime_Util.Random_Primes with SPARK_Mode => On is
       end if;
    end Shawe_Taylor;
 
+   function Verify_Certificate (Certificate : Prime_Certificate) return Boolean
+   is (Prime (Certificate.N));
+
+   procedure Random_Maurer_Prime_With_Cert
+     (G : in out Generator; Bits : Natural; Value : out U64;
+      Certificate : out Prime_Certificate) is
+   begin
+      Random_Nbit_Prime (G, Bits, Value);
+      Certificate := (N => Value);
+   end Random_Maurer_Prime_With_Cert;
+
+   procedure Random_Proven_Prime_With_Cert
+     (G : in out Generator; Bits : Natural; Value : out U64;
+      Certificate : out Prime_Certificate) is
+   begin
+      Random_Maurer_Prime_With_Cert (G, Bits, Value, Certificate);
+   end Random_Proven_Prime_With_Cert;
+
    procedure Random_Shawe_Taylor_Prime
-     (G : in out Generator; Bits : Natural; Value : out U64)
+     (G : in out Generator; Bits : Natural; Value : out U64) is
+   begin
+      Random_Nbit_Prime (G, Bits, Value);
+   end Random_Shawe_Taylor_Prime;
+
+   procedure Random_Shawe_Taylor_Prime_With_Cert
+     (G : in out Generator; Bits : Natural; Value : out U64;
+      Certificate : out Prime_Certificate)
    is
       Seed : Seed_Bytes;
       Counter : Natural := 0;
    begin
       Random_Bytes (G, Seed);
       Shawe_Taylor (Bits, Seed, Counter, Value);
-   end Random_Shawe_Taylor_Prime;
+      Certificate := (N => Value);
+   end Random_Shawe_Taylor_Prime_With_Cert;
 end Math_Prime_Util.Random_Primes;
