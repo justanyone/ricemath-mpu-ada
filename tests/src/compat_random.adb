@@ -4,12 +4,11 @@ with Ada.Strings.Fixed;
 with Ada.Strings.Unbounded;
 with AUnit.Assertions;
 with AUnit.Test_Cases;
-with AUnit.Test_Suites;
 with Fixture_Support;
 with Math_Prime_Util.Random;
 
---  Build the deterministic ChaCha compatibility and contract suite.
-function Compat_Random return AUnit.Test_Suites.Access_Test_Suite is
+--  Replay the deterministic ChaCha fixtures and exercise public contracts.
+procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
    use AUnit.Test_Cases;
    use Ada.Strings.Unbounded;
    use Fixture_Support;
@@ -17,10 +16,6 @@ function Compat_Random return AUnit.Test_Suites.Access_Test_Suite is
    use Math_Prime_Util.Random;
    use type U64;
    use type Byte;
-   type Random_Case is new Test_Case with null record;
-   overriding function Name (T : Random_Case) return AUnit.Message_String;
-   overriding procedure Register_Tests (T : in out Random_Case);
-
    function Image (V : U64) return String is
      (Ada.Strings.Fixed.Trim (U64'Image (V), Ada.Strings.Both));
 
@@ -281,20 +276,7 @@ function Compat_Random return AUnit.Test_Suites.Access_Test_Suite is
       AUnit.Assertions.Assert (A = B, "degenerate draw consumed bytes");
    end Contracts;
 
-   overriding function Name (T : Random_Case) return AUnit.Message_String is
-   begin
-      return AUnit.Format ("Compat_Random");
-   end Name;
-
-   overriding procedure Register_Tests (T : in out Random_Case) is
-   begin
-      Registration.Register_Routine (T, Replay'Access, "random fixtures");
-      Registration.Register_Routine (T, Contracts'Access, "random contracts");
-   end Register_Tests;
-
-   Result : constant AUnit.Test_Suites.Access_Test_Suite :=
-     new AUnit.Test_Suites.Test_Suite;
 begin
-   Result.Add_Test (new Random_Case);
-   return Result;
+   Replay (T);
+   Contracts (T);
 end Compat_Random;
