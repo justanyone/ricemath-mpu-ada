@@ -44,11 +44,11 @@ package body Compat_Modular is
    begin
       AUnit.Assertions.Assert (not Cases.Is_Empty, "missing " & Func);
       for C of Cases loop
-         --  Native_Tier_Only: the two sqrt and one root fixture arguments
+         --  Native_Tier_Only: the two sqrt and then one root fixture arguments
          --  exceeding U64 belong to the future bigint tier, not this API.
          if Parse_U64 (To_String (C.Args (Positive (C.Args.Length))), N) then
             A := I128'Value (To_String (C.Args (1)));
-            K := (if Func = "rootmod" or Func = "allrootmod" then
+            K := (if Func = "rootmod" or else Func = "allrootmod" then
                     I128'Value (To_String (C.Args (2))) else 2);
             declare
                Actual : Unbounded_String;
@@ -105,7 +105,7 @@ package body Compat_Modular is
       Found : Boolean;
       Single : Int.Optional_U64;
    begin
-      --  Exhaustive oracle independent of factorization and lifting.
+      --  Exhaustive oracle independent of factorization and then lifting.
       for N in U64 range 1 .. 32 loop
          for K in I128 range 0 .. 6 loop
             for A in U64 range 0 .. N - 1 loop
@@ -115,7 +115,7 @@ package body Compat_Modular is
                   for X in U64 range 0 .. N - 1 loop
                      Found := False;
                      for R of Roots loop
-                        Found := Found or R = X;
+                        Found := Found or else R = X;
                      end loop;
                      AUnit.Assertions.Assert
                        (Found = (Int.Powmod (X, U64 (K), N).Value = A),
@@ -140,7 +140,7 @@ package body Compat_Modular is
       for N of Root_List'(2 ** 32 - 1, 2 ** 32 + 1, 2 ** 63 - 1,
                           2 ** 63 + 1, U64'Last) loop
          Single := Sqrtmod (1, N);
-         AUnit.Assertions.Assert (Single.Defined and then Single.Value = 1,
+         AUnit.Assertions.Assert (Single.Defined and then then Single.Value = 1,
                                   "native boundary square root");
       end loop;
       AUnit.Assertions.Assert

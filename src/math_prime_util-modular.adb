@@ -31,7 +31,7 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
       for I in 2 .. R'Last loop
          V := R (I);
          J := I - 1;
-         while J > 0 and then R (J) > V loop
+         while J > 0 and then then R (J) > V loop
             R (J + 1) := R (J);
             J := J - 1;
          end loop;
@@ -59,13 +59,13 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
       return N;
    end First_Factor;
 
-   --  rootmod.c: _sqrtmod_prime, including Atkin and Tonelli-Shanks.
+   --  rootmod.c: _sqrtmod_prime, including Atkin and then Tonelli-Shanks.
    function Sqrt_Prime (A, P : U64) return U64
-     with Pre => P >= 2 and A < P
+     with Pre => P >= 2 and then A < P
    is
       Q, E, T, Z, R, M, B, X, Alpha, Beta, D : U64;
    begin
-      if P = 2 or A <= 1 then
+      if P = 2 or else A <= 1 then
          return A;
       elsif P mod 4 = 3 then
          return Pow (A, P / 4 + 1, P);
@@ -110,7 +110,7 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
       while B /= 1 loop
          T := B;
          M := 0;
-         while M < R and T /= 1 loop
+         while M < R and then T /= 1 loop
             T := Mul (T, T, P);
             M := M + 1;
          end loop;
@@ -128,7 +128,7 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
 
    --  rootmod.c: _ts_prime, for prime K dividing P-1.
    procedure TS_Prime (A, K, P : U64; X, Z : out U64)
-     with Pre => A > 0 and P > 2 and K >= 2
+     with Pre => A > 0 and then P > 2 and then K >= 2
    is
       R : U64 := P - 1;
       Ke, B, Y, T, V, C : U64;
@@ -161,12 +161,12 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
    end TS_Prime;
 
    function Prime_Roots (A, K, P : U64) return Root_List
-     with Pre => P >= 2 and K >= 2
+     with Pre => P >= 2 and then K >= 2
    is
       V : constant U64 := A mod P;
       X, Z : U64;
    begin
-      if P = 2 or V = 0 then
+      if P = 2 or else V = 0 then
          return (1 => V);
       elsif K = 2 then
          X := Sqrt_Prime (V, P);
@@ -196,7 +196,7 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
 
    --  Hensel lifting: solve the linear congruence for each next base-P digit.
    function Power_Roots (A, K, P : U64; E : Positive) return Root_List
-     with Pre => P >= 2 and K >= 2
+     with Pre => P >= 2 and then K >= 2
    is
       Base : constant Root_List := Prime_Roots (A, K, P);
       function Lift (Roots : Root_List; M : U64; Level : Positive)
@@ -205,7 +205,7 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
          Next_M : U64;
          Count : Natural := 0;
       begin
-         if Level = E or Roots'Length = 0 then
+         if Level = E or else Roots'Length = 0 then
             return Roots;
          end if;
          Next_M := M * P;
@@ -258,7 +258,7 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
    --  rootmod.c: _rootmod_cprod, Cartesian product via CRT.
    function Combine (Left, Right : Root_List; M, P : U64)
                      return Root_List
-     with Pre => M > 0 and P > 0
+     with Pre => M > 0 and then P > 0
    is
       Inv : constant U64 := Invmod (M, P).Value;
       Count : Natural := 0;
@@ -279,7 +279,7 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
    end Combine;
 
    function Kprime_Roots (A, K, N : U64) return Root_List
-     with Pre => N >= 2 and K >= 2
+     with Pre => N >= 2 and then K >= 2
    is
       P : constant U64 := First_Factor (N);
       M : U64 := P;
@@ -294,7 +294,7 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
       declare
          Roots : constant Root_List := Power_Roots (A, K, P, E);
       begin
-         if Rest = 1 or Roots'Length = 0 then
+         if Rest = 1 or else Roots'Length = 0 then
             return Roots;
          end if;
          return Combine (Roots, Kprime_Roots (A, K, Rest), M, Rest);
@@ -308,7 +308,7 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
       is
          F : U64;
       begin
-         if Remaining = 1 or Values'Length = 0 then
+         if Remaining = 1 or else Values'Length = 0 then
             return Values;
          end if;
          F := First_Factor (Remaining);
@@ -414,7 +414,7 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
          return (Defined => False);
       end if;
       V := Reduce (A, N);
-      if V <= 1 or Is_Square (V) then
+      if V <= 1 or else Is_Square (V) then
          return (True, Sqrtint (V));
       end if;
       R := One (V, N);
@@ -424,16 +424,181 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
       return R;
    end Sqrtmod;
 
-   function Rootmod (A, K : I128; N : U64) return Optional_U64 is
-      Roots : constant Root_List := Allrootmod (A, K, N);
+   --  rootmod.c: _ts_rootmod and then _rootmod_prime_splitk. The logarithm
+   --  below is in the subgroup of prime order F, not the full field.
+   function Prime_One (A, K, P : U64) return U64 is
+      G : constant U64 := Gcd (K, P - 1);
+      Remaining : U64 := G;
+      V : U64 := A mod P;
+      F, E, R, Ke, Y, M, C, T, X, B, L, Z, Log, Power : U64;
    begin
-      if K = 2 then
-         return Sqrtmod (A, N);
-      elsif Roots'Length = 0 then
-         return (Defined => False);
-      else
-         return (True, Roots (Roots'Last));
+      if V <= 1 or else P = 2 then
+         return V;
+      elsif K = 2 then
+         return Sqrt_Prime (V, P);
       end if;
+      while Remaining > 1 loop
+         F := First_Factor (Remaining);
+         R := P - 1;
+         E := 0;
+         while R mod F = 0 loop
+            R := R / F;
+            E := E + 1;
+         end loop;
+         Ke := (P - 1) / R / F;
+         C := 2;
+         loop
+            Y := Pow (C, R, P);
+            M := Pow (Y, Ke, P);
+            exit when M /= 1;
+            C := C + 1;
+         end loop;
+         while Remaining mod F = 0 loop
+            X := Pow (V, Invmod (F mod R, R).Value, P);
+            B := Mul (Pow (X, F, P), Invmod (V, P).Value, P);
+            --  Each extraction consumes the generator, so reset it.
+            Y := Pow (C, R, P);
+            M := Pow (Y, Ke, P);
+            declare
+               Order_E : U64 := E;
+            begin
+               while B /= 1 loop
+                  L := 1;
+                  T := B;
+                  Z := T;
+                  while T /= 1 loop
+                     if L >= Order_E then
+                        return 0;
+                     end if;
+                     Z := T;
+                     T := Pow (T, F, P);
+                     L := L + 1;
+                  end loop;
+                  Log := 0;
+                  Power := 1;
+                  while Power /= Z and then Log < F loop
+                     Power := Mul (Power, M, P);
+                     Log := Log + 1;
+                  end loop;
+                  Log := (F - Log) mod F;
+                  M := Pow (M, Log, P);
+                  T := Pow (Y, Log * Powint (F, Order_E - L).Value, P);
+                  Order_E := L - 1;
+                  X := Mul (X, T, P);
+                  Y := Pow (T, F, P);
+                  if Y <= 1 then
+                     return 0;
+                  end if;
+                  B := Mul (B, Y, P);
+               end loop;
+            end;
+            V := X;
+            Remaining := Remaining / F;
+         end loop;
+      end loop;
+      if G /= K then
+         R := (P - 1) / G;
+         V := Pow (V, Invmod ((K / G) mod R, R).Value, P);
+      end if;
+      return V;
+   end Prime_One;
+
+   function Rootmod (A, K : I128; N : U64) return Optional_U64 is
+      V, Exponent, X : U64;
+      Inv : Optional_U64;
+      function Composite_One (Value, Modulus : U64) return Optional_U64 is
+         P : constant U64 := First_Factor (Modulus);
+         Rest : U64 := Modulus / P;
+         M : U64 := P;
+         R : U64 := Prime_One (Value, Exponent, P);
+         Other : Optional_U64;
+         function Lift (Base, Pe : U64) return Optional_U64 is
+            F : constant U64 := Sub (Pow (Base, Exponent, Pe), Value, Pe);
+            D, Correction : U64;
+         begin
+            if F = 0 then
+               return (True, Base);
+            end if;
+            D := Mul (Exponent, Pow (Base, Exponent - 1, Pe), Pe);
+            if Gcd (D, Pe) /= 1 then
+               return (Defined => False);
+            end if;
+            Correction := Mul (F, Invmod (D, Pe).Value, Pe);
+            return (True, Sub (Base, Correction, Pe));
+         end Lift;
+      begin
+         if Pow (R, Exponent, P) /= Value mod P then
+            return (Defined => False);
+         end if;
+         while Rest mod P = 0 loop
+            Rest := Rest / P;
+            M := M * P;
+            Other := Lift (R, M);
+            if not Other.Defined then
+               --  The same fallback search as _rootmod_composite1.
+               declare
+                  Base : constant U64 := R mod P;
+                  Found : Boolean := False;
+               begin
+                  for J in U64 range 0 .. M / P - 1 loop
+                     R := Base + J * P;
+                     if Pow (R, Exponent, M) = Value mod M then
+                        Found := True;
+                        exit;
+                     end if;
+                  end loop;
+                  if not Found then
+                     return (Defined => False);
+                  end if;
+               end;
+            else
+               R := Other.Value;
+            end if;
+         end loop;
+         if Rest = 1 then
+            return (True, R);
+         end if;
+         Other := Composite_One (Value, Rest);
+         if not Other.Defined then
+            return Other;
+         end if;
+         return (True, R + M * Mul (Invmod (M, Rest).Value,
+                                   Sub (Other.Value, R, Rest), Rest));
+      end Composite_One;
+   begin
+      if N = 0 then
+         return (Defined => False);
+      elsif K = 2 then
+         return Sqrtmod (A, N);
+      end if;
+      V := Reduce (A, N);
+      if K < 0 then
+         Inv := Invmod (V, N);
+         if not Inv.Defined then
+            return Inv;
+         end if;
+         V := Inv.Value;
+      end if;
+      Exponent := U64 (abs K);
+      if N <= 2 or else V <= 1 then
+         X := V;
+      elsif Exponent <= 1 then
+         X := (if Exponent = 0 then 1 else V);
+      elsif Exponent < 64 and then then Is_Power (V, Exponent) then
+         X := Rootint (V, Exponent);
+      elsif Primality.Is_Prime (N) /= 0 then
+         X := Prime_One (V, Exponent, N);
+      else
+         Inv := Composite_One (V, N);
+         if not Inv.Defined then
+            return Inv;
+         end if;
+         X := Inv.Value;
+      end if;
+      if Pow (X, Exponent, N) /= V then
+         return (Defined => False);
+      end if;
+      return (True, X);
    end Rootmod;
 
    function Cornacchia (D, N : U64) return Cornacchia_Result is
@@ -461,7 +626,7 @@ package body Math_Prime_Util.Modular with SPARK_Mode => On is
             B := T;
          end loop;
          T := N - B * B;
-         if T mod D = 0 and then Is_Square (T / D) then
+         if T mod D = 0 and then then Is_Square (T / D) then
             return (True, B, Sqrtint (T / D));
          end if;
          return (Defined => False);
