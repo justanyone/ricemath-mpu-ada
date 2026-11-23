@@ -11,6 +11,7 @@ Installed the fx6 vec package and compat_vec, and registered Compat_Vec in all_s
 Development build succeeded. Alire cannot refresh AUnit (cache not writable), so the test build uses gprbuild against the existing AUnit library.
 Library and tests now link. -gnatp hid vector finalizers; a consistent check build links. Next: run the suite and fix fixture failures.
 Full suite passed: 217 tests, 0 failures, including Compat_Vec over vec.tsv. Release build succeeded. Next: tools/gate.sh.
+Gate link failed: tests omit -gnatp, the library has it, and Vector finalizers disagree. Rewriting the public type as an array of Big_Integer so the client does not import those symbols.
 - 2026-11-23T14:10:32Z launcher: no commit for 60 s; 150 s elapsed. Files changed so far: docs/worker-notes/demand-a5e600e1aab44d04bffe8481510a2fac.md.
 - 2026-11-23T14:13:03Z launcher: no commit for 60 s; 300 s elapsed. Files changed so far: docs/worker-notes/demand-a5e600e1aab44d04bffe8481510a2fac.md, src/math_prime_util-vec.adb, src/math_prime_util-vec.ads, tests/src/all_suites.adb, tests/src/compat_vec.adb, tests/src/compat_vec.ads.
 - 2026-11-23T14:15:03Z launcher: no commit for 60 s; 421 s elapsed. Files changed so far: docs/worker-notes/demand-a5e600e1aab44d04bffe8481510a2fac.md, src/math_prime_util-vec.adb, src/math_prime_util-vec.ads, tests/src/all_suites.adb, tests/src/compat_vec.adb, tests/src/compat_vec.ads.
