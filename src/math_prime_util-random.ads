@@ -23,18 +23,15 @@ package Math_Prime_Util.Random with SPARK_Mode => On is
    procedure Irand (G : in out Generator; Value : out U64)
      with Pre => Is_Seeded (G), Post => Value <= 16#FFFF_FFFF#;
    --  Draw an unsigned integer with Bits bits; zero bits consumes no bytes.
-   procedure Urandomb
-     (G : in out Generator; Bits : Natural; Value : out U64)
+   procedure Urandomb (G : in out Generator; Bits : Natural; Value : out U64)
      with Pre => Is_Seeded (G) and then Bits <= 64,
           Post => (if Bits < 64 then Value < 2 ** Bits);
    --  Draw below nonzero Modulus; one returns zero without consuming bytes.
-   procedure Urandomm
-     (G : in out Generator; Modulus : U64; Value : out U64)
+   procedure Urandomm (G : in out Generator; Modulus : U64; Value : out U64)
      with Pre => Is_Seeded (G) and then Modulus > 0,
           Post => (if Modulus = 1 then Value = 0 else Value < Modulus);
    --  Draw in inclusive Low .. High; requires Low <= High.
-   procedure Urandomr
-     (G : in out Generator; Low, High : U64; Value : out U64)
+   procedure Urandomr (G : in out Generator; Low, High : U64; Value : out U64)
      with Pre => Is_Seeded (G) and then Low <= High,
           Post => Value in Low .. High;
 private
