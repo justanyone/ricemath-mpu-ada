@@ -233,7 +233,7 @@ package body Compat_Factor_Classes is
             begin
                AUnit.Assertions.Assert
                  (Value mod 2 = 1 and then F.Count >= 3
-                  and then Primality.Is_Prime (Value) = Primality.Composite,
+                  and then Primality.Is_Prime (Value) = 0,
                   "Carmichael odd composite");
                for I in 2 .. F.Count loop
                   AUnit.Assertions.Assert

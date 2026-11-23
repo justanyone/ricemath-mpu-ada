@@ -22,7 +22,8 @@ package Math_Prime_Util.Factor.Classes with SPARK_Mode => On is
    --  No odd perfect number fits the native range. No errors.
    function Is_Perfect_Number (N : U64) return Boolean
      with Pre => True,
-          Post => (if Is_Perfect_Number'Result then N > 0 and then N mod 2 = 0);
+          Post => (if Is_Perfect_Number'Result then
+                     N > 0 and then N mod 2 = 0);
 
    --  util.c: is_practical. Every integer <= N is a sum of distinct
    --  divisors of N. Includes one, excludes zero. No errors.

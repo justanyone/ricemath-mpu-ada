@@ -44,6 +44,7 @@ package body Math_Prime_Util.Factor.Classes is
       F : Factor_List;
       Bases : U64 := 0;
       First, Last, Limit : U64;
+      function Is_Base (B : U64) return Boolean;
       function Is_Base (B : U64) return Boolean is
          D : U64;
       begin
@@ -98,11 +99,21 @@ package body Math_Prime_Util.Factor.Classes is
    function Is_Cyclic (N : U64) return Boolean is
       F : Factor_List;
       Phi : U64 := 1;
+      Filters : constant array (Positive range <>) of U64 :=
+        [9, 25, 49, 21, 39, 55, 57, 93, 121, 169, 111, 129, 155, 183];
    begin
       if N < 4 then
          return N /= 0;
       elsif N mod 2 = 0 then
          return False;
+      end if;
+      for D of Filters loop
+         if N mod D = 0 then
+            return False;
+         end if;
+      end loop;
+      if N <= 200 then
+         return True;
       end if;
       F := Factor (N);
       for I in 1 .. F.Count loop
@@ -137,6 +148,14 @@ package body Math_Prime_Util.Factor.Classes is
    begin
       if N = 0 or else N mod 2 = 1 then
          return N = 1;
+      end if;
+      if (N and (N - 1)) = 0 then
+         return True;
+      elsif N mod 6 /= 0 and then N mod 20 /= 0
+        and then N mod 28 /= 0 and then N mod 88 /= 0
+        and then N mod 104 /= 0 and then N mod 16 /= 0
+      then
+         return False;
       end if;
       F := Factor (N);
       while I <= F.Count loop
@@ -198,7 +217,7 @@ package body Math_Prime_Util.Factor.Classes is
             end if;
          end loop;
       end;
-      if Primality.Is_Prime (M) /= Primality.Composite then
+      if Primality.Is_Prime (M) /= 0 then
          return False;
       end if;
       F := Trial_Factor (M, (if K <= 290_000 then K else 4_999));
@@ -229,7 +248,7 @@ package body Math_Prime_Util.Factor.Classes is
       elsif N mod 5 = 0 then
          return False;
       elsif K > Int.Sqrtint (N) then
-         return Primality.Is_Prime (N) /= Primality.Composite;
+         return Primality.Is_Prime (N) /= 0;
       end if;
       F := Trial_Factor (N, (if K <= 2_500 then K else 200));
       if K <= 2_500 then
@@ -241,7 +260,7 @@ package body Math_Prime_Util.Factor.Classes is
       if M < K then
          return False;
       elsif M >= 2 ** 36 then
-         if Primality.Is_Prime (M) /= Primality.Composite then
+         if Primality.Is_Prime (M) /= 0 then
             return True;
          end if;
          F := Pminus1_Factor (M, 500, 500);
@@ -263,40 +282,41 @@ package body Math_Prime_Util.Factor.Classes is
    end Is_Rough;
 
    Cache_7 : constant array (Natural range <>) of U64 :=
-     [8, 9, 10, 10, 11, 11, 12, 13, 14, 14, 15, 15, 16, 17, 17, 17, 18, 19, 
-      19, 20, 21, 21, 22, 22, 23, 23, 23, 24, 25, 25, 25, 25, 26, 26, 27, 
-      27, 27, 28, 28, 28, 29, 30, 31, 31, 31, 31, 32, 32, 33, 33, 33, 33, 
-      34, 34, 34, 35, 36, 36, 36, 36, 36, 36, 37, 37, 38, 38, 38, 39, 39, 
-      39, 39, 39, 40, 41, 41, 41, 42, 42, 42, 42, 42, 42, 43, 43, 43, 43, 
-      43, 43, 44, 44, 45, 45, 46, 46, 46, 46, 46, 47, 47, 47, 48, 48, 48, 
-      48, 49, 49, 49, 49, 49, 49, 49, 49, 50, 50, 50, 50, 50, 51, 52, 52, 
+     [8, 9, 10, 10, 11, 11, 12, 13, 14, 14, 15, 15, 16, 17, 17, 17, 18, 19,
+      19, 20, 21, 21, 22, 22, 23, 23, 23, 24, 25, 25, 25, 25, 26, 26, 27,
+      27, 27, 28, 28, 28, 29, 30, 31, 31, 31, 31, 32, 32, 33, 33, 33, 33,
+      34, 34, 34, 35, 36, 36, 36, 36, 36, 36, 37, 37, 38, 38, 38, 39, 39,
+      39, 39, 39, 40, 41, 41, 41, 42, 42, 42, 42, 42, 42, 43, 43, 43, 43,
+      43, 43, 44, 44, 45, 45, 46, 46, 46, 46, 46, 47, 47, 47, 48, 48, 48,
+      48, 49, 49, 49, 49, 49, 49, 49, 49, 50, 50, 50, 50, 50, 51, 52, 52,
       53, 53, 53, 53, 53, 53, 53, 54];
 
    Cache_11 : constant array (Natural range <>) of U64 :=
-     [12, 12, 13, 14, 15, 15, 16, 16, 17, 18, 19, 19, 20, 21, 21, 22, 23, 
-      23, 24, 24, 25, 26, 26, 27, 28, 28, 28, 28, 29, 29, 30, 30, 31, 32, 
-      32, 32, 33, 34, 35, 35, 35, 35, 36, 37, 38, 38, 38, 38, 39, 39, 39, 
-      40, 41, 41, 42, 42, 42, 42, 43, 43, 44, 44, 44, 45, 45, 46, 46, 46, 
-      47, 48, 48, 48, 49, 49, 49, 49, 50, 50, 51, 51, 51, 51, 51, 51, 52, 
+     [12, 12, 13, 14, 15, 15, 16, 16, 17, 18, 19, 19, 20, 21, 21, 22, 23,
+      23, 24, 24, 25, 26, 26, 27, 28, 28, 28, 28, 29, 29, 30, 30, 31, 32,
+      32, 32, 33, 34, 35, 35, 35, 35, 36, 37, 38, 38, 38, 38, 39, 39, 39,
+      40, 41, 41, 42, 42, 42, 42, 43, 43, 44, 44, 44, 45, 45, 46, 46, 46,
+      47, 48, 48, 48, 49, 49, 49, 49, 50, 50, 51, 51, 51, 51, 51, 51, 52,
       52, 53, 54, 55, 55, 55, 55, 55, 56, 56, 56];
 
    Cache_13 : constant array (Natural range <>) of U64 :=
-     [14, 15, 16, 16, 17, 17, 18, 19, 20, 20, 21, 22, 23, 24, 25, 25, 26, 
-      26, 27, 28, 28, 29, 30, 30, 30, 31, 32, 32, 33, 33, 34, 35, 35, 35, 
-      36, 37, 38, 38, 39, 39, 40, 41, 42, 42, 42, 42, 43, 43, 43, 44, 45, 
+     [14, 15, 16, 16, 17, 17, 18, 19, 20, 20, 21, 22, 23, 24, 25, 25, 26,
+      26, 27, 28, 28, 29, 30, 30, 30, 31, 32, 32, 33, 33, 34, 35, 35, 35,
+      36, 37, 38, 38, 39, 39, 40, 41, 42, 42, 42, 42, 43, 43, 43, 44, 45,
       46, 47, 47, 47, 47, 48, 48, 49, 49, 49, 50, 50, 51];
 
    X_Table : constant array (Natural range <>) of U64 :=
-     [19, 23, 29, 31, 37, 38, 41, 43, 46, 47, 53, 57, 58, 59, 61, 62, 67, 
-      69, 71, 73, 74, 76, 79, 82, 83, 86, 87, 89, 92, 93, 94, 95, 97, 101, 
-      103, 106, 107, 109, 111, 113, 114, 115, 116, 118, 122, 123, 124, 
+     [19, 23, 29, 31, 37, 38, 41, 43, 46, 47, 53, 57, 58, 59, 61, 62, 67,
+      69, 71, 73, 74, 76, 79, 82, 83, 86, 87, 89, 92, 93, 94, 95, 97, 101,
+      103, 106, 107, 109, 111, 113, 114, 115, 116, 118, 122, 123, 124,
       127];
 
    Y_Table : constant array (Natural range <>) of U64 :=
-     [19, 23, 29, 31, 37, 19, 41, 43, 23, 47, 53, 19, 29, 59, 61, 31, 67, 
-      23, 71, 73, 37, 19, 79, 41, 83, 43, 29, 89, 23, 31, 47, 19, 97, 101, 
+     [19, 23, 29, 31, 37, 19, 41, 43, 23, 47, 53, 19, 29, 59, 61, 31, 67,
+      23, 71, 73, 37, 19, 79, 41, 83, 43, 29, 89, 23, 31, 47, 19, 97, 101,
       103, 53, 107, 109, 37, 113, 19, 23, 29, 59, 61, 41, 31, 127];
 
+   function Log2_Floor (N : U64) return U64;
    function Log2_Floor (N : U64) return U64 is
       M : U64 := N;
       R : U64 := 0;
@@ -390,6 +410,7 @@ package body Math_Prime_Util.Factor.Classes is
          --  Legendre's recurrence with exactly the primes below K.
          Primes : constant Sieve.Prime_Vectors.Vector :=
            Sieve.Primes (K - 1);
+         function Phi (X : U64; A : Natural) return U64;
          function Phi (X : U64; A : Natural) return U64 is
             P : U64;
          begin

@@ -6,3 +6,4 @@ Run focused tests, then the declared gate; record limitations and results here.
 Read reference algorithms and fixture ranges; implementing native predicates and count recurrences with U128 practical divisor sums.
 Implemented all nine APIs and fixture/property suites. First focused run blocked by Alire runtime-directory permissions; retrying with build-local runtime and temporary directories.
 Focused build reached new package but compilation failed; rerunning development build directly to expose diagnostics hidden by test.sh tail.
+Corrected primality result comparisons and new-unit style diagnostics; focused fixture suite is rebuilding with contracts enabled.
