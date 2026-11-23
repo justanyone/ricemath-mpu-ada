@@ -5,6 +5,78 @@ with Ada.Numerics.Long_Elementary_Functions;
 
 package body Math_Prime_Util.Int with SPARK_Mode => On is
    --  Proof skipped: gnatprove is not installed in the Alire environment.
+   function Remove_Factors_Exp (N, K : I128) return Removal_Result is
+      V : I128 := N;
+      E : U64 := 0;
+   begin
+      if N = 0 then
+         return (Defined => False);
+      end if;
+      while V rem K = 0 loop
+         V := V / K;
+         E := E + 1;
+      end loop;
+      return (True, V, E);
+   end Remove_Factors_Exp;
+
+   function Remove_Factors (N, K : I128) return Optional_I128 is
+      R : constant Removal_Result := Remove_Factors_Exp (N, K);
+   begin
+      if not R.Defined then
+         return (Defined => False);
+      end if;
+      return (True, R.Value);
+   end Remove_Factors;
+
+   function Valuation (N, K : I128) return Optional_U64 is
+      R : constant Removal_Result := Remove_Factors_Exp (N, K);
+   begin
+      if not R.Defined then
+         return (Defined => False);
+      end if;
+      return (True, R.Exponent);
+   end Valuation;
+
+   function Floor_Sum (N, M, A, B : U64) return U128 is
+      NN : U128 := U128 (N);
+      MM : U128 := U128 (M);
+      AA : U128 := U128 (A);
+      BB : U128 := U128 (B);
+      Sum : U128 := 0;
+      Y, W, Top, Temp : U128;
+   begin
+      if NN = 0 then
+         return 0;
+      end if;
+      loop
+         if AA >= MM then
+            Y := (NN / 2) * (NN - 1 + NN mod 2);
+            W := AA / MM;
+            AA := AA mod MM;
+            if Y > (U128'Last - Sum) / W then
+               raise Constraint_Error with "floor_sum result overflow";
+            end if;
+            Sum := Sum + Y * W;
+         end if;
+         if BB >= MM then
+            W := BB / MM;
+            BB := BB mod MM;
+            if NN > (U128'Last - Sum) / W then
+               raise Constraint_Error with "floor_sum result overflow";
+            end if;
+            Sum := Sum + NN * W;
+         end if;
+         Top := AA * NN + BB;
+         exit when Top < MM;
+         NN := Top / MM;
+         BB := Top mod MM;
+         Temp := MM;
+         MM := AA;
+         AA := Temp;
+      end loop;
+      return Sum;
+   end Floor_Sum;
+
    function Gcd (A, B : U64) return U64 is
       X : U64 := A;
       Y : U64 := B;

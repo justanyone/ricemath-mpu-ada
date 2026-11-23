@@ -18,6 +18,49 @@ package Math_Prime_Util.Int with SPARK_Mode => On is
       X, Y : I128;
    end record;
 
+   --  XS.xs: remove_factors_exp. Signed native cofactor and exponent.
+   type Removal_Result (Defined : Boolean := False) is record
+      case Defined is
+         when True =>
+            Value : I128;
+            Exponent : U64;
+         when False => null;
+      end case;
+   end record;
+   type Optional_I128 (Defined : Boolean := False) is record
+      case Defined is
+         when True => Value : I128;
+         when False => null;
+      end case;
+
+   --  util.c: valuation, XS.xs: valuation. Exponent in abs N; zero is
+   --  undefined. K <= 1 fails the precondition. Native magnitudes only.
+   function Valuation (N : I128; K : I128) return Optional_U64
+     with Pre => N in -I128 (U64'Last) .. I128 (U64'Last) and K in 2 .. I128 (U64'Last),
+          Post => Valuation'Result.Defined = (N /= 0)
+            and then (if Valuation'Result.Defined then
+                         Valuation'Result.Value <= 63);
+
+   --  util.c: valuation_remainder; XS.xs: remove_factors_exp. Remove all
+   --  factors K, preserving the sign. Zero is undefined; K <= 1 is invalid.
+   function Remove_Factors_Exp (N, K : I128) return Removal_Result
+     with Pre => N in -I128 (U64'Last) .. I128 (U64'Last)
+       and K in 2 .. I128 (U64'Last),
+          Post => Remove_Factors_Exp'Result.Defined = (N /= 0);
+
+   --  PP.pm: remove_factors. Cofactor only; same domain and errors above.
+   function Remove_Factors (N, K : I128) return Optional_I128
+     with Pre => N in -I128 (U64'Last) .. I128 (U64'Last)
+       and K in 2 .. I128 (U64'Last),
+          Post => Remove_Factors'Result.Defined = (N /= 0);
+
+   --  util.c: floor_sum. Sum floor ((A*i+B)/M), 0 <= i < N.
+   --  M = 0 fails the precondition; a result beyond U128 raises
+   --  Constraint_Error. All inputs are native unsigned integers.
+   function Floor_Sum (N, M, A, B : U64) return U128
+     with Pre => M > 0,
+          Post => (if N = 0 then Floor_Sum'Result = 0);
+
    --  util.h: gcd_ui. Greatest common divisor; Gcd (0, 0) = 0.
    function Gcd (A, B : U64) return U64
      with Pre => True,
