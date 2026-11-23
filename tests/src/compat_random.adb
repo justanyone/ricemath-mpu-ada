@@ -36,13 +36,13 @@ package body Compat_Random is
    end Decode;
 
    function Hex (Data : Byte_Array) return String is
-      Digits : constant String := "0123456789abcdef";
+      Hex_Alphabet : constant String := "0123456789abcdef";
       Result : String (1 .. 2 * Data'Length);
       P : Positive := 1;
    begin
       for B of Data loop
-         Result (P) := Digits (Natural (B / 16) + 1);
-         Result (P + 1) := Digits (Natural (B mod 16) + 1);
+         Result (P) := Hex_Alphabet (Natural (B / 16) + 1);
+         Result (P + 1) := Hex_Alphabet (Natural (B mod 16) + 1);
          P := P + 2;
       end loop;
       return Result;
@@ -185,7 +185,8 @@ package body Compat_Random is
             end if;
          end;
       end loop;
-      AUnit.Assertions.Assert (Count > 600, "too few CSPRNG fixtures replayed");
+      AUnit.Assertions.Assert
+        (Count > 600, "too few CSPRNG fixtures replayed");
    end Replay;
 
    procedure Contracts (T : in out Test_Case'Class);
@@ -209,7 +210,7 @@ package body Compat_Random is
       --  Empty and partial-word seeds exercise all PCG expansion boundaries.
       for Length in 0 .. 41 loop
          declare
-            Seed : Byte_Array (1 .. Length) := [others => 42];
+            Seed : constant Byte_Array (1 .. Length) := [others => 42];
          begin
             Csrand (G, Seed);
             Csrand (H, Seed);

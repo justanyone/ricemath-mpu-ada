@@ -31,7 +31,7 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
 
    --  csprng.c: prng_new/prng_next and csprng_seed.
    procedure Csrand (G : out Generator; Seed : Byte_Array) is
-      Key : Byte_Array (0 .. 39) := [others => 0] with Volatile;
+      Key : Byte_Array (0 .. 39) := [others => 0];
       State, Increment : Word;
       procedure Advance;
       procedure Advance is
@@ -80,7 +80,7 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
    end Csrand;
 
    procedure Csrand (G : out Generator) is
-      Seed : Byte_Array (0 .. 39) with Volatile;
+      Seed : Byte_Array (0 .. 39);
    begin
       Random_Entropy.Fill (Seed);
       Csrand (G, Seed);
@@ -200,7 +200,7 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
    procedure Urandomr
      (G : in out Generator; Low, High : U64; Value : out U64) is
    begin
-      if Low = 0 and High = U64'Last then
+      if Low = 0 and then High = U64'Last then
          Draw_64 (G, Value);
       else
          Urandomm (G, High - Low + 1, Value);

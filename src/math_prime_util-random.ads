@@ -5,7 +5,8 @@ package Math_Prime_Util.Random with SPARK_Mode => On is
    use type U64;
    subtype Byte is Interfaces.Unsigned_8;
    subtype Word is Interfaces.Unsigned_32;
-   type Byte_Array is array (Natural range <>) of Byte;
+   type Byte_Array is array (Natural range <>) of Byte
+     with Volatile_Components;
    type Generator is limited private;
 
    --  Whether a seed has been supplied. A new generator cannot emit bytes.
