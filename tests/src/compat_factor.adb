@@ -1,6 +1,5 @@
 with AUnit.Assertions;
 with AUnit.Test_Cases;
-with AUnit.Test_Cases.Registration;
 with Ada.Strings;
 with Ada.Strings.Fixed;
 with Ada.Strings.Unbounded;
