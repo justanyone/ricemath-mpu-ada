@@ -16,9 +16,11 @@ package Math_Prime_Util.Vec with SPARK_Mode => On is
    type Optional_Array is array (Positive range <>) of Optional_Value;
 
    --  Sum in integer units; empty input gives zero; overflow raises.
-   function Vecsum (A : Integer_Array) return I128;
+   function Vecsum (A : Integer_Array) return I128
+     with Post => (if A'Length = 0 then Vecsum'Result = 0);
    --  Product in integer units; empty input gives one; overflow raises.
-   function Vecprod (A : Integer_Array) return I128;
+   function Vecprod (A : Integer_Array) return I128
+     with Post => (if A'Length = 0 then Vecprod'Result = 1);
    --  Minimum value, undefined for empty input.
    function Vecmin (A : Integer_Array) return Optional_Value
      with Post => Vecmin'Result.Defined = (A'Length > 0);
@@ -105,7 +107,24 @@ package Math_Prime_Util.Vec with SPARK_Mode => On is
    --  Toggle B in A; use delta for the resulting set.
    --  Returns inserted count minus removed count.
    function Setinvert (A, B : Integer_Array) return Integer;
-   --  Sorted pair sums; omitted B means A+A. Overflow raises.
+   --  Insert into a capacity buffer whose first Last elements form A.
+   --  Count is the inserted count; insufficient capacity raises before writing.
+   procedure Setinsert
+     (A : in out Integer_Array; Last : in out Natural;
+      B : Integer_Array; Count : out Integer)
+     with Pre => Last <= A'Length, Post => Last <= A'Length;
+   --  Remove values from the first Last elements; Count is removed count.
+   procedure Setremove
+     (A : in out Integer_Array; Last : in out Natural;
+      B : Integer_Array; Count : out Integer)
+     with Pre => Last <= A'Length, Post => Last <= Last'Old;
+   --  Toggle values in the first Last elements; Count is inserted minus removed.
+   --  Insufficient capacity raises before writing.
+   procedure Setinvert
+     (A : in out Integer_Array; Last : in out Natural;
+      B : Integer_Array; Count : out Integer)
+     with Pre => Last <= A'Length, Post => Last <= A'Length;
+   --  Sorted pair sums. Overflow raises.
    function Sumset (A, B : Integer_Array) return Integer_Array
      with Pre => (B'Length = 0 or else
                     A'Length <= Natural'Last / B'Length);
@@ -170,12 +189,16 @@ package Math_Prime_Util.Vec with SPARK_Mode => On is
       return Integer_Array;
 
    --  Sorted distinct callback results over the Cartesian product.
-   --  One-list form uses only pairs i<=j, as in XS.xs: setbinop.
+   --  With Self True, ignore B and evaluate pairs i<=j of sorted A.
    generic
       with function Operation (A, B : I128) return I128;
-   function Setbinop (A, B : Integer_Array) return Integer_Array
-     with Pre => B'Length = 0 or else
-       A'Length <= Natural'Last / B'Length;
+   function Setbinop
+     (A, B : Integer_Array; Self : Boolean := False) return Integer_Array
+     with Pre => (if Self then
+                    A'Length = 0 or else
+                      A'Length <= Natural'Last / A'Length
+                  else B'Length = 0 or else
+                    A'Length <= Natural'Last / B'Length);
 
    --  Sample without replacement, preserving input order, in element units.
    --  Draw must return a uniform integer in 1..Upper; bad draws raise.

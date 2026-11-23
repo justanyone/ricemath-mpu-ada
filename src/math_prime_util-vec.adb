@@ -295,6 +295,51 @@ package body Math_Prime_Util.Vec with SPARK_Mode => On is
    function Setinvert (A, B : Integer_Array) return Integer is
      (Setinsert (A, B) - Setremove (A, B));
 
+   procedure Setinsert
+     (A : in out Integer_Array; Last : in out Natural;
+      B : Integer_Array; Count : out Integer)
+   is
+      X : constant Integer_Array := A (A'First .. A'First + Last - 1);
+      R : constant Integer_Array := Setunion (X, B);
+   begin
+      if R'Length > A'Length then
+         raise Constraint_Error with "set buffer capacity exceeded";
+      end if;
+      Count := Setinsert (X, B);
+      A (A'First .. A'First + R'Length - 1) := R;
+      Last := R'Length;
+   end Setinsert;
+
+   procedure Setremove
+     (A : in out Integer_Array; Last : in out Natural;
+      B : Integer_Array; Count : out Integer)
+   is
+      X : constant Integer_Array := A (A'First .. A'First + Last - 1);
+      R : constant Integer_Array := Setminus (X, B);
+   begin
+      if R'Length > A'Length then
+         raise Constraint_Error with "set buffer capacity exceeded";
+      end if;
+      Count := Setremove (X, B);
+      A (A'First .. A'First + R'Length - 1) := R;
+      Last := R'Length;
+   end Setremove;
+
+   procedure Setinvert
+     (A : in out Integer_Array; Last : in out Natural;
+      B : Integer_Array; Count : out Integer)
+   is
+      X : constant Integer_Array := A (A'First .. A'First + Last - 1);
+      R : constant Integer_Array := Setdelta (X, B);
+   begin
+      if R'Length > A'Length then
+         raise Constraint_Error with "set buffer capacity exceeded";
+      end if;
+      Count := Setinvert (X, B);
+      A (A'First .. A'First + R'Length - 1) := R;
+      Last := R'Length;
+   end Setinvert;
+
    function Sumset (A, B : Integer_Array) return Integer_Array is
       R : Integer_Array (1 .. A'Length * B'Length) := [others => 0];
       N : Natural := 0;
@@ -444,19 +489,21 @@ package body Math_Prime_Util.Vec with SPARK_Mode => On is
       return Tail (0);
    end Vecwindow;
 
-   function Setbinop (A, B : Integer_Array) return Integer_Array is
+   function Setbinop
+     (A, B : Integer_Array; Self : Boolean := False) return Integer_Array
+   is
       X : constant Integer_Array := Toset (A);
-      Y : constant Integer_Array := Toset (B);
+      Y : constant Integer_Array := (if Self then X else Toset (B));
       R : Integer_Array (1 .. X'Length * Y'Length) := [others => 0];
       N : Natural := 0;
    begin
-      for V of X loop
-         for W of Y loop
+      for I in X'Range loop
+         for J in (if Self then I else Y'First) .. Y'Last loop
             N := N + 1;
-            R (N) := Operation (V, W);
+            R (N) := Operation (X (I), Y (J));
          end loop;
       end loop;
-      return Toset (R);
+      return Toset (R (1 .. N));
    end Setbinop;
 
    function Vecsample (A : Integer_Array; K : Natural) return Integer_Array is

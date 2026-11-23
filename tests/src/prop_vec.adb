@@ -38,6 +38,9 @@ package body Prop_Vec is
    function Sample is new Vecsample (First_Draw);
 
    procedure Callbacks (T : in out Test_Case'Class) is
+      Buffer : Integer_Array (4 .. 13) := [others => 0];
+      Used : Natural := 0;
+      Count : Integer;
       Empty : constant Integer_Array := [];
       A : constant Integer_Array (7 .. 10) := [-2, 0, 3, 5];
    begin
@@ -64,6 +67,17 @@ package body Prop_Vec is
       Assert (Window_Sums (A, 3, 2) = [-2], "window gaps");
       Assert (Window_Sums (A, 1, 5)'Length = 0, "incomplete window");
       Assert (Pair_Sums (A, [0, 1]) = Sumset (A, [0, 1]), "setbinop");
+      Assert (Pair_Sums (A, [], Self => True) = Sumset (A),
+              "self setbinop");
+      Setinsert (Buffer, Used, [3, 1, 3], Count);
+      Assert (Used = 2 and then Count = 2
+              and then Buffer (4 .. 5) = [1, 3], "buffer insert");
+      Setremove (Buffer, Used, [1], Count);
+      Assert (Used = 1 and then Count = 1
+              and then Buffer (4) = 3, "buffer remove");
+      Setinvert (Buffer, Used, [3, 4, 5], Count);
+      Assert (Used = 2 and then Count = 1
+              and then Buffer (4 .. 5) = [4, 5], "buffer toggle");
       Assert (Sample (A, 2) = [-2, 0], "sample order");
       Assert (Sample (A, 0)'Length = 0, "empty sample");
       Assert (Sample (A, 9) = A, "oversize sample");
