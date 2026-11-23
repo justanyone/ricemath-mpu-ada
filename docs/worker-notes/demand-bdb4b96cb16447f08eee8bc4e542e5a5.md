@@ -11,3 +11,4 @@ Focused Compat_Powers passes both tests (prime 0.107 s, perfect below 0.001 s). 
 Gate development, release, and test builds pass; full test run is active. Expanded inverse fixture regression has rebuilt successfully and is running under a 59-second timeout.
 Expanded focused tests pass (prime 0.357 s, perfect below 0.001 s), including committed inverse fixture outputs. Full gate is still running; no generated STATUS.md changes or source whitespace errors observed.
 No further source changes needed after focused regressions. Running existing family property tests directly while the full gate finishes; pytest-bdd execution remains unavailable on this host.
+Existing Prop_Families suite passes all six tests. Waiting for the declared full gate to report its summary; no further edits are planned.
