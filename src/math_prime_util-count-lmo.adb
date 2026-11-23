@@ -266,7 +266,6 @@ package body Math_Prime_Util.Count.Lmo with SPARK_Mode => On is
                   end if;
                end;
             end loop;
-            Remove (C + 1, C);
             for K in C + 1 .. Km - 1 loop
                Remove (K, K);
                declare
