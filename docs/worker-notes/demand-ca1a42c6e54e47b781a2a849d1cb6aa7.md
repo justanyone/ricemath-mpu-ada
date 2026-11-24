@@ -10,3 +10,4 @@ Corrected an edit that matched a forward declaration; restored the full oracle t
 The initial full run exposed reverse-window aggregate index semantics; mapped result indexes explicitly to restore reversed values. Restored all reference bodies from the unfiltered git source and restarted focused verification.
 Kept the reverse-window helper as an explicit loop after GNAT rejected the replacement expression. Final code patch remains under 400 lines; full gate restarted on this version.
 The final patch is 398 added Ada lines across three Ada files; required worker notes are separate. Waiting for the declared gate; no gnatcheck binary is installed on this host.
+Development, release and test builds pass on the final source; no style diagnostics in the new library. Full suite is running; diff whitespace check passes.
