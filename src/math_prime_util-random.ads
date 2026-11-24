@@ -26,7 +26,7 @@ package Math_Prime_Util.Random with SPARK_Mode => On is
    procedure Srand (G : out Generator; Seed : U64; Value : out U64)
      with Post => Is_Seeded (G) and then Value = Seed;
    --  XS.xs srand: seed from OS entropy and return the native seed.
-   --  Raises Entropy_Error if the operating-system source fails.
+   --  Uses Entropy_Bytes, including the MPU timer fallback.
    procedure Srand (G : out Generator; Value : out U64)
      with Post => Is_Seeded (G);
    --  csprng.c irand32: draw 32 bits, represented as a U64.
