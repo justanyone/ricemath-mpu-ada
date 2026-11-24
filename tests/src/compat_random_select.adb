@@ -27,7 +27,7 @@ package body Compat_Random_Select is
    procedure Shuffle_Text is new Shuffle (Unbounded_String, Text_Array);
    procedure Sample_Text is new Vecsample (Unbounded_String, Text_Array);
    --  Bigint skips in random.tsv, seed blocks S = 0 .. 13:
-   --  random_strong_prime: lines 195 .. 199 + 232*S (128 .. 2048 bits).
+   --  random_strong_prime: lines 195 .. 199 + 232*S (128 .. 256 bits).
    --  random_factored_integer: line 240 + 232*S (bound exceeds U64).
    --  bigint_random.tsv: random_factored_integer lines 15, 20 and
    --  miller_rabin_random lines 16, 21 have bounds/inputs above U64;
