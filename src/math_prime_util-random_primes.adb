@@ -17,6 +17,8 @@ package body Math_Prime_Util.Random_Primes with SPARK_Mode => On is
    begin
       if Size = 0 then
          return;
+      elsif Size = 1 then
+         Urandomm (G, N, Values (Values'First));
       elsif K >= N then
          for I in 0 .. Size - 1 loop
             Values (Values'First + I) := U64 (I);
@@ -31,10 +33,80 @@ package body Math_Prime_Util.Random_Primes with SPARK_Mode => On is
                Values (Values'First + I) := V;
             end;
          end loop;
+      elsif Size in 2 .. 3 then
+         declare
+            I, J, M : U64;
+         begin
+            Urandomm (G, N, I);
+            Urandomm (G, N - 1, J);
+            J := J + 1;
+            Values (Values'First) := I;
+            Values (Values'First + 1) := (if J = I then 0 else J);
+            if Size = 3 then
+               Urandomm (G, N - 2, M);
+               M := M + 2;
+               Values (Values'First + 2) :=
+                 (if M = J then (if I = 1 then 0 else 1)
+                  elsif M = I then 0 else M);
+            end if;
+         end;
+      elsif Size <= 16 then
+         declare
+            Keys, Vals : U64_Array (1 .. 16) := [others => 0];
+            Used : Natural := 0;
+            function Get (Key : U64) return U64 is
+            begin
+               for I in 1 .. Used loop
+                  if Keys (I) = Key then
+                     return Vals (I);
+                  end if;
+               end loop;
+               return Key;
+            end Get;
+            procedure Put (Key, Value : U64) is
+            begin
+               for I in 1 .. Used loop
+                  if Keys (I) = Key then
+                     Vals (I) := Value;
+                     return;
+                  end if;
+               end loop;
+               Used := Used + 1;
+               Keys (Used) := Key;
+               Vals (Used) := Value;
+            end Put;
+            R : U64;
+         begin
+            for I in 0 .. Size - 1 loop
+               Urandomm (G, N - U64 (I), Offset);
+               R := U64 (I) + Offset;
+               Values (Values'First + I) := Get (R);
+               if R /= U64 (I) then
+                  Put (R, Get (U64 (I)));
+               end if;
+            end loop;
+         end;
+      elsif not ((N >= 32_768 and then K <= 64)
+        or else (N >= 2_147_483_647 and then K <= N / 4)
+        or else (N >= 100_000 and then K <= N / 64))
+      then
+         --  util.c: dense partial Fisher-Yates, with native index storage.
+         declare
+            Indices : U64_Array (0 .. Natural (N) - 1);
+            J : Natural;
+         begin
+            for I in Indices'Range loop
+               Indices (I) := U64 (I);
+            end loop;
+            for I in 0 .. Size - 1 loop
+               Urandomm (G, N - U64 (I), Offset);
+               J := I + Natural (Offset);
+               Values (Values'First + I) := Indices (J);
+               Indices (J) := Indices (I);
+            end loop;
+         end;
       else
-         --  util.c: sparse Fisher-Yates. Identity entries are implicit.
-         --  The small map and hash map use the same draws and swaps as
-         --  the dense path, including the unrolled K=2 and K=3 cases.
+         --  util.c: randperm_sparse_fy_hash, including load <= 1/2.
          declare
             Capacity : Positive := 16;
          begin
