@@ -9,140 +9,65 @@ package body Math_Prime_Util.Random_Primes with SPARK_Mode => On is
    function Prime (N : U64) return Boolean is
      (Primality.Is_Prime (N) = 2);
 
+   procedure Shuffle_Numbers is new Shuffle (U64, U64_Array);
    procedure Randperm
      (G : in out Generator; N, K : U64; Values : out U64_Array)
    is
       Size : constant Natural := Values'Length;
-      Offset : U64;
+      I, J, M : U64;
+      Capacity : Positive := 16;
    begin
       if Size = 0 then
          return;
       elsif Size = 1 then
          Urandomm (G, N, Values (Values'First));
       elsif K >= N then
-         for I in 0 .. Size - 1 loop
-            Values (Values'First + I) := U64 (I);
-         end loop;
-         for I in 0 .. Size - 2 loop
-            Urandomm (G, N - U64 (I), Offset);
-            declare
-               J : constant Natural := Values'First + I + Natural (Offset);
-               V : constant U64 := Values (J);
-            begin
-               Values (J) := Values (Values'First + I);
-               Values (Values'First + I) := V;
-            end;
-         end loop;
+         Values := [for Index in Values'Range => U64 (Index - Values'First)];
+         Shuffle_Numbers (G, Values);
       elsif Size in 2 .. 3 then
+         Urandomm (G, N, I);
+         Urandomm (G, N - 1, J);
+         J := J + 1;
+         Values (Values'First) := I;
+         Values (Values'First + 1) := (if J = I then 0 else J);
+         if Size = 3 then
+            Urandomm (G, N - 2, M);
+            M := M + 2;
+            Values (Values'First + 2) :=
+              (if M = J then (if I = 1 then 0 else 1)
+               elsif M = I then 0 else M);
+         end if;
+      else
+         --  util.c: randperm_sparse_fy_hash. A sparse identity map also
+         --  implements the small-map and dense FY paths with identical draws.
+         while Capacity / 2 < Size loop
+            Capacity := Capacity * 2;
+         end loop;
          declare
-            I, J, M : U64;
-         begin
-            Urandomm (G, N, I);
-            Urandomm (G, N - 1, J);
-            J := J + 1;
-            Values (Values'First) := I;
-            Values (Values'First + 1) := (if J = I then 0 else J);
-            if Size = 3 then
-               Urandomm (G, N - 2, M);
-               M := M + 2;
-               Values (Values'First + 2) :=
-                 (if M = J then (if I = 1 then 0 else 1)
-                  elsif M = I then 0 else M);
-            end if;
-         end;
-      elsif Size <= 16 then
-         declare
-            Keys, Vals : U64_Array (1 .. 16) := [others => 0];
-            Used : Natural := 0;
+            Keys, Vals : U64_Array (0 .. Capacity - 1) := [others => 0];
+            function Slot (Key : U64) return Natural is
+               H : Natural := Natural (Key mod U64 (Capacity));
+            begin
+               while Keys (H) /= 0 and then Keys (H) /= Key + 1 loop
+                  H := (H + 1) mod Capacity;
+               end loop;
+               return H;
+            end Slot;
             function Get (Key : U64) return U64 is
-            begin
-               for I in 1 .. Used loop
-                  if Keys (I) = Key then
-                     return Vals (I);
-                  end if;
-               end loop;
-               return Key;
-            end Get;
-            procedure Put (Key, Value : U64) is
-            begin
-               for I in 1 .. Used loop
-                  if Keys (I) = Key then
-                     Vals (I) := Value;
-                     return;
-                  end if;
-               end loop;
-               Used := Used + 1;
-               Keys (Used) := Key;
-               Vals (Used) := Value;
-            end Put;
-            R : U64;
+              (if Keys (Slot (Key)) = 0 then Key else Vals (Slot (Key)));
+            H : Natural;
          begin
-            for I in 0 .. Size - 1 loop
-               Urandomm (G, N - U64 (I), Offset);
-               R := U64 (I) + Offset;
-               Values (Values'First + I) := Get (R);
-               if R /= U64 (I) then
-                  Put (R, Get (U64 (I)));
+            for Index in 0 .. Size - 1 loop
+               Urandomm (G, N - U64 (Index), J);
+               J := U64 (Index) + J;
+               Values (Values'First + Index) := Get (J);
+               M := Get (U64 (Index));
+               if J /= U64 (Index) then
+                  H := Slot (J);
+                  Keys (H) := J + 1;
+                  Vals (H) := M;
                end if;
             end loop;
-         end;
-      elsif not ((N >= 32_768 and then K <= 64)
-        or else (N >= 2_147_483_647 and then K <= N / 4)
-        or else (N >= 100_000 and then K <= N / 64))
-      then
-         --  util.c: dense partial Fisher-Yates, with native index storage.
-         declare
-            Indices : U64_Array (0 .. Natural (N) - 1);
-            J : Natural;
-         begin
-            for I in Indices'Range loop
-               Indices (I) := U64 (I);
-            end loop;
-            for I in 0 .. Size - 1 loop
-               Urandomm (G, N - U64 (I), Offset);
-               J := I + Natural (Offset);
-               Values (Values'First + I) := Indices (J);
-               Indices (J) := Indices (I);
-            end loop;
-         end;
-      else
-         --  util.c: randperm_sparse_fy_hash, including load <= 1/2.
-         declare
-            Capacity : Positive := 16;
-         begin
-            while Capacity / 2 < Size loop
-               Capacity := Capacity * 2;
-            end loop;
-            declare
-               Keys, Vals : U64_Array (0 .. Capacity - 1) := [others => 0];
-               function Slot (Key : U64) return Natural is
-                  H : Natural := Natural (Key mod U64 (Capacity));
-               begin
-                  while Keys (H) /= 0 and then Keys (H) /= Key + 1 loop
-                     H := (H + 1) mod Capacity;
-                  end loop;
-                  return H;
-               end Slot;
-               function Get (Key : U64) return U64 is
-                  H : constant Natural := Slot (Key);
-               begin
-                  return (if Keys (H) = 0 then Key else Vals (H));
-               end Get;
-               R, V : U64;
-               H : Natural;
-            begin
-               for I in 0 .. Size - 1 loop
-                  Urandomm (G, N - U64 (I), Offset);
-                  R := U64 (I) + Offset;
-                  Values (Values'First + I) := Get (R);
-                  V := Get (U64 (I));
-                  if R /= U64 (I) then
-                     H := Slot (R);
-                     Keys (H) := R + 1;
-                     Vals (H) := V;
-                  end if;
-               end loop;
-            end;
          end;
       end if;
    end Randperm;
