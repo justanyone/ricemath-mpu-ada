@@ -4,10 +4,9 @@ with Ada.Containers.Generic_Array_Sort;
 package body Math_Prime_Util.Vec.Folds with SPARK_Mode => On is
    package Results is new Ada.Containers.Vectors
      (Index_Type => Positive, Element_Type => U64);
-
    function To_Array (Items : Results.Vector) return Value_Array is
      ([for I in 1 .. Natural (Items.Length) => Items.Element (I)]);
-
+   function Canonical (Items : Value_Array) return Value_Array;
    function Canonical (Items : Value_Array) return Value_Array is
       Sorted : Value_Array := Items;
       Count : Natural := 0;
@@ -23,7 +22,6 @@ package body Math_Prime_Util.Vec.Folds with SPARK_Mode => On is
       end loop;
       return Sorted (Sorted'First .. Sorted'First + (Count - 1));
    end Canonical;
-
    function Vecreduce (Items : Value_Array) return Int.Optional_U64 is
       Acc : U64;
    begin
@@ -36,12 +34,10 @@ package body Math_Prime_Util.Vec.Folds with SPARK_Mode => On is
       end loop;
       return (Defined => True, Value => Acc);
    end Vecreduce;
-
    function Vecslide (Items : Value_Array) return Value_Array is
      ([for Offset in 1 .. Items'Length - 1 =>
          Block (Items (Items'First + (Offset - 1)),
                 Items (Items'First + Offset))]);
-
    function Vecpairwise (Left, Right : Value_Array) return Value_Array is
       Result : Results.Vector;
    begin
@@ -54,7 +50,6 @@ package body Math_Prime_Util.Vec.Folds with SPARK_Mode => On is
       end loop;
       return To_Array (Result);
    end Vecpairwise;
-
    function Vecwindow
      (Step, Size : Positive; Items : Value_Array) return Value_Array
    is
@@ -75,7 +70,6 @@ package body Math_Prime_Util.Vec.Folds with SPARK_Mode => On is
       end loop;
       return To_Array (Result);
    end Vecwindow;
-
    function Setbinop
      (Left : Value_Array; Right : access constant Value_Array := null)
       return Value_Array
