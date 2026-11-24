@@ -16,8 +16,8 @@ package body Compat_Random_Select is
    use type Primality.Prime_Result;
    use type U64;
    use type U128;
-   type Selection_Case is new AUnit.Test_Fixtures.Test_Fixture with null record;
-   package Caller is new AUnit.Test_Caller (Selection_Case);
+   type Selection is new AUnit.Test_Fixtures.Test_Fixture with null record;
+   package Caller is new AUnit.Test_Caller (Selection);
    function Decode (S : String) return Byte_Array is
      ([for I in 1 .. S'Length / 2 => Byte'Value
        ("16#" & S (S'First + 2 * (I - 1) .. S'First + 2 * I - 1) & "#")]);
@@ -39,8 +39,8 @@ package body Compat_Random_Select is
    generic
       Func : String;
       Expected_Count : Natural;
-   procedure Replay (Unused_T : in out Selection_Case);
-   procedure Replay (Unused_T : in out Selection_Case) is
+   procedure Replay (Unused_T : in out Selection);
+   procedure Replay (Unused_T : in out Selection) is
       Count : Natural := 0;
       Family : constant String :=
         (if Func = "is_provable_prime_with_cert" then "bigint_proving"

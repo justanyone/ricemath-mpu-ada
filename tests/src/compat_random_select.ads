@@ -1,5 +1,4 @@
 with AUnit.Test_Suites;
-
 package Compat_Random_Select is
    use type AUnit.Test_Suites.Access_Test_Suite;
    --  Seeded selection fixtures and native proving properties.

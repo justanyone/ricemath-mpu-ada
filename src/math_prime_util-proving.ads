@@ -31,9 +31,7 @@ package Math_Prime_Util.Proving with SPARK_Mode => On is
    --  PrimalityProving.pm: is_provable_prime_with_cert. Result and text;
    --  composites return 0 and empty text.
    function Is_Provable_Prime_With_Cert (N : U64) return Certified_Result
-     with Pre => True,
-          Post => Is_Provable_Prime_With_Cert'Result.Result in 0 | 2;
-
+     with Post => Is_Provable_Prime_With_Cert'Result.Result in 0 | 2;
    --  Check a decimal MPU 1.0 certificate containing one Small or BLS5
    --  proof for a U64 candidate. Malformed, unsupported, or non-native
    --  certificates return False; no parsing exceptions are propagated.
