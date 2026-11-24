@@ -9,6 +9,21 @@ package body Math_Prime_Util.Random_Primes with SPARK_Mode => On is
    function Prime (N : U64) return Boolean is
      (Primality.Is_Prime (N) = 2);
 
+   procedure Shuffle (G : in out Generator; Values : in out Element_Array) is
+      Offset : U64;
+   begin
+      for I in Values'First .. Values'Last - 1 loop
+         Urandomm (G, U64 (Values'Last - I) + 1, Offset);
+         declare
+            J : constant Natural := I + Natural (Offset);
+            V : constant Element_Type := Values (J);
+         begin
+            Values (J) := Values (I);
+            Values (I) := V;
+         end;
+      end loop;
+   end Shuffle;
+
    procedure Shuffle_Numbers is new Shuffle (U64, U64_Array);
    procedure Randperm
      (G : in out Generator; N, K : U64; Values : out U64_Array)
@@ -78,21 +93,6 @@ package body Math_Prime_Util.Random_Primes with SPARK_Mode => On is
       Randperm (G, N, N, Values);
    end Randperm;
 
-   procedure Shuffle (G : in out Generator; Values : in out Element_Array) is
-      Offset : U64;
-   begin
-      for I in Values'First .. Values'Last - 1 loop
-         Urandomm (G, U64 (Values'Last - I) + 1, Offset);
-         declare
-            J : constant Natural := I + Natural (Offset);
-            V : constant Element_Type := Values (J);
-         begin
-            Values (J) := Values (I);
-            Values (I) := V;
-         end;
-      end loop;
-   end Shuffle;
-
    procedure Vecsample
      (G : in out Generator; K : U64; Values : Element_Array;
       Sample : out Element_Array)
@@ -157,6 +157,7 @@ package body Math_Prime_Util.Random_Primes with SPARK_Mode => On is
    procedure Random_Strong_Prime
      (G : in out Generator; Bits : Natural; Value : out U64) is
    begin
+      Value := 0;
       if Is_Seeded (G) and then Bits >= 128 then
          raise Constraint_Error with "strong primes require the bigint tier";
       end if;

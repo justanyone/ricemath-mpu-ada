@@ -47,7 +47,8 @@ package body Compat_Random_Select is
       Count : Natural := 0;
       Family : constant String :=
         (if Func = "is_provable_prime_with_cert" then "bigint_proving"
-         elsif Func = "miller_rabin_random" then "bigint_random" else "random");
+         elsif Func = "miller_rabin_random" then "bigint_random"
+         else "random");
    begin
       for C of For_Function (Load (Family), Func) loop
          declare
@@ -118,7 +119,7 @@ package body Compat_Random_Select is
                end if;
             elsif Func = "randperm" then
                N := U64'Value (Arg (2));
-               K := (if C.Args.Length = 3 then U64'Value (Arg (3)) else N);
+               K := (if Natural (C.Args.Length) = 3 then U64'Value (Arg (3)) else N);
                declare
                   Values : U64_Array (1 .. Natural (U64'Min (N, K)));
                begin
@@ -139,14 +140,17 @@ package body Compat_Random_Select is
                begin
                   if Func = "shuffle" then
                      Shuffle_Text (G, Values);
-                     Sample := []; --  Output is Values for shuffle.
                   else
                      Sample_Text (G, U64'Value (Arg (2)), Values, Sample);
                   end if;
-                  for Value of (if Func = "shuffle" then Values else Sample)
-                  loop
+                  declare
+                     Output : constant Text_Array :=
+                       (if Func = "shuffle" then Values else Sample);
+                  begin
+                  for Value of Output loop
                      Add (To_String (Value));
                   end loop;
+                  end;
                end;
             end if;
             if Length (Actual) = 0 and C.Undef then
