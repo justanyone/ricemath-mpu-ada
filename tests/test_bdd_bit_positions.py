@@ -9,10 +9,10 @@ from test_bdd_powers import run_selected, selected_test_passes  # noqa: F401
 scenarios("features/bit_positions.feature")
 
 
-# Justification: bit positions use the combined runner with their own suite filter.
+# Justification: reuse the existing filtered runner for the new suite.
 @given("the compiled bit position test runner", target_fixture="bit_runner")
 def bit_runner():
-    runner = Path(__file__).parent / "bin" / "test_runner"
+    runner = Path(__file__).parent / "bin" / "powers_runner"
     assert runner.is_file(), "Build the tests crate with Alire first"
     return runner.resolve()
 
