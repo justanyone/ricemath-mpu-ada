@@ -11,19 +11,17 @@ package body Math_Prime_Util.Random_Primes with SPARK_Mode => On is
 
    procedure Shuffle (G : in out Generator; Values : in out Element_Array) is
       Offset : U64;
+      J : Natural;
+      V : Element_Type;
    begin
       for I in Values'First .. Values'Last - 1 loop
          Urandomm (G, U64 (Values'Last - I) + 1, Offset);
-         declare
-            J : constant Natural := I + Natural (Offset);
-            V : constant Element_Type := Values (J);
-         begin
-            Values (J) := Values (I);
-            Values (I) := V;
-         end;
+         J := I + Natural (Offset);
+         V := Values (J);
+         Values (J) := Values (I);
+         Values (I) := V;
       end loop;
    end Shuffle;
-
    procedure Shuffle_Numbers is new Shuffle (U64, U64_Array);
    procedure Randperm
      (G : in out Generator; N, K : U64; Values : out U64_Array)
@@ -45,6 +43,7 @@ package body Math_Prime_Util.Random_Primes with SPARK_Mode => On is
          end loop;
          declare
             Keys, Vals : U64_Array (0 .. Capacity - 1) := [others => 0];
+            function Slot (Key : U64) return Natural;
             function Slot (Key : U64) return Natural is
                H : Natural := Natural (Key mod U64 (Capacity));
             begin
@@ -71,13 +70,11 @@ package body Math_Prime_Util.Random_Primes with SPARK_Mode => On is
          end;
       end if;
    end Randperm;
-
    procedure Randperm
      (G : in out Generator; N : U64; Values : out U64_Array) is
    begin
       Randperm (G, N, N, Values);
    end Randperm;
-
    procedure Vecsample
      (G : in out Generator; K : U64; Values : Element_Array;
       Sample : out Element_Array)
@@ -91,7 +88,6 @@ package body Math_Prime_Util.Random_Primes with SPARK_Mode => On is
             else Natural (Indices (I) - 1)));
       end loop;
    end Vecsample;
-
    procedure Random_Factored_Integer
      (G : in out Generator; N : U64; Value : out U64;
       Factors : out Factor.Factor_List) is
@@ -105,7 +101,6 @@ package body Math_Prime_Util.Random_Primes with SPARK_Mode => On is
          Factors := Factor.Factor (Value);
       end if;
    end Random_Factored_Integer;
-
    procedure Miller_Rabin_Random
      (G : in out Generator; N : U64; K : U64 := 1;
       Value : out Boolean)
@@ -125,7 +120,6 @@ package body Math_Prime_Util.Random_Primes with SPARK_Mode => On is
       end loop;
       Value := True;
    end Miller_Rabin_Random;
-
    procedure Random_Strong_Prime
      (G : in out Generator; Bits : Natural; Value : out U64) is
    begin
@@ -135,7 +129,6 @@ package body Math_Prime_Util.Random_Primes with SPARK_Mode => On is
       end if;
       raise Constraint_Error with "strong primes require at least 128 bits";
    end Random_Strong_Prime;
-
    --  random_prime.c: random_prime. Tighten bounds before rejection sampling.
    procedure Random_Prime
      (G : in out Generator; Low, High : U64; Value : out Int.Optional_U64)

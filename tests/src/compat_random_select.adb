@@ -40,8 +40,8 @@ package body Compat_Random_Select is
    generic
       Func : String;
       Expected_Count : Natural;
-   procedure Replay (T : in out Selection_Case);
-   procedure Replay (T : in out Selection_Case) is
+   procedure Replay (Unused_T : in out Selection_Case);
+   procedure Replay (Unused_T : in out Selection_Case) is
       Count : Natural := 0;
       Family : constant String :=
         (if Func = "is_provable_prime_with_cert" then "bigint_proving"
@@ -62,15 +62,15 @@ package body Compat_Random_Select is
                Append (Actual, (if Length (Actual) > 0 then " " else "") & S);
             end Add;
          begin
-            if Family = "random" then
-               Csrand (G, Decode (Arg (1)));
-            else
-               Csrand (G, [1 .. 40 => 0]);
+            Csrand (G, (if Family = "random" then Decode (Arg (1))
+                        else [1 .. 40 => 0]));
+            if Func in "is_provable_prime_with_cert" | "miller_rabin_random" |
+              "random_factored_integer" and then not Parse_U64
+                (Arg ((if Family = "random" then 2 else 1)), N)
+            then
+               goto Next_Row;
             end if;
             if Func = "is_provable_prime_with_cert" then
-               if not Parse_U64 (Arg (1), N) then
-                  goto Next_Row;
-               end if;
                declare
                   Proof : constant Proving.Certified_Result :=
                     Proving.Is_Provable_Prime_With_Cert (N);
@@ -86,9 +86,6 @@ package body Compat_Random_Select is
                     else Text'Length = 0), "certificate law");
                end;
             elsif Func = "miller_rabin_random" then
-               if not Parse_U64 (Arg (1), N) then
-                  goto Next_Row;
-               end if;
                Miller_Rabin_Random (G, N, U64'Value (Arg (2)), Flag);
                Add ((if Flag then "1" else "0"));
             elsif Func = "random_strong_prime" then
@@ -102,9 +99,6 @@ package body Compat_Random_Select is
                   when Ada.Assertions.Assertion_Error => Actual := C.Result;
                end;
             elsif Func = "random_factored_integer" then
-               if not Parse_U64 (Arg (2), N) then
-                  goto Next_Row;
-               end if;
                Random_Factored_Integer (G, N, V, Factors);
                Add (Image (V));
                declare
