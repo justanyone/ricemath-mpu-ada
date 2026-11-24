@@ -67,6 +67,65 @@ package body Math_Prime_Util.Vec with SPARK_Mode => Off is
               Text => Items (Positive (BI.To_Integer (Pos) + 1)));
    end Take;
 
+   --  Element copies avoid GNAT 16 reference-finalizer links between
+   --  generic instances and libraries built with different profiles.
+   function Vecany (Items : Int_Vector) return Boolean is
+   begin
+      for I in Items.First_Index .. Items.Last_Index loop
+         if Predicate (Items.Element (I)) then
+            return True;
+         end if;
+      end loop;
+      return False;
+   end Vecany;
+
+   function Vecall (Items : Int_Vector) return Boolean is
+   begin
+      for I in Items.First_Index .. Items.Last_Index loop
+         if not Predicate (Items.Element (I)) then
+            return False;
+         end if;
+      end loop;
+      return True;
+   end Vecall;
+
+   function Vecnone (Items : Int_Vector) return Boolean is
+      function Any_Match is new Vecany (Predicate);
+   begin
+      return not Any_Match (Items);
+   end Vecnone;
+
+   function Vecnotall (Items : Int_Vector) return Boolean is
+      function All_Match is new Vecall (Predicate);
+   begin
+      return not All_Match (Items);
+   end Vecnotall;
+
+   procedure Vecfirst
+     (Items : Int_Vector; Value : out BI.Big_Integer; Found : out Boolean)
+   is
+   begin
+      for I in Items.First_Index .. Items.Last_Index loop
+         if Predicate (Items.Element (I)) then
+            Value := Items.Element (I);
+            Found := True;
+            return;
+         end if;
+      end loop;
+      Value := To_BI (0);
+      Found := False;
+   end Vecfirst;
+
+   function Vecfirstidx (Items : Int_Vector) return Integer is
+   begin
+      for I in Items.First_Index .. Items.Last_Index loop
+         if Predicate (Items.Element (I)) then
+            return I - Items.First_Index;
+         end if;
+      end loop;
+      return -1;
+   end Vecfirstidx;
+
    function Vecsum (Items : Int_Vector) return BI.Big_Integer is
       Total : BI.Big_Integer := To_BI (0);
    begin
