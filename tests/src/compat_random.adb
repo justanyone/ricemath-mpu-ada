@@ -209,6 +209,7 @@ procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
       G, H : Generator;
       Seed_Value, A, B : U64;
       X, Y : Long_Float;
+      Raised : Boolean;
       Empty : Byte_Array (1 .. 0);
       First, Second : Byte_Array (17 .. 1040);
       type Float_Array is array (Positive range <>) of Long_Float;
@@ -236,6 +237,20 @@ procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
          16#1.2ffffc1e8ef2b# * 2.0 ** (-1),
          16#1.54e0c511544f2# * 2.0 ** (-2)];
    begin
+      for Draw in 1 .. 4 loop
+         Raised := False;
+         begin
+            case Draw is
+               when 1 => Irand32 (G, A);
+               when 2 => Irand64 (G, A);
+               when 3 => Drand (G, X);
+               when others => Rand (G, X);
+            end case;
+         exception
+            when Ada.Assertions.Assertion_Error => Raised := True;
+         end;
+         AUnit.Assertions.Assert (Raised, "unseeded output accepted");
+      end loop;
       Srand (G, 15, Seed_Value);
       AUnit.Assertions.Assert (Seed_Value = 15, "srand seed return");
       for Want of Exact loop
@@ -267,6 +282,17 @@ procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
          AUnit.Assertions.Assert (X = Y, "rand/drand aliases");
       end loop;
       Entropy_Bytes (Empty);
+      for Size of Natural_Array'[1, 2, 255, 256, 257, 1025] loop
+         declare
+            Data : Byte_Array (0 .. Size + 1) := [others => 165];
+         begin
+            Entropy_Bytes (Data (1 .. Size));
+            AUnit.Assertions.Assert
+              (Data'Length = Size + 2 and then
+               Data (0) = 165 and then Data (Size + 1) = 165,
+               "entropy requested length and slice bounds");
+         end;
+      end loop;
       Entropy_Bytes (First);
       Entropy_Bytes (Second);
       AUnit.Assertions.Assert (First /= Second, "independent OS entropy");
