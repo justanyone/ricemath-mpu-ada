@@ -8,3 +8,4 @@ Confirmed all eight base predicate registrations and all six branch fold/window/
 Development build passed. Release compilation is in progress; checked tests will run next through the gate. No additional conflict or source change has appeared.
 Checked test compilation now uses the pinned AUnit dependency and the validation profile. Release and validation builds continue; the conflict resolution retains both test suites without modifying fixtures.
 Validation compilation has reached the AUnit compatibility units, including both merged test families. The gate remains in progress; existing compiler warnings have not stopped builds.
+Release build passed. The gate has reached tests-build and is compiling the resolved Compat_Vec body; waiting for the full checked runner verdict.
