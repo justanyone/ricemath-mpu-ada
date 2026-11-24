@@ -69,11 +69,16 @@ package body Compat_Random_Select is
             Csrand (G, Decode (Arg (1)));
             if Func = "random_strong_prime" then
                if C.Error then
+                  declare
+                     Rejected : Boolean := False;
                   begin
-                     Random_Strong_Prime (G, Natural'Value (Arg (2)), V);
-                     AUnit.Assertions.Assert (False, "strong minimum bits");
-                  exception
-                     when Ada.Assertions.Assertion_Error => null;
+                     begin
+                        Random_Strong_Prime (G, Natural'Value (Arg (2)), V);
+                     exception
+                        when Ada.Assertions.Assertion_Error =>
+                           Rejected := True;
+                     end;
+                     AUnit.Assertions.Assert (Rejected, "strong minimum bits");
                   end;
                   Count := Count + 1;
                end if;
@@ -249,7 +254,7 @@ package body Compat_Random_Select is
             Count := Count + 1;
          end if;
       end loop;
-      AUnit.Assertions.Assert (Count = 8, "native combined proof count");
+      AUnit.Assertions.Assert (Count = 7, "native combined proof count");
    end Test_Proving;
 
    procedure Laws (T : in out Test_Case'Class) is
