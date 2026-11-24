@@ -565,9 +565,7 @@ package body Compat_Vec is
    end Folds;
 
    package body Folds is
-      use AUnit.Test_Cases;
       use AUnit.Assertions;
-      use Ada.Strings.Unbounded;
       use Math_Prime_Util;
       use Math_Prime_Util.Vec.Folds;
       use type U64;
