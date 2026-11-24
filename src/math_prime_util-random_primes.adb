@@ -30,12 +30,10 @@ package body Math_Prime_Util.Random_Primes with SPARK_Mode => On is
       J, M : U64;
       Capacity : Positive := 16;
    begin
-      if Size = 0 then
-         return;
-      elsif K >= N then
+      if K >= N then
          Values := [for Index in Values'Range => U64 (Index - Values'First)];
          Shuffle_Numbers (G, Values);
-      else
+      elsif Size > 0 then
          --  util.c: randperm_sparse_fy_hash. A sparse identity map also
          --  implements the small-map and dense FY paths with identical draws.
          while Capacity / 2 < Size loop

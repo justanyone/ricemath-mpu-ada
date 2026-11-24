@@ -63,7 +63,9 @@ package body Compat_Random_Select is
          begin
             Csrand (G, (if Family = "random" then Decode (Arg (1))
                         else [1 .. 40 => 0]));
-            if Func in "is_provable_prime_with_cert" | "miller_rabin_random" |
+            if Func = "random_strong_prime" and then not C.Error then
+               goto Next_Row;
+            elsif Func in "is_provable_prime_with_cert" | "miller_rabin_random" |
               "random_factored_integer" and then not Parse_U64
                 (Arg ((if Family = "random" then 2 else 1)), N)
             then
@@ -88,9 +90,6 @@ package body Compat_Random_Select is
                Miller_Rabin_Random (G, N, U64'Value (Arg (2)), Flag);
                Add ((if Flag then "1" else "0"));
             elsif Func = "random_strong_prime" then
-               if not C.Error then
-                  goto Next_Row;
-               end if;
                begin
                   Random_Strong_Prime (G, Natural'Value (Arg (2)), V);
                   Actual := To_Unbounded_String ("accepted invalid bits");
