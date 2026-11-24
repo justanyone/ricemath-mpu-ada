@@ -165,6 +165,11 @@ procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
                   Start := Ada.Strings.Fixed.Index
                     (Expected, " ", Start) + 1;
                elsif F = "blake_drand_after_irand" then
+                  declare
+                     Prefix : Byte_Array (1 .. 7);
+                  begin
+                     Random_Bytes (G, Prefix);
+                  end;
                   Irand (G, Discard);
                end if;
                if Natural (C.Args.Length) = 2 then

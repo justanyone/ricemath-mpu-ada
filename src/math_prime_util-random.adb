@@ -203,6 +203,7 @@ package body Math_Prime_Util.Random with SPARK_Mode => On is
       function Clock return Interfaces.C.long
         with Import, Convention => C, External_Name => "clock";
       --  entropy.c timer_mix8 and mix32, using process CPU clock ticks.
+      function Mix8 (Initial : Word) return Word;
       function Mix8 (Initial : Word) return Word is
          Acc : Word := Initial;
          A : Word := 0;
