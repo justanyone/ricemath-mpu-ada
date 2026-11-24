@@ -33,7 +33,8 @@ package body Math_Prime_Util.Bit_Positions with SPARK_Mode => On is
       end if;
       for I in Start .. 63 loop
          pragma Loop_Invariant
-           (for all J in Start .. I - 1 => Bittest (N, J));
+           (for all J in Start .. I =>
+              (if J < I then Bittest (N, J)));
          if not Bittest (N, I) then
             return I;
          end if;
@@ -48,7 +49,8 @@ package body Math_Prime_Util.Bit_Positions with SPARK_Mode => On is
       end if;
       for I in Start .. 63 loop
          pragma Loop_Invariant
-           (for all J in Start .. I - 1 => not Bittest (N, J));
+           (for all J in Start .. I =>
+              (if J < I then not Bittest (N, J)));
          if Bittest (N, I) then
             return (Defined => True, Value => I);
          end if;
