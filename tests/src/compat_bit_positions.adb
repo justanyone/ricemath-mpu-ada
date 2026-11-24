@@ -100,6 +100,8 @@ package body Compat_Bit_Positions is
 
    procedure Mixed_Bits (T : in out Test_Case'Class) is
       Mask : U64 := 1;
+      Set_Value, Clear_Value, Scan_Zero, Scan_One : U64;
+      Is_Set : Boolean;
    begin
       --  Given each single bit and its complement, when scanning from
       --  every start, then return that bit only if it is still in range.
@@ -118,8 +120,51 @@ package body Compat_Bit_Positions is
          Mask := Mask * 2;
       end loop;
       for N of U64_Array'(0, 1, 2, 2 ** 32 - 1, 2 ** 32, 2 ** 32 + 1,
-                         2 ** 63 - 1, 2 ** 63, 2 ** 63 + 1, U64'Last)
+                         2 ** 63 - 1, 2 ** 63, 2 ** 63 + 1, U64'Last,
+                         16#5555_5555_5555_5555#,
+                         16#AAAA_AAAA_AAAA_AAAA#)
       loop
+         --  Use division and addition as an independent oracle for masks.
+         Mask := 1;
+         for I in U64 range 0 .. 64 loop
+            Is_Set := I < 64 and then (N / Mask) mod 2 = 1;
+            Assert (Bittest (N, I) = Is_Set,
+                    "mixed test" & N'Image & I'Image);
+            Clear_Value := (if Is_Set then N - Mask else N);
+            Assert (Bitclear (N, I) = Clear_Value,
+                    "mixed clear" & N'Image & I'Image);
+            if I < 64 then
+               Set_Value := (if Is_Set then N else N + Mask);
+               Assert (Bitset (N, I) = (True, Set_Value),
+                       "mixed set" & N'Image & I'Image);
+               Assert (Bitflip (N, I) =
+                         (True, (if Is_Set then Clear_Value else Set_Value)),
+                       "mixed flip" & N'Image & I'Image);
+            else
+               Assert (not Bitset (N, I).Defined
+                       and then not Bitflip (N, I).Defined,
+                       "mixed undefined at 64");
+            end if;
+            Scan_Zero := I;
+            while Scan_Zero < 64
+              and then (N / 2 ** Natural (Scan_Zero)) mod 2 = 1
+            loop
+               Scan_Zero := Scan_Zero + 1;
+            end loop;
+            Scan_One := I;
+            while Scan_One < 64
+              and then (N / 2 ** Natural (Scan_One)) mod 2 = 0
+            loop
+               Scan_One := Scan_One + 1;
+            end loop;
+            Assert (Bitscan0 (N, I) = Scan_Zero,
+                    "mixed zero scan" & N'Image & I'Image);
+            Assert (Bitscan1 (N, I) =
+                      (if Scan_One < 64 then (True, Scan_One)
+                       else (Defined => False)),
+                    "mixed one scan" & N'Image & I'Image);
+            Mask := Mask * 2;
+         end loop;
          for I of U64_Array'(65, 2 ** 32, 2 ** 63, U64'Last) loop
             Assert (not Bitset (N, I).Defined, "large set index");
             Assert (Bitclear (N, I) = N, "large clear index");
