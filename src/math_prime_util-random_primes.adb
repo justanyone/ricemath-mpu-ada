@@ -1,6 +1,5 @@
 with Interfaces;
 with Math_Prime_Util.Count;
-with Math_Prime_Util.Factor;
 with Math_Prime_Util.Primality;
 with Math_Prime_Util.Sieve;
 
@@ -164,7 +163,6 @@ package body Math_Prime_Util.Random_Primes with SPARK_Mode => On is
       if Is_Seeded (G) and then Bits >= 128 then
          raise Constraint_Error with "strong primes require the bigint tier";
       end if;
-      Value := 0;
       raise Constraint_Error with "strong primes require at least 128 bits";
    end Random_Strong_Prime;
 

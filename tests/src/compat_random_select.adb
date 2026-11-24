@@ -19,6 +19,8 @@ package body Compat_Random_Select is
    use Math_Prime_Util.Random;
    use Math_Prime_Util.Random_Primes;
    use type Primality.Prime_Result;
+   use type U64;
+   use type U128;
    type Selection_Case is new Test_Case with null record;
    overriding function Name (T : Selection_Case) return AUnit.Message_String;
    overriding procedure Register_Tests (T : in out Selection_Case);
