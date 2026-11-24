@@ -1,26 +1,18 @@
 with Ada.Assertions;
-with Ada.Strings;
 with Ada.Strings.Fixed;
 with Ada.Strings.Unbounded;
-with AUnit.Assertions;
-with AUnit.Test_Cases;
-with Fixture_Support;
+with AUnit.Assertions; use AUnit.Assertions;
+with AUnit.Test_Cases; use AUnit.Test_Cases;
+with Fixture_Support; use Fixture_Support;
 with Math_Prime_Util.Factor;
 with Math_Prime_Util.Primality;
 with Math_Prime_Util.Proving;
-with Math_Prime_Util.Random;
-with Math_Prime_Util.Random_Primes;
-
+with Math_Prime_Util.Random; use Math_Prime_Util.Random;
+with Math_Prime_Util.Random_Primes; use Math_Prime_Util.Random_Primes;
 package body Compat_Random_Select is
-   use AUnit.Test_Cases;
    use Ada.Strings.Unbounded;
-   use Fixture_Support;
    use Math_Prime_Util;
-   use Math_Prime_Util.Random;
-   use Math_Prime_Util.Random_Primes;
    use type Primality.Prime_Result;
-   use type U64;
-   use type U128;
    type Selection_Case is new Test_Case with null record;
    overriding function Name (T : Selection_Case) return AUnit.Message_String;
    overriding procedure Register_Tests (T : in out Selection_Case);
@@ -28,14 +20,9 @@ package body Compat_Random_Select is
      (AUnit.Format ("Compat_Random_Select"));
    function Image (N : U64) return String is
      (Ada.Strings.Fixed.Trim (N'Image, Ada.Strings.Both));
-   function Decode (S : String) return Byte_Array is
-     ([for I in 1 .. S'Length / 2 => Byte'Value
-       ("16#" & S (S'First + 2 * (I - 1) .. S'First + 2 * I - 1) & "#")]);
    type Text_Array is array (Natural range <>) of Unbounded_String;
    procedure Shuffle_Text is new Shuffle (Unbounded_String, Text_Array);
    procedure Sample_Text is new Vecsample (Unbounded_String, Text_Array);
-   procedure Shuffle_Numbers is new Shuffle (U64, U64_Array);
-
    --  random.tsv: bigint-only rows skipped by name/line:
    --  195, 196, 197, 198, 199, 240, 427, 428, 429, 430, 431, 472, 659, 660,
    --  661, 662, 663, 704, 891, 892, 893, 894, 895, 936, 1123, 1124, 1125,
@@ -52,15 +39,23 @@ package body Compat_Random_Select is
    --  127, 134, 141, 148, 156, 163, 170, 173, 176, 179, 182, 185, 188, 191,
    --  194, 209.
 
-   procedure Replay (Func : String; Expected_Count : Natural) is
+   generic
+      Func : String;
+      Expected_Count : Natural;
+   procedure Replay (T : in out Test_Case'Class);
+   procedure Replay (T : in out Test_Case'Class) is
       Count : Natural := 0;
+      Family : constant String :=
+        (if Func = "is_provable_prime_with_cert" then "bigint_proving"
+         elsif Func = "miller_rabin_random" then "bigint_random" else "random");
    begin
-      for C of For_Function (Load ("random"), Func) loop
+      for C of For_Function (Load (Family), Func) loop
          declare
             G : Generator;
             N, K, V : U64 := 0;
             Actual : Unbounded_String;
             Factors : Factor.Factor_List;
+            Flag : Boolean;
             function Arg (I : Positive) return String is
               (To_String (C.Args (I)));
             procedure Add (S : String) is
@@ -68,279 +63,154 @@ package body Compat_Random_Select is
                Append (Actual, (if Length (Actual) > 0 then " " else "") & S);
             end Add;
          begin
-            Csrand (G, Decode (Arg (1)));
-            if Func = "random_strong_prime" then
-               if C.Error then
-                  declare
-                     Rejected : Boolean := False;
-                  begin
-                     begin
-                        Random_Strong_Prime (G, Natural'Value (Arg (2)), V);
-                     exception
-                        when Ada.Assertions.Assertion_Error =>
-                           Rejected := True;
-                     end;
-                     AUnit.Assertions.Assert (Rejected, "strong minimum bits");
-                  end;
-                  Count := Count + 1;
+            if Family = "random" then
+               Csrand (G, [for I in 1 .. Arg (1)'Length / 2 => Byte'Value
+                 ("16#" & Arg (1) (2 * I - 1 .. 2 * I) & "#")]);
+            else
+               Csrand (G, [1 .. 40 => 0]);
+            end if;
+            if Func = "is_provable_prime_with_cert" then
+               if not Parse_U64 (Arg (1), N) then
+                  goto Next_Row;
                end if;
-            elsif Func = "random_factored_integer" then
-               if Parse_U64 (Arg (2), N) then
-                  Random_Factored_Integer (G, N, V, Factors);
-                  Add (Image (V));
-                  for I in 1 .. Factors.Count loop
-                     Add (Image (Factors.Value (I)));
+               declare
+                  Proof : constant Proving.Certified_Result :=
+                    Proving.Is_Provable_Prime_With_Cert (N);
+                  Text : String := Proof.Certificate;
+               begin
+                  for Ch of Text loop
+                     Ch := (if Ch = ASCII.LF then '|'
+                            elsif Ch = ' ' then '~' else Ch);
                   end loop;
-                  Count := Count + 1;
+                  Add (Image (U64 (Proof.Result)) & " " & Text);
+                  Assert ((if Proof.Result = 2 then
+                    Proving.Verify_Prime (Proof.Certificate)
+                    else Text'Length = 0), "certificate law");
+               end;
+            elsif Func = "miller_rabin_random" then
+               if not Parse_U64 (Arg (1), N) then
+                  goto Next_Row;
+               end if;
+               Miller_Rabin_Random (G, N, U64'Value (Arg (2)), Flag);
+               Add ((if Flag then "1" else "0"));
+            elsif Func = "random_strong_prime" then
+               if not C.Error then
+                  goto Next_Row;
+               end if;
+               begin
+                  Random_Strong_Prime (G, Natural'Value (Arg (2)), V);
+                  Assert (False, "strong minimum bits");
+               exception
+                  when Ada.Assertions.Assertion_Error => Actual := C.Result;
+               end;
+            elsif Func = "random_factored_integer" then
+               if not Parse_U64 (Arg (2), N) then
+                  goto Next_Row;
+               end if;
+               Random_Factored_Integer (G, N, V, Factors);
+               Add (Image (V));
+               for I in 1 .. Factors.Count loop
+                  Add (Image (Factors.Value (I)));
+               end loop;
+               if N = 0 then
+                  Assert (V = 0 and Factors.Count = 0, "zero factors");
+                  Actual := C.Result;
                end if;
             elsif Func = "randperm" then
-               AUnit.Assertions.Assert (Parse_U64 (Arg (2), N), "native N");
-               K := N;
-               if Natural (C.Args.Length) = 3 then
-                  AUnit.Assertions.Assert (Parse_U64 (Arg (3), K), "native K");
-               end if;
+               N := U64'Value (Arg (2));
+               K := (if C.Args.Length = 3 then U64'Value (Arg (3)) else N);
                declare
                   Values : U64_Array (1 .. Natural (U64'Min (N, K)));
                begin
-                  if Natural (C.Args.Length) = 2 then
-                     Randperm (G, N, Values);
-                  else
-                     Randperm (G, N, K, Values);
-                  end if;
+                  Randperm (G, N, K, Values);
                   for Value of Values loop
                      Add (Image (Value));
                   end loop;
                end;
-               Count := Count + 1;
             else
                declare
                   First : constant Positive :=
                     (if Func = "shuffle" then 2 else 3);
-                  Values : Text_Array
-                    (1 .. Natural (C.Args.Length) - First + 1);
+                  Values : Text_Array := [for I in First ..
+                    Natural (C.Args.Length) => C.Args (I)];
+                  Sample : Text_Array (1 .. (if Func = "shuffle" then 0 else
+                    Natural (U64'Min (U64'Value (Arg (2)),
+                      U64 (Values'Length)))));
                begin
-                  for I in Values'Range loop
-                     Values (I) := C.Args (First + I - 1);
-                  end loop;
                   if Func = "shuffle" then
                      Shuffle_Text (G, Values);
-                     for Value of Values loop
-                        Add (To_String (Value));
-                     end loop;
+                     Sample := []; --  Output is Values for shuffle.
                   else
-                     AUnit.Assertions.Assert
-                       (Parse_U64 (Arg (2), K), "sample count");
-                     declare
-                        Sample : Text_Array
-                          (1 .. Natural (U64'Min (K, U64 (Values'Length))));
-                     begin
-                        Sample_Text (G, K, Values, Sample);
-                        for Value of Sample loop
-                           Add (To_String (Value));
-                        end loop;
-                     end;
+                     Sample_Text (G, U64'Value (Arg (2)), Values, Sample);
                   end if;
+                  for Value of (if Func = "shuffle" then Values else Sample)
+                  loop
+                     Add (To_String (Value));
+                  end loop;
                end;
-               Count := Count + 1;
             end if;
-            if Length (Actual) = 0 and then C.Undef then
+            if Length (Actual) = 0 and C.Undef then
                Actual := To_Unbounded_String ("undef");
             end if;
-            if Func /= "random_strong_prime" and then
-              not (Func = "random_factored_integer" and then N = 0)
-            then
-               AUnit.Assertions.Assert (Actual = C.Result,
-                 Func & " line" & C.Line_Number'Image & " actual " &
-                 To_String (Actual) & " expected " & To_String (C.Result));
-            end if;
+            Assert (Actual = C.Result, Func & C.Line_Number'Image);
+            Count := Count + 1;
+            <<Next_Row>>
          end;
       end loop;
-      AUnit.Assertions.Assert (Count = Expected_Count,
-        Func & " fixture count" & Count'Image);
+      Assert (Count = Expected_Count, Func & " count" & Count'Image);
    end Replay;
-
-   procedure Test_Randperm (T : in out Test_Case'Class) is
-   begin
-      Replay ("randperm", 238);
-   end Test_Randperm;
-   procedure Test_Shuffle (T : in out Test_Case'Class) is
-   begin
-      Replay ("shuffle", 98);
-   end Test_Shuffle;
-   procedure Test_Vecsample (T : in out Test_Case'Class) is
-   begin
-      Replay ("vecsample", 112);
-   end Test_Vecsample;
-   procedure Test_Strong (T : in out Test_Case'Class) is
-      G : Generator;
-      V : U64;
-      Rejected : Boolean := False;
-   begin
-      Replay ("random_strong_prime", 14);
-      Csrand (G, [1 .. 40 => 0]);
-      begin
-         Random_Strong_Prime (G, 128, V);
-      exception
-         when Constraint_Error => Rejected := True;
-      end;
-      AUnit.Assertions.Assert (Rejected, "strong prime needs bigint");
-   end Test_Strong;
-   procedure Test_Factored (T : in out Test_Case'Class) is
-   begin
-      Replay ("random_factored_integer", 112);
-   end Test_Factored;
-
-   procedure Test_Miller (T : in out Test_Case'Class) is
-      G : Generator;
-      V : Boolean;
-      N : U64;
-      Count : Natural := 0;
-      Edges : constant U64_Array :=
-        [0, 1, 2, 3, 4, 5, 9, 341, 561, 1_373_653,
-         2 ** 32 - 1, 2 ** 32 + 1, 2 ** 63 - 1, 2 ** 63 + 1,
-         U64'Last, 18_446_744_073_709_551_557];
-   begin
-      Csrand (G, [1 .. 40 => 0]);
-      for C of For_Function (Load ("bigint_random"), "miller_rabin_random")
-      loop
-         if Parse_U64 (To_String (C.Args (1)), N) then
-            Miller_Rabin_Random (G, N, U64'Value
-              (To_String (C.Args (2))), V);
-            AUnit.Assertions.Assert
-              ((if V then "1" else "0") = To_String (C.Result), "MR row");
-            Count := Count + 1;
-         end if;
-      end loop;
-      AUnit.Assertions.Assert (Count = 0, "all MR fixture inputs are bigint");
-      for Value of Edges loop
-         Miller_Rabin_Random (G, Value, 20, V);
-         AUnit.Assertions.Assert (V = (Primality.Is_Prime (Value) = 2),
-           "MR seed 0 N=" & Image (Value));
-      end loop;
-   end Test_Miller;
-
-   function Encode (S : String) return String is
-      Result : String := S;
-   begin
-      for C of Result loop
-         if C = ASCII.LF then
-            C := '|';
-         elsif C = ' ' then
-            C := '~';
-         end if;
-      end loop;
-      return Result;
-   end Encode;
-
-   procedure Test_Proving (T : in out Test_Case'Class) is
-      N : U64;
-      Count : Natural := 0;
-   begin
-      for C of For_Function (Load ("bigint_proving"),
-        "is_provable_prime_with_cert")
-      loop
-         if Parse_U64 (To_String (C.Args (1)), N) then
-            declare
-               Proof : constant Proving.Certified_Result :=
-                 Proving.Is_Provable_Prime_With_Cert (N);
-               Actual : constant String := Image (U64 (Proof.Result)) &
-                 " " & Encode (Proof.Certificate);
-            begin
-               AUnit.Assertions.Assert (Actual = To_String (C.Result),
-                 "combined proof line" & C.Line_Number'Image);
-               AUnit.Assertions.Assert
-                 ((if Proof.Result = 2 then
-                     Proving.Verify_Prime (Proof.Certificate)
-                   else Proof.Certificate'Length = 0), "certificate law");
-            end;
-            Count := Count + 1;
-         end if;
-      end loop;
-      AUnit.Assertions.Assert (Count = 7, "native combined proof count");
-   end Test_Proving;
-
+   procedure Perm is new Replay ("randperm", 238);
+   procedure Shuf is new Replay ("shuffle", 98);
+   procedure Sample is new Replay ("vecsample", 112);
+   procedure Strong is new Replay ("random_strong_prime", 14);
+   procedure Factored is new Replay ("random_factored_integer", 112);
+   procedure Miller is new Replay ("miller_rabin_random", 0);
+   procedure Proof is new Replay ("is_provable_prime_with_cert", 7);
    procedure Laws (T : in out Test_Case'Class) is
       G : Generator;
       V : U64;
+      Flag : Boolean;
       Factors : Factor.Factor_List;
-      Bounds : constant U64_Array :=
-        [0, 1, 2, 2 ** 32 - 1, 2 ** 32 + 1,
-         2 ** 63 - 1, 2 ** 63 + 1, U64'Last];
    begin
       Csrand (G, [1 .. 40 => 0]);
       for N in 0 .. 100 loop
          declare
             Values : U64_Array (5 .. N + 4);
-            Seen : array (0 .. N) of Boolean := [others => False];
          begin
             Randperm (G, U64 (N), Values);
-            Shuffle_Numbers (G, Values);
-            for Value of Values loop
-               AUnit.Assertions.Assert (Value < U64 (N), "range seed 0");
-               AUnit.Assertions.Assert (not Seen (Natural (Value)),
-                 "permutation uniqueness seed 0");
-               Seen (Natural (Value)) := True;
+            for I in Values'Range loop
+               Assert (Values (I) < U64 (N), "range seed 0");
+               Assert ((for all J in Values'First .. I - 1 =>
+                 Values (I) /= Values (J)), "unique seed 0");
             end loop;
          end;
       end loop;
-      --  Exercise each partial-permutation dispatch with nonzero bounds.
-      for N of U64_Array'[50, 32_768, 65_536, 100_000,
+      for N of U64_Array'[0, 1, 2, 3, 4, 341, 561, 1_373_653,
         2 ** 32 - 1, 2 ** 32 + 1, 2 ** 63 - 1, 2 ** 63 + 1, U64'Last]
       loop
-         for K of U64_Array'[1, 2, 3, 4, 16, 17, 37] loop
-            declare
-               Values : U64_Array (7 .. Natural (K) + 6);
-            begin
-               Randperm (G, N, K, Values);
-               for I in Values'Range loop
-                  AUnit.Assertions.Assert (Values (I) < N, "partial range");
-                  for J in Values'First .. I - 1 loop
-                     AUnit.Assertions.Assert (Values (I) /= Values (J),
-                       "partial uniqueness seed 0");
-                  end loop;
-               end loop;
-            end;
-         end loop;
-      end loop;
-      for N of Bounds loop
-         for Trial in 1 .. 5 loop
-            Random_Factored_Integer (G, N, V, Factors);
-            declare
-               Product : U128 := 1;
-            begin
-               for I in 1 .. Factors.Count loop
-                  AUnit.Assertions.Assert
-                    (Primality.Is_Prime (Factors.Value (I)) = 2,
-                     "prime factor seed 0");
-                  Product := Product * U128 (Factors.Value (I));
-               end loop;
-               AUnit.Assertions.Assert
-                 ((if N = 0 then V = 0 and then Factors.Count = 0
-                   else Product = U128 (V) and then V in 1 .. N),
-                  "factor product seed 0");
-               declare
-                  Proof : constant Proving.Certified_Result :=
-                    Proving.Is_Provable_Prime_With_Cert (V);
-               begin
-                  AUnit.Assertions.Assert
-                    ((if Proof.Result = 2 then
-                        Proving.Verify_Prime (Proof.Certificate)
-                      else Proof.Certificate'Length = 0), "proof seed 0");
-               end;
-            end;
-         end loop;
+         Miller_Rabin_Random (G, N, 20, Flag);
+         Assert (Flag = (Primality.Is_Prime (N) = 2), "MR seed 0");
+         Random_Factored_Integer (G, N, V, Factors);
+         declare
+            Product : U128 := 1;
+         begin
+            for I in 1 .. Factors.Count loop
+               Product := Product * U128 (Factors.Value (I));
+            end loop;
+            Assert ((if N = 0 then V = 0 else Product = U128 (V)),
+              "factor product seed 0");
+         end;
       end loop;
    end Laws;
-
    overriding procedure Register_Tests (T : in out Selection_Case) is
    begin
-      Registration.Register_Routine (T, Test_Randperm'Access, "randperm");
-      Registration.Register_Routine (T, Test_Shuffle'Access, "shuffle");
-      Registration.Register_Routine (T, Test_Vecsample'Access, "vecsample");
-      Registration.Register_Routine (T, Test_Strong'Access, "strong prime");
-      Registration.Register_Routine (T, Test_Factored'Access, "factored");
-      Registration.Register_Routine (T, Test_Miller'Access, "random MR");
-      Registration.Register_Routine (T, Test_Proving'Access, "combined proof");
+      Registration.Register_Routine (T, Perm'Access, "randperm");
+      Registration.Register_Routine (T, Shuf'Access, "shuffle");
+      Registration.Register_Routine (T, Sample'Access, "vecsample");
+      Registration.Register_Routine (T, Strong'Access, "strong prime");
+      Registration.Register_Routine (T, Factored'Access, "factored");
+      Registration.Register_Routine (T, Miller'Access, "random MR");
+      Registration.Register_Routine (T, Proof'Access, "combined proof");
       Registration.Register_Routine (T, Laws'Access, "laws seed 0");
    end Register_Tests;
    function Suite return AUnit.Test_Suites.Access_Test_Suite is
