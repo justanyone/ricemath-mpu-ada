@@ -37,17 +37,17 @@ package body Compat_Random_Select is
    --  127, 134, 141, 148, 156, 163, 170, 173, 176, 179, 182, 185, 188, 191,
    --  194, 209.
    generic
-      Func : String;
+      F : String;
       Expected_Count : Natural;
    procedure Replay (Unused_T : in out Selection);
    procedure Replay (Unused_T : in out Selection) is
       Count : Natural := 0;
       Family : constant String :=
-        (if Func = "is_provable_prime_with_cert" then "bigint_proving"
-         elsif Func = "miller_rabin_random" then "bigint_random"
+        (if F = "is_provable_prime_with_cert" then "bigint_proving"
+         elsif F = "miller_rabin_random" then "bigint_random"
          else "random");
    begin
-      for C of For_Function (Load (Family), Func) loop
+      for C of For_Function (Load (Family), F) loop
          declare
             G : Generator;
             N, K, V : U64 := 0;
@@ -63,15 +63,15 @@ package body Compat_Random_Select is
          begin
             Csrand (G, (if Family = "random" then Decode (Arg (1))
                         else [1 .. 40 => 0]));
-            if Func = "random_strong_prime" and then not C.Error then
+            if F = "random_strong_prime" and then not C.Error then
                goto Next_Row;
-            elsif Func in "is_provable_prime_with_cert" | "miller_rabin_random" |
+            elsif F in "is_provable_prime_with_cert" | "miller_rabin_random" |
               "random_factored_integer" and then not Parse_U64
                 (Arg ((if Family = "random" then 2 else 1)), N)
             then
                goto Next_Row;
             end if;
-            if Func = "is_provable_prime_with_cert" then
+            if F = "is_provable_prime_with_cert" then
                declare
                   Proof : constant Proving.Certified_Result :=
                     Proving.Is_Provable_Prime_With_Cert (N);
@@ -86,17 +86,17 @@ package body Compat_Random_Select is
                     Proving.Verify_Prime (Proof.Certificate)
                     else Text'Length = 0), "certificate law");
                end;
-            elsif Func = "miller_rabin_random" then
+            elsif F = "miller_rabin_random" then
                Miller_Rabin_Random (G, N, U64'Value (Arg (2)), Flag);
                Add ((if Flag then "1" else "0"));
-            elsif Func = "random_strong_prime" then
+            elsif F = "random_strong_prime" then
                begin
                   Random_Strong_Prime (G, Natural'Value (Arg (2)), V);
                   Actual := To_Unbounded_String ("accepted invalid bits");
                exception
                   when Ada.Assertions.Assertion_Error => Actual := C.Result;
                end;
-            elsif Func = "random_factored_integer" then
+            elsif F = "random_factored_integer" then
                Random_Factored_Integer (G, N, V, Factors);
                Add (Image (V));
                declare
@@ -113,7 +113,7 @@ package body Compat_Random_Select is
                   Assert (V = 0 and then Factors.Count = 0, "zero factors");
                   Actual := C.Result;
                end if;
-            elsif Func = "randperm" then
+            elsif F = "randperm" then
                N := U64'Value (Arg (2));
                K := (if Natural (C.Args.Length) = 3
                      then U64'Value (Arg (3)) else N);
@@ -131,15 +131,15 @@ package body Compat_Random_Select is
             else
                declare
                   First : constant Positive :=
-                    (if Func = "shuffle" then 2 else 3);
+                    (if F = "shuffle" then 2 else 3);
                   Values : Text_Array := [for I in First ..
                     Natural (C.Args.Length) => C.Args (I)];
-                  Sample : Text_Array (1 .. (if Func = "shuffle" then
+                  Sample : Text_Array (1 .. (if F = "shuffle" then
                     Values'Length else
                     Natural (U64'Min (U64'Value (Arg (2)),
                       U64 (Values'Length)))));
                begin
-                  if Func = "shuffle" then
+                  if F = "shuffle" then
                      Shuffle_Text (G, Values);
                      Sample := Values;
                   else
@@ -152,13 +152,13 @@ package body Compat_Random_Select is
             end if;
             Assert (Actual = C.Result or else
               (C.Undef and then Length (Actual) = 0),
-              Func & C.Line_Number'Image);
+              F & C.Line_Number'Image);
             Count := Count + 1;
             <<Next_Row>>
          end;
       end loop;
-      Assert (Count = Expected_Count, Func & " count" & Count'Image);
-      if Func = "miller_rabin_random" then
+      Assert (Count = Expected_Count, F & " count" & Count'Image);
+      if F = "miller_rabin_random" then
          declare
             G : Generator;
             Flag : Boolean;
