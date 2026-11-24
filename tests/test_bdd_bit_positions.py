@@ -2,11 +2,14 @@
 
 from pathlib import Path
 
-from pytest_bdd import given, parsers, scenarios, when
+from pytest_bdd import given, parsers, scenarios, then, when
 
-from test_bdd_powers import run_selected, selected_test_passes  # noqa: F401
+from test_bdd_powers import run_selected, selected_test_passes
 
 scenarios("features/bit_positions.feature")
+
+# Justification: register the shared assertion step in this feature module.
+then("the selected AUnit test passes within one minute")(selected_test_passes)
 
 
 # Justification: reuse the existing filtered runner for the new suite.
