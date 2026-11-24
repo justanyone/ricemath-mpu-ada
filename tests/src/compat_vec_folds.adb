@@ -3,10 +3,12 @@ with Ada.Strings.Fixed;
 with Ada.Strings.Unbounded;
 with AUnit.Assertions;
 with AUnit.Test_Cases;
+with AUnit.Test_Suites;
 with Fixture_Support;
 with Math_Prime_Util.Vec.Folds;
 
-package body Compat_Vec_Folds is
+--  Build the native callback compatibility suite in one compilation unit.
+function Compat_Vec_Folds return AUnit.Test_Suites.Access_Test_Suite is
    use AUnit.Test_Cases;
    use AUnit.Assertions;
    use Ada.Strings.Unbounded;
@@ -320,11 +322,9 @@ package body Compat_Vec_Folds is
       Registration.Register_Routine (T, Check_Set'Access, "setbinop");
       Registration.Register_Routine (T, Check_Fixtures'Access, "fixtures");
    end Register_Tests;
-   function Suite return AUnit.Test_Suites.Access_Test_Suite is
-      Result : constant AUnit.Test_Suites.Access_Test_Suite :=
-        new AUnit.Test_Suites.Test_Suite;
-   begin
-      Result.Add_Test (new Fold_Case);
-      return Result;
-   end Suite;
+   Result : constant AUnit.Test_Suites.Access_Test_Suite :=
+     new AUnit.Test_Suites.Test_Suite;
+begin
+   Result.Add_Test (new Fold_Case);
+   return Result;
 end Compat_Vec_Folds;
