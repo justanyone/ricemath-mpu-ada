@@ -152,6 +152,13 @@ package body Math_Prime_Util.Proving is
         "Type Small" & LF & "N " & Number & LF;
    end Prime_Certificate;
 
+   function Is_Provable_Prime_With_Cert (N : U64) return Certified_Result is
+      Certificate : constant String := Prime_Certificate (N);
+   begin
+      return (Certificate_Length => Certificate'Length,
+              Result => Is_Provable_Prime (N), Certificate => Certificate);
+   end Is_Provable_Prime_With_Cert;
+
    subtype Factor_Index is Natural range 0 .. 63;
    type Proof_Values is array (Factor_Index) of U64;
 

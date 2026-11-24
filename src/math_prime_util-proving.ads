@@ -24,6 +24,16 @@ package Math_Prime_Util.Proving with SPARK_Mode => On is
      with Pre => True,
           Post => (if N < 2 then Prime_Certificate'Result'Length = 0);
 
+   type Certified_Result (Certificate_Length : Natural) is record
+      Result : Primality.Prime_Result;
+      Certificate : String (1 .. Certificate_Length);
+   end record;
+   --  PrimalityProving.pm: is_provable_prime_with_cert. Native proof result
+   --  and Prime_Certificate text; composites return 0 and empty text.
+   function Is_Provable_Prime_With_Cert (N : U64) return Certified_Result
+     with Pre => True,
+          Post => Is_Provable_Prime_With_Cert'Result.Result in 0 | 2;
+
    --  Check a decimal MPU 1.0 certificate containing one Small or BLS5
    --  proof for a U64 candidate. Malformed, unsupported, or non-native
    --  certificates return False; no parsing exceptions are propagated.
