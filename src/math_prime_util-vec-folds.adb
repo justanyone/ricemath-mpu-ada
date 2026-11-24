@@ -1,32 +1,21 @@
 with Ada.Containers.Vectors;
+with Ada.Containers.Generic_Array_Sort;
 
 package body Math_Prime_Util.Vec.Folds with SPARK_Mode => On is
    package Results is new Ada.Containers.Vectors
      (Index_Type => Positive, Element_Type => U64);
 
-   function To_Array (Items : Results.Vector) return Value_Array;
-   function Canonical (Items : Value_Array) return Value_Array;
-
    function To_Array (Items : Results.Vector) return Value_Array is
-      Result : Value_Array (1 .. Natural (Items.Length));
-   begin
-      for I in Result'Range loop
-         Result (I) := Items (I);
-      end loop;
-      return Result;
-   end To_Array;
+     ([for V of Items => V]);
 
    function Canonical (Items : Value_Array) return Value_Array is
       Sorted : Value_Array := Items;
       Count : Natural := 0;
-      package Sorting is new Results.Generic_Sorting;
-      Values : Results.Vector;
+      procedure Sort is new Ada.Containers.Generic_Array_Sort
+        (Positive, U64, Value_Array);
    begin
-      for V of Items loop
-         Values.Append (V);
-      end loop;
-      Sorting.Sort (Values);
-      for V of Values loop
+      Sort (Sorted);
+      for V of Sorted loop
          if Count = 0 or else Sorted (Sorted'First + (Count - 1)) /= V then
             Sorted (Sorted'First + Count) := V;
             Count := Count + 1;
