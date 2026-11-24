@@ -13,6 +13,8 @@ package body Compat_Random_Select is
    use Ada.Strings.Unbounded;
    use Math_Prime_Util;
    use type Primality.Prime_Result;
+   use type U64;
+   use type U128;
    type Selection_Case is new Test_Case with null record;
    overriding function Name (T : Selection_Case) return AUnit.Message_String;
    overriding procedure Register_Tests (T : in out Selection_Case);
@@ -100,7 +102,7 @@ package body Compat_Random_Select is
                end if;
                begin
                   Random_Strong_Prime (G, Natural'Value (Arg (2)), V);
-                  Assert (False, "strong minimum bits");
+                  Actual := To_Unbounded_String ("accepted invalid bits");
                exception
                   when Ada.Assertions.Assertion_Error => Actual := C.Result;
                end;
@@ -117,15 +119,16 @@ package body Compat_Random_Select is
                      Add (Image (Factors.Value (I)));
                      Product := Product * U128 (Factors.Value (I));
                   end loop;
-                  Assert (N = 0 or Product = U128 (V), "product seed fixture");
+                  Assert (N = 0 or else Product = U128 (V), "product seed fixture");
                end;
                if N = 0 then
-                  Assert (V = 0 and Factors.Count = 0, "zero factors");
+                  Assert (V = 0 and then Factors.Count = 0, "zero factors");
                   Actual := C.Result;
                end if;
             elsif Func = "randperm" then
                N := U64'Value (Arg (2));
-               K := (if Natural (C.Args.Length) = 3 then U64'Value (Arg (3)) else N);
+               K := (if Natural (C.Args.Length) = 3
+                     then U64'Value (Arg (3)) else N);
                declare
                   Values : U64_Array (1 .. Natural (U64'Min (N, K)));
                begin
@@ -156,13 +159,13 @@ package body Compat_Random_Select is
                      Output : constant Text_Array :=
                        (if Func = "shuffle" then Values else Sample);
                   begin
-                  for Value of Output loop
-                     Add (To_String (Value));
-                  end loop;
+                     for Value of Output loop
+                        Add (To_String (Value));
+                     end loop;
                   end;
                end;
             end if;
-            if Length (Actual) = 0 and C.Undef then
+            if Length (Actual) = 0 and then C.Undef then
                Actual := To_Unbounded_String ("undef");
             end if;
             Assert (Actual = C.Result, Func & C.Line_Number'Image);

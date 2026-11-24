@@ -29,29 +29,14 @@ package body Math_Prime_Util.Random_Primes with SPARK_Mode => On is
      (G : in out Generator; N, K : U64; Values : out U64_Array)
    is
       Size : constant Natural := Values'Length;
-      I, J, M : U64;
+      J, M : U64;
       Capacity : Positive := 16;
    begin
       if Size = 0 then
          return;
-      elsif Size = 1 then
-         Urandomm (G, N, Values (Values'First));
       elsif K >= N then
          Values := [for Index in Values'Range => U64 (Index - Values'First)];
          Shuffle_Numbers (G, Values);
-      elsif Size in 2 .. 3 then
-         Urandomm (G, N, I);
-         Urandomm (G, N - 1, J);
-         J := J + 1;
-         Values (Values'First) := I;
-         Values (Values'First + 1) := (if J = I then 0 else J);
-         if Size = 3 then
-            Urandomm (G, N - 2, M);
-            M := M + 2;
-            Values (Values'First + 2) :=
-              (if M = J then (if I = 1 then 0 else 1)
-               elsif M = I then 0 else M);
-         end if;
       else
          --  util.c: randperm_sparse_fy_hash. A sparse identity map also
          --  implements the small-map and dense FY paths with identical draws.
