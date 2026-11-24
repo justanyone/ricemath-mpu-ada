@@ -10,6 +10,164 @@ package body Math_Prime_Util.Random_Primes with SPARK_Mode => On is
    function Prime (N : U64) return Boolean is
      (Primality.Is_Prime (N) = 2);
 
+   procedure Randperm
+     (G : in out Generator; N, K : U64; Values : out U64_Array)
+   is
+      Size : constant Natural := Values'Length;
+      Offset : U64;
+   begin
+      if Size = 0 then
+         return;
+      elsif K >= N then
+         for I in 0 .. Size - 1 loop
+            Values (Values'First + I) := U64 (I);
+         end loop;
+         for I in 0 .. Size - 2 loop
+            Urandomm (G, N - U64 (I), Offset);
+            declare
+               J : constant Natural := Values'First + I + Natural (Offset);
+               V : constant U64 := Values (J);
+            begin
+               Values (J) := Values (Values'First + I);
+               Values (Values'First + I) := V;
+            end;
+         end loop;
+      else
+         --  util.c: sparse Fisher-Yates. Identity entries are implicit.
+         --  The small map and hash map use the same draws and swaps as
+         --  the dense path, including the unrolled K=2 and K=3 cases.
+         declare
+            Capacity : Positive := 16;
+         begin
+            while Capacity / 2 < Size loop
+               Capacity := Capacity * 2;
+            end loop;
+            declare
+               Keys, Vals : U64_Array (0 .. Capacity - 1) := [others => 0];
+               function Slot (Key : U64) return Natural is
+                  H : Natural := Natural (Key mod U64 (Capacity));
+               begin
+                  while Keys (H) /= 0 and then Keys (H) /= Key + 1 loop
+                     H := (H + 1) mod Capacity;
+                  end loop;
+                  return H;
+               end Slot;
+               function Get (Key : U64) return U64 is
+                  H : constant Natural := Slot (Key);
+               begin
+                  return (if Keys (H) = 0 then Key else Vals (H));
+               end Get;
+               R, V : U64;
+               H : Natural;
+            begin
+               for I in 0 .. Size - 1 loop
+                  Urandomm (G, N - U64 (I), Offset);
+                  R := U64 (I) + Offset;
+                  Values (Values'First + I) := Get (R);
+                  V := Get (U64 (I));
+                  if R /= U64 (I) then
+                     H := Slot (R);
+                     Keys (H) := R + 1;
+                     Vals (H) := V;
+                  end if;
+               end loop;
+            end;
+         end;
+      end if;
+   end Randperm;
+
+   procedure Randperm
+     (G : in out Generator; N : U64; Values : out U64_Array) is
+   begin
+      Randperm (G, N, N, Values);
+   end Randperm;
+
+   procedure Shuffle (G : in out Generator; Values : in out Element_Array) is
+      Offset : U64;
+   begin
+      for I in Values'First .. Values'Last - 1 loop
+         Urandomm (G, U64 (Values'Last - I) + 1, Offset);
+         declare
+            J : constant Natural := I + Natural (Offset);
+            V : constant Element_Type := Values (J);
+         begin
+            Values (J) := Values (I);
+            Values (I) := V;
+         end;
+      end loop;
+   end Shuffle;
+
+   procedure Vecsample
+     (G : in out Generator; K : U64; Values : Element_Array;
+      Sample : out Element_Array)
+   is
+      Size : constant Natural := Values'Length;
+      Indices : U64_Array (1 .. Size);
+      Offset : U64;
+   begin
+      if K = 0 or else Size = 0 then
+         return;
+      end if;
+      Indices (1) := U64 (Size - 1);
+      for I in 2 .. Size loop
+         Indices (I) := U64 (I - 2);
+      end loop;
+      for I in 1 .. Sample'Length loop
+         Urandomm (G, U64 (Size - I + 1), Offset);
+         declare
+            J : constant Natural := I + Natural (Offset);
+         begin
+            Sample (Sample'First + I - 1) :=
+              Values (Values'First + Natural (Indices (J)));
+            Indices (J) := Indices (I);
+         end;
+      end loop;
+   end Vecsample;
+
+   procedure Random_Factored_Integer
+     (G : in out Generator; N : U64; Value : out U64;
+      Factors : out Factor.Factor_List) is
+   begin
+      if N = 0 then
+         Value := 0;
+         Factors := (Count => 0, Value => [others => 0]);
+      else
+         Urandomm (G, N, Value);
+         Value := Value + 1;
+         Factors := Factor.Factor (Value);
+      end if;
+   end Random_Factored_Integer;
+
+   procedure Miller_Rabin_Random
+     (G : in out Generator; N : U64; K : Positive := 1;
+      Value : out Boolean)
+   is
+      Base : U64;
+   begin
+      if N < 4 or else U64 (K) >= 3 * (N / 4) then
+         Value := Prime (N);
+         return;
+      end if;
+      Value := False;
+      for I in 1 .. K loop
+         Urandomm (G, N - 3, Base);
+         if not Primality.Is_Strong_Pseudoprime (N, Base + 2) then
+            return;
+         end if;
+      end loop;
+      Value := True;
+   end Miller_Rabin_Random;
+
+   procedure Random_Strong_Prime
+     (G : in out Generator; Bits : Natural; Value : out U64) is
+   begin
+      if Is_Seeded (G) and then Bits >= 128 then
+         raise Constraint_Error with "strong primes require the bigint tier";
+      end if;
+      Value := 0;
+      raise Constraint_Error with "strong primes require at least 128 bits";
+   end Random_Strong_Prime;
+
    --  random_prime.c: random_prime. Tighten bounds before rejection sampling.
    procedure Random_Prime
      (G : in out Generator; Low, High : U64; Value : out Int.Optional_U64)
