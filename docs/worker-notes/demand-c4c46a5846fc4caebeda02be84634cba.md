@@ -6,3 +6,4 @@ The sole conflict joins fold/window/set test declarations with base predicate te
 Alire initially failed because /run/user/1000 is unwritable; setting TMPDIR and XDG_RUNTIME_DIR under obj/worker-tmp lets the checked build proceed. The configured gate has been launched with the same environment.
 Confirmed all eight base predicate registrations and all six branch fold/window/set registrations remain in Compat_Vec. Builds are progressing with existing style warnings; no unrelated source edits are needed.
 Development build passed. Release compilation is in progress; checked tests will run next through the gate. No additional conflict or source change has appeared.
+Checked test compilation now uses the pinned AUnit dependency and the validation profile. Release and validation builds continue; the conflict resolution retains both test suites without modifying fixtures.
