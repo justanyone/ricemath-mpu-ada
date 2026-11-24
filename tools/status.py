@@ -7,7 +7,6 @@ Run from any directory with ``python3 -I tools/status.py``.
 import re
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parent.parent
 STATUS = ROOT / "STATUS.md"
 SOURCE = ROOT / "src"
@@ -38,10 +37,6 @@ def regenerate(status: Path = STATUS, source: Path = SOURCE) -> bool:
     original = status.read_text(encoding="utf-8")
     lines = original.splitlines(keepends=True)
     declared = public_subprograms(source)
-    if source.exists():
-        declared = public_subprograms(source)
-    else:
-        declared = set()
     try:
         start = next(i for i, line in enumerate(lines)
                      if line.rstrip("\r\n") == FUNCTIONS_HEADING) + 1
