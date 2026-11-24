@@ -25,17 +25,12 @@ package body Compat_Random_Select is
    type Text_Array is array (Natural range <>) of Unbounded_String;
    procedure Shuffle_Text is new Shuffle (Unbounded_String, Text_Array);
    procedure Sample_Text is new Vecsample (Unbounded_String, Text_Array);
-   --  random.tsv: bigint-only rows skipped by name/line:
-   --  195, 196, 197, 198, 199, 240, 427, 428, 429, 430, 431, 472, 659, 660,
-   --  661, 662, 663, 704, 891, 892, 893, 894, 895, 936, 1123, 1124, 1125,
-   --  1126, 1127, 1168, 1355, 1356, 1357, 1358, 1359, 1400, 1587, 1588,
-   --  1589, 1590, 1591, 1632, 1819, 1820, 1821, 1822, 1823, 1864, 2051,
-   --  2052, 2053, 2054, 2055, 2096, 2283, 2284, 2285, 2286, 2287, 2328,
-   --  2515, 2516, 2517, 2518, 2519, 2560, 2747, 2748, 2749, 2750, 2751,
-   --  2792, 2979, 2980, 2981, 2982, 2983, 3024, 3211, 3212, 3213, 3214,
-   --  3215, 3256.
-   --  bigint_random.tsv: bigint-only rows skipped by name/line:
-   --  15, 16, 20, 21, 24.
+   --  Bigint skips in random.tsv, seed blocks S = 0 .. 13:
+   --  random_strong_prime: lines 195 .. 199 + 232*S (128 .. 2048 bits).
+   --  random_factored_integer: line 240 + 232*S (bound exceeds U64).
+   --  bigint_random.tsv: random_factored_integer lines 15, 20 and
+   --  miller_rabin_random lines 16, 21 have bounds/inputs above U64;
+   --  random_strong_prime line 24 requires 128 bits.
    --  bigint_proving.tsv: bigint-only rows skipped by name/line:
    --  2, 9, 16, 23, 30, 37, 44, 51, 58, 65, 72, 84, 91, 98, 106, 113, 120,
    --  127, 134, 141, 148, 156, 163, 170, 173, 176, 179, 182, 185, 188, 191,
@@ -67,7 +62,7 @@ package body Compat_Random_Select is
             end Add;
          begin
             if Family = "random" then
-               Csrand (G, [for I in 1 .. Arg (1)'Length / 2 => Byte'Value
+               Csrand (G, [for I in 1 .. Arg (1)'Length / 2 => Math_Prime_Util.Random.Byte'Value
                  ("16#" & Arg (1) (2 * I - 1 .. 2 * I) & "#")]);
             else
                Csrand (G, [1 .. 40 => 0]);
@@ -119,7 +114,8 @@ package body Compat_Random_Select is
                      Add (Image (Factors.Value (I)));
                      Product := Product * U128 (Factors.Value (I));
                   end loop;
-                  Assert (N = 0 or else Product = U128 (V), "product seed fixture");
+                  Assert (N = 0 or else Product = U128 (V),
+                    "product seed fixture");
                end;
                if N = 0 then
                   Assert (V = 0 and then Factors.Count = 0, "zero factors");
@@ -146,23 +142,20 @@ package body Compat_Random_Select is
                     (if Func = "shuffle" then 2 else 3);
                   Values : Text_Array := [for I in First ..
                     Natural (C.Args.Length) => C.Args (I)];
-                  Sample : Text_Array (1 .. (if Func = "shuffle" then 0 else
+                  Sample : Text_Array (1 .. (if Func = "shuffle" then
+                    Values'Length else
                     Natural (U64'Min (U64'Value (Arg (2)),
                       U64 (Values'Length)))));
                begin
                   if Func = "shuffle" then
                      Shuffle_Text (G, Values);
+                     Sample := Values;
                   else
                      Sample_Text (G, U64'Value (Arg (2)), Values, Sample);
                   end if;
-                  declare
-                     Output : constant Text_Array :=
-                       (if Func = "shuffle" then Values else Sample);
-                  begin
-                     for Value of Output loop
-                        Add (To_String (Value));
-                     end loop;
-                  end;
+                  for Value of Sample loop
+                     Add (To_String (Value));
+                  end loop;
                end;
             end if;
             if Length (Actual) = 0 and then C.Undef then
