@@ -283,6 +283,25 @@ package body Compat_Random_Select is
             end loop;
          end;
       end loop;
+      --  Exercise each partial-permutation dispatch with nonzero bounds.
+      for N of U64_Array'[50, 32_768, 65_536, 100_000,
+        2 ** 32 - 1, 2 ** 32 + 1, 2 ** 63 - 1, 2 ** 63 + 1, U64'Last]
+      loop
+         for K of U64_Array'[1, 2, 3, 4, 16, 17, 37] loop
+            declare
+               Values : U64_Array (7 .. Natural (K) + 6);
+            begin
+               Randperm (G, N, K, Values);
+               for I in Values'Range loop
+                  AUnit.Assertions.Assert (Values (I) < N, "partial range");
+                  for J in Values'First .. I - 1 loop
+                     AUnit.Assertions.Assert (Values (I) /= Values (J),
+                       "partial uniqueness seed 0");
+                  end loop;
+               end loop;
+            end;
+         end loop;
+      end loop;
       for N of Bounds loop
          for Trial in 1 .. 5 loop
             Random_Factored_Integer (G, N, V, Factors);
