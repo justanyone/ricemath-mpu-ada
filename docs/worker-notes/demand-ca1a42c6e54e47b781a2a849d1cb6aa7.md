@@ -7,3 +7,4 @@ The Alire environment provides neither gnatcheck nor gnatformat; running the dec
 Focused tests are still building; the relocated suite has no lines over 79 columns and git diff --check is clean.
 - 2026-11-24T00:04:12Z launcher: no commit for 60 s; 210 s elapsed. Files changed so far: docs/worker-notes/demand-ca1a42c6e54e47b781a2a849d1cb6aa7.md, src/math_prime_util-vec-folds.adb, src/math_prime_util-vec-folds.ads, tests/src/compat_vec.adb.
 Focused tests remain in the Alire build phase without returned diagnostics; waiting for completion before starting the gate.
+tools/test.sh Compat_Vec_Folds passed all 366 tests (the runner does not restrict by that argument). The declared gate is now running; new files are the two library units plus these notes.
