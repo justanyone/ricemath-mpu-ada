@@ -1,3 +1,4 @@
+with Compat_Random_Select;
 with Compat_Totients;
 with Compat_Primality;
 with Prop_Primality;
@@ -68,6 +69,7 @@ package body All_Suites is
       Result.Add_Test (Compat_Powers.Suite);
       Result.Add_Test (Compat_Families.Suite);
       Result.Add_Test (Prop_Families.Suite);
+      Result.Add_Test (Compat_Random_Select.Suite);
       return Result;
    end Suite;
 end All_Suites;
