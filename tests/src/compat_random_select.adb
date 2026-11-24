@@ -110,9 +110,15 @@ package body Compat_Random_Select is
                end if;
                Random_Factored_Integer (G, N, V, Factors);
                Add (Image (V));
-               for I in 1 .. Factors.Count loop
-                  Add (Image (Factors.Value (I)));
-               end loop;
+               declare
+                  Product : U128 := 1;
+               begin
+                  for I in 1 .. Factors.Count loop
+                     Add (Image (Factors.Value (I)));
+                     Product := Product * U128 (Factors.Value (I));
+                  end loop;
+                  Assert (N = 0 or Product = U128 (V), "product seed fixture");
+               end;
                if N = 0 then
                   Assert (V = 0 and Factors.Count = 0, "zero factors");
                   Actual := C.Result;
@@ -124,8 +130,11 @@ package body Compat_Random_Select is
                   Values : U64_Array (1 .. Natural (U64'Min (N, K)));
                begin
                   Randperm (G, N, K, Values);
-                  for Value of Values loop
-                     Add (Image (Value));
+                  for I in Values'Range loop
+                     Add (Image (Values (I)));
+                     Assert (Values (I) < N and then
+                       (for all J in Values'First .. I - 1 =>
+                         Values (I) /= Values (J)), "permutation seed 0");
                   end loop;
                end;
             else
@@ -162,6 +171,20 @@ package body Compat_Random_Select is
          end;
       end loop;
       Assert (Count = Expected_Count, Func & " count" & Count'Image);
+      if Func = "miller_rabin_random" then
+         declare
+            G : Generator;
+            Flag : Boolean;
+         begin
+            Csrand (G, [1 .. 40 => 0]);
+            for N of U64_Array'[0, 1, 2, 3, 4, 341, 561, 1_373_653,
+              2 ** 32 - 1, 2 ** 32 + 1, 2 ** 63 - 1, 2 ** 63 + 1, U64'Last]
+            loop
+               Miller_Rabin_Random (G, N, 20, Flag);
+               Assert (Flag = (Primality.Is_Prime (N) = 2), "MR seed 0");
+            end loop;
+         end;
+      end if;
    end Replay;
    procedure Perm is new Replay ("randperm", 238);
    procedure Shuf is new Replay ("shuffle", 98);
@@ -170,42 +193,6 @@ package body Compat_Random_Select is
    procedure Factored is new Replay ("random_factored_integer", 112);
    procedure Miller is new Replay ("miller_rabin_random", 0);
    procedure Proof is new Replay ("is_provable_prime_with_cert", 7);
-   procedure Laws (T : in out Test_Case'Class) is
-      G : Generator;
-      V : U64;
-      Flag : Boolean;
-      Factors : Factor.Factor_List;
-   begin
-      Csrand (G, [1 .. 40 => 0]);
-      for N in 0 .. 100 loop
-         declare
-            Values : U64_Array (5 .. N + 4);
-         begin
-            Randperm (G, U64 (N), Values);
-            for I in Values'Range loop
-               Assert (Values (I) < U64 (N), "range seed 0");
-               Assert ((for all J in Values'First .. I - 1 =>
-                 Values (I) /= Values (J)), "unique seed 0");
-            end loop;
-         end;
-      end loop;
-      for N of U64_Array'[0, 1, 2, 3, 4, 341, 561, 1_373_653,
-        2 ** 32 - 1, 2 ** 32 + 1, 2 ** 63 - 1, 2 ** 63 + 1, U64'Last]
-      loop
-         Miller_Rabin_Random (G, N, 20, Flag);
-         Assert (Flag = (Primality.Is_Prime (N) = 2), "MR seed 0");
-         Random_Factored_Integer (G, N, V, Factors);
-         declare
-            Product : U128 := 1;
-         begin
-            for I in 1 .. Factors.Count loop
-               Product := Product * U128 (Factors.Value (I));
-            end loop;
-            Assert ((if N = 0 then V = 0 else Product = U128 (V)),
-              "factor product seed 0");
-         end;
-      end loop;
-   end Laws;
    overriding procedure Register_Tests (T : in out Selection_Case) is
    begin
       Registration.Register_Routine (T, Perm'Access, "randperm");
@@ -215,7 +202,6 @@ package body Compat_Random_Select is
       Registration.Register_Routine (T, Factored'Access, "factored");
       Registration.Register_Routine (T, Miller'Access, "random MR");
       Registration.Register_Routine (T, Proof'Access, "combined proof");
-      Registration.Register_Routine (T, Laws'Access, "laws seed 0");
    end Register_Tests;
    function Suite return AUnit.Test_Suites.Access_Test_Suite is
       Result : constant AUnit.Test_Suites.Access_Test_Suite :=

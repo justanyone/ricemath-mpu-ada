@@ -10,8 +10,7 @@ package Math_Prime_Util.Random_Primes with SPARK_Mode => On is
 
    type U64_Array is array (Natural range <>) of U64;
 
-   --  util.c: randperm(N,K). Ordered sample of Min(N,K) distinct indices
-   --  in 0 .. N-1. The caller supplies exactly Min(N,K) output slots.
+   --  util.c: randperm(N,K). Min(N,K) distinct indices in 0 .. N-1.
    procedure Randperm
      (G : in out Generator; N, K : U64; Values : out U64_Array)
      with Pre => Is_Seeded (G)
@@ -22,17 +21,13 @@ package Math_Prime_Util.Random_Primes with SPARK_Mode => On is
      (G : in out Generator; N : U64; Values : out U64_Array)
      with Pre => Is_Seeded (G) and then U64 (Values'Length) = N,
           Post => (for all V of Values => V < N);
-
-   --  XS.xs: shuffle. In-place forward Fisher-Yates on arbitrary elements.
-   --  Empty and singleton arrays consume no random bytes. No errors.
+   --  XS.xs: shuffle. Forward Fisher-Yates; empty arrays use no bytes.
    generic
       type Element_Type is private;
       type Element_Array is array (Natural range <>) of Element_Type;
    procedure Shuffle (G : in out Generator; Values : in out Element_Array)
      with Pre => Is_Seeded (G);
-
-   --  XS.xs: vecsample / PP.pm: _randperm_rotated_fy. Ordered sample
-   --  without replacement; output length must equal Min(K,Values'Length).
+   --  XS.xs / PP.pm: vecsample. Min(K,Values'Length) ordered elements.
    generic
       type Element_Type is private;
       type Element_Array is array (Natural range <>) of Element_Type;
@@ -41,7 +36,6 @@ package Math_Prime_Util.Random_Primes with SPARK_Mode => On is
       Sample : out Element_Array)
      with Pre => Is_Seeded (G) and then U64 (Sample'Length) =
        U64'Min (K, U64 (Values'Length));
-
    --  util.c: random_factored_integer (fast native factor path). Uniform
    --  integer in 1 .. N and its sorted prime factors; N=0 returns 0, empty.
    procedure Random_Factored_Integer
@@ -50,7 +44,6 @@ package Math_Prime_Util.Random_Primes with SPARK_Mode => On is
      with Pre => Is_Seeded (G),
           Post => (if N = 0 then Value = 0 and then Factors.Count = 0
                    else Value in 1 .. N);
-
    --  random_prime.c: is_mr_random, XS.xs: miller_rabin_random.
    --  K positive random strong tests; small inputs use native primality.
    procedure Miller_Rabin_Random
@@ -58,14 +51,11 @@ package Math_Prime_Util.Random_Primes with SPARK_Mode => On is
       Value : out Boolean)
      with Pre => Is_Seeded (G) and then K > 0,
           Post => (if N < 2 then not Value);
-
-   --  RandomPrimes.pm: random_strong_prime requires Bits >= 128.
-   --  No result fits U64: raises Constraint_Error for bigint requests;
-   --  smaller sizes violate the MPU minimum-size precondition.
+   --  RandomPrimes.pm: random_strong_prime. Requires Bits >= 128;
+   --  raises Constraint_Error because no strong prime fits U64.
    procedure Random_Strong_Prime
      (G : in out Generator; Bits : Natural; Value : out U64)
      with Pre => Is_Seeded (G) and then Bits >= 128;
-
    --  Uniform prime in inclusive Low .. High; undefined if none exists.
    procedure Random_Prime
      (G : in out Generator; Low, High : U64; Value : out Int.Optional_U64)

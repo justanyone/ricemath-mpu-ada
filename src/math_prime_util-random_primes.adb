@@ -97,26 +97,13 @@ package body Math_Prime_Util.Random_Primes with SPARK_Mode => On is
      (G : in out Generator; K : U64; Values : Element_Array;
       Sample : out Element_Array)
    is
-      Size : constant Natural := Values'Length;
-      Indices : U64_Array (1 .. Size);
-      Offset : U64;
+      Indices : U64_Array (Sample'Range);
    begin
-      if K = 0 or else Size = 0 then
-         return;
-      end if;
-      Indices (1) := U64 (Size - 1);
-      for I in 2 .. Size loop
-         Indices (I) := U64 (I - 2);
-      end loop;
-      for I in 1 .. Sample'Length loop
-         Urandomm (G, U64 (Size - I + 1), Offset);
-         declare
-            J : constant Natural := I + Natural (Offset);
-         begin
-            Sample (Sample'First + I - 1) :=
-              Values (Values'First + Natural (Indices (J)));
-            Indices (J) := Indices (I);
-         end;
+      Randperm (G, U64 (Values'Length), K, Indices);
+      for I in Sample'Range loop
+         Sample (I) := Values (Values'First +
+           (if Indices (I) = 0 then Values'Length - 1
+            else Natural (Indices (I) - 1)));
       end loop;
    end Vecsample;
 
