@@ -15,3 +15,4 @@ The gate printed == gate: green with 366 passing tests. Rechecking the final sou
 Final gate recheck is still running; retaining the prior green result while validating the cleaned source.
 Final gate recheck is still running; retaining the prior green result while validating the cleaned source.
 Final gate recheck is still running; retaining the prior green result while validating the cleaned source.
+Finished: final tools/gate.sh printed == gate: green, all 366 tests passed, and git diff --check is clean. File budget reduced by reusing Compat_Vec; gnatcheck cannot be verified because it is not installed.
