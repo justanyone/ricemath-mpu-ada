@@ -2,7 +2,8 @@ with Ada.Assertions;
 with Ada.Strings.Fixed;
 with Ada.Strings.Unbounded;
 with AUnit.Assertions; use AUnit.Assertions;
-with AUnit.Test_Cases; use AUnit.Test_Cases;
+with AUnit.Test_Caller;
+with AUnit.Test_Fixtures;
 with Fixture_Support; use Fixture_Support;
 with Math_Prime_Util.Factor;
 with Math_Prime_Util.Primality;
@@ -15,11 +16,11 @@ package body Compat_Random_Select is
    use type Primality.Prime_Result;
    use type U64;
    use type U128;
-   type Selection_Case is new Test_Case with null record;
-   overriding function Name (T : Selection_Case) return AUnit.Message_String;
-   overriding procedure Register_Tests (T : in out Selection_Case);
-   overriding function Name (T : Selection_Case) return AUnit.Message_String is
-     (AUnit.Format ("Compat_Random_Select"));
+   type Selection_Case is new AUnit.Test_Fixtures.Test_Fixture with null record;
+   package Caller is new AUnit.Test_Caller (Selection_Case);
+   function Decode (S : String) return Byte_Array is
+     ([for I in 1 .. S'Length / 2 => Byte'Value
+       ("16#" & S (S'First + 2 * (I - 1) .. S'First + 2 * I - 1) & "#")]);
    function Image (N : U64) return String is
      (Ada.Strings.Fixed.Trim (N'Image, Ada.Strings.Both));
    type Text_Array is array (Natural range <>) of Unbounded_String;
@@ -39,8 +40,8 @@ package body Compat_Random_Select is
    generic
       Func : String;
       Expected_Count : Natural;
-   procedure Replay (T : in out Test_Case'Class);
-   procedure Replay (T : in out Test_Case'Class) is
+   procedure Replay (T : in out Selection_Case);
+   procedure Replay (T : in out Selection_Case) is
       Count : Natural := 0;
       Family : constant String :=
         (if Func = "is_provable_prime_with_cert" then "bigint_proving"
@@ -62,8 +63,7 @@ package body Compat_Random_Select is
             end Add;
          begin
             if Family = "random" then
-               Csrand (G, [for I in 1 .. Arg (1)'Length / 2 => Math_Prime_Util.Random.Byte'Value
-                 ("16#" & Arg (1) (2 * I - 1 .. 2 * I) & "#")]);
+               Csrand (G, Decode (Arg (1)));
             else
                Csrand (G, [1 .. 40 => 0]);
             end if;
@@ -189,21 +189,17 @@ package body Compat_Random_Select is
    procedure Factored is new Replay ("random_factored_integer", 112);
    procedure Miller is new Replay ("miller_rabin_random", 0);
    procedure Proof is new Replay ("is_provable_prime_with_cert", 7);
-   overriding procedure Register_Tests (T : in out Selection_Case) is
-   begin
-      Registration.Register_Routine (T, Perm'Access, "randperm");
-      Registration.Register_Routine (T, Shuf'Access, "shuffle");
-      Registration.Register_Routine (T, Sample'Access, "vecsample");
-      Registration.Register_Routine (T, Strong'Access, "strong prime");
-      Registration.Register_Routine (T, Factored'Access, "factored");
-      Registration.Register_Routine (T, Miller'Access, "random MR");
-      Registration.Register_Routine (T, Proof'Access, "combined proof");
-   end Register_Tests;
    function Suite return AUnit.Test_Suites.Access_Test_Suite is
       Result : constant AUnit.Test_Suites.Access_Test_Suite :=
         new AUnit.Test_Suites.Test_Suite;
    begin
-      Result.Add_Test (new Selection_Case);
+      Result.Add_Test (Caller.Create ("randperm", Perm'Access));
+      Result.Add_Test (Caller.Create ("shuffle", Shuf'Access));
+      Result.Add_Test (Caller.Create ("vecsample", Sample'Access));
+      Result.Add_Test (Caller.Create ("strong prime", Strong'Access));
+      Result.Add_Test (Caller.Create ("factored", Factored'Access));
+      Result.Add_Test (Caller.Create ("random MR", Miller'Access));
+      Result.Add_Test (Caller.Create ("combined proof", Proof'Access));
       return Result;
    end Suite;
 end Compat_Random_Select;
