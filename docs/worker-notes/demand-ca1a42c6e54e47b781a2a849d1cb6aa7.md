@@ -6,3 +6,4 @@ Focused test build started. Simplified result conversion with an Ada aggregate a
 The patch is down to three Ada files and 432 code lines; continuing to reduce duplicated helper logic. gnatcheck is absent from PATH and the Alire toolchain.
 One focused build failed at link time on a vector iterator control symbol. Replaced that iterator with Element calls and removed the remaining nested suite wrapper.
 Reduced the suite to the existing Vec_Case; retained oracle cases, native boundaries, snapshot and index checks. Removed the extra callback-order probe and compacted declaration spacing toward the line budget.
+Corrected an edit that matched a forward declaration; restored the full oracle test bodies before further validation. Added the missing Canonical helper spec required by GNAT style.
