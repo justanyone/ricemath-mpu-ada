@@ -498,6 +498,10 @@ package body Compat_Vec is
       Replay ("set_is_proper_intersection");
    end Test_Set_Is_Proper_Intersection;
 
+   package Folds is
+      procedure Register_Tests (T : in out Vec_Case);
+   end Folds;
+
    overriding procedure Register_Tests (T : in out Vec_Case) is
    begin
       Registration.Register_Routine (T, Test_Vecsum'Access, "vecsum");
@@ -557,21 +561,14 @@ package body Compat_Vec is
       Registration.Register_Routine
         (T, Test_Set_Is_Proper_Intersection'Access,
          "set_is_proper_intersection");
+      Folds.Register_Tests (T);
    end Register_Tests;
-
-   package Folds is
-      --  Build the native callback compatibility suite.
-      function Suite return AUnit.Test_Suites.Access_Test_Suite;
-   end Folds;
 
    package body Folds is
       use AUnit.Assertions;
       use Math_Prime_Util;
       use Math_Prime_Util.Vec.Folds;
       use type U64;
-      type Fold_Case is new Test_Case with null record;
-      overriding function Name (T : Fold_Case) return AUnit.Message_String;
-      overriding procedure Register_Tests (T : in out Fold_Case);
 
       function Add (A, B : U64) return U64 is (A + B);
       function Xor_Values (A, B : U64) return U64 is (A xor B);
@@ -586,22 +583,11 @@ package body Compat_Vec is
       function Pair_Filter (A, B : U64) return Value_Array is
         (if B = 0 then [] else [A, B]);
       function Identity (Window : Value_Array) return Value_Array is (Window);
+      function Reduce is new Vecreduce (Add);
       function Sum (Window : Value_Array) return Value_Array is
-         Acc : U64 := 0;
-      begin
-         for V of Window loop
-            Acc := Acc + V;
-         end loop;
-         return [Acc];
-      end Sum;
+        ([Reduce (Window).Value]);
       function Reverse_Window (Window : Value_Array) return Value_Array is
-         Result : Value_Array (1 .. Window'Length);
-      begin
-         for I in Result'Range loop
-            Result (I) := Window (Window'Last - I + 1);
-         end loop;
-         return Result;
-      end Reverse_Window;
+        ([for I in reverse Window'Range => Window (I)]);
       function Difference (Window : Value_Array) return Value_Array is
         ([Window (Window'First + 1) - Window (Window'First)]);
       function Change_Window (Window : Value_Array) return Value_Array is
@@ -612,7 +598,6 @@ package body Compat_Vec is
          return Copy;
       end Change_Window;
 
-      function Reduce is new Vecreduce (Add);
       function Reduce_Xor is new Vecreduce (Xor_Values);
       function Reduce_Squares is new Vecreduce (Squares);
       function Slide is new Vecslide (Add);
@@ -785,7 +770,8 @@ package body Compat_Vec is
          Equal (Set_Add ([U64'Last], Empty'Access), [], "native maximum");
       end Check_Set;
 
-      function Parse_Set (Text : String; Fits : out Boolean)
+      function Parse_Set
+        (Text : String; Fits : out Boolean; Separator : Character := ',')
          return Value_Array
       is
          Buffer : Value_Array (1 .. Text'Length);
@@ -798,7 +784,7 @@ package body Compat_Vec is
             return [];
          end if;
          for I in Text'First .. Text'Last + 1 loop
-            if I > Text'Last or else Text (I) = ',' then
+            if I > Text'Last or else Text (I) = Separator then
                if not Fixture_Support.Parse_U64 (Text (Start .. I - 1), Value)
                then
                   Fits := False;
@@ -811,19 +797,6 @@ package body Compat_Vec is
          end loop;
          return Buffer (1 .. Count);
       end Parse_Set;
-
-      function Image (Items : Value_Array) return String is
-         Text : Unbounded_String;
-      begin
-         for V of Items loop
-            if Length (Text) > 0 then
-               Append (Text, " ");
-            end if;
-            Append (Text, Ada.Strings.Fixed.Trim
-                      (U64'Image (V), Ada.Strings.Both));
-         end loop;
-         return To_String (Text);
-      end Image;
 
       --  bigint_sets.tsv skipped rows (input outside U64):
       --  84, 102, 120, 138, 156, 174, 260, 278.
@@ -841,7 +814,7 @@ package body Compat_Vec is
            Fixture_Support.For_Function
              (Fixture_Support.Load ("bigint_sets"), "setbinop");
          Count : Natural := 0;
-         Fits_Left, Fits_Right : Boolean;
+         Fits_Left, Fits_Right, Fits_Result : Boolean;
       begin
          for C of Cases loop
             declare
@@ -849,27 +822,21 @@ package body Compat_Vec is
                  Parse_Set (To_String (C.Args (1)), Fits_Left);
                Right : aliased constant Value_Array :=
                  Parse_Set (To_String (C.Args (2)), Fits_Right);
+               Expected : constant Value_Array :=
+                 Parse_Set ((if C.Undef then "-" else To_String (C.Result)),
+                            Fits_Result, ' ');
             begin
-               if Fits_Left and Fits_Right then
-                  declare
-                     Got : constant Value_Array :=
-                       Set_Add (Left, Right'Access);
-                  begin
-                     Assert ((if C.Undef then Got'Length = 0
-                              else Image (Got) = To_String (C.Result)),
-                             "bigint_sets.tsv:" &
-                               Positive'Image (C.Line_Number));
-                     Count := Count + 1;
-                  end;
+               if Fits_Left and Fits_Right and Fits_Result then
+                  Equal (Set_Add (Left, Right'Access), Expected,
+                         "bigint_sets.tsv:" & Positive'Image (C.Line_Number));
+                  Count := Count + 1;
                end if;
             end;
          end loop;
          Assert (Count = 9, "all nine native fixture rows replayed");
       end Check_Fixtures;
 
-      overriding function Name (T : Fold_Case) return AUnit.Message_String is
-        (AUnit.Format ("Compat_Vec_Folds"));
-      overriding procedure Register_Tests (T : in out Fold_Case) is
+      procedure Register_Tests (T : in out Vec_Case) is
       begin
          Registration.Register_Routine (T, Check_Reduce'Access, "vecreduce");
          Registration.Register_Routine (T, Check_Slide'Access, "vecslide");
@@ -878,13 +845,6 @@ package body Compat_Vec is
          Registration.Register_Routine (T, Check_Set'Access, "setbinop");
          Registration.Register_Routine (T, Check_Fixtures'Access, "fixtures");
       end Register_Tests;
-      function Suite return AUnit.Test_Suites.Access_Test_Suite is
-         Result : constant AUnit.Test_Suites.Access_Test_Suite :=
-           new AUnit.Test_Suites.Test_Suite;
-      begin
-         Result.Add_Test (new Fold_Case);
-         return Result;
-      end Suite;
    end Folds;
 
    function Suite return AUnit.Test_Suites.Access_Test_Suite is
@@ -892,7 +852,6 @@ package body Compat_Vec is
         new AUnit.Test_Suites.Test_Suite;
    begin
       Result.Add_Test (new Vec_Case);
-      Result.Add_Test (Folds.Suite);
       return Result;
    end Suite;
 end Compat_Vec;
