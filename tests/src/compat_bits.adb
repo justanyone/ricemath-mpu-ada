@@ -11,6 +11,7 @@ package body Compat_Bits is
    use type U64;
 
    type Bits_Case is new Test_Case with null record;
+   type Bits_Case_Access is access all Bits_Case;
    overriding function Name (T : Bits_Case) return AUnit.Message_String;
    overriding procedure Register_Tests (T : in out Bits_Case);
 
@@ -24,6 +25,14 @@ package body Compat_Bits is
       High - 1, High, High + 1, Max];
 
    type Operation is (Intersection, Union, Exclusive_Union, Difference);
+
+   function Expected (A, B : U64; Op : Operation) return U64;
+   procedure Test_Bitand (Unused_T : in out Test_Case'Class);
+   procedure Test_Bitor (Unused_T : in out Test_Case'Class);
+   procedure Test_Bitxor (Unused_T : in out Test_Case'Class);
+   procedure Test_Bitnot (Unused_T : in out Test_Case'Class);
+   procedure Test_Bitandnot (Unused_T : in out Test_Case'Class);
+   procedure Laws (Unused_T : in out Test_Case'Class);
 
    --  Arithmetic truth table checks each bit independently of Ada logic.
    function Expected (A, B : U64; Op : Operation) return U64 is
@@ -53,7 +62,7 @@ package body Compat_Bits is
       return Result;
    end Expected;
 
-   procedure Test_Bitand (T : in out Test_Case'Class) is
+   procedure Test_Bitand (Unused_T : in out Test_Case'Class) is
    begin
       Assert (Bitand (12, 10) = 8, "bitand example");
       for A of Edges loop
@@ -64,7 +73,7 @@ package body Compat_Bits is
       end loop;
    end Test_Bitand;
 
-   procedure Test_Bitor (T : in out Test_Case'Class) is
+   procedure Test_Bitor (Unused_T : in out Test_Case'Class) is
    begin
       Assert (Bitor (12, 10) = 14, "bitor example");
       for A of Edges loop
@@ -75,7 +84,7 @@ package body Compat_Bits is
       end loop;
    end Test_Bitor;
 
-   procedure Test_Bitxor (T : in out Test_Case'Class) is
+   procedure Test_Bitxor (Unused_T : in out Test_Case'Class) is
    begin
       Assert (Bitxor (12, 10) = 6, "bitxor example");
       for A of Edges loop
@@ -86,7 +95,7 @@ package body Compat_Bits is
       end loop;
    end Test_Bitxor;
 
-   procedure Test_Bitnot (T : in out Test_Case'Class) is
+   procedure Test_Bitnot (Unused_T : in out Test_Case'Class) is
    begin
       Assert (Bitnot (0) = Max, "bitnot zero complements all 64 bits");
       for N of Edges loop
@@ -98,7 +107,7 @@ package body Compat_Bits is
       end loop;
    end Test_Bitnot;
 
-   procedure Test_Bitandnot (T : in out Test_Case'Class) is
+   procedure Test_Bitandnot (Unused_T : in out Test_Case'Class) is
    begin
       Assert (Bitandnot (12, 10) = 4, "bitandnot example");
       for A of Edges loop
@@ -109,7 +118,7 @@ package body Compat_Bits is
       end loop;
    end Test_Bitandnot;
 
-   procedure Laws (T : in out Test_Case'Class) is
+   procedure Laws (Unused_T : in out Test_Case'Class) is
       Seed : U64 := 20_261_020;
       A, B : U64;
    begin
@@ -149,7 +158,7 @@ package body Compat_Bits is
       Result : constant AUnit.Test_Suites.Access_Test_Suite :=
         new AUnit.Test_Suites.Test_Suite;
    begin
-      Result.Add_Test (new Bits_Case);
+      Result.Add_Test (Bits_Case_Access'(new Bits_Case));
       return Result;
    end Suite;
 end Compat_Bits;
