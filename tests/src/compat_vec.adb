@@ -633,12 +633,12 @@ package body Compat_Vec is
          end Count;
          function Count_Reduce is new Vecreduce (Count);
       begin
-         Assert (not Reduce ([]).Defined, "26-vec.t:266 empty");
+         Assert (not Reduce ([]).Defined, "26-vec.t:266");
          Assert (Count_Reduce ([15]).Value = 15 and then Calls = 0,
-                 "26-vec.t:267 singleton does not call block");
-         Assert (Reduce_Xor ([4, 2]).Value = 6, "26-vec.t:268 xor");
+                 "26-vec.t:267");
+         Assert (Reduce_Xor ([4, 2]).Value = 6, "26-vec.t:268");
          Assert (Reduce_Squares ([1, 17, 18, 19]).Value = 33_802_596,
-                 "26-vec.t:269 left fold product of squares");
+                 "26-vec.t:269");
          --  26-vec.t:271-272 skipped: negative result outside U64.
          --  26-vec.t:274-276 skipped: 2**64 bigint input outside U64.
          for V of Boundaries loop
@@ -653,13 +653,12 @@ package body Compat_Vec is
          Input : constant Value_Array := [1, 2, 3, 4, 5];
          Got : Value_Array := Slide (Input);
       begin
-         Equal (Slide ([]), [], "26-vec.t:704 empty");
-         Equal (Slide ([1]), [], "26-vec.t:705 singleton");
-         Equal (Got, [3, 5, 7, 9], "26-vec.t:707 sums");
-         Equal (Slide_Change (Input), [13, 24, 35, 46],
-                "26-vec.t:711 assignments");
+         Equal (Slide ([]), [], "26-vec.t:704");
+         Equal (Slide ([1]), [], "26-vec.t:705");
+         Equal (Got, [3, 5, 7, 9], "26-vec.t:707");
+         Equal (Slide_Change (Input), [13, 24, 35, 46], "26-vec.t:711");
          Got (1) := 99;
-         Equal (Input, [1, 2, 3, 4, 5], "26-vec.t:622,712 no aliases");
+         Equal (Input, [1, 2, 3, 4, 5], "26-vec.t:622,712");
          --  26-vec.t:708-709 skipped: reference/string values, not U64.
          Equal (Slide (Value_Array'(7 => 1, 8 => 2)), [3],
                 "non-one lower bound");
@@ -669,17 +668,15 @@ package body Compat_Vec is
          Input : constant Value_Array := [1, 2, 3];
          Got : Value_Array := Pairs (Input, [10, 20, 30]);
       begin
-         Equal (Pairs ([], []), [], "26-vec.t:672 empty");
-         Equal (Pairs (Input, [10]), [11], "26-vec.t:673 trailing");
-         Equal (Got, [11, 22, 33], "26-vec.t:674 sums");
-         Equal (Lists ([1, 2], [3, 4]), [1, 3, 2, 4],
-                "26-vec.t:681 list returns");
-         Equal (Filter (Input, [1, 0, 4]), [1, 1, 3, 4],
-                "26-vec.t:682 empty returns");
-         Assert (Pairs ([1, 2], [3, 4])'Length = 2, "26-vec.t:684 count");
-         Assert (Lists ([1, 2], [3, 4])'Length = 4, "26-vec.t:685 count");
+         Equal (Pairs ([], []), [], "26-vec.t:672");
+         Equal (Pairs (Input, [10]), [11], "26-vec.t:673");
+         Equal (Got, [11, 22, 33], "26-vec.t:674");
+         Equal (Lists ([1, 2], [3, 4]), [1, 3, 2, 4], "26-vec.t:681");
+         Equal (Filter (Input, [1, 0, 4]), [1, 1, 3, 4], "26-vec.t:682");
+         Assert (Pairs ([1, 2], [3, 4])'Length = 2, "26-vec.t:684");
+         Assert (Lists ([1, 2], [3, 4])'Length = 4, "26-vec.t:685");
          Got (1) := 99;
-         Equal (Input, [1, 2, 3], "26-vec.t:633-634,693-694 no aliases");
+         Equal (Input, [1, 2, 3], "26-vec.t:633-634,693-694");
          --  26-vec.t:675,678-679,688-689 skipped: non-U64 values/undef.
          --  26-vec.t:696-699: wrong array types rejected by Ada at compile.
          Equal (Pairs ([10], Input), [11], "right trailing ignored");
@@ -690,30 +687,29 @@ package body Compat_Vec is
          Input : constant Value_Array := [1, 2, 3, 4];
          Got : Value_Array := Sums (1, 2, Input);
       begin
-         Equal (Windows (1, 3, []), [], "26-vec.t:640 empty");
-         Equal (Windows (1, 3, [1, 2]), [], "26-vec.t:641 short");
-         Equal (Windows (1, 3, [1, 2, 3]), [1, 2, 3], "26-vec.t:642 exact");
+         Equal (Windows (1, 3, []), [], "26-vec.t:640");
+         Equal (Windows (1, 3, [1, 2]), [], "26-vec.t:641");
+         Equal (Windows (1, 3, [1, 2, 3]), [1, 2, 3], "26-vec.t:642");
          Equal (Windows (2, 2, [1, 2, 3, 4, 5, 6]), [1, 2, 3, 4, 5, 6],
-                "26-vec.t:645 pairs");
+                "26-vec.t:645");
          Equal (Sums (3, 3, [1, 2, 3, 4, 5, 6, 7, 8, 9]), [6, 15, 24],
-                "26-vec.t:646 chunk sums");
+                "26-vec.t:646");
          Equal (Reversals (4, 4, [1, 2, 3, 4, 5, 6, 7, 8]),
-                [4, 3, 2, 1, 8, 7, 6, 5], "26-vec.t:647 reverse");
+                [4, 3, 2, 1, 8, 7, 6, 5], "26-vec.t:647");
          Equal (Windows (3, 3, [1, 2, 3, 4, 5, 6, 7]), [1, 2, 3, 4, 5, 6],
-                "26-vec.t:649 tail dropped");
+                "26-vec.t:649");
          Equal (Differences (1, 2, [1, 2, 3, 4, 5]), [1, 1, 1, 1],
-                "26-vec.t:652 differences");
-         Equal (Sums (1, 3, [1, 2, 3, 4, 5]), [6, 9, 12],
-                "26-vec.t:653 running sum");
+                "26-vec.t:652");
+         Equal (Sums (1, 3, [1, 2, 3, 4, 5]), [6, 9, 12], "26-vec.t:653");
          Equal (Sums (3, 2, [1, 2, 3, 4, 5, 6, 7, 8]), [3, 9, 15],
-                "26-vec.t:656 gaps");
-         Equal (Reversals (2, 2, Input), [2, 1, 4, 3], "26-vec.t:659 list");
+                "26-vec.t:656");
+         Equal (Reversals (2, 2, Input), [2, 1, 4, 3], "26-vec.t:659");
          Equal (Windows (1, 2, [1, 2, 3]), [1, 2, 2, 3], "26-vec.t:660");
-         Equal (Sums (1, 2, [1, 2, 3]), [3, 5], "26-vec.t:661 nested");
+         Equal (Sums (1, 2, [1, 2, 3]), [3, 5], "26-vec.t:661");
          Equal (Changes (1, 2, Input), [10, 3, 20, 4, 30, 5],
-                "26-vec.t:665-666 assignments");
+                "26-vec.t:665-666");
          Got (1) := 99;
-         Equal (Input, [1, 2, 3, 4], "26-vec.t:623,667 no aliases");
+         Equal (Input, [1, 2, 3, 4], "26-vec.t:623,667");
          Equal (Windows (Positive'Last, 1, Input), [1], "huge step");
          Equal (Windows (1, Positive'Last, Input), [], "huge size");
          Equal (Windows (1, 1, Value_Array'(Positive'Last => 42)),
@@ -746,7 +742,7 @@ package body Compat_Vec is
          end Ordered;
          function Ordered_Set is new Setbinop (Ordered);
       begin
-         Equal (Set_Add ([], B'Access), [], "26-setbinop.t:12 empty");
+         Equal (Set_Add ([], B'Access), [], "26-setbinop.t:12");
          Equal (Set_Add ([2, 4, 6]), [4, 6, 8, 10, 12], "26-setbinop.t:14");
          Equal (Set_Add ([2, 4, 6, 8], B'Access), [5, 7, 9, 11, 13, 15],
                 "26-setbinop.t:18");
@@ -761,7 +757,7 @@ package body Compat_Vec is
                  1331, 2197, 3125, 16807, 161051, 371293], "26-setbinop.t:39");
          --  26-setbinop.t:48-50 skipped: A-A has negative results.
          Equal (Snap_Set (Left, Right'Access), [11, 12, 21, 22],
-                "26-setbinop.t:56-57 snapshots");
+                "26-setbinop.t:56-57");
          Equal (Set_Mod (Value_Array'(Positive'Last => 1)), [2],
                 "maximum index canonical set");
          Equal (Set_Add ([1], Empty'Access), [], "explicit empty right");

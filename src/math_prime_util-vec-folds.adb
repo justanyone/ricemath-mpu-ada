@@ -38,15 +38,9 @@ package body Math_Prime_Util.Vec.Folds with SPARK_Mode => On is
    end Vecreduce;
 
    function Vecslide (Items : Value_Array) return Value_Array is
-      Result : Value_Array
-        (1 .. (if Items'Length = 0 then 0 else Items'Length - 1));
-   begin
-      for I in Result'Range loop
-         Result (I) := Block (Items (Items'First + (I - 1)),
-                              Items (Items'First + I));
-      end loop;
-      return Result;
-   end Vecslide;
+     ([for Offset in 1 .. Items'Length - 1 =>
+         Block (Items (Items'First + (Offset - 1)),
+                Items (Items'First + Offset))]);
 
    function Vecpairwise (Left, Right : Value_Array) return Value_Array is
       Result : Results.Vector;
