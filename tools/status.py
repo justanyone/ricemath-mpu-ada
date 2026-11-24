@@ -34,8 +34,7 @@ def public_subprograms(source: Path) -> set[str]:
 
 def regenerate(status: Path = STATUS, source: Path = SOURCE) -> bool:
     """Update ticks, returning whether changed; reject invalid or non-428 lists."""
-    original = status.read_text(encoding="utf-8")
-    lines = original.splitlines(keepends=True)
+    lines = status.read_text(encoding="utf-8").splitlines(keepends=True)
     declared = public_subprograms(source)
     try:
         start = next(i for i, line in enumerate(lines)
