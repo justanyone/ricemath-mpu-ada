@@ -28,8 +28,8 @@ package Math_Prime_Util.Proving with SPARK_Mode => On is
       Result : Primality.Prime_Result;
       Certificate : String (1 .. Certificate_Length);
    end record;
-   --  PrimalityProving.pm: is_provable_prime_with_cert. Native proof result
-   --  and Prime_Certificate text; composites return 0 and empty text.
+   --  PrimalityProving.pm: is_provable_prime_with_cert. Result and text;
+   --  composites return 0 and empty text.
    function Is_Provable_Prime_With_Cert (N : U64) return Certified_Result
      with Pre => True,
           Post => Is_Provable_Prime_With_Cert'Result.Result in 0 | 2;

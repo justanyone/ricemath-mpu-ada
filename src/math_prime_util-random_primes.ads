@@ -9,7 +9,6 @@ package Math_Prime_Util.Random_Primes with SPARK_Mode => On is
    use Math_Prime_Util.Random;
 
    type U64_Array is array (Natural range <>) of U64;
-
    --  util.c: randperm(N,K). Min(N,K) distinct indices in 0 .. N-1.
    procedure Randperm
      (G : in out Generator; N, K : U64; Values : out U64_Array)
@@ -36,23 +35,20 @@ package Math_Prime_Util.Random_Primes with SPARK_Mode => On is
       Sample : out Element_Array)
      with Pre => Is_Seeded (G) and then U64 (Sample'Length) =
        U64'Min (K, U64 (Values'Length));
-   --  util.c: random_factored_integer (fast native factor path). Uniform
-   --  integer in 1 .. N and its sorted prime factors; N=0 returns 0, empty.
+   --  util.c: random_factored_integer. Uniform 1 .. N, factors; zero empty.
    procedure Random_Factored_Integer
      (G : in out Generator; N : U64; Value : out U64;
       Factors : out Factor.Factor_List)
      with Pre => Is_Seeded (G),
           Post => (if N = 0 then Value = 0 and then Factors.Count = 0
                    else Value in 1 .. N);
-   --  random_prime.c: is_mr_random, XS.xs: miller_rabin_random.
-   --  K positive random strong tests; small inputs use native primality.
+   --  random_prime.c: is_mr_random / XS.xs: K > 0 random strong tests.
    procedure Miller_Rabin_Random
      (G : in out Generator; N : U64; K : U64 := 1;
       Value : out Boolean)
      with Pre => Is_Seeded (G) and then K > 0,
           Post => (if N < 2 then not Value);
-   --  RandomPrimes.pm: random_strong_prime. Requires Bits >= 128;
-   --  raises Constraint_Error because no strong prime fits U64.
+   --  RandomPrimes.pm: random_strong_prime. Bigint: raises Constraint_Error.
    procedure Random_Strong_Prime
      (G : in out Generator; Bits : Natural; Value : out U64)
      with Pre => Is_Seeded (G) and then Bits >= 128;

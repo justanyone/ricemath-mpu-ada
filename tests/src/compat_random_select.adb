@@ -36,7 +36,6 @@ package body Compat_Random_Select is
    --  2, 9, 16, 23, 30, 37, 44, 51, 58, 65, 72, 84, 91, 98, 106, 113, 120,
    --  127, 134, 141, 148, 156, 163, 170, 173, 176, 179, 182, 185, 188, 191,
    --  194, 209.
-
    generic
       Func : String;
       Expected_Count : Natural;
@@ -152,10 +151,9 @@ package body Compat_Random_Select is
                   end loop;
                end;
             end if;
-            if Length (Actual) = 0 and then C.Undef then
-               Actual := To_Unbounded_String ("undef");
-            end if;
-            Assert (Actual = C.Result, Func & C.Line_Number'Image);
+            Assert (Actual = C.Result or else
+              (C.Undef and then Length (Actual) = 0),
+              Func & C.Line_Number'Image);
             Count := Count + 1;
             <<Next_Row>>
          end;
