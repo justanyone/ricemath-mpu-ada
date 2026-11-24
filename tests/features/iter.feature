@@ -1,10 +1,17 @@
 Feature: Native MPU callback iterators
-  Scenario: Iterator fixture compatibility
-    Given the checked Ada iterator runner is built
-    When the iterator compatibility suite runs
-    Then all native iterator fixture rows pass within one minute
+  Scenario Outline: Iterator compatibility and boundaries
+    Given the compiled powers test runner
+    When the iterator check <name> runs
+    Then the selected AUnit test passes within one minute
 
-  Scenario: Nested callback termination
-    Given the checked Ada iterator runner is built
-    When the iterator compatibility suite runs
-    Then loop termination, callback exceptions, and native boundaries pass
+    Examples:
+      | name          |
+      | fixtures      |
+      | control       |
+      | properties    |
+      | forcomp       |
+      | forderange    |
+      | formultiperm  |
+      | forsetproduct |
+      | object        |
+      | print_primes  |
