@@ -41,7 +41,7 @@ class StatusTests(unittest.TestCase):
         before = "Header tick: - [ ] `head` -> `Head`\n## Functions\n"
         before += "- [ ] `api` -> `ada_name`\n"
         before += "- [-] `skip` -> `Missing`\n"
-        before += "- [ ] `missing` -> `Missing`\n"
+        before += "- [ ] `missing` -> `Missing`\n\n \t\n"
         before = self.complete_list(before)
         self.status_file.write_text(before, encoding="utf-8")
 
@@ -63,7 +63,7 @@ class StatusTests(unittest.TestCase):
         for count in (0, 427, 429):
             with self.subTest(count=count):
                 before = "## Functions\n" + "".join(
-                    f"- [ ] `api_{i}` -> `Api_{i}`\n"
+                    f"- [x] `api_{i}` -> `Api_{i}`\n"
                     for i in range(count))
                 self.status_file.write_text(before, encoding="utf-8")
                 with self.assertRaisesRegex(ValueError, "428 function rows"):
@@ -75,7 +75,9 @@ class StatusTests(unittest.TestCase):
         for foreign in ("KIT NOTE, NOT FILE CONTENT: shortened output",
                         "- [x] `permtonum` -> `Per", "## Unexpected"):
             with self.subTest(foreign=foreign):
-                before = self.complete_list("## Functions\n") + foreign + "\n"
+                before = self.complete_list(
+                    "## Functions\n- [x] `absent` -> `Absent`\n")
+                before += foreign + "\n"
                 self.status_file.write_text(before, encoding="utf-8")
                 with self.assertRaisesRegex(ValueError, "invalid function row"):
                     status.regenerate(self.status_file, self.source)
