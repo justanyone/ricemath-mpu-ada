@@ -202,7 +202,7 @@ package body Compat_Random_Select is
       for C of For_Function (Load ("bigint_random"), "miller_rabin_random")
       loop
          if Parse_U64 (To_String (C.Args (1)), N) then
-            Miller_Rabin_Random (G, N, Positive'Value
+            Miller_Rabin_Random (G, N, U64'Value
               (To_String (C.Args (2))), V);
             AUnit.Assertions.Assert
               ((if V then "1" else "0") = To_String (C.Result), "MR row");

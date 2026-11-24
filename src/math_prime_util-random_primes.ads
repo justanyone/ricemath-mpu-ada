@@ -54,9 +54,9 @@ package Math_Prime_Util.Random_Primes with SPARK_Mode => On is
    --  random_prime.c: is_mr_random, XS.xs: miller_rabin_random.
    --  K positive random strong tests; small inputs use native primality.
    procedure Miller_Rabin_Random
-     (G : in out Generator; N : U64; K : Positive := 1;
+     (G : in out Generator; N : U64; K : U64 := 1;
       Value : out Boolean)
-     with Pre => Is_Seeded (G),
+     with Pre => Is_Seeded (G) and then K > 0,
           Post => (if N < 2 then not Value);
 
    --  RandomPrimes.pm: random_strong_prime requires Bits >= 128.

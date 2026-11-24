@@ -139,12 +139,12 @@ package body Math_Prime_Util.Random_Primes with SPARK_Mode => On is
    end Random_Factored_Integer;
 
    procedure Miller_Rabin_Random
-     (G : in out Generator; N : U64; K : Positive := 1;
+     (G : in out Generator; N : U64; K : U64 := 1;
       Value : out Boolean)
    is
       Base : U64;
    begin
-      if N < 4 or else U64 (K) >= 3 * (N / 4) then
+      if N < 4 or else K >= 3 * (N / 4) then
          Value := Prime (N);
          return;
       end if;
