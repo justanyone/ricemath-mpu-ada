@@ -8,3 +8,4 @@ One focused build failed at link time on a vector iterator control symbol. Repla
 Reduced the suite to the existing Vec_Case; retained oracle cases, native boundaries, snapshot and index checks. Removed the extra callback-order probe and compacted declaration spacing toward the line budget.
 Corrected an edit that matched a forward declaration; restored the full oracle test bodies before further validation. Added the missing Canonical helper spec required by GNAT style.
 The initial full run exposed reverse-window aggregate index semantics; mapped result indexes explicitly to restore reversed values. Restored all reference bodies from the unfiltered git source and restarted focused verification.
+Kept the reverse-window helper as an explicit loop after GNAT rejected the replacement expression. Final code patch remains under 400 lines; full gate restarted on this version.

@@ -593,7 +593,13 @@ package body Compat_Vec is
    function Sum (Window : Value_Array) return Value_Array is
      ([Reduce (Window).Value]);
    function Reverse_Window (Window : Value_Array) return Value_Array is
-     ([for I in 1 .. Window'Length => Window (Window'Last - I + 1)]);
+      Result : Value_Array (1 .. Window'Length);
+   begin
+      for I in Result'Range loop
+         Result (I) := Window (Window'Last - (I - 1));
+      end loop;
+      return Result;
+   end Reverse_Window;
    function Difference (Window : Value_Array) return Value_Array is
      ([Window (Window'First + 1) - Window (Window'First)]);
    function Change_Window (Window : Value_Array) return Value_Array is
@@ -625,8 +631,7 @@ package body Compat_Vec is
       Assert (Got = Expected, Source);
    end Equal;
    procedure Check_Reduce (T : in out Test_Case'Class) is
-      Boundaries : constant Value_Array :=
-        [0, 1, 2, 2 ** 32 - 1, 2 ** 32 + 1,
+      Boundaries : constant Value_Array := [0, 1, 2, 2 ** 32 - 1, 2 ** 32 + 1,
          2 ** 63 - 1, 2 ** 63 + 1, U64'Last];
       Calls : Natural := 0;
       function Count (A, B : U64) return U64 is
@@ -658,13 +663,11 @@ package body Compat_Vec is
       Equal (Slide ([]), [], "26-vec.t:704");
       Equal (Slide ([1]), [], "26-vec.t:705");
       Equal (Got, [3, 5, 7, 9], "26-vec.t:707");
-      Equal (Slide_Change (Input), [13, 24, 35, 46],
-             "26-vec.t:711");
+      Equal (Slide_Change (Input), [13, 24, 35, 46], "26-vec.t:711");
       Got (1) := 99;
       Equal (Input, [1, 2, 3, 4, 5], "26-vec.t:622,712");
       --  26-vec.t:708-709 skipped: reference/string values, not U64.
-      Equal (Slide (Value_Array'(7 => 1, 8 => 2)), [3],
-             "non-one lower bound");
+      Equal (Slide (Value_Array'(7 => 1, 8 => 2)), [3], "non-one lower bound");
    end Check_Slide;
    procedure Check_Pairs (T : in out Test_Case'Class) is
       Input : constant Value_Array := [1, 2, 3];
@@ -673,10 +676,8 @@ package body Compat_Vec is
       Equal (Pairs ([], []), [], "26-vec.t:672");
       Equal (Pairs (Input, [10]), [11], "26-vec.t:673");
       Equal (Got, [11, 22, 33], "26-vec.t:674");
-      Equal (Lists ([1, 2], [3, 4]), [1, 3, 2, 4],
-             "26-vec.t:681");
-      Equal (Filter (Input, [1, 0, 4]), [1, 1, 3, 4],
-             "26-vec.t:682");
+      Equal (Lists ([1, 2], [3, 4]), [1, 3, 2, 4], "26-vec.t:681");
+      Equal (Filter (Input, [1, 0, 4]), [1, 1, 3, 4], "26-vec.t:682");
       Assert (Pairs ([1, 2], [3, 4])'Length = 2, "26-vec.t:684");
       Assert (Lists ([1, 2], [3, 4])'Length = 4, "26-vec.t:685");
       Got (1) := 99;
@@ -703,15 +704,13 @@ package body Compat_Vec is
              "26-vec.t:649");
       Equal (Differences (1, 2, [1, 2, 3, 4, 5]), [1, 1, 1, 1],
              "26-vec.t:652");
-      Equal (Sums (1, 3, [1, 2, 3, 4, 5]), [6, 9, 12],
-             "26-vec.t:653");
+      Equal (Sums (1, 3, [1, 2, 3, 4, 5]), [6, 9, 12], "26-vec.t:653");
       Equal (Sums (3, 2, [1, 2, 3, 4, 5, 6, 7, 8]), [3, 9, 15],
              "26-vec.t:656");
       Equal (Reversals (2, 2, Input), [2, 1, 4, 3], "26-vec.t:659");
       Equal (Windows (1, 2, [1, 2, 3]), [1, 2, 2, 3], "26-vec.t:660");
       Equal (Sums (1, 2, [1, 2, 3]), [3, 5], "26-vec.t:661");
-      Equal (Changes (1, 2, Input), [10, 3, 20, 4, 30, 5],
-             "26-vec.t:665-666");
+      Equal (Changes (1, 2, Input), [10, 3, 20, 4, 30, 5], "26-vec.t:665-666");
       Got (1) := 99;
       Equal (Input, [1, 2, 3, 4], "26-vec.t:623,667");
       Equal (Windows (Positive'Last, 1, Input), [1], "huge step");
