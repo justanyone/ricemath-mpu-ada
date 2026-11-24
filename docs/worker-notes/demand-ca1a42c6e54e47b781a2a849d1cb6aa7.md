@@ -4,3 +4,4 @@ Run focused tests and the declared gate; record actual validation limits.
 Reused the existing Vec_Case registrar and generic fold; shared fixture input/output parsing to cut duplicate helpers without dropping reference cases.
 Focused test build started. Simplified result conversion with an Ada aggregate and used the standard array sort to avoid a duplicate container copy.
 The patch is down to three Ada files and 432 code lines; continuing to reduce duplicated helper logic. gnatcheck is absent from PATH and the Alire toolchain.
+One focused build failed at link time on a vector iterator control symbol. Replaced that iterator with Element calls and removed the remaining nested suite wrapper.

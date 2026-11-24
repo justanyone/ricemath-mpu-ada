@@ -6,7 +6,7 @@ package body Math_Prime_Util.Vec.Folds with SPARK_Mode => On is
      (Index_Type => Positive, Element_Type => U64);
 
    function To_Array (Items : Results.Vector) return Value_Array is
-     ([for V of Items => V]);
+     ([for I in 1 .. Natural (Items.Length) => Items.Element (I)]);
 
    function Canonical (Items : Value_Array) return Value_Array is
       Sorted : Value_Array := Items;
