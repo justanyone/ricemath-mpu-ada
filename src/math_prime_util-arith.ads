@@ -1,0 +1,116 @@
+with Ada.Containers.Vectors;
+with Math_Prime_Util.Int;
+
+--  Arithmetic from MPU 0.75 totients.c, moebius.c, factor.c, XS.xs,
+--  and inverse_sigma0.c.
+package Math_Prime_Util.Arith with SPARK_Mode => On is
+   use type U64;
+   use type Int.I128;
+   subtype Optional_U64 is Int.Optional_U64;
+   subtype I128 is Int.I128;
+   subtype Signed_Input is Int.I128 range -Int.I128 (U64'Last) ..
+     Int.I128 (U64'Last);
+   subtype Sign_Value is Integer range -1 .. 1;
+   subtype Liouville_Value is Sign_Value
+     with Static_Predicate => Liouville_Value /= 0;
+
+   --  totients.c: totient. Count positive integers coprime to N.
+   --  Nonpositive signed inputs return zero; no error cases.
+   function Euler_Phi (N : Signed_Input) return U64
+     with Pre => True,
+          Post => (if N <= 0 then Euler_Phi'Result = 0
+                   else Euler_Phi'Result <= U64 (N));
+
+   --  totients.c: jordan_totient. Count coprime K-tuples modulo N.
+   --  J_0(N) is one only at N=1. Undefined if the result exceeds U64.
+   function Jordan_Totient (K, N : U64) return Optional_U64
+     with Pre => True,
+          Post => (if N = 1 then Jordan_Totient'Result.Defined
+                   and then Jordan_Totient'Result.Value = 1);
+
+   --  moebius.c: moebius. Squarefree parity of abs(N); mu(0)=0.
+   --  Returns -1, 0, or 1 in integer units; no error cases.
+   function Moebius (N : Signed_Input) return Sign_Value
+     with Pre => True, Post => (if N = 0 then Moebius'Result = 0);
+
+   --  moebius.c: mertens. Sum mu(i) for 1 <= i <= N; M(0)=0.
+   --  Exact signed integer result; workspace is local to the call.
+   function Mertens (N : U64) return Int.I128
+     with Pre => True,
+          Post => abs Mertens'Result <= Int.I128 (N);
+
+   --  moebius.c: mertens_range. Sum mu(i) over inclusive Lo..Hi.
+   --  Empty ranges return zero; zero contributes zero. No error cases.
+   function Mertens (Lo, Hi : U64) return Int.I128
+     with Pre => True,
+          Post => (if Lo > Hi then Mertens'Result = 0);
+
+   --  moebius.c: liouville. Parity of prime factors with multiplicity.
+   --  Returns -1 or 1; MPU defines liouville(0)=-1. No error cases.
+   function Liouville (N : U64) return Liouville_Value
+     with Pre => True, Post => (if N = 0 then Liouville'Result = -1);
+
+   --  util.c: exp_mangoldt. Prime base of a prime power, otherwise one.
+   --  Integer exponential of the von Mangoldt function; no error cases.
+   function Exp_Mangoldt (N : U64) return U64
+     with Pre => True,
+          Post => Exp_Mangoldt'Result >= 1
+       and then (if N > 1 then Exp_Mangoldt'Result <= N);
+
+   package U64_Vectors is new Ada.Containers.Vectors
+     (Index_Type => Natural, Element_Type => U64);
+
+   --  factor.c: divisor_sum. Sum of D**K over positive divisors D of N.
+   --  K defaults to 1; K = 0 counts divisors. Zero has sum zero.
+   --  Undefined if the exact sum exceeds U64'Last. No errors.
+   function Divisor_Sum (N : U64; K : U64 := 1) return Optional_U64
+     with Pre => True,
+          Post => (if N <= 1 then Divisor_Sum'Result.Defined
+                   and then Divisor_Sum'Result.Value = N);
+
+   --  factor.c: aliquot_sum. Sum of positive proper divisors, zero at 0/1.
+   --  Undefined if the exact sum exceeds U64'Last. No errors.
+   function Aliquot_Sum (N : U64) return Optional_U64
+     with Pre => True,
+          Post => (if N <= 1 then Aliquot_Sum'Result.Defined
+                   and then Aliquot_Sum'Result.Value = 0);
+
+   --  XS.xs: abundance. Aliquot sum minus N, in integer units.
+   --  Exact signed result, including values below -2**63. No errors.
+   function Abundance (N : U64) return I128
+     with Pre => True, Post => Abundance'Result >= -I128 (N);
+
+   --  factor.c: sopf. Sum of distinct prime factors; zero at 0/1.
+   --  Result is in integer units. No errors.
+   function Sopf (N : U64) return U64
+     with Pre => True, Post => Sopf'Result <= N;
+
+   --  factor.c: sopfr. Sum of prime factors with multiplicity, zero at 0/1.
+   --  Result is in integer units. No errors.
+   function Sopfr (N : U64) return U64
+     with Pre => True, Post => Sopfr'Result <= N;
+
+   --  inverse_sigma0.c: inverse_sigma0_list. Inclusive range; reversed
+   --  ranges and k = 0 return an empty vector. No errors.
+   --  Vector storage is outside the proved arithmetic subset.
+   function Inverse_Sigma0 (K, Low, High : U64) return U64_Vectors.Vector
+     with SPARK_Mode => Off, Pre => True,
+          Post => (for all N of Inverse_Sigma0'Result =>
+                     N >= Low and then N <= High);
+   --  inverse_sigma0.c: inverse_sigma0_list. Search 1 .. High inclusive.
+   --  No errors.
+   function Inverse_Sigma0 (K, High : U64) return U64_Vectors.Vector
+     with SPARK_Mode => Off, Pre => True,
+          Post => (for all N of Inverse_Sigma0'Result => N <= High);
+
+   --  inverse_sigma0.c: inverse_sigma0_count. Inclusive range; returns
+   --  zero for reversed ranges and k = 0. No errors.
+   function Inverse_Sigma0_Count (K, Low, High : U64) return U64
+     with SPARK_Mode => Off, Pre => True,
+          Post => Inverse_Sigma0_Count'Result <= High;
+   --  inverse_sigma0.c: inverse_sigma0_count. Search 1 .. High inclusive.
+   --  No errors.
+   function Inverse_Sigma0_Count (K, High : U64) return U64
+     with SPARK_Mode => Off, Pre => True,
+          Post => Inverse_Sigma0_Count'Result <= High;
+end Math_Prime_Util.Arith;

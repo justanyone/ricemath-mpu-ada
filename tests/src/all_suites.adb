@@ -1,0 +1,77 @@
+with Compat_Bits;
+with Compat_Totients;
+with Compat_Primality;
+with Prop_Primality;
+with Compat_Factor;
+with Compat_Factor_Classes;
+with Compat_Arith;
+with Compat_Powers;
+with Compat_Families;
+with Prop_Families;
+with Version_Suite;
+with Test_Fixture_Support;
+with Compat_Iter;
+with Compat_Iter_Ranges;
+with Compat_Count;
+with Prop_Count;
+with Compat_Int;
+with Compat_Modular;
+with Prop_Int;
+with Compat_Combinat;
+with Prop_Combinat;
+with Compat_Sieve;
+with Prop_Sieve;
+with Compat_Digits;
+with Prop_Digits;
+with Compat_Rational;
+with Prop_Rational;
+with Compat_Modular;
+with Compat_Lucas;
+with Prop_Lucas;
+
+with Compat_Arith;
+with Compat_Real;
+with Prop_Real;
+with Compat_Vec;
+
+package body All_Suites is
+   function Suite return AUnit.Test_Suites.Access_Test_Suite is
+      Result : constant AUnit.Test_Suites.Access_Test_Suite :=
+        Version_Suite.Suite;
+   begin
+      Result.Add_Test (Compat_Bits.Suite);
+      Result.Add_Test (Compat_Totients.Suite);
+      Result.Add_Test (Test_Fixture_Support.Suite);
+      Result.Add_Test (Compat_Iter.Suite);
+      Result.Add_Test (Compat_Iter_Ranges.Suite);
+      Result.Add_Test (Compat_Int.Suite);
+      Result.Add_Test (Compat_Arith.Suite);
+      Result.Add_Test (Compat_Modular.Suite);
+      Result.Add_Test (Prop_Int.Suite);
+      Result.Add_Test (Compat_Combinat.Suite);
+      Result.Add_Test (Prop_Combinat.Suite);
+      Result.Add_Test (Compat_Sieve.Suite);
+      Result.Add_Test (Prop_Sieve.Suite);
+      Result.Add_Test (Compat_Digits.Suite);
+      Result.Add_Test (Prop_Digits.Suite);
+      Result.Add_Test (Compat_Rational.Suite);
+      Result.Add_Test (Prop_Rational.Suite);
+      Result.Add_Test (Compat_Modular.Suite);
+      Result.Add_Test (Compat_Lucas.Suite);
+      Result.Add_Test (Prop_Lucas.Suite);
+      Result.Add_Test (Compat_Real.Suite);
+      Result.Add_Test (Prop_Real.Suite);
+      Result.Add_Test (Compat_Vec.Suite);
+      Result.Add_Test (Compat_Count.Suite);
+      Result.Add_Test (Prop_Count.Suite);
+      Result.Add_Test (Compat_Primality.Suite);
+      Result.Add_Test (Prop_Primality.Suite);
+      Result.Add_Test (Compat_Factor.Suite);
+      Result.Add_Test (Compat_Factor_Classes.Suite);
+      Result.Add_Test (Compat_Arith.Suite);
+      Result.Add_Test (Compat_Powers.Suite);
+      Result.Add_Test (Compat_Families.Suite);
+      Result.Add_Test (Prop_Families.Suite);
+      return Result;
+   end Suite;
+end All_Suites;

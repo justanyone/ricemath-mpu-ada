@@ -1,0 +1,24 @@
+name = "math_prime_util"
+description = "Ada port of Math::Prime::Util: primes, factoring, number theory"
+version = "0.1.0-dev"
+
+authors = ["Kevin J. Rice"]
+maintainers = ["Kevin J. Rice <justanyone@gmail.com>"]
+maintainers-logins = ["justanyone"]
+licenses = "GPL-1.0-or-later OR Artistic-1.0-Perl"
+website = "https://github.com/justanyone/ricemath-mpu-ada"
+tags = ["math", "prime", "number-theory", "factoring", "cryptography"]
+
+[build-switches]
+development.optimization = ["-O1"]
+development.style_checks = ["-gnaty"]
+development.contracts = "Yes"
+development.ada_version = "Ada2022"
+release.optimization = ["-O2"]
+release.contracts = "No"
+release.ada_version = "Ada2022"
+validation.optimization = ["-O1"]
+validation.contracts = "Yes"
+validation.ada_version = "Ada2022"
+"*".compile_checks = "Warnings"
+"*".runtime_checks = "Overflow"

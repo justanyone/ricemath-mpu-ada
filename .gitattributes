@@ -1,0 +1,2 @@
+# Each suite adds lines to this registry; union keeps both sides so parallel test heads merge.
+tests/src/all_suites.adb merge=union
