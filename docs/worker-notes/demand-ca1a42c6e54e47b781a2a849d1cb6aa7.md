@@ -14,3 +14,4 @@ Gate tests remain running after successful builds; no returned failure diagnosti
 The gate printed == gate: green with 366 passing tests. Rechecking the final source after removing redundant use clauses; gnatcheck remains unavailable in the installed Alire environment.
 Final gate recheck is still running; retaining the prior green result while validating the cleaned source.
 Final gate recheck is still running; retaining the prior green result while validating the cleaned source.
+Final gate recheck is still running; retaining the prior green result while validating the cleaned source.
