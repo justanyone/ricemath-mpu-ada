@@ -17,6 +17,7 @@ package body Compat_Families is
    use Fixture_Support;
    use Math_Prime_Util;
    use type U64;
+   use type Int.I128;
    use Math_Prime_Util.Families;
    use Math_Prime_Util.Goldbach;
    use type Ada.Containers.Count_Type;
@@ -40,13 +41,28 @@ package body Compat_Families is
       Cases : constant Case_Vectors.Vector :=
         For_Function (Load ("families"), Func);
       N : U64;
+      Signed_N, B : Int.I128;
+      K : U64;
       Got : Unbounded_String;
    begin
       AUnit.Assertions.Assert (not Cases.Is_Empty, "missing " & Func);
       for C of Cases loop
-         N := U64'Value (To_String (C.Args (1)));
+         Signed_N := Int.I128'Value (To_String (C.Args (1)));
+         N := U64 (abs Signed_N);
          Got := Null_Unbounded_String;
-         if Func = "lucky_numbers" or else Func = "ramanujan_primes"
+         if Func = "next_chen_prime" then
+            Got := To_Unbounded_String (Image (Next_Chen_Prime (N)));
+         elsif Func = "is_gaussian_prime" then
+            B := Int.I128'Value (To_String (C.Args (2)));
+            --  XS.xs encodes this predicate as 2 for a proven prime.
+            Got := To_Unbounded_String
+              ((if Is_Gaussian_Prime (Signed_N, B) then "2" else "0"));
+         elsif Func = "is_sum_of_squares" then
+            K := (if Natural (C.Args.Length) = 1 then 2
+                  else U64'Value (To_String (C.Args (2))));
+            Got := To_Unbounded_String
+              ((if Is_Sum_Of_Squares (Signed_N, K) then "1" else "0"));
+         elsif Func = "lucky_numbers" or else Func = "ramanujan_primes"
            or else Func = "twin_primes" or else Func = "semi_primes"
          then
             declare
@@ -184,6 +200,26 @@ package body Compat_Families is
          end if;
       end loop;
    end Replay;
+
+   procedure Test_Next_Chen_Prime (T : in out Test_Case'Class) is
+   begin
+      Replay ("next_chen_prime");
+      AUnit.Assertions.Assert
+        (not Next_Chen_Prime (18_446_744_073_709_551_437).Defined,
+         "last Chen prime");
+      AUnit.Assertions.Assert
+        (not Next_Chen_Prime (U64'Last).Defined, "Chen native limit");
+   end Test_Next_Chen_Prime;
+
+   procedure Test_Is_Gaussian_Prime (T : in out Test_Case'Class) is
+   begin
+      Replay ("is_gaussian_prime");
+   end Test_Is_Gaussian_Prime;
+
+   procedure Test_Is_Sum_Of_Squares (T : in out Test_Case'Class) is
+   begin
+      Replay ("is_sum_of_squares");
+   end Test_Is_Sum_Of_Squares;
 
    function Wide_Image (N : U128) return String is
      (Ada.Strings.Fixed.Trim (U128'Image (N), Ada.Strings.Both));
@@ -805,6 +841,13 @@ package body Compat_Families is
 
    overriding procedure Register_Tests (T : in out Families_Case) is
    begin
+      Registration.Register_Routine
+        (T, Test_Next_Chen_Prime'Access, "next_chen_prime");
+      Registration.Register_Routine
+        (T, Test_Is_Gaussian_Prime'Access, "is_gaussian_prime");
+      Registration.Register_Routine
+        (T, Test_Is_Sum_Of_Squares'Access, "is_sum_of_squares");
+
       Registration.Register_Routine
         (T, Test_Is_Powerful'Access, "is_powerful");
       Registration.Register_Routine

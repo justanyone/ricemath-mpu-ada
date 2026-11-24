@@ -21,6 +21,39 @@ package Math_Prime_Util.Random with SPARK_Mode => On is
    --  Draw a 32-bit unsigned integer, stored in a U64.
    procedure Irand (G : in out Generator; Value : out U64)
      with Pre => Is_Seeded (G), Post => Value <= 16#FFFF_FFFF#;
+   --  XS.xs srand / csprng.c csprng_srand: seed with a native integer.
+   --  Returns Seed in Value; this deterministic seed is not secure entropy.
+   procedure Srand (G : out Generator; Seed : U64; Value : out U64)
+     with Post => Is_Seeded (G) and then Value = Seed;
+   --  XS.xs srand: seed from OS entropy and return the native seed.
+   --  Uses Entropy_Bytes, including the MPU timer fallback.
+   procedure Srand (G : out Generator; Value : out U64)
+     with Post => Is_Seeded (G);
+   --  csprng.c irand32: draw 32 bits, represented as a U64.
+   procedure Irand32 (G : in out Generator; Value : out U64)
+     with Pre => Is_Seeded (G), Post => Value <= 16#FFFF_FFFF#;
+   --  csprng.c irand64: draw 64 bits, first word in the high half.
+   procedure Irand64 (G : in out Generator; Value : out U64)
+     with Pre => Is_Seeded (G);
+   --  csprng.c drand64 / XS.xs drand: binary64 draw times Scale.
+   --  Scale zero means one; negative scales give values in (Scale, 0].
+   procedure Drand
+     (G : in out Generator; Value : out Long_Float; Scale : Long_Float := 0.0)
+     with Pre => Is_Seeded (G),
+          Post => (if Scale = 0.0 then Value >= 0.0 and then Value < 1.0
+                   elsif Scale > 0.0 then Value >= 0.0 and then Value <= Scale
+                   else Value >= Scale and then Value <= 0.0);
+   --  XS.xs rand: the same scaled binary64 draw as Drand.
+   procedure Rand
+     (G : in out Generator; Value : out Long_Float; Scale : Long_Float := 0.0)
+     with Pre => Is_Seeded (G),
+          Post => (if Scale = 0.0 then Value >= 0.0 and then Value < 1.0
+                   elsif Scale > 0.0 then Value >= 0.0 and then Value <= Scale
+                   else Value >= Scale and then Value <= 0.0);
+   --  entropy.c get_entropy_bytes: fill Data from /dev/urandom, falling
+   --  back to /dev/random on open failure, then MPU's clock-mixing method.
+   --  Empty arrays consume no entropy; supports arbitrary array bounds.
+   procedure Entropy_Bytes (Data : out Byte_Array);
    --  Draw an unsigned integer with Bits bits; zero bits consumes no bytes.
    procedure Urandomb (G : in out Generator; Bits : Natural; Value : out U64)
      with Pre => Is_Seeded (G) and then Bits <= 64,

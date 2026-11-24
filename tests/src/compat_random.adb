@@ -66,7 +66,7 @@ procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
             end Bytes;
          begin
             --  Other_Families: primes, shuffle, randperm, vecsample,
-            --  floating rand/drand and cipher XOR belong to separate ports.
+            --  cipher XOR belong to separate ports.
             if ((Has ("irand") and then F not in
                  "tag_irand_irand32_rand" | "blake_drand_after_irand")
               or else Has ("random_bytes")
@@ -107,6 +107,10 @@ procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
                            Urandomr (G, A, B, V);
                         elsif F in "urandomm" | "urandomm_seq" then
                            Urandomm (G, A, V);
+                        elsif Has ("irand64") then
+                           Irand64 (G, V);
+                        elsif Has ("irand32") then
+                           Irand32 (G, V);
                         else
                            Urandomb (G,
                              (if F = "mixed_seq" then Mixed_Bits (I)
@@ -131,6 +135,179 @@ procedure Compat_Random (T : in out AUnit.Test_Cases.Test_Case'Class) is
       end loop;
       AUnit.Assertions.Assert (Count = 731, "CSPRNG fixture count changed");
    end Replay;
+   --  Given the seeded float fixtures, when each output is drawn, then its
+   --  15 significant decimal digits match the committed oracle spelling.
+   procedure Float_Replay is
+      Count : Natural := 0;
+   begin
+      for C of Load ("random") loop
+         declare
+            F : constant String := To_String (C.Func);
+            G : Generator;
+            V : Long_Float;
+            Discard : U64;
+            Scale : Long_Float := 0.0;
+            Expected : constant String := To_String (C.Result);
+            Start : Positive := Expected'First;
+         begin
+            if F in "rand" | "drand" | "drand_seq" |
+              "tag_irand_irand32_rand" | "blake_drand_after_irand"
+            then
+               Csrand (G, Decode (To_String (C.Args (1))));
+               if F = "tag_irand_irand32_rand" then
+                  Irand (G, Discard);
+                  AUnit.Assertions.Assert
+                    (Discard = 1_951_677_399, "tag irand");
+                  Irand32 (G, Discard);
+                  AUnit.Assertions.Assert
+                    (Discard = 598_936_225, "tag irand32");
+                  Start := Ada.Strings.Fixed.Index (Expected, " ") + 1;
+                  Start := Ada.Strings.Fixed.Index
+                    (Expected, " ", Start) + 1;
+               elsif F = "blake_drand_after_irand" then
+                  declare
+                     Prefix : Byte_Array (1 .. 7);
+                  begin
+                     Random_Bytes (G, Prefix);
+                  end;
+                  Irand (G, Discard);
+               end if;
+               if Natural (C.Args.Length) = 2 then
+                  Scale := Long_Float'Value (To_String (C.Args (2)));
+               end if;
+               loop
+                  declare
+                     Stop : Natural := Ada.Strings.Fixed.Index
+                       (Expected, " ", Start);
+                     Want : Long_Float;
+                     Unit : Long_Float := 1.0;
+                  begin
+                     if Stop = 0 then
+                        Stop := Expected'Last + 1;
+                     end if;
+                     Want := Long_Float'Value (Expected (Start .. Stop - 1));
+                     if F in "rand" | "tag_irand_irand32_rand" then
+                        Rand (G, V, Scale);
+                     else
+                        Drand (G, V, Scale);
+                     end if;
+                     while abs Want < Unit loop
+                        Unit := Unit / 10.0;
+                     end loop;
+                     AUnit.Assertions.Assert
+                       (abs (V - Want) <= Unit * 5.1E-15,
+                        F & " line" & Positive'Image (C.Line_Number));
+                     exit when Stop > Expected'Last;
+                     Start := Stop + 1;
+                  end;
+               end loop;
+               Count := Count + 1;
+            end if;
+         end;
+      end loop;
+      AUnit.Assertions.Assert (Count = 72, "float fixture coverage");
+   end Float_Replay;
+
+   --  Given integer seeds, when srand and rand repeat, then every binary64
+   --  output repeats exactly; the first sequence also has exact MPU vectors.
+   procedure Output_Properties is
+      G, H : Generator;
+      Seed_Value, A, B : U64;
+      X, Y : Long_Float;
+      Raised : Boolean;
+      Empty : Byte_Array (1 .. 0);
+      First, Second : Byte_Array (17 .. 1040);
+      type Float_Array is array (Positive range <>) of Long_Float;
+      --  csprng.c drand64 binary64 results for seed 15, independently
+      --  computed from the committed irand64_seq words using Python float.
+      Exact : constant Float_Array :=
+        [16#1.0c2daa914cd66# * 2.0 ** (-5),
+         16#1.b394e4d70b006# * 2.0 ** (-3),
+         16#1.8ab77465f450a# * 2.0 ** (-3),
+         16#1.a80407613fb13# * 2.0 ** (-3),
+         16#1.0977e5e6509cc# * 2.0 ** (-1),
+         16#1.f573b238b9689# * 2.0 ** (-2),
+         16#1.efbfe7067c85f# * 2.0 ** (-1),
+         16#1.812af525fce80# * 2.0 ** (-1),
+         16#1.5af4fd8f12ada# * 2.0 ** (-3),
+         16#1.46a6acfef6bb2# * 2.0 ** (-2),
+         16#1.12cc3d3798458# * 2.0 ** (-1),
+         16#1.397ca08a5939f# * 2.0 ** (-3),
+         16#1.f03afafcab823# * 2.0 ** (-1),
+         16#1.c40d9a2c5d675# * 2.0 ** (-2),
+         16#1.3adaf4d4c9fc3# * 2.0 ** (-2),
+         16#1.58a0e392bb1fb# * 2.0 ** (-1),
+         16#1.18f9fca8968c7# * 2.0 ** (-4),
+         16#1.1beb62628a4f6# * 2.0 ** (-3),
+         16#1.2ffffc1e8ef2b# * 2.0 ** (-1),
+         16#1.54e0c511544f2# * 2.0 ** (-2)];
+   begin
+      for Draw in 1 .. 4 loop
+         Raised := False;
+         begin
+            case Draw is
+               when 1 => Irand32 (G, A);
+               when 2 => Irand64 (G, A);
+               when 3 => Drand (G, X);
+               when others => Rand (G, X);
+            end case;
+         exception
+            when Ada.Assertions.Assertion_Error => Raised := True;
+         end;
+         AUnit.Assertions.Assert (Raised, "unseeded output accepted");
+      end loop;
+      Srand (G, 15, Seed_Value);
+      AUnit.Assertions.Assert (Seed_Value = 15, "srand seed return");
+      for Want of Exact loop
+         Drand (G, X);
+         AUnit.Assertions.Assert (X = Want, "exact binary64 seed 15");
+      end loop;
+      for Seed of U64_Array'[0, 1, 2, 2 ** 32 - 1, 2 ** 32,
+        2 ** 32 + 1, 2 ** 63 - 1, 2 ** 63, 2 ** 63 + 1, U64'Last]
+      loop
+         Srand (G, Seed, Seed_Value);
+         Srand (H, Seed, A);
+         AUnit.Assertions.Assert (Seed_Value = Seed and then A = Seed,
+           "srand native boundary return");
+         for I in 1 .. 300 loop
+            Rand (G, X);
+            Rand (H, Y);
+            AUnit.Assertions.Assert (X = Y and then X >= 0.0 and then X < 1.0,
+              "srand/rand repeat across buffer boundary");
+         end loop;
+      end loop;
+      Srand (G, 42, Seed_Value);
+      Irand32 (G, A);
+      AUnit.Assertions.Assert (A = 445_265_827, "srand 42 fixture");
+      Srand (G, 15, Seed_Value);
+      Csrand (H, Decode ("0f000000"));
+      for Scale of Float_Array'[0.0, 1.0, 10.0, -10.0] loop
+         Rand (G, X, Scale);
+         Drand (H, Y, Scale);
+         AUnit.Assertions.Assert (X = Y, "rand/drand aliases");
+      end loop;
+      Entropy_Bytes (Empty);
+      for Size of Natural_Array'[1, 2, 255, 256, 257, 1025] loop
+         declare
+            Data : Byte_Array (0 .. Size + 1) := [others => 165];
+         begin
+            Entropy_Bytes (Data (1 .. Size));
+            AUnit.Assertions.Assert
+              (Data'Length = Size + 2 and then
+               Data (0) = 165 and then Data (Size + 1) = 165,
+               "entropy requested length and slice bounds");
+         end;
+      end loop;
+      Entropy_Bytes (First);
+      Entropy_Bytes (Second);
+      AUnit.Assertions.Assert (First /= Second, "independent OS entropy");
+      Srand (G, Seed_Value);
+      Srand (H, Seed_Value, A);
+      Irand64 (G, A);
+      Irand64 (H, B);
+      AUnit.Assertions.Assert (A = B, "OS srand returns reusable seed");
+   end Output_Properties;
+
    --  Given random.tsv and a seeded generator, replay every native row.
    procedure Prime_Replay is
       use Math_Prime_Util.Random_Primes;
@@ -349,6 +526,8 @@ begin
    AUnit.Assertions.Assert (T.Name.all'Length > 0, "random test has a name");
    Replay;
    Contracts;
+   Float_Replay;
+   Output_Properties;
    Prime_Replay;
    Prime_Properties;
 end Compat_Random;

@@ -27,6 +27,79 @@ package body Math_Prime_Util.Families is
       True, True, False, False, False, False, False, False, False,
       True, True];
 
+   function Next_Chen_Prime (N : U64) return Int.Optional_U64 is
+      Max_Chen : constant U64 := 18_446_744_073_709_551_437;
+      P : Int.Optional_U64;
+   begin
+      P := Prime_Sieve.Next_Prime (N);
+      while P.Defined and then P.Value <= Max_Chen loop
+         if Primality.Is_Chen_Prime (P.Value) then
+            return P;
+         end if;
+         P := Prime_Sieve.Next_Prime (P.Value + 2);
+      end loop;
+      return (Defined => False);
+   end Next_Chen_Prime;
+
+   function Is_Gaussian_Prime (A, B : Int.Native_I128) return Boolean is
+      X : constant U64 := U64 (abs A);
+      Y : constant U64 := U64 (abs B);
+      XX : constant U128 := U128 (X) ** 2;
+      YY : constant U128 := U128 (Y) ** 2;
+      D : U128 := 3;
+      Quotient : U128;
+      use type Primality.Prime_Result;
+   begin
+      if X = 0 then
+         return Y mod 4 = 3 and then Primality.Is_Prime (Y) /= 0;
+      elsif Y = 0 then
+         return X mod 4 = 3 and then Primality.Is_Prime (X) /= 0;
+      elsif XX <= U128 (U64'Last) and then
+        YY <= U128 (U64'Last) - XX
+      then
+         return Primality.Is_Prime (U64 (XX + YY)) /= 0;
+      elsif X mod 2 = Y mod 2 then
+         return False;
+      end if;
+      --  PP.pm dispatches primality on the full norm. The native
+      --  primality package only accepts U64; exact trial division keeps
+      --  this fallback correct even for a 129-bit norm. Split quotient
+      --  and remainder calculations avoid overflowing the sum XX+YY.
+      loop
+         Quotient := XX / D + YY / D + (XX mod D + YY mod D) / D;
+         exit when D > Quotient;
+         if (XX mod D + YY mod D) mod D = 0 then
+            return False;
+         end if;
+         D := D + 2;
+      end loop;
+      return True;
+   end Is_Gaussian_Prime;
+
+   function Is_Sum_Of_Squares (N : Int.Native_I128; K : U64 := 2)
+      return Boolean
+   is
+      V : U64 := U64 (abs N);
+      F : Factor.Factor_List;
+   begin
+      if K = 0 then
+         return V = 0;
+      elsif K >= 4 then
+         return True;
+      elsif K = 1 then
+         return Int.Is_Square (V);
+      elsif V < 3 then
+         return True;
+      elsif K = 3 then
+         V := U64 (Int.Remove_Factors (Int.I128 (V), 4).Value);
+         return V mod 8 /= 7;
+      end if;
+      F := Factor.Factor (V);
+      return (for all P of F.Value (1 .. F.Count) =>
+                P mod 4 /= 3 or else
+                  Int.Valuation (Int.I128 (V), Int.I128 (P)).Value mod 2 = 0);
+   end Is_Sum_Of_Squares;
+
    function Trunc (X : F64) return U64 with SPARK_Mode => On;
    function Trunc (X : F64) return U64 is
      (U64 (F64'Floor (X)));

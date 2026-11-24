@@ -1,3 +1,4 @@
+with Compat_Bits;
 with Compat_Totients;
 with Compat_Primality;
 with Prop_Primality;
@@ -10,6 +11,7 @@ with Prop_Families;
 with Version_Suite;
 with Test_Fixture_Support;
 with Compat_Iter;
+with Compat_Iter_Ranges;
 with Compat_Count;
 with Prop_Count;
 with Compat_Int;
@@ -37,9 +39,11 @@ package body All_Suites is
       Result : constant AUnit.Test_Suites.Access_Test_Suite :=
         Version_Suite.Suite;
    begin
+      Result.Add_Test (Compat_Bits.Suite);
       Result.Add_Test (Compat_Totients.Suite);
       Result.Add_Test (Test_Fixture_Support.Suite);
       Result.Add_Test (Compat_Iter.Suite);
+      Result.Add_Test (Compat_Iter_Ranges.Suite);
       Result.Add_Test (Compat_Int.Suite);
       Result.Add_Test (Compat_Arith.Suite);
       Result.Add_Test (Compat_Modular.Suite);

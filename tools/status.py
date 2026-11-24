@@ -7,7 +7,6 @@ Run from any directory with ``python3 -I tools/status.py``.
 import re
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parent.parent
 STATUS = ROOT / "STATUS.md"
 SOURCE = ROOT / "src"
@@ -34,14 +33,9 @@ def public_subprograms(source: Path) -> set[str]:
 
 
 def regenerate(status: Path = STATUS, source: Path = SOURCE) -> bool:
-    """Update function ticks. Return True if the status file changed."""
-    original = status.read_text(encoding="utf-8")
-    lines = original.splitlines(keepends=True)
+    """Update ticks, returning whether changed; reject invalid or non-428 lists."""
+    lines = status.read_text(encoding="utf-8").splitlines(keepends=True)
     declared = public_subprograms(source)
-    if source.exists():
-        declared = public_subprograms(source)
-    else:
-        declared = set()
     try:
         start = next(i for i, line in enumerate(lines)
                      if line.rstrip("\r\n") == FUNCTIONS_HEADING) + 1
@@ -49,6 +43,7 @@ def regenerate(status: Path = STATUS, source: Path = SOURCE) -> bool:
         raise ValueError(f"missing {FUNCTIONS_HEADING!r} heading") from None
 
     changed = False
+    count = 0
     for index in range(start, len(lines)):
         line = lines[index]
         ending = "\n" if line.endswith("\n") else ""
@@ -56,7 +51,13 @@ def regenerate(status: Path = STATUS, source: Path = SOURCE) -> bool:
         if content.endswith("\r"):
             content, ending = content[:-1], "\r\n"
         match = STATUS_ROW.match(content)
-        if match is None or match.group("tick") == "-":
+        if match is None:
+            if content.strip():
+                raise ValueError(f"invalid function row at line {index + 1}: "
+                                 f"{content!r}")
+            continue
+        count += 1
+        if match.group("tick") == "-":
             continue
         tick = "x" if match.group("name").casefold() in declared else " "
         if tick != match.group("tick"):
@@ -64,6 +65,8 @@ def regenerate(status: Path = STATUS, source: Path = SOURCE) -> bool:
                             + match.group("middle") + match.group("name")
                             + match.group("suffix") + ending)
             changed = True
+    if count != 428:
+        raise ValueError(f"expected 428 function rows, found {count}")
     if changed:
         status.write_text("".join(lines), encoding="utf-8")
     return changed

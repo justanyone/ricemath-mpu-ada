@@ -1,3 +1,4 @@
+with Ada.Containers.Generic_Array_Sort;
 with Math_Prime_Util.Primality;
 with Math_Prime_Util.Sieve;
 
@@ -29,6 +30,59 @@ package body Math_Prime_Util.Iter is
          Cursor.Pending := Sieve.Next_Prime (Cursor.Pending.Value);
       end if;
    end Next;
+
+   function Prime_Iterator_Object (Start : U64 := 2) return Prime_Object is
+     (Current => Prime_Iterator (Start).Pending);
+
+   function Value (Cursor : Prime_Object) return Int.Optional_U64 is
+     (Cursor.Current);
+   function Peek (Cursor : Prime_Object) return Int.Optional_U64 is
+     (if Cursor.Current.Defined then
+         Sieve.Next_Prime (Cursor.Current.Value)
+      else (Defined => False));
+
+   procedure Next (Cursor : in out Prime_Object) is
+   begin
+      Cursor.Current := Peek (Cursor);
+   end Next;
+
+   procedure Prev (Cursor : in out Prime_Object) is
+   begin
+      if not Cursor.Current.Defined or else Cursor.Current.Value > 2 then
+         Cursor.Current := Sieve.Prev_Prime
+           ((if Cursor.Current.Defined then Cursor.Current.Value
+             else U64'Last));
+      end if;
+   end Prev;
+
+   procedure Rewind (Cursor : in out Prime_Object; Start : U64 := 2) is
+   begin
+      Cursor.Current := Prime_Iterator (Start).Pending;
+   end Rewind;
+
+   procedure Iterate
+     (Cursor : in out Prime_Object; Result : out Int.Optional_U64) is
+   begin
+      Result := Cursor.Current;
+      Next (Cursor);
+   end Iterate;
+
+   procedure Print_Primes
+     (Low, High : U64;
+      File : Ada.Text_IO.File_Type := Ada.Text_IO.Standard_Output)
+   is
+      pragma SPARK_Mode (Off);
+      package Number_IO is new Ada.Text_IO.Modular_IO (U64);
+      procedure Write_Prime (Value : U64; Context : in out Loop_Context)
+        with Pre => Context.Active;
+      procedure Write_Prime (Value : U64; Context : in out Loop_Context) is
+      begin
+         Number_IO.Put (File, Value, Width => 0);
+         Ada.Text_IO.New_Line (File);
+      end Write_Prime;
+   begin
+      Forprimes (Low, High, Write_Prime'Access);
+   end Print_Primes;
 
    procedure Forprimes
      (Low, High : U64;
@@ -184,49 +238,82 @@ package body Math_Prime_Util.Iter is
       Forfactored (1, High, Process);
    end Forfactored;
 
-   procedure Forpart
-     (N : Natural;
+   procedure Partitions
+     (N : Natural; Ordered : Boolean;
+      Process : not null access procedure
+        (Parts : Value_Array; Context : in out Loop_Context);
+      Options : Partition_Options := (others => <>));
+
+   procedure Partitions
+     (N : Natural; Ordered : Boolean;
       Process : not null access procedure
         (Parts : Value_Array; Context : in out Loop_Context);
       Options : Partition_Options := (others => <>))
    is
       Context : Loop_Context := (Active => True, Stop => False);
-      Parts : Value_Array (1 .. N);
+      Parts : Value_Array (1 .. Natural'Max (2, N));
+      K : Natural := 1;
+      X, Y, Step : U64;
+      Min_Part : constant Natural := Natural'Max (1, Options.Amin);
       Min_Length : constant Natural := Natural'Max (1, Options.Nmin);
       Max_Length : constant Natural := Natural'Min (N, Options.Nmax);
-      Min_Part : constant Natural := Natural'Max (1, Options.Amin);
       Max_Part : constant Natural := Natural'Min (N, Options.Amax);
-      procedure Visit (Remaining, Minimum, Length : Natural);
-
-      procedure Visit (Remaining, Minimum, Length : Natural) is
-      begin
-         if Remaining = 0 then
-            if Length >= Min_Length then
-               Process (Parts (1 .. Length), Context);
-            end if;
-         elsif Length < Max_Length then
-            for P in Minimum .. Natural'Min (Remaining, Max_Part) loop
-               if Options.Prime = Any_Part or else
-                 ((Primality.Is_Prime (U64 (P)) /= 0) =
-                  (Options.Prime = Prime_Part))
-               then
-                  Parts (Length + 1) := U64 (P);
-                  Visit (Remaining - P, P, Length + 1);
-                  exit when Context.Stop;
-               end if;
-            end loop;
-         end if;
-      end Visit;
    begin
-      if N = 0 then
-         if Options.Nmin <= 1 then
-            Process (Parts, Context);
-         end if;
-      elsif Min_Length <= Max_Length then
-         Visit (N, Min_Part, 0);
+      if N = 0 and then Options.Nmin <= 1 then
+         Process (Parts (1 .. 0), Context);
       end if;
+      if Min_Length > Max_Length or else Min_Part > Max_Part then
+         return;
+      end if;
+      --  PP.pm: _forcompositions, iterative lexical composition traversal.
+      Parts (1) := U64 (Min_Part - 1);
+      Parts (2) := U64 (N - Min_Part + 1);
+      while K /= 0 loop
+         X := Parts (K) + 1;
+         Y := Parts (K + 1) - 1;
+         K := K - 1;
+         Step := (if Ordered then 1 else X);
+         while Y >= Step loop
+            Parts (K + 1) := X;
+            X := Step;
+            Y := Y - Step;
+            K := K + 1;
+         end loop;
+         Parts (K + 1) := X + Y;
+         while K >= Max_Length loop
+            Parts (K) := Parts (K) + Parts (K + 1);
+            K := K - 1;
+         end loop;
+         exit when Parts (1) > U64 (Max_Part);
+         if K + 1 >= Min_Length and then
+           (for all I in 1 .. K + 1 =>
+              Parts (I) >= U64 (Min_Part) and then
+              Parts (I) <= U64 (Max_Part) and then
+              (Options.Prime = Any_Part or else
+                 ((Primality.Is_Prime (Parts (I)) /= 0) =
+                  (Options.Prime = Prime_Part))))
+         then
+            Process (Parts (1 .. K + 1), Context);
+         end if;
+         exit when Context.Stop;
+      end loop;
+   end Partitions;
+   procedure Forpart
+     (N : Natural;
+      Process : not null access procedure
+        (Parts : Value_Array; Context : in out Loop_Context);
+      Options : Partition_Options := (others => <>)) is
+   begin
+      Partitions (N, False, Process, Options);
    end Forpart;
-
+   procedure Forcomp
+     (N : Natural;
+      Process : not null access procedure
+        (Parts : Value_Array; Context : in out Loop_Context);
+      Options : Partition_Options := (others => <>)) is
+   begin
+      Partitions (N, True, Process, Options);
+   end Forcomp;
    --  XS.xs: forcomb, lexical subset traversal with one shared context.
    procedure Combinations
      (N, K : Natural; Context : in out Loop_Context;
@@ -283,27 +370,35 @@ package body Math_Prime_Util.Iter is
       end loop;
    end Forcomb;
 
-   procedure Forperm
-     (N : Natural;
+   type Multiplicities is array (Positive range <>) of Natural;
+   procedure Permutations
+     (Keys : Value_Array; Counts : in out Multiplicities;
+      N : Natural; Derange : Boolean;
+      Process : not null access procedure
+        (Values : Value_Array; Context : in out Loop_Context));
+
+   procedure Permutations
+     (Keys : Value_Array; Counts : in out Multiplicities;
+      N : Natural; Derange : Boolean;
       Process : not null access procedure
         (Values : Value_Array; Context : in out Loop_Context))
    is
       Context : Loop_Context := (Active => True, Stop => False);
       Values : Value_Array (1 .. N);
-      Used : array (1 .. N) of Boolean := (others => False);
       procedure Visit (Length : Natural);
-
       procedure Visit (Length : Natural) is
       begin
          if Length = N then
             Process (Values, Context);
          else
-            for V in 1 .. N loop
-               if not Used (V) then
-                  Used (V) := True;
-                  Values (Length + 1) := U64 (V - 1);
+            for I in Keys'Range loop
+               if Counts (I) > 0 and then
+                 (not Derange or else Keys (I) /= U64 (Length))
+               then
+                  Counts (I) := Counts (I) - 1;
+                  Values (Length + 1) := Keys (I);
                   Visit (Length + 1);
-                  Used (V) := False;
+                  Counts (I) := Counts (I) + 1;
                   exit when Context.Stop;
                end if;
             end loop;
@@ -311,5 +406,87 @@ package body Math_Prime_Util.Iter is
       end Visit;
    begin
       Visit (0);
+   end Permutations;
+   procedure Forperm
+     (N : Natural;
+      Process : not null access procedure
+        (Values : Value_Array; Context : in out Loop_Context))
+   is
+      Keys : constant Value_Array := [for I in 1 .. N => U64 (I - 1)];
+      Counts : Multiplicities (1 .. N) := [others => 1];
+   begin
+      Permutations (Keys, Counts, N, False, Process);
    end Forperm;
+
+   procedure Forderange
+     (N : Natural;
+      Process : not null access procedure
+        (Values : Value_Array; Context : in out Loop_Context))
+   is
+      Keys : constant Value_Array := [for I in 1 .. N => U64 (I - 1)];
+      Counts : Multiplicities (1 .. N) := [others => 1];
+   begin
+      Permutations (Keys, Counts, N, True, Process);
+   end Forderange;
+   procedure Formultiperm
+     (Items : Value_Array;
+      Process : not null access procedure
+        (Values : Value_Array; Context : in out Loop_Context))
+   is
+      Keys : Value_Array (1 .. Items'Length) := Items;
+      Counts : Multiplicities (Keys'Range) := [others => 0];
+      Distinct : Natural := 0;
+      --  Perl sorts hash keys as strings, including numeric values.
+      function Less (Left, Right : U64) return Boolean is
+        (U64'Image (Left) < U64'Image (Right));
+      procedure Sort is new Ada.Containers.Generic_Array_Sort
+        (Positive, U64, Value_Array, Less);
+   begin
+      Sort (Keys);
+      for I in Keys'Range loop
+         if Distinct = 0 or else Keys (I) /= Keys (Distinct) then
+            Distinct := Distinct + 1;
+            Keys (Distinct) := Keys (I);
+         end if;
+         Counts (Distinct) := Counts (Distinct) + 1;
+      end loop;
+      Permutations
+        (Keys (1 .. Distinct), Counts, Items'Length, False, Process);
+   end Formultiperm;
+
+   procedure Forsetproduct
+     (Lists : Value_List_Vectors.Vector;
+      Process : not null access procedure
+        (Values : Value_Array; Context : in out Loop_Context))
+   is
+      Snapshot : constant Value_List_Vectors.Vector := Lists;
+      Context : Loop_Context := (Active => True, Stop => False);
+      Values : Value_Array (1 .. Natural (Snapshot.Length));
+      Indices : array (Values'Range) of Positive;
+      I : Natural;
+   begin
+      if Snapshot.Is_Empty or else
+        (for some List of Snapshot => List'Length = 0)
+      then
+         return;
+      end if;
+      Indices := [for J in Values'Range => Snapshot.Element (J)'First];
+      loop
+         for J in Values'Range loop
+            Values (J) := Snapshot.Element (J) (Indices (J));
+         end loop;
+         Process (Values, Context);
+         exit when Context.Stop;
+         I := Values'Last;
+         while I > 0 loop
+            if Indices (I) < Snapshot.Element (I)'Last then
+               Indices (I) := Indices (I) + 1;
+               exit;
+            end if;
+            Indices (I) := Snapshot.Element (I)'First;
+            I := I - 1;
+         end loop;
+         exit when I = 0;
+      end loop;
+   end Forsetproduct;
 end Math_Prime_Util.Iter;
